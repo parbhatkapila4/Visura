@@ -4,7 +4,7 @@ import { SUMMARY_SYSTEM_PROMPT } from "@/utils/prompts";
 export async function generateSummaryFromOpenAI(pdfText: string) {
   try {
     const summary = await openrouterChatCompletion({
-      model: "google/gemini-2.5-flash-lite",
+      model: "google/gemini-2.5-flash",
       messages: [
         {
           role: "system",

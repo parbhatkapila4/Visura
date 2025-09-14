@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { LoaderCircle } from "lucide-react";
 import { forwardRef } from "react";
 
 interface UploadFormInputProps {
@@ -26,7 +27,16 @@ export const UploadFormInput = forwardRef<
           className={cn(isLoading && "opacity-50", "cursor-not-allowed")}
           disabled={isLoading}
         />
-        <Button>Upload Your PDF</Button>
+        <Button disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            "Upload Your PDF"
+          )}
+        </Button>
       </div>
     </form>
   );

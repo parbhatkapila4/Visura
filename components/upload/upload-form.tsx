@@ -80,14 +80,21 @@ export default function UploadForm() {
 
       const result = await generatePdfSummary(resp);
 
-      const { data = null, message = null } = result || {};
-      if (data) {
-        toast.loading("Saving your PDF", {
-          description: "Hang Tight! While we save your PDF",
+      const { data = null, message = null, success = false } = result || {};
+      if (success && data) {
+        toast.success("PDF processed successfully!", {
+          description: "Your document has been analyzed and summarized.",
         });
         formRef.current?.reset();
-        // if(data.summary) {
-        // }
+        console.log("Summary generated:", data.summary);
+        
+        if(data.summary) {
+          
+        }
+      } else {
+        toast.error("Processing failed", {
+          description: message || "Failed to process your PDF. Please try again.",
+        });
       }
     } catch (error) {
       setIsLoading(false);
@@ -97,7 +104,11 @@ export default function UploadForm() {
   };
   return (
     <div className="flex flex-col gap-8 w-full max-w-2xl mx-auto">
-      <UploadFormInput isLoading={isLoading} ref={formRef} onSubmit={handleSubmit} />
+      <UploadFormInput
+        isLoading={isLoading}
+        ref={formRef}
+        onSubmit={handleSubmit}
+      />
     </div>
   );
 }

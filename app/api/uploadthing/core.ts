@@ -1,6 +1,8 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { UploadThingError } from "uploadthing/server";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
+import { generateSummaryFromOpenAI } from "@/lib/openai";
+import { extractPdfTextFromBuffer } from "@/lib/langchain";
 
 const f = createUploadthing();
 
@@ -15,9 +17,23 @@ export const ourFileRouter = {
     })
     .onUploadComplete(async ({ metadata, file }) => {
       console.log("upload completed for user id", metadata.userId);
-
       console.log("file url", file.ufsUrl);
-      return { userId: metadata.userId, file };
+
+      // Skip PDF processing in the callback due to network connectivity issues
+      // We'll handle processing on the client side with better error handling
+      console.log("Skipping server-side PDF processing due to network constraints");
+      console.log("PDF will be processed client-side with fallback mechanisms");
+      
+      return { 
+        userId: metadata.userId, 
+        fileKey: file.key,
+        fileName: file.name,
+        fileUrl: file.url,
+        ufsUrl: file.ufsUrl,
+        processed: false,
+        skipServerProcessing: true, // Flag to indicate intentional skip
+        message: "File uploaded successfully. Processing will be handled client-side."
+      };
     }),
 } satisfies FileRouter;
 
