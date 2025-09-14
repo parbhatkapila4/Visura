@@ -12,6 +12,7 @@
     "@clerk/nextjs": "^6.32.0",
     "@langchain/community": "^0.3.55",
     "@langchain/core": "^0.3.75",
+    "@neondatabase/serverless": "^1.0.1",
     "@radix-ui/react-slot": "^1.2.3",
     "@supabase/supabase-js": "^2.57.4",
     "@uploadthing/react": "^7.3.3",
