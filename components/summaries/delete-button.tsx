@@ -1,8 +1,93 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useState } from "react";
+import { toast } from "sonner";
 
-export default function DeleteButton() {
-  return <Button variant={"ghost"} size={"icon"} className = "text-gray-400 bg-gray-100 border-gray-200 hover:text-rose-600 hover:bg-rose-50">
-    <Trash2 className="w-4 h-4" />
-  </Button>;
+interface DeleteButtonProps {
+  summaryId: string;
+  onDelete?: (deletedSummaryId: string) => void;
+}
+
+export default function DeleteButton({
+  summaryId,
+  onDelete,
+}: DeleteButtonProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/summaries/${summaryId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Summary deleted successfully");
+        setIsOpen(false);
+        onDelete?.(summaryId);
+      } else {
+        throw new Error("Failed to delete summary");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("Failed to delete summary");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant={"ghost"}
+          size={"icon"}
+          className="text-gray-400 bg-gray-100 border-gray-200 hover:text-rose-600 hover:bg-rose-50"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="bg-white text-black border-gray-200 [&>button]:bg-transparent [&>button]:hover:bg-transparent">
+        <DialogHeader>
+          <DialogTitle className="text-black">
+            Are you absolutely sure?
+          </DialogTitle>
+          <DialogDescription className="text-gray-700">
+            This action cannot be undone. This will permanently delete your
+            summary and remove it from our servers.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => setIsOpen(false)}
+            disabled={isDeleting}
+            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }

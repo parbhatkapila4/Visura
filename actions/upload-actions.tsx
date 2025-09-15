@@ -82,7 +82,8 @@ export async function storePdfSummaryAction({
     };
   }
 
-  revalidatePath(`/summaries/${savedSummary.id}`)
+  revalidatePath(`/summaries/${savedSummary.id}`);
+  revalidatePath('/dashboard');
 
   return {
     success: true,
