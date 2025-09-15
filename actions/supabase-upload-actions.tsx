@@ -19,7 +19,7 @@ export async function generatePdfSummaryFromText(
   }
 
   try {
-    // Generate summary from the extracted text
+    
     const summary = await generateSummaryFromOpenAI(pdfText);
     console.log("Summary generated successfully");
 

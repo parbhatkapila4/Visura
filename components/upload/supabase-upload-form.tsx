@@ -1,9 +1,12 @@
 "use client";
 
 import { generatePdfSummaryFromText, generateFallbackSummary } from "@/actions/supabase-upload-actions";
+import { storePdfSummaryAction } from "@/actions/upload-actions";
 import UploadFormInput from "@/components/upload/upload-form-input";
 import { uploadToSupabase } from "@/lib/supabase";
+import { formatFileNameAsTitle } from "@/utils/format-utils";
 import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -33,6 +36,7 @@ export default function SupabaseUploadForm() {
   const [result, setResult] = useState<UploadResult | null>(null);
   const [isClient, setIsClient] = useState(false);
   const { user } = useUser();
+  const router = useRouter();
 
   
   useEffect(() => {
@@ -52,7 +56,8 @@ export default function SupabaseUploadForm() {
       const pdfjsLib = await import('pdfjs-dist');
       
       
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
       
       
       const arrayBuffer = await file.arrayBuffer()
@@ -83,6 +88,41 @@ export default function SupabaseUploadForm() {
       
     } catch (error) {
       console.error('PDF text extraction failed:', error)
+      
+      
+      if (error instanceof Error && error.message.includes('worker')) {
+        console.log('Worker error detected, trying alternative approach...');
+        
+        
+        try {
+          const pdfjsLib = await import('pdfjs-dist');
+        
+          pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+          
+          const arrayBuffer = await file.arrayBuffer()
+          const uint8Array = new Uint8Array(arrayBuffer)
+          
+          const loadingTask = pdfjsLib.getDocument({ data: uint8Array })
+          const pdf = await loadingTask.promise
+          
+          let fullText = ''
+          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum)
+            const textContent = await page.getTextContent()
+            
+            const pageText = textContent.items
+              .map((item: any) => item.str)
+              .join(' ')
+            
+            fullText += `Page ${pageNum}:\n${pageText}\n\n`
+          }
+          
+          console.log(`Alternative extraction successful, length: ${fullText.length}`)
+          return fullText.trim()
+        } catch (retryError) {
+          console.error('Alternative extraction also failed:', retryError)
+        }
+      }
       
       
       const fallbackText = `PDF Document: ${file.name}
@@ -178,6 +218,41 @@ This may be due to the PDF being image-based, encrypted, or having complex forma
           description: "Summary generated successfully"
         });
         setResult(summaryResult);
+
+        
+        if (summaryResult.data?.summary) {
+          console.log("Saving summary to database...");
+          console.log("Summary data:", {
+            summaryLength: summaryResult.data.summary.length,
+            fileUrl: supabaseResult.data.publicUrl,
+            fileName: file.name,
+            title: formatFileNameAsTitle(summaryResult.data.fileName || file.name)
+          });
+          
+          const storeResult = await storePdfSummaryAction({
+            summary: summaryResult.data.summary,
+            fileUrl: supabaseResult.data.publicUrl,
+            title: formatFileNameAsTitle(summaryResult.data.fileName || file.name),
+            fileName: file.name,
+          });
+
+          console.log("Database save result:", storeResult);
+
+          if (storeResult.success) {
+            toast.success("Summary saved to database!", {
+              description: "Your PDF summary has been stored successfully"
+            });
+            
+            
+            formRef.current?.reset();
+            router.push(`/summaries/${storeResult.id}`);
+          } else {
+            console.error("Failed to save summary to database:", storeResult.message);
+            toast.error("Summary generated but not saved", {
+              description: `Database error: ${storeResult.message}`
+            });
+          }
+        }
       } else {
         throw new Error(summaryResult.message);
       }
@@ -199,15 +274,35 @@ This may be due to the PDF being image-based, encrypted, or having complex forma
         );
         if (fallbackResult.success) {
           setResult(fallbackResult);
+          
+          
+          if (fallbackResult.data?.summary) {
+            console.log("Saving fallback summary to database...");
+            const storeResult = await storePdfSummaryAction({
+              summary: fallbackResult.data.summary,
+              fileUrl: "",
+              title: formatFileNameAsTitle(fallbackResult.data.fileName || file.name),
+              fileName: file.name,
+            });
+
+            if (storeResult.success) {
+              toast.success("Fallback summary saved to database!", {
+                description: "Your PDF summary has been stored successfully"
+              });
+              
+              // Redirect to the summary page
+              formRef.current?.reset();
+              router.push(`/summaries/${storeResult.id}`);
+            } else {
+              console.error("Failed to save fallback summary to database:", storeResult.message);
+            }
+          }
         }
       } catch (fallbackError) {
         console.error("Fallback generation failed:", fallbackError);
       }
     } finally {
       setIsLoading(false);
-      if (formRef.current) {
-        formRef.current.reset();
-      }
     }
   };
 
