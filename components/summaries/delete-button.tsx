@@ -38,7 +38,9 @@ export default function DeleteButton({
         setIsOpen(false);
         onDelete?.(summaryId);
       } else {
-        throw new Error("Failed to delete summary");
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.message || `Failed to delete summary (${response.status})`;
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error("Delete error:", error);

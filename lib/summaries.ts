@@ -28,3 +28,24 @@ export async function getSummaryById(id: string) {
     return null;
   }
 }
+
+export async function deleteSummary(id: string, userId: string) {
+  try {
+    const sql = await getDbConnection();
+    
+    
+    const [summary] = await sql`SELECT id FROM pdf_summaries WHERE id = ${id} AND user_id = ${userId}`;
+    
+    if (!summary) {
+      throw new Error("Summary not found or access denied");
+    }
+    
+    
+    await sql`DELETE FROM pdf_summaries WHERE id = ${id} AND user_id = ${userId}`;
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting summary", error);
+    throw error;
+   }
+}

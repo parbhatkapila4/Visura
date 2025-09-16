@@ -13,7 +13,7 @@ export async function extractTextFromPDF(file: File): Promise<string> {
     const pdfjsLib = await import('pdfjs-dist');
     
     
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
     
     
     const arrayBuffer = await file.arrayBuffer()
