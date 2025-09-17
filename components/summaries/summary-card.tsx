@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import DeleteButton from "./delete-button";
 import Link from "next/link";
-import { FileText, Hash, Lightbulb, Wine, MessageCircle } from "lucide-react";
+import { FileText, Hash, Lightbulb, MessageCircle } from "lucide-react";
 import { cn, formatFileName } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
@@ -17,12 +17,12 @@ const SummaryHeader = ({
 }) => {
   return (
     <div className="flex items-start gap-3">
-      <FileText className="w-6 h-6 text-rose-500 mt-1 flex-shrink-0" />
+      <FileText className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
       <div className="flex-1 min-w-0">
-        <h3 className="text-lg font-semibold text-gray-900 truncate">
+        <h3 className="text-base font-bold text-white truncate">
           {title || formatFileName(fileUrl)}
         </h3>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-white/60 mt-1">
           {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
         </p>
       </div>
@@ -34,10 +34,10 @@ const StatusBadge = ({ status }: { status: string }) => {
   return (
     <span
       className={cn(
-        "px-3 py-1 text-xs font-medium rounded-full capitalize",
+        "px-2 py-1 text-xs font-medium rounded-full text-white",
         status === "completed"
-          ? "bg-emerald-100 text-emerald-800"
-          : "bg-yellow-100 text-yellow-800"
+          ? "bg-green-500"
+          : "bg-yellow-500"
       )}
     >
       {status}
@@ -53,38 +53,39 @@ export default function SummaryCard({
   onDelete?: (deletedSummaryId: string) => void;
 }) {
   return (
-    <Card className="relative h-full border border-gray-200 hover:shadow-md transition-shadow">
+    <Card className="relative h-full bg-white/10 backdrop-blur-md border-0 shadow-sm hover:shadow-lg transition-all duration-300 rounded-lg overflow-hidden">
+      {/* Delete button in top right */}
       <div className="absolute top-3 right-3 z-10">
         <DeleteButton summaryId={summary.id} onDelete={onDelete} />
       </div>
+      
       <Link href={`/summaries/${summary.id}`} className="block p-5">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 h-full">
           <SummaryHeader
             fileUrl={summary.original_file_url}
             title={summary.title}
             createdAt={summary.created_at}
           />
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Hash className="w-4 h-4 text-gray-400" />
+          <div className="space-y-3 flex-1">
+            <div className="flex items-center gap-2 text-sm text-white/60">
+              <Hash className="w-4 h-4 text-white/60" />
               <span className="truncate">The Ultimate Guide to Our Menu</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-sm text-white/60">
               <Lightbulb className="w-4 h-4 text-yellow-500" />
-              <Wine className="w-4 h-4 text-amber-500" />
               <span className="truncate">
                 Options • Dive into the world of exquisite...
               </span>
             </div>
           </div>
 
-          <div className="flex justify-between items-center mt-4">
+          <div className="flex justify-between items-center mt-auto pt-2">
             <StatusBadge status={summary.status || "completed"} />
             <Link href={`/chatbot/${summary.id}`} onClick={(e) => e.stopPropagation()}>
               <Button
                 size="sm"
-                className="bg-rose-600 hover:bg-rose-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white rounded-full px-4 py-2 text-sm font-medium"
               >
                 <MessageCircle className="w-4 h-4 mr-1" />
                 Chat

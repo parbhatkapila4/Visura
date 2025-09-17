@@ -33,7 +33,7 @@ export const UploadFormInput = forwardRef<
           </label>
           
           <div className="flex items-center justify-center gap-4">
-            <div className="flex-1 max-w-md">
+            <div className="flex-1 max-w-xs ml-10">
               <div className="relative">
                 <input
                   id="file"
@@ -43,7 +43,7 @@ export const UploadFormInput = forwardRef<
                   required
                   onChange={handleFileChange}
                   className={cn(
-                    "absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10",
+                    "absolute inset-0 w-40 h-full opacity-0 cursor-pointer z-10",
                     isLoading && "cursor-not-allowed"
                   )}
                   disabled={isLoading}

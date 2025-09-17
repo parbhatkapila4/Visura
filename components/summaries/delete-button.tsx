@@ -56,7 +56,7 @@ export default function DeleteButton({
         <Button
           variant={"ghost"}
           size={"icon"}
-          className="text-gray-400 bg-gray-100 border-gray-200 hover:text-rose-600 hover:bg-rose-50"
+          className="text-white/60 hover:text-white hover:bg-white/10 border-0 bg-transparent"
         >
           <Trash2 className="w-4 h-4" />
         </Button>

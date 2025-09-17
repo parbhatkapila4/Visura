@@ -33,6 +33,10 @@ export default function DashboardClient({
   const [summaries, setSummaries] = useState(initialSummaries);
   const router = useRouter();
 
+  // Calculate current limit status based on current summaries count
+  const currentHasReachedLimit = summaries.length >= uploadLimit;
+  const currentUploadCount = summaries.length;
+
   const handleDelete = (deletedSummaryId: string) => {
     setSummaries((prevSummaries) =>
       prevSummaries.filter((summary) => summary.id !== deletedSummaryId)
@@ -43,7 +47,7 @@ export default function DashboardClient({
     <>
       <div className="flex gap-4 mb-8 justify-between">
         <div className="flex flex-col gap-2">
-          <h1 className="text-4xl font-bold tracking-tight text-white">
+          <h1 className="text-4xl font-bold tracking-tight text-green-800">
             Your Summaries
           </h1>
           <p className="text-gray-300">
@@ -52,19 +56,19 @@ export default function DashboardClient({
         </div>
         <Button
           variant={"link"}
-          disabled={hasReachedLimit}
+          disabled={currentHasReachedLimit}
           className={`bg-gradient-to-r from-[#04724D] to-[#059669] hover:from-[#059669] hover:to-[#04724D] hover:scale-105 transition-all duration-300 group hover:no-underline ${
-            hasReachedLimit
+            currentHasReachedLimit
               ? "opacity-50 cursor-not-allowed hover:scale-100 hover:from-[#04724D] hover:to-[#059669] bg-gray-400"
               : ""
           }`}
           title={
-            hasReachedLimit
+            currentHasReachedLimit
               ? "You have reached the maximum limit for your Basic plan. Upgrade to Pro to continue."
               : "Create a new PDF summary"
           }
         >
-          {hasReachedLimit ? (
+          {currentHasReachedLimit ? (
             <div className="flex items-center text-white">
               <Lock className="w-5 h-5 mr-2" />
               Limit Reached
@@ -93,10 +97,10 @@ export default function DashboardClient({
               <span className="font-semibold">{uploadLimit} PDF summaries</span>
               . Currently using:{" "}
               <span className="font-semibold">
-                {summaries.length}/{uploadLimit}
+                {currentUploadCount}/{uploadLimit}
               </span>
             </p>
-            {summaries.length >= uploadLimit * 0.8 && (
+            {currentUploadCount >= uploadLimit * 0.8 && (
               <p className="text-orange-400 text-xs mt-1">
                 ⚠️ You're approaching your limit. Consider upgrading to Pro for
                 unlimited summaries.
@@ -107,7 +111,7 @@ export default function DashboardClient({
       )}
 
       {/* Limit Reached Warning */}
-      {hasReachedLimit && (
+      {currentHasReachedLimit && (
         <div className="mb-6">
           <div className="bg-red-900/20 border-2 border-red-700/50 rounded-lg p-6 shadow-sm">
             <div className="flex items-start gap-3">
@@ -141,7 +145,7 @@ export default function DashboardClient({
       {summaries.length === 0 ? (
         <EmptySummaryState />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 sm:px-0">
+        <div className="grid grid-cols-1 gap-6 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 sm:px-0">
           {summaries.map((summary, index) => (
             <SummaryCard
               key={index}
