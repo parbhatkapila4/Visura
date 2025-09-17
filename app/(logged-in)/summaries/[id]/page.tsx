@@ -57,13 +57,7 @@ export default async function SummaryPage(props: {
             )}
 
             <div className="relative mt-4 sm:mt-8 lg:mt-16">
-              <div className="relative p-4 sm:p-6 lg:p-8 bg-card/80 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-xl border border-border w-min transition-all duration-300 hover:shadow-2xl hover:bg-card/90  mx-auto">
-                <div className="absolute inset-0 bg-gradient-to-br from-green-900/10 via-green-900/5 to-transparent opacity-50 rounded-2xl sm:rounded-3xl" />
-               
-                <div className="relative mt-8 sm:mt-6 flex justify-center">
-                  <SummaryViewer summary={summary_text} />
-                </div>
-              </div>
+              <SummaryViewer summary={summary_text} />
             </div>
           </div>
         </div>

@@ -44,67 +44,69 @@ export default function DashboardClient({
   };
 
   return (
-    <>
-      <div className="flex gap-4 mb-8 justify-between">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-4xl font-bold tracking-tight text-green-800">
+    <div className="space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-foreground">
             Your Summaries
           </h1>
-          <p className="text-gray-300">
+          <p className="text-muted-foreground text-lg">
             Transform your PDFs into concise summaries with AI
           </p>
         </div>
-        <Button
-          variant={"link"}
-          disabled={currentHasReachedLimit}
-          className={`bg-gradient-to-r from-[#04724D] to-[#059669] hover:from-[#059669] hover:to-[#04724D] hover:scale-105 transition-all duration-300 group hover:no-underline ${
-            currentHasReachedLimit
-              ? "opacity-50 cursor-not-allowed hover:scale-100 hover:from-[#04724D] hover:to-[#059669] bg-gray-400"
-              : ""
-          }`}
-          title={
-            currentHasReachedLimit
-              ? "You have reached the maximum limit for your Basic plan. Upgrade to Pro to continue."
-              : "Create a new PDF summary"
-          }
-        >
-          {currentHasReachedLimit ? (
-            <div className="flex items-center text-white">
-              <Lock className="w-5 h-5 mr-2" />
-              Limit Reached
+        <div className="flex items-center gap-3">
+          {userPlan === "basic" && (
+            <div className="text-sm text-muted-foreground">
+              {currentUploadCount}/{uploadLimit} summaries
             </div>
-          ) : (
-            <Link href="/upload" className="flex items-center text-white">
-              <Plus className="w-5 h-5 mr-2" />
-              New Summary
-            </Link>
           )}
-        </Button>
+          <Button
+            disabled={currentHasReachedLimit}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            title={
+              currentHasReachedLimit
+                ? "You have reached the maximum limit for your Basic plan. Upgrade to Pro to continue."
+                : "Create a new PDF summary"
+            }
+          >
+            {currentHasReachedLimit ? (
+              <div className="flex items-center">
+                <Lock className="w-4 h-4 mr-2" />
+                Limit Reached
+              </div>
+            ) : (
+              <Link href="/upload" className="flex items-center">
+                <Plus className="w-4 h-4 mr-2" />
+                New Summary
+              </Link>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Plan Information */}
-      {userPlan === "basic" && (
-        <div className="mb-6">
-          <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <FileText className="w-4 h-4 text-blue-400" />
-              <span className="text-blue-300 font-medium text-sm">
-                Basic Plan
-              </span>
+      {userPlan === "basic" && !currentHasReachedLimit && (
+        <div className="bg-muted/50 border border-border rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <FileText className="w-5 h-5 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  Basic Plan
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {currentUploadCount} of {uploadLimit} summaries used
+                </p>
+              </div>
             </div>
-            <p className="text-blue-200 text-sm">
-              You can create up to{" "}
-              <span className="font-semibold">{uploadLimit} PDF summaries</span>
-              . Currently using:{" "}
-              <span className="font-semibold">
-                {currentUploadCount}/{uploadLimit}
-              </span>
-            </p>
             {currentUploadCount >= uploadLimit * 0.8 && (
-              <p className="text-orange-400 text-xs mt-1">
-                ⚠️ You're approaching your limit. Consider upgrading to Pro for
-                unlimited summaries.
-              </p>
+              <Link
+                href="/#pricing"
+                className="text-sm text-primary hover:text-primary/80 font-medium"
+              >
+                Upgrade to Pro →
+              </Link>
             )}
           </div>
         </div>
@@ -112,40 +114,37 @@ export default function DashboardClient({
 
       {/* Limit Reached Warning */}
       {currentHasReachedLimit && (
-        <div className="mb-6">
-          <div className="bg-red-900/20 border-2 border-red-700/50 rounded-lg p-6 shadow-sm">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0">
-                <AlertTriangle className="w-6 h-6 text-red-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-red-300 font-semibold text-lg mb-2">
-                  Maximum Limit Reached
-                </h3>
-                <p className="text-red-200 text-sm mb-4">
-                  You have reached the maximum limit of{" "}
-                  <span className="font-bold">{uploadLimit} summaries</span> for
-                  your <span className="font-bold">Basic</span> plan. To
-                  continue creating new summaries, please upgrade to our{" "}
-                  <span className="font-bold">Pro</span> plan.
-                </p>
-                <Link
-                  href="/#pricing"
-                  className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors"
-                >
-                  Upgrade to Pro Plan
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6">
+          <div className="flex items-start gap-4">
+            <AlertTriangle className="w-6 h-6 text-destructive flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Maximum Limit Reached
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                You have reached the maximum limit of{" "}
+                <span className="font-semibold text-foreground">{uploadLimit} summaries</span> for
+                your <span className="font-semibold text-foreground">Basic</span> plan. To
+                continue creating new summaries, please upgrade to our{" "}
+                <span className="font-semibold text-foreground">Pro</span> plan.
+              </p>
+              <Link
+                href="/#pricing"
+                className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+              >
+                Upgrade to Pro Plan
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
           </div>
         </div>
       )}
 
+      {/* Summaries Grid */}
       {summaries.length === 0 ? (
         <EmptySummaryState />
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 sm:px-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {summaries.map((summary, index) => (
             <SummaryCard
               key={index}
@@ -155,6 +154,6 @@ export default function DashboardClient({
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 }

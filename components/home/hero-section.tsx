@@ -46,7 +46,7 @@ export default function HeroSection() {
   return (
     <WavyBackground 
       className="max-w-7xl mx-auto px-4 lg:px-12"
-      colors={["#04724D", "#059669", "#10b981", "#04724D", "#059669"]}
+      colors={["#625EC3", "#625EC3", "#625EC3", "#625EC3", "#625EC3"]}
      
     >
       <motion.section 
@@ -56,7 +56,7 @@ export default function HeroSection() {
         animate="visible"
       >
         <motion.div 
-          className="relative p-[1px] overflow-hidden rounded-full bg-gradient-to-r from-[#04724D] via-[#059669] to-[#10b981] animate-gradient-x group hover:scale-105 transition-transform duration-200"
+          className="relative p-[1px] overflow-hidden rounded-full bg-gradient-to-r from-[#625EC3] via-[#625EC3] to-[#625EC3] animate-gradient-x group hover:scale-105 transition-transform duration-200"
           variants={itemVariants}
           transition={{ duration: 0.6, ease: "easeOut" }}
           whileHover={{ scale: 1.05 }}
@@ -71,7 +71,7 @@ export default function HeroSection() {
               animate="animate"
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
-              <Sparkles className="h-6 w-6 mr-2 text-[#04724D]" />
+              <Sparkles className="h-6 w-6 mr-2 text-[#625EC3]" />
             </motion.div>
             <p className="text-base text-white">Powered by AI</p>
           </Badge>
@@ -91,7 +91,7 @@ export default function HeroSection() {
           >
             <span className="relative z-10 px-2 ">insights</span>
             <span
-              className="absolute inset-0 bg-[#04724D]/30 -rotate-2 rounded-lg transform -skew-y-1"
+              className="absolute inset-0 bg-[#625EC3]/30 -rotate-2 rounded-lg transform -skew-y-1"
               aria-hidden="true"
             ></span>
           </motion.span>{" "}
@@ -116,7 +116,7 @@ export default function HeroSection() {
           >
             <Button
               variant={"link"}
-              className="text-white mt-6 text-base sm:text-lg lg:text-xl rounded-full px-8 sm:px-10 lg:px-12 py-6 sm:py-7 lg:py-8 lg:mt-16 no-underline hover:no-underline bg-gradient-to-r from-[#04724D] to-[#059669] hover:from-[#059669] hover:to-[#04724D] font-bold shadow-lg transition-all duration-300"
+              className="text-white mt-6 text-base sm:text-lg lg:text-xl rounded-full px-8 sm:px-10 lg:px-12 py-6 sm:py-7 lg:py-8 lg:mt-16 no-underline hover:no-underline bg-gradient-to-r from-[#625EC3] to-[#020203] hover:from-[#000000] hover:to-[#625EC3] font-bold shadow-lg transition-all duration-300"
             >
               <Link href="/#pricing" className="flex gap-2 items-center">
                 <span>Try Visura</span>

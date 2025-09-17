@@ -12,11 +12,11 @@ export async function generateSummaryFromOpenAI(pdfText: string) {
         },
         {
           role: "user",
-          content: `Translate this document into an engaging, easy-to-read summary with contextual relevant emojis and proper markdown formatting:\n\n${pdfText}`,
+          content: `Analyze this document comprehensively and create a detailed, actionable summary that provides deep insights and practical value. Focus on extracting key information, identifying important patterns, and providing clear recommendations. Ensure the summary is thorough, well-structured, and immediately useful for decision-making:\n\n${pdfText}`,
         },
       ],
       temperature: 0.7,
-      max_tokens: 1500,
+      max_tokens: 3000,
     });
     return summary;
   } catch (error: any) {
