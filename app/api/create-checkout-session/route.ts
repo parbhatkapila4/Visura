@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     // Get the base URL for the application
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
-                   (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://your-domain.com');
+                   (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://visura.parbhat.dev');
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({

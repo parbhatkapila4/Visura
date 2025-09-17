@@ -61,28 +61,28 @@ const PricingCard = ({
     <div className="relative w-full max-w-lg hover:scale-105 hover:transition-all duration-300">
       <div
         className={cn(
-          "relative flex flex-col h-full gap-4 lg:gap-8 z-10 p-8 rounded-2xl border-[1px] border-gray-500/20",
-          id === "pro" ? "border-rose-500 gap-5 border-2" : ""
+          "relative flex flex-col h-full gap-4 lg:gap-8 z-10 p-8 rounded-2xl border-[1px] border-gray-600/50 bg-gray-800/80 backdrop-blur-xs shadow-sm",
+          id === "pro" ? "border-[#04724D] gap-5 border-2 shadow-lg" : ""
         )}
       >
         <div className="flex justify-between items-center gap-4">
           <div>
-            <p className="text-lg lg:text-xl font-bold capitalize">{name}</p>
-            <p className="text-base-content/80 mt-2">{description}</p>
+            <p className="text-lg lg:text-xl font-bold capitalize text-white">{name}</p>
+            <p className="text-gray-300 mt-2">{description}</p>
           </div>
         </div>
         <div className="flex gap-2">
-          <p className="text-5xl tracking-tight font-extrabold">${price}</p>
+          <p className="text-5xl tracking-tight font-extrabold text-white">${price}</p>
           <div className="flex flex-col justify-end mb-[4px]">
-            <p className="text-xs uppercase font-semibold mt-1">USD</p>
-            <p className="text-xs text-base-content/80 mt-1">/ month</p>
+            <p className="text-xs uppercase font-semibold mt-1 text-white">USD</p>
+            <p className="text-xs text-gray-300 mt-1">/ month</p>
           </div>
         </div>
         <div className="space-y-2.5 leading-loose text-base flex-1">
           {items.map((item, index) => (
             <li key={index} className="flex items-center gap-2">
-              <CheckIcon size={18} />
-              <span>{item}</span>
+              <CheckIcon size={18} className="text-[#04724D]" />
+              <span className="text-gray-300">{item}</span>
             </li>
           ))}
         </div>
@@ -91,10 +91,10 @@ const PricingCard = ({
             onClick={handleCheckout}
             disabled={isLoading || !priceId}
             className={cn(
-              "w-full rounded-full flex items-center justify-center gap-2 bg-linear-to-r from-rose-800 to-rose-500 hover:from-rose-500 hover:to-rose-800 text-white border-2 py-2 disabled:opacity-50 disabled:cursor-not-allowed",
+              "w-full rounded-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#04724D] to-[#059669] hover:from-[#059669] hover:to-[#04724D] text-white border-2 py-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300",
               id === "pro"
-                ? "border-rose-900"
-                : "border-rose-100 from-rose-400 to-rose-500"
+                ? "border-[#04724D] shadow-lg"
+                : "border-[#04724D]/20"
             )}
           >
             {isLoading ? 'Loading...' : 'Try Now'} <ArrowRight size={18} />
@@ -110,7 +110,7 @@ export default function PricingSection() {
     <section className="relative overflow-hidden" id="pricing">
       <div className="py-12 lg:py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 lg:pt-12">
         <div className="flex items-center justify-center w-full pb-12">
-          <h2 className="uppercase font-bold text-xl mb-8 text-rose-500">
+          <h2 className="uppercase font-bold text-xl mb-8 text-[#04724D]">
             Pricing
           </h2>
         </div>
