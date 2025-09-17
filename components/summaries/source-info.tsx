@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { ExternalLink, FileText } from "lucide-react";
+import { ExternalLink, FileText, MessageCircle } from "lucide-react";
 import DownloadSummaryButton from "./download-summary-button";
+import Link from "next/link";
 
 export default function SourceInfo({
   fileName,
@@ -8,12 +9,14 @@ export default function SourceInfo({
   title,
   summaryText,
   createdAt,
+  summaryId,
 }: {
   fileName: string;
   originalFileUrl: string;
   title: string;
   summaryText: string;
   createdAt: string;
+  summaryId: string;
 }) {
   return (
     <div className="flex items-center justify-center gap-2">
@@ -22,6 +25,15 @@ export default function SourceInfo({
         <span>Source: {fileName}</span>
       </div>
       <div className="flex gap-2">
+        <Link href={`/chatbot/${summaryId}`}>
+          <Button
+            size="sm"
+            className="h-8 px-3 bg-rose-600 hover:bg-rose-700 text-white"
+          >
+            <MessageCircle className="h-4 w-4 mr-1" />
+            Chat with Document
+          </Button>
+        </Link>
         <Button
           variant="ghost"
           size="sm"

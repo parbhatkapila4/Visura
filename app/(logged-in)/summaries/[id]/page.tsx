@@ -40,6 +40,7 @@ export default async function SummaryPage(props: {
               title={title}
               createdAt={summary.created_at}
               readingTime={reading_time}
+              summaryId={summary.id}
             />
           </div>
 
@@ -51,6 +52,7 @@ export default async function SummaryPage(props: {
                 fileName={file_name}
                 createdAt={created_at}
                 originalFileUrl={original_file_url}
+                summaryId={summary.id}
               />
             )}
 

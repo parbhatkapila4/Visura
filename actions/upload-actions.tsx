@@ -3,6 +3,8 @@
 import { getDbConnection } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { savePdfStore } from "@/lib/chatbot";
+import { fetchAndExtractPdfText } from "@/lib/langchain";
 
 interface PdfSummaryType {
   userId?: string;
@@ -74,6 +76,25 @@ export async function storePdfSummaryAction({
         message: "Error saving Pdf's summary, please try again",
       };
     }
+
+    // Initialize chatbot functionality by extracting and saving full PDF text
+    try {
+      console.log("Initializing chatbot functionality...");
+      const fullTextContent = await fetchAndExtractPdfText(fileUrl);
+      
+      if (fullTextContent && fullTextContent.trim().length > 0) {
+        await savePdfStore({
+          pdfSummaryId: savedSummary.id,
+          userId,
+          fullTextContent,
+        });
+        console.log("Chatbot functionality initialized successfully");
+      }
+    } catch (chatbotError) {
+      console.error("Error initializing chatbot functionality:", chatbotError);
+      // Don't fail the entire operation if chatbot initialization fails
+    }
+
   } catch (error) {
     return {
       success: false,
@@ -87,7 +108,7 @@ export async function storePdfSummaryAction({
 
   return {
     success: true,
-    message: "Pdf's summary saved successfully",
+    message: "Pdf's summary saved successfully with chatbot support",
     id: savedSummary.id,
   };
 }

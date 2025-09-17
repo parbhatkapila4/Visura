@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Calendar, ChevronLeft, Clock, Sparkles } from "lucide-react";
+import { Calendar, ChevronLeft, Clock, Sparkles, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
 
@@ -9,10 +9,12 @@ export default function SummaryHeader({
   title,
   createdAt,
   readingTime,
+  summaryId,
 }: {
   title: string;
   createdAt: string;
   readingTime?: number;
+  summaryId?: string;
 }) {
   return (
     <div className="flex gap-4 mb-4 justify-between">
@@ -43,7 +45,18 @@ export default function SummaryHeader({
           <span className = "bg-linear-to-r from-rose-600 to-orange-600 bg-clip-text text-transparent">{title}</span>
         </h1>
       </div>
-      <div className = "self-start">
+      <div className="self-start flex gap-2">
+        {summaryId && (
+          <Link href={`/chatbot/${summaryId}`}>
+            <Button
+              size="sm"
+              className="group flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white rounded-full transition-all duration-200 shadow-xs hover:shadow-md px-3 py-2"
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span className="text-sm font-medium">Chat with Document</span>
+            </Button>
+          </Link>
+        )}
         <Link href="/dashboard">
           <Button
             variant="link"

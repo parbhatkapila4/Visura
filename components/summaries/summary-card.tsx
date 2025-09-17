@@ -1,7 +1,8 @@
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import DeleteButton from "./delete-button";
 import Link from "next/link";
-import { FileText, Hash, Lightbulb, Wine } from "lucide-react";
+import { FileText, Hash, Lightbulb, Wine, MessageCircle } from "lucide-react";
 import { cn, formatFileName } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
@@ -80,6 +81,15 @@ export default function SummaryCard({
 
           <div className="flex justify-between items-center mt-4">
             <StatusBadge status={summary.status || "completed"} />
+            <Link href={`/chatbot/${summary.id}`} onClick={(e) => e.stopPropagation()}>
+              <Button
+                size="sm"
+                className="bg-rose-600 hover:bg-rose-700 text-white"
+              >
+                <MessageCircle className="w-4 h-4 mr-1" />
+                Chat
+              </Button>
+            </Link>
           </div>
         </div>
       </Link>
