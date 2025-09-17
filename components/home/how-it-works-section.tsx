@@ -1,108 +1,157 @@
-import { Brain, FileAxis3D, FileText, MoveRight } from "lucide-react";
+import {
+  Brain,
+  FileAxis3D,
+  FileText,
+  Upload,
+  Zap,
+  Download,
+} from "lucide-react";
 import { ReactNode } from "react";
 
-type Steps = {
+type Step = {
+  stepNumber: string;
+  title: string;
   icon: ReactNode;
-  label: string;
   description: string;
+  benefits: string[];
 };
 
-const steps: Steps[] = [
+const steps: Step[] = [
   {
-    icon: <FileText size={64} strokeWidth={1.5} />,
-    label: "Upload your PDF",
-    description: "Just drag and drop your PDF document or click to upload.",
-  },
-  {
-    icon: <Brain size={64} strokeWidth={1.5} />,
-    label: "AI Breakdown",
+    stepNumber: "Step One",
+    title: "Upload",
+    icon: <Upload size={32} strokeWidth={1.5} />,
     description:
-      "Our advanced AI interprets and transforms your document instantly.",
+      "Choose your PDF file and upload it to our secure platform for processing.",
+    benefits: [
+      "DRAG & DROP INTERFACE",
+      "SUPPORTED FORMATS",
+      "SECURE UPLOAD",
+      "INSTANT PROCESSING",
+    ],
   },
   {
-    icon: <FileAxis3D size={64} strokeWidth={1.5} />,
-    label: "Get Brief",
-    description: "Receive a clear, concise intelligence from your document.",
+    stepNumber: "Step Two",
+    title: "Process",
+    icon: <Brain size={32} strokeWidth={1.5} />,
+    description:
+      "Our advanced AI analyzes and breaks down your document content intelligently.",
+    benefits: [
+      "AI-POWERED ANALYSIS",
+      "CONTENT EXTRACTION",
+      "KEY INSIGHTS IDENTIFIED",
+      "SMART SUMMARIZATION",
+    ],
+  },
+  {
+    stepNumber: "Step Three",
+    title: "Download",
+    icon: <Download size={32} strokeWidth={1.5} />,
+    description:
+      "Get your beautifully formatted summary and download it in your preferred format.",
+    benefits: [
+      "MULTIPLE FORMATS",
+      "INSTANT DOWNLOAD",
+      "SHARE EASILY",
+      "SAVE TIME",
+    ],
   },
 ];
 
 export default function HowItWorksSection() {
   return (
-    <section
-      className="relative overflow-hidden"
-      style={{ background: "var(--background)" }}
-    >
-      <div className="py-12 lg:py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 transform-gpu overflow-hidden blur-3xl"
-        >
-          <div
-            className="relative left-[calc(50%-3rem)] aspect-1155/678 w-[36.125rem] -translate-x-1/2 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 opacity-20 sm:left-[calc(40%-30rem)] sm:w-[40.1875rem]"
-            style={{
-              clipPath:
-                "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
-            }}
-          />
-        </div>
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 transform-gpu overflow-hidden blur-3xl"
-        >
-          <div
-            className="relative left-[calc(50%+3rem)] aspect-1155/678 w-[36.125rem] -translate-x-1/2 bg-gradient-to-r from-rose-200 via-rose-500 to-rose-800 animate-gradient-x opacity-30 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]"
-            style={{
-              clipPath:
-                "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
-            }}
-          />
-        </div>
-
-        <div className="text-center mb-16">
-          <h2 className="font-bold text-xl uppercase mb-4 text-rose-500">
-            How it works
-          </h2>
-          <h3 className="font-bold text-3xl max-w-2xl mx-auto">
-            Transform any PDF into a powerful, actionable digest in three simple
-            steps.
-          </h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-18 max-w-4xl mx-auto relative">
+    <section className="bg-black py-16 lg:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="space-y-16">
           {steps.map((step, index) => (
-            <div className="relative flex items-stretch" key={index}>
-              <StepItem {...step} />
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 -right-12 transform -translate-y-1/2 z-10">
-                  <MoveRight
-                    size={32}
-                    strokeWidth={1}
-                    className="text-rose-400"
-                  />
+            <div key={index} className="relative">
+              <div className="bg-gray-900/80 backdrop-blur-sm rounded-3xl p-8 lg:p-12 border border-gray-800/50 shadow-2xl">
+                <div className="text-center ">
+                  <p className="text-orange-400 font-semibold text-sm uppercase tracking-wider mb-2">
+                    {step.stepNumber}
+                  </p>
+                  <h3 className="bg-gradient-to-r from-white to-danger bg-clip-text text-transparent font-bold text-3xl lg:text-6xl mb-4">
+                    {step.title}
+                  </h3>
                 </div>
-              )}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+                  {/* Left Side - Plan Selection Visual */}
+                  <div className="relative">
+                    <div className="relative flex items-center justify-center">
+                      {/* Card 1 */}
+                      <div className="bg-green-600 rounded-2xl p-6 w-full max-w-sm shadow-lg transform rotate-2 hover:rotate-0 transition-transform duration-300">
+                        <div className="flex justify-between items-start mb-4">
+                          <span className="text-white font-semibold text-sm">
+                            VISURA.AI
+                          </span>
+                          <span className="text-white text-xs bg-green-500 px-2 py-1 rounded">
+                            STEP {index + 1}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-center h-20 bg-white/10 rounded-xl mb-4">
+                          <div className="text-white">{step.icon}</div>
+                        </div>
+                        <div className="text-center">
+                          <h3 className="text-white font-bold text-lg">
+                            {step.title.toUpperCase()}
+                          </h3>
+                        </div>
+                      </div>
+
+                      {/* Card 2 - Offset */}
+                      <div className="absolute top-4 left-4 bg-gradient-to-br from-green-700 via-emerald-600 to-teal-500 rounded-2xl p-6 w-full max-w-sm shadow-lg transform -rotate-2 hover:rotate-0 transition-transform duration-300 opacity-90">
+                        <div className="flex justify-between items-start mb-4">
+                          <span className="text-white font-semibold text-sm">
+                            VISURA.AI
+                          </span>
+                          <span className="text-white text-xs bg-emerald-500 px-2 py-1 rounded">
+                            PRO
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-center h-20 bg-white/10 rounded-xl mb-4 relative">
+                          <div className="text-white">{step.icon}</div>
+                          {/* Progress bars effect */}
+                          <div className="absolute bottom-2 right-2 flex space-x-1">
+                            <div className="w-1 h-4 bg-white/60 rounded"></div>
+                            <div className="w-1 h-6 bg-white/80 rounded"></div>
+                            <div className="w-1 h-3 bg-white/40 rounded"></div>
+                            <div className="w-1 h-5 bg-white/70 rounded"></div>
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <h3 className="text-white font-bold text-lg">
+                            {step.title.toUpperCase()}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Side - Benefits and Description */}
+                  <div className="flex">
+                    <div className="w-[0.5px] bg-white/20"></div>
+                    <div className="space-y-6 ml-6">
+                      <p className="text-white text-lg leading-relaxed">
+                        {step.description}
+                      </p>
+
+                      <div className="space-y-3">
+                        {step.benefits.map((benefit, benefitIndex) => (
+                          <div key={benefitIndex} className="flex items-center">
+                            <span className="text-white/40 text-sm font-medium">
+                              {benefit}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
       </div>
     </section>
   );
-
-  function StepItem({ icon, label, description }: Steps) {
-    return (
-      <div
-        className="relative p-6 rounded-2xl bg-white/5 backdrop-blur-xs border border-white/10 hover:border-rose-500/50 
-    transition-colors group w-full"
-      >
-        <div className="flex flex-col gap-4 h-full">
-          <div className="flex items-center justify-center h-24 w-24 mx-auto rounded-2xl bg-gradient-to-br from-rose-500/10 to-transparent group-hover:from-rose-500/20 transition-colors">
-            <div className="text-rose-500">{icon}</div>
-          </div>
-          <div className="flex flex-col flex-1 gap-1 justify-between">
-            <h4 className=" text-center font-bold text-xl">{label}</h4>
-            <p className="text-center text-gray-600 text-sm">{description}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 }

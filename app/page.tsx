@@ -23,10 +23,10 @@ export default async function Home({ searchParams }: HomeProps) {
   const showCancelMessage = paymentStatus === "cancelled";
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full min-h-screen bg-black">
       <BgGradient />
 
-      <div className="flex flex-col ">
+      <div className="flex flex-col">
         <HeroSection />
         <DemoSection />
         <HowItWorksSection />

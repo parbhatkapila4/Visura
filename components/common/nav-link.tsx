@@ -20,9 +20,9 @@ export default function NavLink({
     <Link
       href={href}
       className={cn(
-        "transition-colors text-sm duration-200 text-gray-600 hover:text-rose-500",
+        "transition-colors text-sm duration-200 text-gray-700 hover:text-[#04724D]",
         className,
-        isActive && "text-rose-500"
+        isActive && "text-[#04724D]"
       )}
     >
       {children}

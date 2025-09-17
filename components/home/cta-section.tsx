@@ -5,14 +5,14 @@ import { SignedIn, SignedOut } from "@clerk/nextjs";
 
 export default function CTASection() {
   return (
-    <section className="bg-gray-50 py-12 ">
+    <section className="bg-black py-12 ">
       <div className="py-12 lg:py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="space-y-2 ">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-white">
               Ready to unlock hours of productive reading time?
             </h2>
-            <p className="mx-auto max-w-6xl text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-[20px]/relaxed dark:text-gray-400  ">
+            <p className="mx-auto max-w-6xl text-gray-300 md:text-xl/relaxed lg:text-base/relaxed xl:text-[20px]/relaxed">
               Convert lengthy documents into clear, actionable knowledge with
               our AI-powered synthesizer.
             </p>
@@ -22,7 +22,7 @@ export default function CTASection() {
               <Button
                 size="lg"
                 variant={"link"}
-                className="w-full min-[400px]:w-auto bg-linear-to-r from-slate-900 to-rose-500 hover:from-rose-500 hover:to-slate-900 hover:text-white text-white transition-all duration-300 hover:no-underline"
+                className="w-full min-[400px]:w-auto bg-gradient-to-r from-[#04724D] to-[#059669] hover:from-[#059669] hover:to-[#04724D] hover:text-white text-white transition-all duration-300 hover:no-underline"
               >
                 <Link
                   href="/#pricing"
@@ -39,7 +39,7 @@ export default function CTASection() {
                 <Button
                   size="lg"
                   variant={"link"}
-                  className="w-full min-[400px]:w-auto bg-linear-to-r from-slate-900 to-rose-500 hover:from-rose-500 hover:to-slate-900 hover:text-white text-white transition-all duration-300 hover:no-underline"
+                  className="w-full min-[400px]:w-auto bg-gradient-to-r from-[#04724D] to-[#059669] hover:from-[#059669] hover:to-[#04724D] hover:text-white text-white transition-all duration-300 hover:no-underline"
                 >
                   <Link
                     href="/upload"
@@ -52,7 +52,7 @@ export default function CTASection() {
                 <Button
                   size="lg"
                   variant={"outline"}
-                  className="w-full min-[400px]:w-auto"
+                  className="w-full min-[400px]:w-auto border-[#04724D] text-white hover:bg-[#04724D] hover:text-white transition-all duration-300"
                 >
                   <Link
                     href="/dashboard"

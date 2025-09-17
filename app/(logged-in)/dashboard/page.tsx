@@ -38,8 +38,8 @@ export default async function DashboardPage() {
   const { hasReachedLimit, uploadLimit } = await hasReachedUploadLimit(userId, email!);
   const summaries = await getSummaries(userId, userPlan) as Summary[];
   return (
-    <main className="min-h-screen">
-      <BgGradient className="from-emerald-200 via-teal-200 to-cyan-200" />
+    <main className="min-h-screen bg-gray-900">
+      <BgGradient />
       <div className="container mx-auto flex flex-col gap-4">
         <div className="px-2 py-12 sm:py-12">
           <DashboardClient 

@@ -7,38 +7,54 @@ import PlanBadge from "./plan-badge";
 
 export default function Header() {
   return (
-    <nav className="container flex items-center py-4 lg:px-8 px-2 mx-auto">
-      <div className="flex items-center gap-2 flex-1">
-        <NavLink
-          href="/"
-          className="flex items-center gap-1 lg:gap-2 shrink-0 "
-        >
-          <FileText className="w-5 h-5 lg:w-6 lg:h-6 text-gray-900 hover:rotate-12 transform transition duration-200 ease-in-out" />
-          <span className="font-extrabold lg:text-xl text-gray-900">
-            Visura
-          </span>
-        </NavLink>
-      </div>
-      <div className="flex justify-center gap-4 lg:gap-12 items-center flex-1">
-        <NavLink href="/#pricing">Pricing</NavLink>
-        <SignedIn>
-          <NavLink href="/dashboard">Your Summaries</NavLink>
-        </SignedIn>
-      </div>
-      <div className="flex justify-end items-center flex-1">
-        <SignedIn>
-          <div className="flex gap-2 items-center">
-            <NavLink href="/upload">Upload a PDF</NavLink>
-            <PlanBadge />
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </div>
-        </SignedIn>
+    <nav className="w-full  px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="bg-black rounded-lg px-6 py-3 shadow-sm  ">
+          <div className="flex items-center justify-between">
+            {/* Logo Section - Pill-shaped like in the image */}
+            <div className="flex items-center">
+              <NavLink
+                href="/"
+                className="flex items-center gap-2  rounded-full px-4 py-2 "
+              >
+                <FileText className="w-5 h-5 text-[#04724D]" />
+                <span className="font-bold text-white text-lg">
+                  Visura
+                </span>
+              </NavLink>
+            </div>
 
-        <SignedOut>
-          <NavLink href="/sign-in">Sign In</NavLink>
-        </SignedOut>
+            {/* Center Navigation Links */}
+            <div className="hidden md:flex items-center gap-8">
+              <NavLink href="/#pricing" className="text-white/70">
+                Pricing
+              </NavLink>
+              <SignedIn>
+                <NavLink href="/dashboard" className="text-white/70">
+                  Dashboard
+                </NavLink>
+              </SignedIn>
+              <SignedIn>
+                <NavLink href="/upload" className="text-white/70">
+                  Upload
+                </NavLink>
+              </SignedIn>
+            </div>
+
+            {/* Right Section */}
+            <div className="flex items-center gap-4">
+              <SignedIn>
+                <PlanBadge />
+                <UserButton />
+              </SignedIn>
+              <SignedOut>
+                <NavLink href="/sign-in" className="text-gray-700">
+                  Sign In
+                </NavLink>
+              </SignedOut>
+            </div>
+          </div>
+        </div>
       </div>
     </nav>
   );

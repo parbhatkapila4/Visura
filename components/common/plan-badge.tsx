@@ -61,10 +61,10 @@ export default function PlanBadge() {
     <Badge
       variant="outline"
       className={cn(
-        "ml-2 hidden lg:flex flex-row items-center transition-all duration-200",
-        isPro && "bg-gradient-to-r from-purple-100 to-purple-200 border-purple-300 text-purple-800",
-        isBasic && "bg-gradient-to-r from-blue-100 to-blue-200 border-blue-300 text-blue-800",
-        isFree && "bg-gradient-to-r from-gray-100 to-gray-200 border-gray-300 text-gray-600"
+        "hidden lg:flex flex-row items-center rounded-full px-3 py-1 border",
+        isPro && "bg-purple-100 border-purple-300 text-purple-800",
+        isBasic && "bg-blue-100 border-blue-300 text-blue-800",
+        isFree && "bg-gray-100 border-gray-300 text-gray-700"
       )}
     >
       {isPro ? (

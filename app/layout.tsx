@@ -27,8 +27,8 @@ export default function RootLayout({
   return (
     <ClerkProvider    >  
       <html lang="en">
-        <body className={`${fontSans.variable} font-sans antialiased`}>
-          <div className="relative flex flex-col min-h-screen">
+        <body className={`${fontSans.variable} font-sans antialiased bg-gray-900 text-white`}>
+          <div className="relative flex flex-col min-h-screen bg-black">
             <Header />
             <main className="flex-1"> {children}</main>
             <Footer />

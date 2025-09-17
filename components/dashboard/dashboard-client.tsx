@@ -43,19 +43,19 @@ export default function DashboardClient({
     <>
       <div className="flex gap-4 mb-8 justify-between">
         <div className="flex flex-col gap-2">
-          <h1 className="text-4xl font-bold tracking-tight bg-linear-to-r from-gray-600 to-gray-900 text-transparent bg-clip-text">
+          <h1 className="text-4xl font-bold tracking-tight text-white">
             Your Summaries
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-300">
             Transform your PDFs into concise summaries with AI
           </p>
         </div>
         <Button
           variant={"link"}
           disabled={hasReachedLimit}
-          className={`bg-linear-to-r from-rose-500 to-rose-700 hover:from-rose-600 hover:to-rose-800 hover:scale-105 transition-all duration-300 group hover:no-underline ${
+          className={`bg-gradient-to-r from-[#04724D] to-[#059669] hover:from-[#059669] hover:to-[#04724D] hover:scale-105 transition-all duration-300 group hover:no-underline ${
             hasReachedLimit
-              ? "opacity-50 cursor-not-allowed hover:scale-100 hover:from-rose-500 hover:to-rose-700 bg-gray-400"
+              ? "opacity-50 cursor-not-allowed hover:scale-100 hover:from-[#04724D] hover:to-[#059669] bg-gray-400"
               : ""
           }`}
           title={
@@ -81,14 +81,14 @@ export default function DashboardClient({
       {/* Plan Information */}
       {userPlan === "basic" && (
         <div className="mb-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
-              <FileText className="w-4 h-4 text-blue-600" />
-              <span className="text-blue-800 font-medium text-sm">
+              <FileText className="w-4 h-4 text-blue-400" />
+              <span className="text-blue-300 font-medium text-sm">
                 Basic Plan
               </span>
             </div>
-            <p className="text-blue-700 text-sm">
+            <p className="text-blue-200 text-sm">
               You can create up to{" "}
               <span className="font-semibold">{uploadLimit} PDF summaries</span>
               . Currently using:{" "}
@@ -97,7 +97,7 @@ export default function DashboardClient({
               </span>
             </p>
             {summaries.length >= uploadLimit * 0.8 && (
-              <p className="text-orange-600 text-xs mt-1">
+              <p className="text-orange-400 text-xs mt-1">
                 ⚠️ You're approaching your limit. Consider upgrading to Pro for
                 unlimited summaries.
               </p>
@@ -109,16 +109,16 @@ export default function DashboardClient({
       {/* Limit Reached Warning */}
       {hasReachedLimit && (
         <div className="mb-6">
-          <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6 shadow-sm">
+          <div className="bg-red-900/20 border-2 border-red-700/50 rounded-lg p-6 shadow-sm">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0">
-                <AlertTriangle className="w-6 h-6 text-red-600" />
+                <AlertTriangle className="w-6 h-6 text-red-400" />
               </div>
               <div className="flex-1">
-                <h3 className="text-red-800 font-semibold text-lg mb-2">
+                <h3 className="text-red-300 font-semibold text-lg mb-2">
                   Maximum Limit Reached
                 </h3>
-                <p className="text-red-700 text-sm mb-4">
+                <p className="text-red-200 text-sm mb-4">
                   You have reached the maximum limit of{" "}
                   <span className="font-bold">{uploadLimit} summaries</span> for
                   your <span className="font-bold">Basic</span> plan. To
