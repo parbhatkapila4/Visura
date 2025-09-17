@@ -28,11 +28,15 @@ export default async function DashboardPage() {
 
   const email = user.emailAddresses[0]?.emailAddress;
   const userData = email ? await getUserByEmail(email) : null;
+  
+  // Determine user plan based on price_id
+  // If user has a price_id, they are on a paid plan (pro)
+  // If no price_id, they are on basic plan
   const userPlan = userData?.price_id ? 'pro' : 'basic';
   
   // Check upload limit and get dynamic limit based on plan
   const { hasReachedLimit, uploadLimit } = await hasReachedUploadLimit(userId, email!);
-  const summaries = await getSummaries(userId) as Summary[];
+  const summaries = await getSummaries(userId, userPlan) as Summary[];
   return (
     <main className="min-h-screen">
       <BgGradient className="from-emerald-200 via-teal-200 to-cyan-200" />

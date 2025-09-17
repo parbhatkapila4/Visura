@@ -3,7 +3,7 @@
 import SummaryCard from "@/components/summaries/summary-card";
 import EmptySummaryState from "@/components/dashboard/empty-summary-state";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Plus, FileText } from "lucide-react";
+import { ArrowRight, Plus, FileText, AlertTriangle, Lock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -55,14 +55,19 @@ export default function DashboardClient({
           disabled={hasReachedLimit}
           className={`bg-linear-to-r from-rose-500 to-rose-700 hover:from-rose-600 hover:to-rose-800 hover:scale-105 transition-all duration-300 group hover:no-underline ${
             hasReachedLimit
-              ? "opacity-50 cursor-not-allowed hover:scale-100 hover:from-rose-500 hover:to-rose-700"
+              ? "opacity-50 cursor-not-allowed hover:scale-100 hover:from-rose-500 hover:to-rose-700 bg-gray-400"
               : ""
           }`}
+          title={
+            hasReachedLimit
+              ? "You have reached the maximum limit for your Basic plan. Upgrade to Pro to continue."
+              : "Create a new PDF summary"
+          }
         >
           {hasReachedLimit ? (
             <div className="flex items-center text-white">
-              <Plus className="w-5 h-5 mr-2" />
-              New Summary
+              <Lock className="w-5 h-5 mr-2" />
+              Limit Reached
             </div>
           ) : (
             <Link href="/upload" className="flex items-center text-white">
@@ -73,31 +78,62 @@ export default function DashboardClient({
         </Button>
       </div>
 
+      {/* Plan Information */}
       {userPlan === "basic" && (
         <div className="mb-6">
-          <p className="text-gray-600 text-sm">
-            You can have access to {uploadLimit} PDF summaries. For more,
-            upgrade to Pro plan.
-          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <FileText className="w-4 h-4 text-blue-600" />
+              <span className="text-blue-800 font-medium text-sm">
+                Basic Plan
+              </span>
+            </div>
+            <p className="text-blue-700 text-sm">
+              You can create up to{" "}
+              <span className="font-semibold">{uploadLimit} PDF summaries</span>
+              . Currently using:{" "}
+              <span className="font-semibold">
+                {summaries.length}/{uploadLimit}
+              </span>
+            </p>
+            {summaries.length >= uploadLimit * 0.8 && (
+              <p className="text-orange-600 text-xs mt-1">
+                ⚠️ You're approaching your limit. Consider upgrading to Pro for
+                unlimited summaries.
+              </p>
+            )}
+          </div>
         </div>
       )}
 
+      {/* Limit Reached Warning */}
       {hasReachedLimit && (
         <div className="mb-6">
-          <div className="bg-rose-50 border border-rose-200 rounded-lg p-4 text-rose-800">
-            <p className="text-sm">
-              You have reached the limit of your{" "}
-              <span className="font-bold text-black">Basic</span> plan. Please
-              upgrade to a <span className="font-bold text-black">Pro</span>{" "}
-              plan to continue using the service.
-              <Link
-                href="/#pricing"
-                className="text-black font-bold pl-1 inline-flex items-center gap-1 underline underline-offset-2"
-              >
-                Upgrade to Pro
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </p>
+          <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-red-800 font-semibold text-lg mb-2">
+                  Maximum Limit Reached
+                </h3>
+                <p className="text-red-700 text-sm mb-4">
+                  You have reached the maximum limit of{" "}
+                  <span className="font-bold">{uploadLimit} summaries</span> for
+                  your <span className="font-bold">Basic</span> plan. To
+                  continue creating new summaries, please upgrade to our{" "}
+                  <span className="font-bold">Pro</span> plan.
+                </p>
+                <Link
+                  href="/#pricing"
+                  className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+                >
+                  Upgrade to Pro Plan
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       )}

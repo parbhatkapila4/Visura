@@ -1,9 +1,16 @@
 import { getDbConnection } from "./db";
 
-export async function getSummaries(userId: string) {
+export async function getSummaries(userId: string, userPlan: string = 'basic') {
   const sql = await getDbConnection();
-  const summaries =
-    await sql`SELECT * FROM pdf_summaries WHERE user_id = ${userId} ORDER BY created_at DESC`;
+  
+  // For basic plan users, limit to 5 most recent summaries
+  // For pro plan users, show all summaries
+  const limit = userPlan === 'pro' ? null : 5;
+  
+  const summaries = limit 
+    ? await sql`SELECT * FROM pdf_summaries WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT ${limit}`
+    : await sql`SELECT * FROM pdf_summaries WHERE user_id = ${userId} ORDER BY created_at DESC`;
+    
   return summaries;
 }
 
