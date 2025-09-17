@@ -4,6 +4,7 @@ import NavLink from "./nav-link";
 import { UserButton } from "@clerk/nextjs";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import PlanBadge from "./plan-badge";
+import { HoverBorderGradient } from "../ui/hover-border-gradient";
 
 export default function Header() {
   return (
@@ -17,10 +18,13 @@ export default function Header() {
                 href="/"
                 className="flex items-center gap-2  rounded-full px-4 py-2 "
               >
-                <FileText className="w-5 h-5 text-[#04724D]" />
-                <span className="font-bold text-white text-lg">
-                  Visura
-                </span>
+                <HoverBorderGradient
+                  containerClassName="rounded-full"
+                  as="button"
+                  className=" bg-black text-white flex items-center space-x-2 py-1 px-4"
+                >
+                  <span className="font-bold text-white text-lg">Visura</span>
+                </HoverBorderGradient>
               </NavLink>
             </div>
 

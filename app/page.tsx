@@ -6,6 +6,7 @@ import HowItWorksSection from "@/components/home/how-it-works-section";
 import PricingSection from "@/components/home/pricing-section";
 import { currentUser } from "@clerk/nextjs/server";
 import { ensureUserExistsInDatabase } from "@/lib/auth-utils";
+import AnimatedHomePage from "./animated-home-page";
 
 type HomeProps = {
   searchParams: { [key: string]: string | string[] | undefined };
@@ -25,14 +26,7 @@ export default async function Home({ searchParams }: HomeProps) {
   return (
     <div className="relative w-full min-h-screen bg-black">
       <BgGradient />
-
-      <div className="flex flex-col">
-        <HeroSection />
-        <DemoSection />
-        <HowItWorksSection />
-        <PricingSection />
-        <CTASection />
-      </div>
+      <AnimatedHomePage />
     </div>
   );
 }
