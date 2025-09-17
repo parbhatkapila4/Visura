@@ -21,14 +21,14 @@ export default function SourceInfo({
   return (
     <div className="flex items-center justify-center gap-2">
       <div className="flex items-center justify-center gap-2">
-        <FileText className="h-4 w-4 text-rose-400" />
-        <span>Source: {fileName}</span>
+        <FileText className="h-4 w-4 text-white" />
+        <span className="text-white">Source: {fileName}</span>
       </div>
       <div className="flex gap-2">
         <Link href={`/chatbot/${summaryId}`}>
           <Button
             size="sm"
-            className="h-8 px-3 bg-rose-600 hover:bg-rose-700 text-white"
+            className="h-8 px-3 bg-green-900 hover:bg-green-800 text-white"
           >
             <MessageCircle className="h-4 w-4 mr-1" />
             Chat with Document
@@ -37,7 +37,7 @@ export default function SourceInfo({
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 px-3 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+          className="h-8 px-3 text-white hover:bg-rose-50"
           asChild
         >
           <a href={originalFileUrl} target="_blank" rel="noopener noreferrer">
