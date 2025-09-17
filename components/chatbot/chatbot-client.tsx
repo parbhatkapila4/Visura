@@ -207,95 +207,101 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-250px)] min-h-[700px] max-h-[800px]">
       {/* Sessions Sidebar */}
       <div className="lg:col-span-1 min-h-[400px]">
-        <Card className="h-full flex flex-col min-h-0">
-          <CardHeader className="pb-3 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Chat Sessions</CardTitle>
-              <Button
-                size="sm"
-                onClick={createNewSession}
-                className="h-8 w-8 p-0"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+        <div className="relative p-4 sm:p-6 bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-xl border border-border h-full flex flex-col min-h-0 transition-all duration-300 hover:shadow-2xl hover:bg-white/15">
+          <div className="absolute inset-0 bg-white/15 opacity-50 rounded-2xl sm:rounded-3xl" />
+          
+          <div className="relative flex flex-col h-full min-h-0">
+            <div className="pb-3 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Chat Sessions</CardTitle>
+                <Button
+                  size="sm"
+                  onClick={createNewSession}
+                  className="h-8 w-8 p-0 bg-green-600 hover:bg-green-700"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </CardHeader>
-          <CardContent className="p-0 flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
-            <div className="space-y-2 px-4 py-2 pb-4">
-              {isLoadingSessions ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-rose-600"></div>
-                </div>
-              ) : sessions.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No chats yet</p>
-                  <p className="text-xs">Start a new conversation</p>
-                </div>
-              ) : (
-                sessions.map((session) => (
-                  <div
-                    key={session.id}
-                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                      currentSessionId === session.id
-                        ? "bg-rose-50 border border-rose-200"
-                        : "hover:bg-gray-50 border border-transparent"
-                    }`}
-                    onClick={() => setCurrentSessionId(session.id)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {session.session_name}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="secondary" className="text-xs">
-                            {session.message_count} messages
-                          </Badge>
-                          <span className="text-xs text-gray-500">
-                            {new Date(session.updated_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <MoreVertical className="h-3 w-3" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => deleteSession(session.id)}
-                            className="text-red-600"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+            <div className="p-0 flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
+              <div className="space-y-2 px-4 py-2 pb-4">
+                {isLoadingSessions ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
                   </div>
-                ))
-              )}
+                ) : sessions.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No chats yet</p>
+                    <p className="text-xs">Start a new conversation</p>
+                  </div>
+                ) : (
+                  sessions.map((session) => (
+                    <div
+                      key={session.id}
+                      className={`p-3 rounded-lg w-full cursor-pointer transition-colors ${
+                        currentSessionId === session.id
+                          ? " border border-green-500"
+                        : "border-green-400/30 border "
+                      }`}
+                      onClick={() => setCurrentSessionId(session.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {session.session_name}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="secondary" className="text-xs">
+                              {session.message_count} messages
+                            </Badge>
+                            <span className="text-xs text-gray-500">
+                              {new Date(session.updated_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              size="sm"
+                              className="h-6 w-6 p-0 bg-green-600 hover:bg-green-700"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreVertical className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => deleteSession(session.id)}
+                              className="text-green-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Chat Area */}
       <div className="lg:col-span-3">
-        <Card className="h-full flex flex-col">
-          <CardHeader className="pb-3 flex-shrink-0 border-b">
-            <CardTitle className="text-lg">
-              {currentSession ? currentSession.session_name : "Select a chat session"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+        <div className="relative p-4 sm:p-6 bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl shadow-xl border border-border h-full flex flex-col min-h-0 transition-all duration-300 hover:shadow-2xl hover:bg-white/15">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-900/10 via-green-900/5 to-transparent opacity-50 rounded-2xl sm:rounded-3xl" />
+          
+          <div className="relative flex flex-col h-full min-h-0">
+            <div className="pb-3 flex-shrink-0 border-b border-border/50">
+              <CardTitle className="text-lg">
+                {currentSession ? currentSession.session_name : "Select a chat session"}
+              </CardTitle>
+            </div>
+            <div className="flex-1 flex flex-col p-0 min-h-0">
             {currentSessionId ? (
               <>
                 {/* Messages */}
@@ -326,7 +332,7 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
                           <div
                             className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                               message.message_type === "user"
-                                ? "bg-rose-600 text-white"
+                                ? "bg-green-600 text-white"
                                 : "bg-gray-200 text-gray-600"
                             }`}
                           >
@@ -339,7 +345,7 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
                           <div
                             className={`rounded-lg px-4 py-3 ${
                               message.message_type === "user"
-                                ? "bg-rose-600 text-white"
+                                ? "bg-green-600 text-white"
                                 : "bg-gray-50 text-gray-900 border border-gray-200"
                             }`}
                           >
@@ -367,7 +373,7 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
                             <p
                               className={`text-xs mt-1 ${
                                 message.message_type === "user"
-                                  ? "text-rose-100"
+                                  ? "text-green-100"
                                   : "text-gray-500"
                               }`}
                             >
@@ -386,7 +392,7 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
                         </div>
                         <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-rose-600"></div>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
                             <span className="text-gray-600">Thinking...</span>
                           </div>
                         </div>
@@ -397,7 +403,7 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
                 </div>
 
                 {/* Input */}
-                <div className="border-t bg-white p-4 flex-shrink-0 sticky bottom-0">
+                <div className="border-t border-border/50 bg-background/50 backdrop-blur-sm p-4 flex-shrink-0 bottom-0 w-full">
                   <div className="flex gap-2">
                     <Input
                       value={inputMessage}
@@ -405,13 +411,13 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
                       onKeyPress={handleKeyPress}
                       placeholder="Ask a question about your document..."
                       disabled={isLoading}
-                      className="flex-1 border-gray-300 focus:border-rose-500 focus:ring-rose-500"
+                      className="flex-1 border-gray-300 focus:border-green-500 focus:ring-green-500 placeholder:text-white/50"
                     />
                     <Button
                       onClick={sendMessage}
                       disabled={!inputMessage.trim() || isLoading}
                       size="sm"
-                      className="bg-rose-600 hover:bg-rose-700 text-white px-3"
+                      className="bg-green-600 hover:bg-green-700 text-white px-3"
                     >
                       <Send className="h-4 w-4" />
                     </Button>
@@ -429,8 +435,9 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
