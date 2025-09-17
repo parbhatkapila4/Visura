@@ -22,11 +22,21 @@ export const POST = async (req: NextRequest) => {
         const sessionId = event.data.object.id;
         console.log("Checkout session completed", sessionId);
 
-        const session = await stripe.checkout.sessions.retrieve(sessionId, {
-          expand: ["line_items"],
-        });
+        try {
+          const session = await stripe.checkout.sessions.retrieve(sessionId, {
+            expand: ["line_items"],
+          });
 
-        await handleCheckoutSessionCompleted({ session, stripe });
+          console.log("Retrieved session:", session);
+          await handleCheckoutSessionCompleted({ session, stripe });
+          console.log("Successfully processed checkout session");
+        } catch (error) {
+          console.error("Error processing checkout session:", error);
+          return NextResponse.json(
+            { error: "Failed to process checkout session", details: error },
+            { status: 500 }
+          );
+        }
 
         break;
 

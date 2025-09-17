@@ -3,6 +3,8 @@ import DashboardClient from "@/components/dashboard/dashboard-client";
 import { getSummaries } from "@/lib/summaries";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { ensureUserExistsInDatabase } from "@/lib/auth-utils";
+import { getUserByEmail, hasReachedUploadLimit } from "@/lib/user";
 
 interface Summary {
   id: string;
@@ -21,14 +23,27 @@ export default async function DashboardPage() {
     return redirect("/sign-in");
   }
 
-  const uploadLimit = 5;
+  
+  await ensureUserExistsInDatabase();
+
+  const email = user.emailAddresses[0]?.emailAddress;
+  const userData = email ? await getUserByEmail(email) : null;
+  const userPlan = userData?.price_id ? 'pro' : 'basic';
+  
+  // Check upload limit and get dynamic limit based on plan
+  const { hasReachedLimit, uploadLimit } = await hasReachedUploadLimit(userId, email!);
   const summaries = await getSummaries(userId) as Summary[];
   return (
     <main className="min-h-screen">
       <BgGradient className="from-emerald-200 via-teal-200 to-cyan-200" />
       <div className="container mx-auto flex flex-col gap-4">
         <div className="px-2 py-12 sm:py-12">
-          <DashboardClient summaries={summaries} uploadLimit={uploadLimit} />
+          <DashboardClient 
+            summaries={summaries} 
+            uploadLimit={uploadLimit} 
+            userPlan={userPlan}
+            hasReachedLimit={hasReachedLimit}
+          />
         </div>
       </div>
     </main>

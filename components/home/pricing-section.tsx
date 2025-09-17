@@ -1,6 +1,8 @@
+"use client";
 import { cn } from "@/lib/utils";
+import {  pricingPlans } from "@/utils/constants";
 import { ArrowRight, CheckIcon } from "lucide-react";
-import Link from "next/link";
+import { useState } from "react";
 
 type PriceType = {
   name: string;
@@ -11,35 +13,7 @@ type PriceType = {
   paymentLink: string;
   priceId: string;
 };
-const plans = [
-  {
-    name: "Basic",
-    price: "10",
-    description: "For beginners and casual users",
-    items: [
-      "3 PDF summaries per month",
-      "Standard processing",
-      "Export as text",
-    ],
-    id: "basic",
-    paymentLink: "",
-    priceId: "",
-  },
-  {
-    name: "Pro",
-    price: "20",
-    description: "For advanced users and businesses",
-    items: [
-      "Unlimited PDF summaries",
-      "Advanced processing",
-      "Priority support",
-      "Export as text",
-    ],
-    id: "pro",
-    paymentLink: "",
-    priceId: "",
-  },
-];
+
 
 const PricingCard = ({
   name,
@@ -47,8 +21,42 @@ const PricingCard = ({
   description,
   items,
   id,
-  paymentLink,
+  priceId,
 }: PriceType) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    if (!priceId) {
+      console.error('Price ID not available');
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ priceId }),
+      });
+
+      const { url } = await response.json();
+
+      if (url) {
+        window.location.href = url;
+      } else {
+        throw new Error('No checkout URL received');
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      alert('Failed to start checkout. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="relative w-full max-w-lg hover:scale-105 hover:transition-all duration-300">
       <div
@@ -79,17 +87,18 @@ const PricingCard = ({
           ))}
         </div>
         <div className="space-y-2 flex justify-center w-full">
-          <Link
-            href={paymentLink}
+          <button
+            onClick={handleCheckout}
+            disabled={isLoading || !priceId}
             className={cn(
-              "w-full rounded-full flex items-center justify-center gap-2 bg-linear-to-r from-rose-800 to-rose-500 hover:from-rose-500 hover:to-rose-800 text-white border-2 py-2",
+              "w-full rounded-full flex items-center justify-center gap-2 bg-linear-to-r from-rose-800 to-rose-500 hover:from-rose-500 hover:to-rose-800 text-white border-2 py-2 disabled:opacity-50 disabled:cursor-not-allowed",
               id === "pro"
                 ? "border-rose-900"
                 : "border-rose-100 from-rose-400 to-rose-500"
             )}
           >
-            Try Now <ArrowRight size={18} />
-          </Link>
+            {isLoading ? 'Loading...' : 'Try Now'} <ArrowRight size={18} />
+          </button>
         </div>
       </div>
     </div>
@@ -106,7 +115,7 @@ export default function PricingSection() {
           </h2>
         </div>
         <div className="relative flex justify-center flex-col lg:flex-row items-center lg:items-stretch gap-8">
-          {plans.map((plan) => (
+          {pricingPlans.map((plan) => (
             <PricingCard key={plan.id} {...plan} />
           ))}
         </div>

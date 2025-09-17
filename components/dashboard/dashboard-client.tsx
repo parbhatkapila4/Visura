@@ -1,6 +1,7 @@
 "use client";
 
 import SummaryCard from "@/components/summaries/summary-card";
+import EmptySummaryState from "@/components/dashboard/empty-summary-state";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Plus, FileText } from "lucide-react";
 import Link from "next/link";
@@ -19,11 +20,15 @@ interface Summary {
 interface DashboardClientProps {
   summaries: Summary[];
   uploadLimit: number;
+  userPlan: string;
+  hasReachedLimit: boolean;
 }
 
 export default function DashboardClient({
   summaries: initialSummaries,
   uploadLimit,
+  userPlan,
+  hasReachedLimit,
 }: DashboardClientProps) {
   const [summaries, setSummaries] = useState(initialSummaries);
   const router = useRouter();
@@ -47,16 +52,37 @@ export default function DashboardClient({
         </div>
         <Button
           variant={"link"}
-          className="bg-linear-to-r from-rose-500 to-rose-700 hover:from-rose-600 hover:to-rose-800 hover:scale-105 transition-all duration-300 group hover:no-underline"
+          disabled={hasReachedLimit}
+          className={`bg-linear-to-r from-rose-500 to-rose-700 hover:from-rose-600 hover:to-rose-800 hover:scale-105 transition-all duration-300 group hover:no-underline ${
+            hasReachedLimit
+              ? "opacity-50 cursor-not-allowed hover:scale-100 hover:from-rose-500 hover:to-rose-700"
+              : ""
+          }`}
         >
-          <Link href="/upload" className="flex items-center text-white">
-            <Plus className="w-5 h-5 mr-2" />
-            New Summary
-          </Link>
+          {hasReachedLimit ? (
+            <div className="flex items-center text-white">
+              <Plus className="w-5 h-5 mr-2" />
+              New Summary
+            </div>
+          ) : (
+            <Link href="/upload" className="flex items-center text-white">
+              <Plus className="w-5 h-5 mr-2" />
+              New Summary
+            </Link>
+          )}
         </Button>
       </div>
 
-      {summaries.length >= uploadLimit && (
+      {userPlan === "basic" && (
+        <div className="mb-6">
+          <p className="text-gray-600 text-sm">
+            You can have access to {uploadLimit} PDF summaries. For more,
+            upgrade to Pro plan.
+          </p>
+        </div>
+      )}
+
+      {hasReachedLimit && (
         <div className="mb-6">
           <div className="bg-rose-50 border border-rose-200 rounded-lg p-4 text-rose-800">
             <p className="text-sm">
@@ -77,28 +103,12 @@ export default function DashboardClient({
       )}
 
       {summaries.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <FileText className="w-12 h-12 text-gray-400" />
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No summaries yet
-          </h3>
-          <p className="text-gray-500 mb-6">
-            Upload your first PDF to get started with AI-powered summaries
-          </p>
-          <Link href="/upload">
-            <Button className="bg-rose-500 hover:bg-rose-600 text-white">
-              <Plus className="w-4 h-4 mr-2" />
-              Upload PDF
-            </Button>
-          </Link>
-        </div>
+        <EmptySummaryState />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 sm:px-0">
           {summaries.map((summary, index) => (
             <SummaryCard
-              key={summary.id}
+              key={index}
               summary={summary}
               onDelete={() => handleDelete(summary.id)}
             />

@@ -6,7 +6,10 @@ export default function Page() {
     <section className="flex justify-center items-center lg:min-h-[40vh]">
       <div className="py-12 lg:py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 lg:pt-12">
         <BgGradient className="from-rose-400 via-rose-300 to-orange-200" />
-        <SignUp />
+        <SignUp 
+          afterSignUpUrl="/"
+          redirectUrl="/"
+        />
       </div>
     </section>
   );

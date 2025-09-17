@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Upload, FileText } from "lucide-react";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 
 export default function CTASection() {
   return (
@@ -17,7 +18,7 @@ export default function CTASection() {
             </p>
           </div>
           <div className="flex flex-col gap-2 min-[400px]:flex-row justify-center">
-            <div>
+            <SignedOut>
               <Button
                 size="lg"
                 variant={"link"}
@@ -31,7 +32,38 @@ export default function CTASection() {
                   <ArrowRight className="ml-2 h-4 w-4 animate-pulse" />
                 </Link>
               </Button>
-            </div>
+            </SignedOut>
+            
+            <SignedIn>
+              <div className="flex flex-col gap-2 min-[400px]:flex-row">
+                <Button
+                  size="lg"
+                  variant={"link"}
+                  className="w-full min-[400px]:w-auto bg-linear-to-r from-slate-900 to-rose-500 hover:from-rose-500 hover:to-slate-900 hover:text-white text-white transition-all duration-300 hover:no-underline"
+                >
+                  <Link
+                    href="/upload"
+                    className="flex items-center justify-center"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload PDF
+                  </Link>
+                </Button>
+                <Button
+                  size="lg"
+                  variant={"outline"}
+                  className="w-full min-[400px]:w-auto"
+                >
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center justify-center"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    View Summaries
+                  </Link>
+                </Button>
+              </div>
+            </SignedIn>
           </div>
         </div>
       </div>
