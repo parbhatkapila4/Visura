@@ -28,7 +28,7 @@ export default function SourceInfo({
         <Link href={`/chatbot/${summaryId}`}>
           <Button
             size="sm"
-            className="h-8 px-3 bg-green-900 hover:bg-green-800 text-white"
+            className="h-8 px-3 bg-[#4C4899] hover:bg-[#4C4899]/80 text-white"
           >
             <MessageCircle className="h-4 w-4 mr-1" />
             Chat with Document

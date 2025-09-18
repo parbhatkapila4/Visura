@@ -29,7 +29,7 @@ const SummaryHeader = ({
 }) => {
   return (
     <div className="flex items-start gap-3">
-      <FileText className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+      <FileText className="w-5 h-5 text-[#4C4899] mt-0.5 flex-shrink-0" />
       <div className="flex-1 min-w-0">
         <h3 className="text-base font-bold text-white truncate">
           {title || formatFileName(fileUrl)}
@@ -53,7 +53,7 @@ const StatusBadge = ({ status }: { status: string }) => {
       className={cn(
         "px-2.5 py-1 text-xs font-medium rounded-full",
         status === "completed"
-          ? "bg-green-600/20 text-green-400 border border-green-500/30"
+          ? "bg-[#4C4899]/20 text-white border border-[#4C4899]/30"
           : "bg-yellow-600/20 text-yellow-400 border border-yellow-500/30"
       )}
     >

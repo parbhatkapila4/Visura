@@ -64,7 +64,7 @@ export const UploadFormInput = forwardRef<
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="h-12 px-8 bg-[#625EC3] text-white font-semibold rounded-lg hover:bg-[#625EC3]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-12 px-8 bg-[#625EC3] text-white font-semibold rounded-lg hover:bg-[#625EC3]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed z-50"
                 style={{ color: "#ffffff" }}
               >
                 {isLoading ? (
@@ -93,7 +93,7 @@ export const UploadFormInput = forwardRef<
               {/* Progress Bar */}
               <div className="w-full bg-white/20 rounded-full h-2 mb-6">
                 <div
-                  className="bg-green-600 h-2 rounded-full animate-pulse"
+                  className="bg-[#625EC3] h-2 rounded-full animate-pulse"
                   style={{ width: "35%" }}
                 ></div>
               </div>
@@ -103,23 +103,23 @@ export const UploadFormInput = forwardRef<
                 <div className="bg-white/20 rounded-lg h-8 w-full animate-pulse"></div>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <div className="w-2 h-2 bg-[#625EC3] rounded-full"></div>
                     <div className="bg-white/20 rounded h-4 w-3/4 animate-pulse"></div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <div className="w-2 h-2 bg-[#625EC3] rounded-full"></div>
                     <div className="bg-white/20 rounded h-4 w-2/3 animate-pulse"></div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <div className="w-2 h-2 bg-[#625EC3] rounded-full"></div>
                     <div className="bg-white/20 rounded h-4 w-4/5 animate-pulse"></div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <div className="w-2 h-2 bg-[#625EC3] rounded-full"></div>
                     <div className="bg-white/20 rounded h-4 w-1/2 animate-pulse"></div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <div className="w-2 h-2 bg-[#625EC3] rounded-full"></div>
                     <div className="bg-white/20 rounded h-4 w-3/5 animate-pulse"></div>
                   </div>
                 </div>

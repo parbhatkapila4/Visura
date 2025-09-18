@@ -29,7 +29,7 @@ const SectionNavItem = ({
 
   const getSectionColor = (title: string) => {
     if (title.includes("Overview") || title.includes("Summary")) return "text-blue-400";
-    if (title.includes("Findings") || title.includes("Insights")) return "text-green-400";
+    if (title.includes("Findings") || title.includes("Insights")) return "text-[#4C4899]";
     if (title.includes("Analysis")) return "text-purple-400";
     if (title.includes("Critical") || title.includes("Warning")) return "text-red-400";
     if (title.includes("Action") || title.includes("Recommendation")) return "text-emerald-400";
@@ -43,7 +43,7 @@ const SectionNavItem = ({
     <button
       onClick={onClick}
       className={`w-full text-left p-4 rounded-lg transition-all duration-300 hover:bg-gray-800/50 ${
-        isActive ? 'bg-gray-800/80 border-l-4 border-green-500' : 'hover:border-l-4 hover:border-gray-600'
+        isActive ? 'bg-gray-800/80 border-l-4 border-[#504DA2]' : 'hover:border-l-4 hover:border-gray-600'
       }`}
     >
       <div className="flex items-center gap-3">
@@ -56,7 +56,7 @@ const SectionNavItem = ({
             {points.length} insights
           </p>
         </div>
-        {isActive && <ArrowRight className="w-4 h-4 text-green-400" />}
+        {isActive && <ArrowRight className="w-4 h-4 text-[#504DA2]" />}
       </div>
     </button>
   );
@@ -83,7 +83,7 @@ const DarkContentSection = ({
 
   const getSectionColor = (title: string) => {
     if (title.includes("Overview") || title.includes("Summary")) return "text-blue-400";
-    if (title.includes("Findings") || title.includes("Insights")) return "text-green-400";
+    if (title.includes("Findings") || title.includes("Insights")) return "text-[#4C4899]";
     if (title.includes("Analysis")) return "text-purple-400";
     if (title.includes("Critical") || title.includes("Warning")) return "text-red-400";
     if (title.includes("Action") || title.includes("Recommendation")) return "text-emerald-400";
@@ -94,240 +94,117 @@ const DarkContentSection = ({
   };
 
   return (
-    <div className="space-y-8">
-      {/* Clean Header */}
-      <div className="border-b border-gray-700 pb-6">
-        <div className="flex items-center gap-4 mb-4">
-          <span className="text-4xl">{getSectionIcon(title)}</span>
+    <div className="space-y-4">
+      {/* Document-style section header */}
+      <div className="mb-4">
+        <div className="flex items-center gap-3 mb-3">
           <div>
-            <h2 className="text-2xl font-bold text-gray-100 mb-2">
+            <h2 className="text-2xl font-bold text-white mb-2">
               {title}
             </h2>
-            <div className="flex items-center gap-4 text-sm text-gray-400">
-              <span className="flex items-center gap-1">
-                <BookOpen className="w-4 h-4" />
-                {points.length} insights
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                {Math.ceil(points.length * 0.5)} min read
-              </span>
-            </div>
           </div>
         </div>
+        
+        {/* Horizontal separator line */}
+        <div className="border-t border-gray-600 mb-4"></div>
       </div>
 
-      {/* Clean Content List */}
-      <div className="space-y-6">
+      {/* Content as Paragraphs */}
+      <div className="space-y-4">
         {points.map((point, index) => {
-          const emojiMatch = point.match(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/u);
-          const emoji = emojiMatch ? emojiMatch[0] : "•";
-          const text = point.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/u, "").replace(/^•\s*/, "").trim();
-
-          const isActionItem = point.includes("✅") || point.includes("🎯") || point.includes("💡");
-          const isWarning = point.includes("⚠️") || point.includes("🔒");
-          const isData = point.includes("📊") || point.includes("📈");
-          const isDefinition = point.includes(":") && emojiMatch;
-
-          let emojiColor = "text-gray-400";
-          let textColor = "text-gray-300";
-          let borderColor = "border-gray-700";
-
-          if (isActionItem) {
-            emojiColor = "text-green-400";
-            textColor = "text-gray-200";
-            borderColor = "border-green-500/30";
-          } else if (isWarning) {
-            emojiColor = "text-red-400";
-            textColor = "text-gray-200";
-            borderColor = "border-red-500/30";
-          } else if (isData) {
-            emojiColor = "text-blue-400";
-            textColor = "text-gray-200";
-            borderColor = "border-blue-500/30";
-          } else if (isDefinition) {
-            emojiColor = "text-purple-400";
-            textColor = "text-gray-200";
-            borderColor = "border-purple-500/30";
+          // Remove emojis, asterisks, and clean up the text
+          const cleanText = point
+            .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/u, "") // Remove emojis
+            .replace(/\*\*(.*?)\*\*/g, "$1") // Remove bold asterisks
+            .replace(/\*(.*?)\*/g, "$1") // Remove italic asterisks
+            .replace(/^•\s*/, "") // Remove bullet points
+            .trim();
+          
+          // Skip lines that start with "Type:"
+          if (cleanText.toLowerCase().startsWith('type:')) {
+            return null;
           }
 
           return (
-            <div key={index} className={`flex items-start gap-4 p-4 rounded-lg border-l-4 ${borderColor} hover:bg-gray-800/30 transition-colors duration-200`}>
-              <span className={`text-2xl ${emojiColor} mt-1 flex-shrink-0`}>
-                {emoji}
-              </span>
-              <p className={`${textColor} leading-relaxed text-base`}>
-                {text}
-              </p>
-            </div>
+            <p key={index} className="text-gray-300 leading-relaxed text-base hover:text-gray-100 transition-colors duration-200">
+              {cleanText}
+            </p>
           );
-        })}
+        }).filter(Boolean)}
       </div>
     </div>
   );
 };
 
 export default function SummaryViewer({ summary }: { summary: string }) {
-  const [currentSection, setCurrentSection] = useState(0);
-  const [viewMode, setViewMode] = useState<'overview' | 'detailed'>('overview');
-
   const sections = summary
     .split("\n#")
     .map((section) => section.trim())
     .filter(Boolean)
     .map(parseSection);
 
-  const handleNext = () =>
-    setCurrentSection((prev) => Math.min(prev + 1, sections.length - 1));
-  const handlePrevious = () =>
-    setCurrentSection((prev) => Math.max(prev - 1, 0));
-
   return (
-    <div className="w-full max-w-7xl mx-auto bg-gray-900 min-h-screen">
-      {/* Dark Header */}
-      <div className="border-b border-gray-700 pb-8 mb-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="bg-green-600 p-3 rounded-lg">
-              <Sparkles className="w-6 h-6 text-white" />
+    <div className="w-full max-w-7xl mx-auto bg-gradient-to-br from-gray-900 via-black to-gray-800 min-h-screen border border-white/20 rounded-3xl shadow-2xl shadow-purple-500/10 backdrop-blur-sm">
+      {/* Enhanced Header */}
+      <div className="mb-4 p-6 relative">
+        {/* Background gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#504DA2]/5 to-transparent rounded-t-3xl"></div>
+        
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-gradient-to-br from-[#504DA2] to-[#4338a3] p-2 rounded-xl shadow-lg shadow-purple-500/25 animate-pulse">
+              <BookOpen className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-100 mb-1">Document Analysis</h1>
-              <p className="text-gray-400 text-sm">Comprehensive insights and actionable intelligence</p>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Document Analysis
+              </h1>
+              <p className="text-gray-400 text-sm mt-1">AI-Powered Document Intelligence</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant={viewMode === 'overview' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('overview')}
-              className={`text-sm ${
-                viewMode === 'overview' 
-                  ? 'bg-green-600 hover:bg-green-700 text-white' 
-                  : 'text-gray-300 border-gray-600 hover:bg-gray-800'
-              }`}
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              Overview
-            </Button>
-            <Button
-              variant={viewMode === 'detailed' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('detailed')}
-              className={`text-sm ${
-                viewMode === 'detailed' 
-                  ? 'bg-green-600 hover:bg-green-700 text-white' 
-                  : 'text-gray-300 border-gray-600 hover:bg-gray-800'
-              }`}
-            >
-              <BookOpen className="w-4 h-4 mr-2" />
-              Detailed
-            </Button>
+          
+          {/* Enhanced separator line */}
+          <div className="relative mb-4">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#504DA2]/30 to-transparent h-px"></div>
+            <div className="border-t border-gray-600/50"></div>
           </div>
-        </div>
-        
-        {/* Progress indicator */}
-        <div className="mt-6 flex items-center gap-4">
-          <div className="flex-1 h-1 bg-gray-700 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-green-600 rounded-full transition-all duration-500"
-              style={{ width: `${((currentSection + 1) / sections.length) * 100}%` }}
-            />
-          </div>
-          <div className="text-sm text-gray-400 font-medium">
-            {currentSection + 1} of {sections.length} sections
+          
+          {/* Enhanced summary info */}
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-2 bg-gray-800/50 px-3 py-2 rounded-lg border border-gray-700/50">
+              <BookOpen className="w-4 h-4 text-[#504DA2]" />
+              <span className="text-gray-300 font-medium">{sections.length} sections</span>
+            </div>
+            <div className="flex items-center gap-2 bg-gray-800/50 px-3 py-2 rounded-lg border border-gray-700/50">
+              <Clock className="w-4 h-4 text-[#504DA2]" />
+              <span className="text-gray-300 font-medium">{Math.ceil(sections.reduce((total, section) => total + section.points.length, 0) * 0.5)} min read</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {viewMode === 'overview' ? (
-        /* Overview Mode - Sidebar Navigation */
-        <div className="flex gap-8">
-          <div className="w-80 flex-shrink-0">
-            <div className="sticky top-8">
-              <h3 className="text-lg font-semibold text-gray-200 mb-4">Sections</h3>
-              <div className="space-y-2">
-                {sections.map((section, index) => (
-                  <SectionNavItem
-                    key={index}
-                    title={section.title}
-                    points={section.points}
-                    isActive={currentSection === index}
-                    onClick={() => {
-                      setCurrentSection(index);
-                      setViewMode('detailed');
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="flex-1">
-            <DarkContentSection
-              title={sections[currentSection]?.title || ""}
-              points={sections[currentSection]?.points || []}
-            />
-          </div>
-        </div>
-      ) : (
-        /* Detailed Mode - Full content view */
-        <div className="space-y-8">
-          {/* Navigation */}
-          <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrevious}
-                disabled={currentSection === 0}
-                className="text-gray-300 border-gray-600 hover:bg-gray-700 disabled:opacity-50"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <div className="text-center">
-                <div className="text-gray-200 text-sm font-medium">
-                  {currentSection + 1} of {sections.length}
-                </div>
-                <div className="text-gray-400 text-xs">
-                  {sections[currentSection]?.title || ""}
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNext}
-                disabled={currentSection === sections.length - 1}
-                className="text-gray-300 border-gray-600 hover:bg-gray-700 disabled:opacity-50"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
+      {/* Enhanced Sections Display */}
+      <div className="p-6 space-y-8">
+        {sections.map((section, index) => (
+          <div key={index} className="relative group">
+            {/* Section background glow */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#504DA2]/5 via-transparent to-[#504DA2]/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             
-            {/* Section dots */}
-            <div className="flex gap-2">
-              {sections.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSection(index)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    index === currentSection 
-                      ? 'bg-green-600 w-8' 
-                      : 'bg-gray-600 hover:bg-gray-500 w-2'
-                  }`}
-                />
-              ))}
+            <div className="relative z-10 space-y-4">
+              <DarkContentSection
+                title={`${index + 1}. ${section.title}`}
+                points={section.points}
+              />
+              {index < sections.length - 1 && (
+                <div className="relative my-6">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#504DA2]/20 to-transparent h-px"></div>
+                  <div className="border-t border-gray-700/50"></div>
+                </div>
+              )}
             </div>
           </div>
-
-          {/* Content */}
-          <div className="bg-gray-800 rounded-lg border border-gray-700 p-8">
-            <DarkContentSection
-              title={sections[currentSection]?.title || ""}
-              points={sections[currentSection]?.points || []}
-            />
-          </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }

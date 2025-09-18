@@ -1,7 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Calendar, ChevronLeft, Clock, Sparkles, MessageCircle } from "lucide-react";
+import {
+  Calendar,
+  ChevronLeft,
+  Clock,
+  Sparkles,
+  MessageCircle,
+  BookOpen,
+} from "lucide-react";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
 
@@ -17,58 +24,113 @@ export default function SummaryHeader({
   summaryId?: string;
 }) {
   return (
-    <div className="flex gap-4 mb-4 justify-between">
-      <div className="space-y-6">
-        <div className="flex flex-wrap items-center gap-4">
-          <Badge
-            variant="secondary"
-            className="relative px-4 py-1.5 text-sm font-medium bg-card/80 backdrop-blur-xs rounded-full hover:bg-card/90 transition-all duration-200 shadow-xs hover:shadow-md"
-          >
-            <Sparkles className="h-4 w-4 mr-1.5 text-white" />
-            AI Summary
-          </Badge>
-          <div className="flex items-center gap-2 text-sm text-white">
-            <Calendar className="h-4 w-4 text-white " />
-            {new Date(createdAt).toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
+    <div className="relative">
+      {/* Subtle background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#4C4899]/5 via-transparent to-[#4C4899]/3 rounded-2xl -m-4 p-4"></div>
+
+      <div className="relative z-10">
+        {/* Top section with buttons at the very top */}
+        <div className="flex flex-col gap-6 mb-8">
+          {/* Enhanced action buttons - AT THE VERY TOP */}
+          <div className="flex justify-between items-center w-full -mt-8">
+            <div className="flex items-center">
+              {/* Left button */}
+              <Link href="/dashboard">
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="group flex items-center gap-3 hover:bg-[#4C4899]/10 backdrop-blur-sm rounded-xl transition-all duration-300 bg-[#4C4899]/5 hover:scale-105 px-6 py-3 min-w-[180px]"
+                >
+                  <div className="p-1 rounded-lg bg-[#4C4899]/20 group-hover:bg-[#4C4899]/30 transition-colors duration-200">
+                    <ChevronLeft className="h-4 w-4 text-white transition-transform group-hover:-translate-x-0.5" />
+                  </div>
+                  <span className="font-semibold text-white">
+                    Back to Dashboard
+                  </span>
+                </Button>
+              </Link>
+            </div>
+
+            {/* Right button */}
+            {summaryId && (
+              <Link href={`/chatbot/${summaryId}`}>
+                <Button
+                  size="lg"
+                  className="group flex items-center gap-3 bg-gradient-to-r from-[#4C4899] to-[#4C4899]/90 hover:from-[#4C4899]/90 hover:to-[#4C4899] text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 px-6 py-3 min-w-[180px]"
+                >
+                  <div className="p-1 rounded-lg bg-white/20">
+                    <MessageCircle className="h-4 w-4" />
+                  </div>
+                  <span className="font-semibold">Chat with Document</span>
+                </Button>
+              </Link>
+            )}
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-white">
-            <Clock className="h-4 w-4 text-white " />
-            {readingTime} min read
+          {/* Enhanced title with animated pulse border - CENTERED */}
+          <div className="space-y-3 w-full flex justify-center">
+            <div className="relative">
+              {/* Animated pulse border - ALWAYS VISIBLE */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#4C4899] via-[#4C4899]/60 to-[#4C4899] rounded-2xl blur-sm opacity-100 animate-pulse"></div>
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-[#4C4899]/40 via-[#4C4899]/20 to-[#4C4899]/40 rounded-2xl blur-sm opacity-75 animate-pulse"></div>
+
+              {/* Content container */}
+              <div className="relative bg-black/80 backdrop-blur-sm rounded-2xl border border-[#4C4899]/50 p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-[#4C4899]/30 to-[#4C4899]/20 border border-[#4C4899]/40">
+                    <BookOpen className="h-6 w-6 text-white" />
+                  </div>
+                  <h1 className="text-3xl lg:text-5xl font-bold leading-tight">
+                    <span className="bg-gradient-to-r from-white via-[#4C4899] to-[#4C4899]/90 bg-clip-text text-transparent">
+                      {title}
+                    </span>
+                  </h1>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <h1 className="text-2xl lg:text-4xl font-bold lg:tracking-tight">
-          <span className="bg-gradient-to-r from-green-900 to-green-800 bg-clip-text text-transparent">{title}</span>
-        </h1>
-      </div>
-      <div className="self-start flex gap-2">
-        {summaryId && (
-          <Link href={`/chatbot/${summaryId}`}>
-            <Button
-              size="sm"
-              className="group flex items-center gap-2 bg-green-900 hover:bg-green-800 text-white rounded-full transition-all duration-200 shadow-xs hover:shadow-md px-3 py-2"
+
+          {/* AI Summary badge with enhanced styling - MOVED BELOW TITLE */}
+          <div className="flex items-center justify-center gap-4">
+            <Badge
+              variant="secondary"
+              className="relative px-5 py-2.5 text-sm font-medium bg-gradient-to-r from-[#4C4899]/20 to-[#4C4899]/10 backdrop-blur-sm rounded-full border border-[#4C4899]/30 hover:from-[#4C4899]/30 hover:to-[#4C4899]/20 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-              <MessageCircle className="h-4 w-4" />
-              <span className="text-sm font-medium">Chat with Document</span>
-            </Button>
-          </Link>
-        )}
-        <Link href="/dashboard">
-          <Button
-            variant="link"
-            size="sm"
-            className="group flex items-center gap-1 sm:gap-2 hover:bg-card/80 backdrop-blur-xs rounded-full transition-all duration-200 shadow-xs hover:shadow-md border border-green-900/30 bg-green-900/10 px-2 sm:px-3 hover:no-underline"
-          >
-            <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 text-white transition-transform group-hover:translate-x-0.5" />
-            <span className="text-xs sm:text-sm text-white font-medium">
-              Back <span className="hidden sm:inline">to Dashboard</span>
-            </span>
-          </Button>
-        </Link>
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Sparkles className="h-4 w-4 text-[#4C4899] animate-pulse" />
+                  <div className="absolute inset-0 bg-[#4C4899]/20 rounded-full blur-sm"></div>
+                </div>
+                <span className="text-white font-semibold">AI Summary</span>
+              </div>
+            </Badge>
+
+            {/* Metadata with improved styling */}
+            <div className="flex flex-wrap items-center gap-6 text-sm">
+              <div className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-200">
+                <div className="p-1.5 rounded-lg bg-gray-800/50 border border-gray-700/50">
+                  <Calendar className="h-3.5 w-3.5 text-[#4C4899]" />
+                </div>
+                <span className="font-medium">
+                  {new Date(createdAt).toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors duration-200">
+                <div className="p-1.5 rounded-lg bg-gray-800/50 border border-gray-700/50">
+                  <Clock className="h-3.5 w-3.5 text-[#4C4899]" />
+                </div>
+                <span className="font-medium">{readingTime} min read</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="h-px bg-gradient-to-r from-transparent via-[#4C4899]/30 to-transparent w-full max-w-2xl mx-auto"></div>
+        </div>
       </div>
     </div>
   );

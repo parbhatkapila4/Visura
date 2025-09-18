@@ -31,7 +31,7 @@ export default async function SummaryPage(props: {
 
   return (
     <div className="relative isolate min-h-screen bg-background">
-      <BgGradient className="from-green-500 via-green-300 to-green-200" />
+      <BgGradient className="bg-black" />
 
       <div className="container mx-auto flex flex-col gap-4">
         <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-12 lg:py-24">
@@ -45,17 +45,6 @@ export default async function SummaryPage(props: {
           </div>
 
           <div>
-            {file_name && (
-              <SourceInfo
-                title={title}
-                summaryText={summary_text}
-                fileName={file_name}
-                createdAt={created_at}
-                originalFileUrl={original_file_url}
-                summaryId={summary.id}
-              />
-            )}
-
             <div className="relative mt-4 sm:mt-8 lg:mt-16">
               <SummaryViewer summary={summary_text} />
             </div>

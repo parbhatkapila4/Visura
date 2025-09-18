@@ -148,6 +148,8 @@ This may be due to the PDF being image-based, encrypted, or having complex forma
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("Form submit triggered", { user: !!user, isClient, isLoading });
+    
     if (!user) {
       toast.error("Please sign in to upload files");
       return;
