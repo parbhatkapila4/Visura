@@ -30,7 +30,12 @@ interface UploadResult {
   data: any;
 }
 
-export default function SupabaseUploadForm() {
+interface SupabaseUploadFormProps {
+  hasReachedLimit: boolean;
+  uploadLimit: number;
+}
+
+export default function SupabaseUploadForm({ hasReachedLimit, uploadLimit }: SupabaseUploadFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<UploadResult | null>(null);
@@ -338,6 +343,8 @@ This may be due to the PDF being image-based, encrypted, or having complex forma
         ref={formRef}
         onSubmit={handleSubmit}
         isLoading={isLoading}
+        hasReachedLimit={hasReachedLimit}
+        uploadLimit={uploadLimit}
       />
 
       

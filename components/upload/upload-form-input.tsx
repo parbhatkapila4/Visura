@@ -9,12 +9,14 @@ import { forwardRef, useState } from "react";
 interface UploadFormInputProps {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isLoading: boolean;
+  hasReachedLimit: boolean;
+  uploadLimit: number;
 }
 
 export const UploadFormInput = forwardRef<
   HTMLFormElement,
   UploadFormInputProps
->(({ onSubmit, isLoading }, ref) => {
+>(({ onSubmit, isLoading, hasReachedLimit, uploadLimit }, ref) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,15 +41,15 @@ export const UploadFormInput = forwardRef<
                     onChange={handleFileChange}
                     className={cn(
                       "absolute inset-0 w-40 h-full opacity-0 cursor-pointer z-10",
-                      isLoading && "cursor-not-allowed"
+                      (isLoading || hasReachedLimit) && "cursor-not-allowed"
                     )}
-                    disabled={isLoading}
+                    disabled={isLoading || hasReachedLimit}
                   />
                   <div
                     className={cn(
                       "h-12 border-2 border-r-sidebar-accent-foreground border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors",
                       selectedFile && "border-[#625EC3] bg-white/70",
-                      isLoading && "opacity-50 cursor-not-allowed"
+                      (isLoading || hasReachedLimit) && "opacity-50 cursor-not-allowed"
                     )}
                   >
                     {selectedFile ? (
@@ -63,7 +65,7 @@ export const UploadFormInput = forwardRef<
 
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || hasReachedLimit}
                 className="h-12 px-8 bg-[#625EC3] text-white font-semibold rounded-lg hover:bg-[#625EC3]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed z-50"
                 style={{ color: "#ffffff" }}
               >
@@ -72,6 +74,8 @@ export const UploadFormInput = forwardRef<
                     <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                     Processing...
                   </>
+                ) : hasReachedLimit ? (
+                  "Limit Reached"
                 ) : selectedFile ? (
                   `Upload ${selectedFile.name}`
                 ) : (
