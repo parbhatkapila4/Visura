@@ -218,10 +218,7 @@ export default function ChatbotClient({
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-250px)] min-h-[700px] max-h-[800px]">
       {/* Sessions Sidebar */}
       <div className="lg:col-span-1 min-h-[400px]">
-        <div className="relative p-6 bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 h-full flex flex-col min-h-0 transition-all duration-500 hover:shadow-3xl hover:from-white/25 hover:via-white/15 hover:to-white/10 hover:scale-[1.02] group">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#484593]/20 via-[#484593]/10 to-transparent opacity-60 rounded-3xl" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent rounded-3xl" />
-
+        <div className="relative p-6 bg-gray-800 rounded-3xl shadow-2xl border border-gray-600 h-full flex flex-col min-h-0 transition-all duration-500 hover:shadow-3xl hover:scale-[1.02] group">
           <div className="relative flex flex-col h-full min-h-0 z-10">
             <div className="pb-4 flex-shrink-0">
               <div className="flex items-center justify-between mb-2">
@@ -229,7 +226,7 @@ export default function ChatbotClient({
                   <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#484593] to-[#484593]/80 flex items-center justify-center shadow-lg">
                     <MessageSquare className="h-5 w-5 text-white" />
                   </div>
-                  <CardTitle className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  <CardTitle className="text-xl font-bold text-white/80">
                     Chat Sessions
                   </CardTitle>
                 </div>
@@ -252,12 +249,12 @@ export default function ChatbotClient({
                     </div>
                   </div>
                 ) : sessions.length === 0 ? (
-                  <div className="text-center py-12 text-gray-600">
+                  <div className="text-center py-12 text-white/80">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#484593]/20 to-[#484593]/10 flex items-center justify-center">
                       <MessageSquare className="h-8 w-8 text-[#484593]/60" />
                     </div>
                     <p className="text-sm font-medium mb-1">No chats yet</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-white/60">
                       Start a new conversation
                     </p>
                   </div>
@@ -267,14 +264,14 @@ export default function ChatbotClient({
                       key={session.id}
                       className={`group relative p-4 rounded-2xl w-full cursor-pointer transition-all duration-300 hover:scale-[1.02] ${
                         currentSessionId === session.id
-                          ? "bg-gradient-to-r from-[#484593]/20 to-[#484593]/10 border-2 border-[#484593]/50 shadow-lg"
-                          : "bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 hover:shadow-md"
+                          ? "bg-gradient-to-r from-gray-800 to-gray-700 border-2 border-[#484593]/50 shadow-lg"
+                          : "bg-gray-800 hover:bg-gray-700 border border-gray-600 hover:border-gray-500 hover:shadow-md"
                       }`}
                       onClick={() => setCurrentSessionId(session.id)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate text-gray-900 mb-2">
+                          <p className="text-sm font-semibold truncate text-white mb-2">
                             {session.session_name}
                           </p>
                           <div className="flex items-center gap-2">
@@ -284,7 +281,7 @@ export default function ChatbotClient({
                             >
                               {session.message_count} messages
                             </Badge>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-white/80">
                               {new Date(
                                 session.updated_at
                               ).toLocaleDateString()}
@@ -295,7 +292,7 @@ export default function ChatbotClient({
                           <DropdownMenuTrigger asChild>
                             <Button
                               size="sm"
-                              className="h-8 w-8 p-0 bg-white/20 hover:bg-white/30 text-gray-700 hover:text-gray-900 border border-white/30 hover:border-white/40 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 backdrop-blur-sm shadow-lg hover:shadow-xl"
+                              className="h-8 w-8 p-0 bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white border border-gray-600 hover:border-gray-500 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 backdrop-blur-sm shadow-lg hover:shadow-xl"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <MoreVertical className="h-4 w-4" />

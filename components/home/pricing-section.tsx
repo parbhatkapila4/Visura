@@ -7,6 +7,29 @@ import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
 
+// Helper function to create checkout session via API
+const createCheckoutSession = async (priceId: string) => {
+  try {
+    const response = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ priceId }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create checkout session');
+    }
+
+    const { url } = await response.json();
+    return url;
+  } catch (error) {
+    console.error('Error creating checkout session:', error);
+    throw error;
+  }
+};
+
 type PriceType = {
   name: string;
   price: string;
@@ -24,7 +47,7 @@ const WorkWithUsCard = ({
   period,
   borderColor,
   index,
-  paymentLink,
+  priceId,
 }: {
   name: string;
   price: string;
@@ -32,18 +55,24 @@ const WorkWithUsCard = ({
   period: string;
   borderColor: string;
   index: number;
-  paymentLink?: string;
+  priceId?: string;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCheckout = async () => {
     setIsLoading(true);
-    if (paymentLink) {
-      window.open(paymentLink, "_blank");
+    try {
+      if (priceId) {
+        const checkoutUrl = await createCheckoutSession(priceId);
+        window.location.href = checkoutUrl;
+      } else {
+        throw new Error('Price ID not provided');
+      }
+    } catch (error) {
+      console.error('Checkout failed:', error);
+      // You could show a toast error here
+    } finally {
       setIsLoading(false);
-    } else {
-      // Add your checkout logic here
-      setTimeout(() => setIsLoading(false), 2000);
     }
   };
 
@@ -99,12 +128,17 @@ const StartSmallCard = () => {
 
   const handleCheckout = async () => {
     setIsLoading(true);
-    // Redirect to Stripe payment link
-    window.open(
-      "https://buy.stripe.com/test_fZufZi7uH2Tca5U4ACcbC01?success_url=https://visura.vercel.app/&cancel_url=https://visura.vercel.app/",
-      "_blank"
-    );
-    setIsLoading(false);
+    try {
+      // Use the Pro price ID for the $20 one-time payment
+      const priceId = "price_1S82BQIDKmPOE5aTwhecvlb9";
+      const checkoutUrl = await createCheckoutSession(priceId);
+      window.location.href = checkoutUrl;
+    } catch (error) {
+      console.error('Checkout failed:', error);
+      // You could show a toast error here
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const serviceTags = [
@@ -309,7 +343,7 @@ export default function PricingSection() {
                 period="Monthly"
                 borderColor="blue"
                 index={0}
-                paymentLink="https://buy.stripe.com/test_28EdRabKXeBUce2ffgcbC00?success_url=https://visura.vercel.app/&cancel_url=https://visura.vercel.app/"
+                priceId="price_1S82BQIDKmPOE5aT0N1VCGT4"
               />
               <WorkWithUsCard
                 name="Elite"
@@ -318,7 +352,7 @@ export default function PricingSection() {
                 period="Monthly"
                 borderColor="purple"
                 index={1}
-                paymentLink="https://buy.stripe.com/test_fZufZi7uH2Tca5U4ACcbC01?success_url=https://visura.vercel.app/&cancel_url=https://visura.vercel.app/"
+                priceId="price_1S82BQIDKmPOE5aTwhecvlb9"
               />
             </div>
 

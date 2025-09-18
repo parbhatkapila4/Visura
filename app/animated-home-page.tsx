@@ -5,8 +5,34 @@ import HeroSection from "@/components/home/hero-section";
 import HowItWorksSection from "@/components/home/how-it-works-section";
 import PricingSection from "@/components/home/pricing-section";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
-export default function AnimatedHomePage() {
+interface AnimatedHomePageProps {
+  showSuccessMessage?: boolean;
+  showCancelMessage?: boolean;
+}
+
+export default function AnimatedHomePage({ 
+  showSuccessMessage = false, 
+  showCancelMessage = false 
+}: AnimatedHomePageProps) {
+  // Show success message if payment was successful
+  useEffect(() => {
+    if (showSuccessMessage) {
+      toast.success("Payment Successful!", {
+        description: "Welcome to Pro plan! You now have unlimited access to all features.",
+        duration: 5000,
+      });
+    }
+    if (showCancelMessage) {
+      toast.error("Payment Cancelled", {
+        description: "Your payment was cancelled. You can try again anytime.",
+        duration: 4000,
+      });
+    }
+  }, [showSuccessMessage, showCancelMessage]);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

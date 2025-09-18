@@ -28,8 +28,8 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: 'subscription',
-      success_url: `${baseUrl}/dashboard?payment=success`,
-      cancel_url: `${baseUrl}/dashboard?payment=cancelled`,
+      success_url: `${baseUrl}/?payment=success`,
+      cancel_url: `${baseUrl}/?payment=cancelled`,
       // Allow promotion codes
       allow_promotion_codes: true,
       // Enable automatic tax calculation if configured
