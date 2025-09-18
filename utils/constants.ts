@@ -14,7 +14,7 @@ export const pricingPlans = [
     paymentLink: "",
     priceId: isDevelopment
       ? "price_1S82BQIDKmPOE5aT0N1VCGT4"
-      : "price_PROD_BASIC_ID",
+      : "price_1S82BQIDKmPOE5aT0N1VCGT4",
   },
   {
     name: "Pro",
@@ -30,6 +30,6 @@ export const pricingPlans = [
     paymentLink: "",
     priceId: isDevelopment
       ? "price_1S82BQIDKmPOE5aTwhecvlb9"
-      : "price_PROD_PRO_ID",
+      : "price_1S82BQIDKmPOE5aTwhecvlb9",
   },
 ];
