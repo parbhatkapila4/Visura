@@ -86,7 +86,7 @@ export const UploadFormInput = forwardRef<
         {isLoading && (
           <div className="mt-8 space-y-6">
             <div className="text-center">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+              <h3 className="text-xl font-semibold text-white/70 mb-4">
                 Processing
               </h3>
 

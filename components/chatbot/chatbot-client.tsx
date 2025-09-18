@@ -215,9 +215,9 @@ export default function ChatbotClient({
   const currentSession = sessions.find((s) => s.id === currentSessionId);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-250px)] min-h-[700px] max-h-[800px]">
+    <div className="grid grid-cols-1 lg:grid-cols-10 gap-6 h-[calc(100vh-250px)] min-h-[700px] max-h-[800px]">
       {/* Sessions Sidebar */}
-      <div className="lg:col-span-1 min-h-[400px]">
+      <div className="lg:col-span-3 min-h-[400px]">
         <div className="relative p-6 bg-gray-800 rounded-3xl shadow-2xl border border-gray-600 h-full flex flex-col min-h-0 transition-all duration-500 hover:shadow-3xl hover:scale-[1.02] group">
           <div className="relative flex flex-col h-full min-h-0 z-10">
             <div className="pb-4 flex-shrink-0">
@@ -322,7 +322,7 @@ export default function ChatbotClient({
       </div>
 
       {/* Chat Area */}
-      <div className="lg:col-span-3">
+      <div className="lg:col-span-6">
         <div className="relative p-6 bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 h-full flex flex-col min-h-0 transition-all duration-500 hover:shadow-3xl hover:from-white/25 hover:via-white/15 hover:to-white/10 hover:scale-[1.01] group">
           <div className="absolute inset-0 bg-gradient-to-br from-[#484593]/20 via-[#484593]/10 to-transparent opacity-60 rounded-3xl" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent rounded-3xl" />

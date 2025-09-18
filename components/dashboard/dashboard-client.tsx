@@ -116,18 +116,18 @@ export default function DashboardClient({
           <div className="flex items-start gap-4">
             <AlertTriangle className="w-6 h-6 text-destructive flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-foreground mb-2">
+              <h3 className="text-lg font-semibold text-white/80 mb-2">
                 Maximum Limit Reached
               </h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-white/80 mb-4">
                 You have reached the maximum limit of{" "}
-                <span className="font-semibold text-foreground">
+                <span className="font-semibold text-white/80">
                   {uploadLimit} summaries
                 </span>{" "}
                 for your{" "}
-                <span className="font-semibold text-foreground">Basic</span>{" "}
+                <span className="font-semibold text-white/80">Basic</span>{" "}
                 plan. To continue creating new summaries, please upgrade to our{" "}
-                <span className="font-semibold text-foreground">Pro</span> plan.
+                <span className="font-semibold text-white/80">Pro</span> plan.
               </p>
               <Link
                 href="/#pricing"

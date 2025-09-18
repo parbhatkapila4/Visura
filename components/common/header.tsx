@@ -10,7 +10,8 @@ export default function Header() {
     <nav className="w-full  px-4  z-50">
       <div className="max-w-6xl mx-auto">
         <div className="bg-black rounded-lg px-6 py-3 font-bold">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            {/* Left Section */}
             <div className="flex items-center">
               <NavLink
                 href="/"
@@ -28,8 +29,8 @@ export default function Header() {
               </NavLink>
             </div>
 
-            {/* Center Navigation Links */}
-            <div className="hidden md:flex items-center gap-8">
+            {/* Center Navigation Links - Absolutely centered */}
+            <div className="hidden md:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2">
               <NavLink href="/#pricing" className="text-white/70">
                 Pricing
               </NavLink>
@@ -46,7 +47,7 @@ export default function Header() {
             </div>
 
             {/* Right Section */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 ml-auto">
               <SignedIn>
                 <PlanBadge />
                 <UserButton />

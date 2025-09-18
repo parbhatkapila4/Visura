@@ -5,8 +5,10 @@ import { getPdfStoreBySummaryId } from "@/lib/chatbot";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { CardContent } from "@/components/ui/card";
-import { MessageCircle, Bot } from "lucide-react";
+import { MessageCircle, Bot, ArrowLeft } from "lucide-react";
 import BgGradient from "@/components/common/bg-gradient";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface ChatbotPageProps {
   params: {
@@ -39,9 +41,20 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
       <div className="container mx-auto flex flex-col gap-4">
         <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-12 lg:py-24">
           <div className="flex flex-col">
-            <div className="flex items-center gap-3 mb-6">
-              <Bot className="h-8 w-8 text-[#484593]" />
-              <h1 className="text-3xl font-bold">Chat with Your Document</h1>
+            <div className="flex items-center justify-center mb-6 relative">
+              <Link href="/dashboard" className="group absolute left-0">
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#484593] border border-[#484593] text-white hover:bg-[#484593]/90 hover:border-[#484593]/90 hover:shadow-lg hover:shadow-[#484593]/30 transition-all duration-300 hover:scale-105 active:scale-95 rounded-xl font-medium"
+                >
+                  <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
+                  Go Back
+                </Button>
+              </Link>
+              <div className="flex items-center gap-3">
+                <Bot className="h-8 w-8 text-[#484593]" />
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-700 to-white/80 bg-clip-text text-transparent">Chat with Your Document</h1>
+              </div>
             </div>
           </div>
 
