@@ -62,8 +62,8 @@ export default function PlanBadge() {
       variant="outline"
       className={cn(
         "hidden lg:flex flex-row items-center rounded-full px-3 py-1 border",
-        isPro && "bg-purple-100 border-purple-300 text-purple-800",
-        isBasic && "bg-blue-100 border-blue-300 text-blue-800",
+        isPro && "bg-purple-100 border-orange-300 text-black",
+        isBasic && "bg-white/60  text-black",
         isFree && "bg-gray-100 border-gray-300 text-gray-700"
       )}
     >

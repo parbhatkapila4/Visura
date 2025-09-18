@@ -19,8 +19,8 @@ export default function HeroSection() {
   };
 
   const itemVariants = {
-    hidden: { 
-      opacity: 0, 
+    hidden: {
+      opacity: 0,
       y: 30,
       scale: 0.9,
     },
@@ -44,18 +44,17 @@ export default function HeroSection() {
   };
 
   return (
-    <WavyBackground 
+    <WavyBackground
       className="max-w-7xl mx-auto px-4 lg:px-12"
       colors={["#625EC3", "#625EC3", "#625EC3", "#625EC3", "#625EC3"]}
-     
     >
-      <motion.section 
+      <motion.section
         className="relative mx-auto flex flex-col z-10 items-center justify-center py-16 sm:py-20 lg:pb-28 transition-all animate-in"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        <motion.div 
+        <motion.div
           className="relative p-[1px] overflow-hidden rounded-full bg-gradient-to-r from-[#625EC3] via-[#625EC3] to-[#625EC3] animate-gradient-x group hover:scale-105 transition-transform duration-200"
           variants={itemVariants}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -76,14 +75,14 @@ export default function HeroSection() {
             <p className="text-base text-white">Powered by AI</p>
           </Badge>
         </motion.div>
-        
-        <motion.h1 
+
+        <motion.h1
           className="font-bold py-6 text-center text-white"
           variants={itemVariants}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           Transform PDFs to{" "}
-          <motion.span 
+          <motion.span
             className="relative inline-block"
             variants={floatingVariants}
             animate="animate"
@@ -97,23 +96,20 @@ export default function HeroSection() {
           </motion.span>{" "}
           in seconds
         </motion.h1>
-        
-        <motion.h2 
+
+        <motion.h2
           className="text-lg sm:text-xl lg:text-2xl text-center px-4 lg:px-0 lg:max-w-4xl text-gray-300"
           variants={itemVariants}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           Get a sleek summary reel of your document instantly
         </motion.h2>
-        
-        <motion.div 
+
+        <motion.div
           variants={itemVariants}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               variant={"link"}
               className="text-white mt-6 text-base sm:text-lg lg:text-xl rounded-full px-8 sm:px-10 lg:px-12 py-6 sm:py-7 lg:py-8 lg:mt-16 no-underline hover:no-underline bg-gradient-to-r from-[#625EC3] to-[#020203] hover:from-[#000000] hover:to-[#625EC3] font-bold shadow-lg transition-all duration-300"

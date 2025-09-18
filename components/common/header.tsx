@@ -1,5 +1,4 @@
 "use client";
-import { FileText } from "lucide-react";
 import NavLink from "./nav-link";
 import { UserButton } from "@clerk/nextjs";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
@@ -8,11 +7,10 @@ import { HoverBorderGradient } from "../ui/hover-border-gradient";
 
 export default function Header() {
   return (
-    <nav className="w-full  px-4">
+    <nav className="w-full  px-4  z-50">
       <div className="max-w-6xl mx-auto">
-        <div className="bg-black rounded-lg px-6 py-3 shadow-sm  ">
+        <div className="bg-black rounded-lg px-6 py-3 font-bold">
           <div className="flex items-center justify-between">
-            {/* Logo Section - Pill-shaped like in the image */}
             <div className="flex items-center">
               <NavLink
                 href="/"
@@ -23,7 +21,9 @@ export default function Header() {
                   as="button"
                   className=" bg-black text-white flex items-center space-x-2 py-1 px-4"
                 >
-                  <span className="font-bold text-white text-lg">Visura</span>
+                  <span className="font-light text-white text-lg w-full flex items-center justify-center">
+                    Visura
+                  </span>
                 </HoverBorderGradient>
               </NavLink>
             </div>

@@ -37,6 +37,7 @@ export default function SupabaseUploadForm() {
   const [isClient, setIsClient] = useState(false);
   const { user } = useUser();
   const router = useRouter();
+  
 
   
   useEffect(() => {
@@ -57,7 +58,13 @@ export default function SupabaseUploadForm() {
       
       
       
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+      // Configure PDF.js worker with fallback
+      try {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+      } catch (error) {
+        console.warn('Failed to set worker from unpkg, trying alternative...');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+      }
       
       
       const arrayBuffer = await file.arrayBuffer()
@@ -141,7 +148,6 @@ This may be due to the PDF being image-based, encrypted, or having complex forma
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
     if (!user) {
       toast.error("Please sign in to upload files");
       return;
@@ -149,6 +155,14 @@ This may be due to the PDF being image-based, encrypted, or having complex forma
 
     if (!isClient) {
       toast.error("Please wait for the page to load completely");
+      return;
+    }
+
+    // Check for required environment variables
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      toast.error("Configuration Error", {
+        description: "Missing Supabase configuration. Please check your environment variables."
+      });
       return;
     }
 

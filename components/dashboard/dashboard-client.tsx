@@ -33,7 +33,7 @@ export default function DashboardClient({
   const [summaries, setSummaries] = useState(initialSummaries);
   const router = useRouter();
 
-  // Calculate current limit status based on current summaries count
+  
   const currentHasReachedLimit = summaries.length >= uploadLimit;
   const currentUploadCount = summaries.length;
 
@@ -48,9 +48,7 @@ export default function DashboardClient({
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">
-            Your Summaries
-          </h1>
+          <h1 className="text-3xl font-bold  text-white/80">Your Summaries</h1>
           <p className="text-muted-foreground text-lg">
             Transform your PDFs into concise summaries with AI
           </p>
@@ -63,7 +61,7 @@ export default function DashboardClient({
           )}
           <Button
             disabled={currentHasReachedLimit}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            className="bg-gradient-to-r from-[#625EC3] to-[#000000] hover:animate-pulse text-white/80 "
             title={
               currentHasReachedLimit
                 ? "You have reached the maximum limit for your Basic plan. Upgrade to Pro to continue."
@@ -76,8 +74,8 @@ export default function DashboardClient({
                 Limit Reached
               </div>
             ) : (
-              <Link href="/upload" className="flex items-center">
-                <Plus className="w-4 h-4 mr-2" />
+              <Link href="/upload" className="flex items-center text-white/80 ">
+                <Plus className="w-4 h-4 mr-2 text-white/80 " />
                 New Summary
               </Link>
             )}
@@ -123,9 +121,12 @@ export default function DashboardClient({
               </h3>
               <p className="text-muted-foreground mb-4">
                 You have reached the maximum limit of{" "}
-                <span className="font-semibold text-foreground">{uploadLimit} summaries</span> for
-                your <span className="font-semibold text-foreground">Basic</span> plan. To
-                continue creating new summaries, please upgrade to our{" "}
+                <span className="font-semibold text-foreground">
+                  {uploadLimit} summaries
+                </span>{" "}
+                for your{" "}
+                <span className="font-semibold text-foreground">Basic</span>{" "}
+                plan. To continue creating new summaries, please upgrade to our{" "}
                 <span className="font-semibold text-foreground">Pro</span> plan.
               </p>
               <Link

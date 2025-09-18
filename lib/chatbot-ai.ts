@@ -76,6 +76,12 @@ Please answer the user's question based on the PDF content above. If the questio
     return response;
   } catch (error) {
     console.error("Error generating chatbot response:", error);
+    console.error("Error details:", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+      sessionId,
+      userId
+    });
     return "I apologize, but I encountered an error while processing your question. Please try again.";
   }
 }
