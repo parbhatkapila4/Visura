@@ -1,6 +1,5 @@
 import { getDbConnection } from "./db";
 
-// PDF Store functions
 export async function savePdfStore({
   pdfSummaryId,
   userId,
@@ -24,7 +23,10 @@ export async function savePdfStore({
   }
 }
 
-export async function getPdfStoreBySummaryId(pdfSummaryId: string, userId: string) {
+export async function getPdfStoreBySummaryId(
+  pdfSummaryId: string,
+  userId: string
+) {
   try {
     const sql = await getDbConnection();
     const [result] = await sql`
@@ -52,7 +54,6 @@ export async function getPdfStoreById(pdfStoreId: string, userId: string) {
   }
 }
 
-// Q&A Session functions
 export async function createQASession({
   pdfStoreId,
   userId,
@@ -76,7 +77,10 @@ export async function createQASession({
   }
 }
 
-export async function getQASessionsByPdfStore(pdfStoreId: string, userId: string) {
+export async function getQASessionsByPdfStore(
+  pdfStoreId: string,
+  userId: string
+) {
   try {
     const sql = await getDbConnection();
     const sessions = await sql`
@@ -108,7 +112,11 @@ export async function getQASessionById(sessionId: string, userId: string) {
   }
 }
 
-export async function updateQASessionName(sessionId: string, userId: string, newName: string) {
+export async function updateQASessionName(
+  sessionId: string,
+  userId: string,
+  newName: string
+) {
   try {
     const sql = await getDbConnection();
     const result = await sql`
@@ -138,7 +146,6 @@ export async function deleteQASession(sessionId: string, userId: string) {
   }
 }
 
-// Q&A Message functions
 export async function saveQAMessage({
   sessionId,
   messageType,
@@ -155,14 +162,13 @@ export async function saveQAMessage({
       VALUES(${sessionId}, ${messageType}, ${messageContent})
       RETURNING id, message_type, message_content, created_at
     `;
-    
-    // Update session's updated_at timestamp
+
     await sql`
       UPDATE pdf_qa_sessions 
       SET updated_at = CURRENT_TIMESTAMP
       WHERE id = ${sessionId}
     `;
-    
+
     return result[0];
   } catch (error) {
     console.error("Error saving QA message:", error);
@@ -170,19 +176,22 @@ export async function saveQAMessage({
   }
 }
 
-export async function getQAMessagesBySession(sessionId: string, userId: string) {
+export async function getQAMessagesBySession(
+  sessionId: string,
+  userId: string
+) {
   try {
     const sql = await getDbConnection();
-    // Verify user has access to this session
+
     const [session] = await sql`
       SELECT id FROM pdf_qa_sessions 
       WHERE id = ${sessionId} AND user_id = ${userId}
     `;
-    
+
     if (!session) {
       throw new Error("Session not found or access denied");
     }
-    
+
     const messages = await sql`
       SELECT * FROM pdf_qa_messages
       WHERE session_id = ${sessionId}
@@ -195,7 +204,6 @@ export async function getQAMessagesBySession(sessionId: string, userId: string) 
   }
 }
 
-// Utility function to get PDFs with chatbot support
 export async function getPdfsWithChatbotSupport(userId: string) {
   try {
     const sql = await getDbConnection();

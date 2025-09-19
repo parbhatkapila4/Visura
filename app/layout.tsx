@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next";
 import { Source_Sans_3 as FontSans } from "next/font/google";
 import "./globals.css";
@@ -17,6 +16,7 @@ export const metadata: Metadata = {
   title: "Visura - AI-Driven PDF Insight Engine",
   description:
     "Visura is an AI-powered app that distills PDF documents into clear, concise insights you can grasp in seconds",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
 export default function RootLayout({
@@ -25,12 +25,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider    >  
+    <ClerkProvider>
       <html lang="en">
-        <body className={`${fontSans.variable} font-sans antialiased bg-gray-900 text-white`}>
-          <div className="relative w-screen flex flex-col min-h-screen bg-black">
+        <body
+          className={`${fontSans.variable} font-sans antialiased bg-gray-900 text-white overflow-x-hidden`}
+        >
+          <div className="relative w-full flex flex-col min-h-screen bg-black">
             <Header />
-            <main className="flex-1"> {children}</main>
+            <main className="flex-1 w-full"> {children}</main>
             <Footer />
           </div>
           <Toaster />

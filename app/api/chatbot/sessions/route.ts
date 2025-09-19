@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { 
-  createQASession, 
-  getQASessionsByPdfStore, 
-  updateQASessionName, 
-  deleteQASession 
+import {
+  createQASession,
+  getQASessionsByPdfStore,
+  updateQASessionName,
+  deleteQASession,
 } from "@/lib/chatbot";
 
 export async function POST(request: NextRequest) {
@@ -17,7 +17,10 @@ export async function POST(request: NextRequest) {
     const { pdfStoreId, sessionName } = await request.json();
 
     if (!pdfStoreId) {
-      return NextResponse.json({ error: "PDF Store ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "PDF Store ID is required" },
+        { status: 400 }
+      );
     }
 
     const session = await createQASession({
@@ -47,7 +50,10 @@ export async function GET(request: NextRequest) {
     const pdfStoreId = searchParams.get("pdfStoreId");
 
     if (!pdfStoreId) {
-      return NextResponse.json({ error: "PDF Store ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "PDF Store ID is required" },
+        { status: 400 }
+      );
     }
 
     const sessions = await getQASessionsByPdfStore(pdfStoreId, userId);
@@ -71,11 +77,14 @@ export async function PUT(request: NextRequest) {
     const { sessionId, sessionName } = await request.json();
 
     if (!sessionId || !sessionName) {
-      return NextResponse.json({ error: "Session ID and name are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Session ID and name are required" },
+        { status: 400 }
+      );
     }
 
     const result = await updateQASessionName(sessionId, userId, sessionName);
-    
+
     if (!result) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
@@ -101,7 +110,10 @@ export async function DELETE(request: NextRequest) {
     const sessionId = searchParams.get("sessionId");
 
     if (!sessionId) {
-      return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Session ID is required" },
+        { status: 400 }
+      );
     }
 
     await deleteQASession(sessionId, userId);

@@ -20,8 +20,10 @@ export default async function Home({ searchParams }: HomeProps) {
 
   return (
     <div className="relative w-screen min-h-screen bg-black">
-      <BgGradient className="hidden md:block"/>
-      <AnimatedHomePage 
+      <div className="hidden md:block">
+        <BgGradient className="hidden md:block" />
+      </div>
+      <AnimatedHomePage
         showSuccessMessage={showSuccessMessage}
         showCancelMessage={showCancelMessage}
       />

@@ -33,7 +33,6 @@ export default function DashboardClient({
   const [summaries, setSummaries] = useState(initialSummaries);
   const router = useRouter();
 
-  
   const currentHasReachedLimit = summaries.length >= uploadLimit;
   const currentUploadCount = summaries.length;
 
@@ -44,24 +43,25 @@ export default function DashboardClient({
   };
 
   return (
-    <div className="space-y-8">
-      {/* Header Section */}
+    <div className="space-y-6 sm:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold  text-white/80">Your Summaries</h1>
-          <p className="text-muted-foreground text-lg">
+        <div className="space-y-2 text-center sm:text-left">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white/80">
+            Your Summaries
+          </h1>
+          <p className="text-muted-foreground text-base sm:text-lg">
             Transform your PDFs into concise summaries with AI
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           {userPlan === "basic" && (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground order-2 sm:order-1">
               {currentUploadCount}/{uploadLimit} summaries
             </div>
           )}
           <Button
             disabled={currentHasReachedLimit}
-            className="bg-gradient-to-r from-[#625EC3] to-[#000000] hover:animate-pulse text-white/80 "
+            className="bg-gradient-to-r from-[#625EC3] to-[#000000] hover:animate-pulse text-white/80 w-full sm:w-auto order-1 sm:order-2"
             title={
               currentHasReachedLimit
                 ? "You have reached the maximum limit for your Basic plan. Upgrade to Pro to continue."
@@ -69,13 +69,16 @@ export default function DashboardClient({
             }
           >
             {currentHasReachedLimit ? (
-              <div className="flex items-center">
+              <div className="flex items-center justify-center">
                 <Lock className="w-4 h-4 mr-2" />
                 Limit Reached
               </div>
             ) : (
-              <Link href="/upload" className="flex items-center text-white/80 ">
-                <Plus className="w-4 h-4 mr-2 text-white/80 " />
+              <Link
+                href="/upload"
+                className="flex items-center justify-center text-white/80"
+              >
+                <Plus className="w-4 h-4 mr-2 text-white/80" />
                 New Summary
               </Link>
             )}
@@ -83,12 +86,11 @@ export default function DashboardClient({
         </div>
       </div>
 
-      {/* Plan Information */}
       {userPlan === "basic" && !currentHasReachedLimit && (
         <div className="bg-muted/50 border border-border rounded-lg p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
-              <FileText className="w-5 h-5 text-muted-foreground" />
+              <FileText className="w-5 h-5 text-muted-foreground flex-shrink-0" />
               <div>
                 <p className="text-sm font-medium text-foreground">
                   Basic Plan
@@ -101,7 +103,7 @@ export default function DashboardClient({
             {currentUploadCount >= uploadLimit * 0.8 && (
               <Link
                 href="/#pricing"
-                className="text-sm text-primary hover:text-primary/80 font-medium"
+                className="text-sm text-primary hover:text-primary/80 font-medium text-center sm:text-right"
               >
                 Upgrade to Pro →
               </Link>
@@ -110,28 +112,27 @@ export default function DashboardClient({
         </div>
       )}
 
-      {/* Limit Reached Warning */}
       {currentHasReachedLimit && (
-        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6">
-          <div className="flex items-start gap-4">
-            <AlertTriangle className="w-6 h-6 text-destructive flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+            <AlertTriangle className="w-6 h-6 text-destructive flex-shrink-0 mt-0.5 mx-auto sm:mx-0" />
+            <div className="flex-1 text-center sm:text-left">
               <h3 className="text-lg font-semibold text-white/80 mb-2">
                 Maximum Limit Reached
               </h3>
-              <p className="text-white/80 mb-4">
+              <p className="text-white/80 mb-4 text-sm sm:text-base">
                 You have reached the maximum limit of{" "}
                 <span className="font-semibold text-white/80">
                   {uploadLimit} summaries
                 </span>{" "}
                 for your{" "}
-                <span className="font-semibold text-white/80">Basic</span>{" "}
-                plan. To continue creating new summaries, please upgrade to our{" "}
+                <span className="font-semibold text-white/80">Basic</span> plan.
+                To continue creating new summaries, please upgrade to our{" "}
                 <span className="font-semibold text-white/80">Pro</span> plan.
               </p>
               <Link
                 href="/#pricing"
-                className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+                className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium text-sm transition-colors w-full sm:w-auto"
               >
                 Upgrade to Pro Plan
                 <ArrowRight className="w-4 h-4" />
@@ -141,11 +142,10 @@ export default function DashboardClient({
         </div>
       )}
 
-      {/* Summaries Grid */}
       {summaries.length === 0 ? (
         <EmptySummaryState />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {summaries.map((summary, index) => (
             <SummaryCard
               key={index}

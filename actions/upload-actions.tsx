@@ -77,11 +77,10 @@ export async function storePdfSummaryAction({
       };
     }
 
-    // Initialize chatbot functionality by extracting and saving full PDF text
     try {
       console.log("Initializing chatbot functionality...");
       const fullTextContent = await fetchAndExtractPdfText(fileUrl);
-      
+
       if (fullTextContent && fullTextContent.trim().length > 0) {
         await savePdfStore({
           pdfSummaryId: savedSummary.id,
@@ -92,9 +91,7 @@ export async function storePdfSummaryAction({
       }
     } catch (chatbotError) {
       console.error("Error initializing chatbot functionality:", chatbotError);
-      // Don't fail the entire operation if chatbot initialization fails
     }
-
   } catch (error) {
     return {
       success: false,
@@ -104,7 +101,7 @@ export async function storePdfSummaryAction({
   }
 
   revalidatePath(`/summaries/${savedSummary.id}`);
-  revalidatePath('/dashboard');
+  revalidatePath("/dashboard");
 
   return {
     success: true,

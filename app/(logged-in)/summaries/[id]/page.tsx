@@ -1,9 +1,7 @@
 import BgGradient from "@/components/common/bg-gradient";
-import SourceInfo from "@/components/summaries/source-info";
 import SummaryHeader from "@/components/summaries/summary-header";
 import { getSummaryById } from "@/lib/summaries";
 import { notFound } from "next/navigation";
-import { FileText } from "lucide-react";
 import SummaryViewer from "@/components/summaries/summary-viewer";
 
 export default async function SummaryPage(props: {
@@ -18,14 +16,7 @@ export default async function SummaryPage(props: {
     notFound();
   }
 
-  const {
-    title,
-    summary_text,
-    file_name,
-    word_count,
-    created_at,
-    original_file_url,
-  } = summary;
+  const { title, summary_text, word_count } = summary;
 
   const reading_time = Math.ceil((word_count || 0) / 200);
 

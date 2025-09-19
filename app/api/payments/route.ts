@@ -1,4 +1,7 @@
-import { handleCheckoutSessionCompleted, handleSubscriptionDeleted } from "@/lib/payments";
+import {
+  handleCheckoutSessionCompleted,
+  handleSubscriptionDeleted,
+} from "@/lib/payments";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 

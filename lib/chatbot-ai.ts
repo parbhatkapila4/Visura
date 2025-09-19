@@ -26,22 +26,21 @@ export async function generateChatbotResponse(
   userId: string
 ): Promise<string> {
   try {
-    // Get session with PDF content
     const session = await getQASessionById(sessionId, userId);
     if (!session) {
       throw new Error("Session not found");
     }
 
-    // Get conversation history
     const messages = await getQAMessagesBySession(sessionId, userId);
-    
-    // Build conversation context
-    const conversationHistory = messages.map(msg => ({
-      role: msg.message_type === "user" ? "user" as const : "assistant" as const,
+
+    const conversationHistory = messages.map((msg) => ({
+      role:
+        msg.message_type === "user"
+          ? ("user" as const)
+          : ("assistant" as const),
       content: msg.message_content,
     }));
 
-    // Create the prompt with PDF context
     const pdfContext = `
 PDF Document: ${session.title || session.file_name}
 Full Document Content:
@@ -52,24 +51,22 @@ User's Question: ${userMessage}
 Please answer the user's question based on the PDF content above. If the question cannot be answered from the document content, please let the user know.
 `;
 
-    // Prepare messages for the AI
     const aiMessages = [
       {
         role: "system" as const,
         content: CHATBOT_SYSTEM_PROMPT,
       },
-      ...conversationHistory.slice(-10), // Keep last 10 messages for context
+      ...conversationHistory.slice(-10),
       {
         role: "user" as const,
         content: pdfContext,
       },
     ];
 
-    // Generate response using OpenRouter
     const response = await openrouterChatCompletion({
       model: "google/gemini-2.5-flash",
       messages: aiMessages,
-      temperature: 0.3, // Lower temperature for more focused responses
+      temperature: 0.3,
       max_tokens: 1000,
     });
 
@@ -80,13 +77,15 @@ Please answer the user's question based on the PDF content above. If the questio
       message: error instanceof Error ? error.message : "Unknown error",
       stack: error instanceof Error ? error.stack : undefined,
       sessionId,
-      userId
+      userId,
     });
     return "I apologize, but I encountered an error while processing your question. Please try again.";
   }
 }
 
-export async function generateInitialChatbotGreeting(pdfTitle: string): Promise<string> {
+export async function generateInitialChatbotGreeting(
+  pdfTitle: string
+): Promise<string> {
   return `Hello! I'm your AI assistant for this document: "${pdfTitle}". I can help you understand and analyze the content of this PDF. You can ask me questions about:
 
 • Key concepts and main points

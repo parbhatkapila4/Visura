@@ -39,7 +39,8 @@ export default function DeleteButton({
         onDelete?.(summaryId);
       } else {
         const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.message || `Failed to delete summary (${response.status})`;
+        const errorMessage =
+          errorData.message || `Failed to delete summary (${response.status})`;
         throw new Error(errorMessage);
       }
     } catch (error) {

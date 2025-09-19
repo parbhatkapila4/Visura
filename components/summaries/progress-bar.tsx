@@ -18,10 +18,13 @@ export default function ProgressBar({
     >
       <div className="px-4 flex gap-1.5">
         {sections.map((_, index) => (
-          <div key={index} className="h-1.5 flex-1 rounded-full bg-green-900/10 overflow-hidden">
+          <div
+            key={index}
+            className="h-1.5 flex-1 rounded-full bg-green-900/10 overflow-hidden"
+          >
             <div
               className={cn(
-                "h-full bg-gradient-to-r from-gray-500 to-green-900 transition-all duration-500",
+                "h-full bg-gradient-to-r from-gray-500 to-[#625EC3] transition-all duration-500",
                 index === currentSection
                   ? "w-full"
                   : currentSection > index

@@ -13,15 +13,15 @@ interface AnimatedHomePageProps {
   showCancelMessage?: boolean;
 }
 
-export default function AnimatedHomePage({ 
-  showSuccessMessage = false, 
-  showCancelMessage = false 
+export default function AnimatedHomePage({
+  showSuccessMessage = false,
+  showCancelMessage = false,
 }: AnimatedHomePageProps) {
-  // Show success message if payment was successful
   useEffect(() => {
     if (showSuccessMessage) {
       toast.success("Payment Successful!", {
-        description: "Welcome to Pro plan! You now have unlimited access to all features.",
+        description:
+          "Welcome to Pro plan! You now have unlimited access to all features.",
         duration: 5000,
       });
     }
@@ -45,8 +45,8 @@ export default function AnimatedHomePage({
   };
 
   const sectionVariants = {
-    hidden: { 
-      opacity: 0, 
+    hidden: {
+      opacity: 0,
       y: 50,
       scale: 0.95,
     },
@@ -58,37 +58,37 @@ export default function AnimatedHomePage({
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="flex flex-col"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <motion.div 
+      <motion.div
         variants={sectionVariants}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <HeroSection />
       </motion.div>
-      <motion.div 
+      <motion.div
         variants={sectionVariants}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <DemoSection />
       </motion.div>
-      <motion.div 
+      <motion.div
         variants={sectionVariants}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <HowItWorksSection />
       </motion.div>
-      <motion.div 
+      <motion.div
         variants={sectionVariants}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <PricingSection />
       </motion.div>
-      <motion.div 
+      <motion.div
         variants={sectionVariants}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >

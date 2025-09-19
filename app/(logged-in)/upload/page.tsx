@@ -13,27 +13,25 @@ export default async function UploadPage() {
     redirect("/sign-in");
   }
 
-  // Check if user has reached upload limit
   const { hasReachedLimit, uploadLimit } = await hasReachedUploadLimit(
     user.id,
     user.emailAddresses[0]?.emailAddress || ""
   );
 
   return (
-    <section className="min-h-screen bg-black mt-20">
-      <BackgroundLines className="flex items-center justify-center w-full flex-col px-4 bg-black -mt-40">
-      <BgGradient />
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <div className = "flex flex-col items-center justify-center gap-2 text-center">
-          <UploadHeader />
-          <SupabaseUploadForm 
-            hasReachedLimit={hasReachedLimit}
-            uploadLimit={uploadLimit}
-          />
+    <section className="min-h-screen bg-black flex items-center justify-center">
+      <BackgroundLines className="flex items-center justify-center w-full flex-col px-4 bg-black">
+        <BgGradient />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8">
+          <div className="flex flex-col items-center justify-center gap-4 sm:gap-6 text-center">
+            <UploadHeader />
+            <SupabaseUploadForm
+              hasReachedLimit={hasReachedLimit}
+              uploadLimit={uploadLimit}
+            />
+          </div>
         </div>
-      </div>
       </BackgroundLines>
-
     </section>
   );
 }

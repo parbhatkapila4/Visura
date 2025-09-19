@@ -20,21 +20,21 @@ export async function GET(request: NextRequest) {
           pdf_stores: false,
           pdf_qa_sessions: false,
           pdf_qa_messages: false,
-        }
-      }
+        },
+      },
     };
 
-    // Test database connection and tables
     try {
       const sql = await getDbConnection();
       diagnostics.database.connected = true;
 
-      // Check if tables exist
-      const tables = ['pdf_stores', 'pdf_qa_sessions', 'pdf_qa_messages'];
+      const tables = ["pdf_stores", "pdf_qa_sessions", "pdf_qa_messages"];
       for (const table of tables) {
         try {
           await sql`SELECT 1 FROM ${sql(table)} LIMIT 1`;
-          diagnostics.database.tables[table as keyof typeof diagnostics.database.tables] = true;
+          diagnostics.database.tables[
+            table as keyof typeof diagnostics.database.tables
+          ] = true;
         } catch (error) {
           console.error(`Table ${table} not found:`, error);
         }
@@ -48,7 +48,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Debug endpoint error:", error);
     return NextResponse.json(
-      { error: "Debug failed", details: error instanceof Error ? error.message : "Unknown error" },
+      {
+        error: "Debug failed",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }

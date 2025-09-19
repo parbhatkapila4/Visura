@@ -192,21 +192,16 @@ export default function CTASection() {
             </SignedIn>
           </motion.div>
 
-          {/* Testimonials Section */}
           <motion.div
             className="w-full max-w-6xl mx-auto mt-24 mb-8"
             variants={itemVariants}
           >
             <div className="relative">
-              {/* Subtle texture background */}
               <div className="absolute inset-0 bg-[url('/noise.webp')] opacity-20 rounded-2xl"></div>
 
-              {/* Horizontal line */}
               <div className="absolute top-8 left-0 right-0 h-px bg-gray-600/30"></div>
 
-              {/* Testimonials grid */}
               <div className="relative grid md:grid-cols-2 gap-12 p-12">
-                {/* First testimonial */}
                 <motion.div
                   className="text-center space-y-6"
                   initial={{ opacity: 0, y: 30 }}
@@ -215,7 +210,6 @@ export default function CTASection() {
                   }
                   transition={{ delay: 0.5, duration: 0.8 }}
                 >
-                  {/* Profile Image */}
                   <div className="flex justify-center">
                     <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#625EC3]/30">
                       <img
@@ -226,19 +220,16 @@ export default function CTASection() {
                     </div>
                   </div>
 
-                  {/* Quote */}
                   <blockquote className="text-xl md:text-2xl font-serif italic text-white/90 leading-relaxed">
                     "Visura transformed our document workflow completely. What
                     used to take hours now takes minutes."
                   </blockquote>
 
-                  {/* Attribution */}
                   <cite className="block text-sm font-medium uppercase tracking-wider text-gray-300">
                     Sarah M, TechCorp
                   </cite>
                 </motion.div>
 
-                {/* Second testimonial */}
                 <motion.div
                   className="text-center space-y-6"
                   initial={{ opacity: 0, y: 30 }}
@@ -247,7 +238,6 @@ export default function CTASection() {
                   }
                   transition={{ delay: 0.7, duration: 0.8 }}
                 >
-                  {/* Profile Image */}
                   <div className="flex justify-center">
                     <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-blue-500/30">
                       <img
@@ -258,13 +248,11 @@ export default function CTASection() {
                     </div>
                   </div>
 
-                  {/* Quote */}
                   <blockquote className="text-xl md:text-2xl font-serif italic text-white/90 leading-relaxed">
                     "The AI summaries are incredibly accurate and save our team
                     countless hours every week."
                   </blockquote>
 
-                  {/* Attribution */}
                   <cite className="block text-sm font-medium uppercase tracking-wider text-gray-300">
                     Michael R, DataFlow Inc
                   </cite>

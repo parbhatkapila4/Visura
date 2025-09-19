@@ -49,14 +49,23 @@ export const WavyBackground = ({
   const init = () => {
     canvas = canvasRef.current;
     ctx = canvas.getContext("2d");
+    
+    // Optimize for mobile devices
+    const devicePixelRatio = window.devicePixelRatio || 1;
+    const isMobile = window.innerWidth < 768;
+    
     w = ctx.canvas.width = window.innerWidth;
     h = ctx.canvas.height = window.innerHeight;
-    ctx.filter = `blur(${blur}px)`;
+    
+    // Reduce blur on mobile for better performance
+    ctx.filter = `blur(${isMobile ? Math.max(blur - 3, 2) : blur}px)`;
     nt = 0;
+    
     window.onresize = function () {
       w = ctx.canvas.width = window.innerWidth;
       h = ctx.canvas.height = window.innerHeight;
-      ctx.filter = `blur(${blur}px)`;
+      const isMobileResize = window.innerWidth < 768;
+      ctx.filter = `blur(${isMobileResize ? Math.max(blur - 3, 2) : blur}px)`;
     };
     render();
   };
@@ -70,11 +79,15 @@ export const WavyBackground = ({
   ];
   const drawWave = (n: number) => {
     nt += getSpeed();
-    for (i = 0; i < n; i++) {
+    const isMobile = window.innerWidth < 768;
+    const stepSize = isMobile ? 8 : 5; // Larger steps on mobile for better performance
+    const waveCount = isMobile ? Math.min(n, 3) : n; // Fewer waves on mobile
+    
+    for (i = 0; i < waveCount; i++) {
       ctx.beginPath();
-      ctx.lineWidth = waveWidth || 50;
+      ctx.lineWidth = isMobile ? (waveWidth || 50) * 0.8 : (waveWidth || 50);
       ctx.strokeStyle = waveColors[i % waveColors.length];
-      for (x = 0; x < w; x += 5) {
+      for (x = 0; x < w; x += stepSize) {
         var y = noise(x / 800, 0.3 * i, nt) * 100;
         ctx.lineTo(x, y + h * 0.5); // adjust for height, currently at 50% of the container
       }
@@ -88,7 +101,10 @@ export const WavyBackground = ({
     ctx.fillStyle = backgroundFill || "black";
     ctx.globalAlpha = waveOpacity || 0.5;
     ctx.fillRect(0, 0, w, h);
-    drawWave(5);
+    
+    const isMobile = window.innerWidth < 768;
+    drawWave(isMobile ? 3 : 5); // Fewer waves on mobile
+    
     animationId = requestAnimationFrame(render);
   };
 
@@ -112,7 +128,7 @@ export const WavyBackground = ({
   return (
     <div
       className={cn(
-        "h-screen flex flex-col items-center justify-center",
+        "h-screen flex flex-col items-center justify-center min-h-[100vh]",
         containerClassName
       )}
     >

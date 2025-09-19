@@ -1,7 +1,5 @@
 "use client";
-import { cn } from "@/lib/utils";
-import { pricingPlans } from "@/utils/constants";
-import { ArrowRight, CheckIcon, Clock, Users, Zap } from "lucide-react";
+import { CheckIcon, Clock, Zap } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
@@ -10,22 +8,22 @@ import { useRef } from "react";
 // Helper function to create checkout session via API
 const createCheckoutSession = async (priceId: string) => {
   try {
-    const response = await fetch('/api/create-checkout-session', {
-      method: 'POST',
+    const response = await fetch("/api/create-checkout-session", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ priceId }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create checkout session');
+      throw new Error("Failed to create checkout session");
     }
 
     const { url } = await response.json();
     return url;
   } catch (error) {
-    console.error('Error creating checkout session:', error);
+    console.error("Error creating checkout session:", error);
     throw error;
   }
 };
@@ -45,7 +43,6 @@ const WorkWithUsCard = ({
   price,
   description,
   period,
-  borderColor,
   index,
   priceId,
 }: {
@@ -66,11 +63,10 @@ const WorkWithUsCard = ({
         const checkoutUrl = await createCheckoutSession(priceId);
         window.location.href = checkoutUrl;
       } else {
-        throw new Error('Price ID not provided');
+        throw new Error("Price ID not provided");
       }
     } catch (error) {
-      console.error('Checkout failed:', error);
-      // You could show a toast error here
+      console.error("Checkout failed:", error);
     } finally {
       setIsLoading(false);
     }
@@ -129,13 +125,11 @@ const StartSmallCard = () => {
   const handleCheckout = async () => {
     setIsLoading(true);
     try {
-      // Use the Pro price ID for the $20 one-time payment
       const priceId = "price_1S82BQIDKmPOE5aTwhecvlb9";
       const checkoutUrl = await createCheckoutSession(priceId);
       window.location.href = checkoutUrl;
     } catch (error) {
-      console.error('Checkout failed:', error);
-      // You could show a toast error here
+      console.error("Checkout failed:", error);
     } finally {
       setIsLoading(false);
     }
@@ -154,97 +148,88 @@ const StartSmallCard = () => {
 
   return (
     <motion.div
-      className="relative"
+      className="relative w-full max-w-full overflow-hidden"
       initial={{ opacity: 0, x: 20 }}
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
       transition={{ delay: 0.3 }}
     >
-      <div className="bg-gray-800/50 border border-gray-700/50 rounded-[2rem] p-8 backdrop-blur-sm max-w-md mx-auto">
-        {/* Graphic placeholder */}
-        <div className="flex justify-center mb-8 h-44 items-center">
-          <div className="relative w-80 h-32">
-            {/* Background with texture */}
+      <div className="bg-gray-800/50 border border-gray-700/50 rounded-[2rem] p-3 sm:p-6 lg:p-8 backdrop-blur-sm max-w-xs sm:max-w-sm md:max-w-md mx-auto w-full overflow-hidden">
+        <div className="hidden md:flex justify-center w-full mb-4 sm:mb-6 md:mb-8 h-24 sm:h-32 md:h-44 items-center overflow-hidden">
+          <div className="relative w-48 sm:w-64 md:w-80 h-20 sm:h-24 md:h-32">
             <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-2xl opacity-90"></div>
 
-            {/* Left app window (behind) */}
-            <div className="absolute -left-4 top-2 w-20 h-16 bg-gray-800/80 rounded-xl border border-gray-600/50 backdrop-blur-sm">
-              <div className="p-2 space-y-1">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-red-500 rounded-sm"></div>
-                  <div className="w-2 h-2 bg-yellow-500 rounded-sm"></div>
-                  <div className="w-2 h-2 bg-green-500 rounded-sm"></div>
+            <div className="absolute -left-1 sm:-left-2 md:-left-4 top-1 sm:top-2 w-12 sm:w-16 md:w-20 h-10 sm:h-12 md:h-16 bg-gray-800/80 rounded-xl border border-gray-600/50 backdrop-blur-sm">
+              <div className="p-1 sm:p-2 space-y-0.5 sm:space-y-1">
+                <div className="flex gap-0.5 sm:gap-1">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-transparent rounded-sm"></div>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-500 rounded-sm"></div>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-sm"></div>
                 </div>
-                <div className="grid grid-cols-2 gap-1">
-                  <div className="w-3 h-3 bg-blue-400 rounded-sm"></div>
-                  <div className="w-3 h-3 bg-purple-400 rounded-sm"></div>
-                  <div className="w-3 h-3 bg-pink-400 rounded-sm"></div>
-                  <div className="w-3 h-3 bg-orange-400 rounded-sm"></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Central app window (main) */}
-            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-20 bg-black rounded-xl border border-gray-500/30 shadow-2xl">
-              <div className="p-3 flex flex-col items-center justify-center h-full">
-                {/* Glowing geometric shapes */}
-                <div className="w-8 h-3 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 rounded-sm mb-2 shadow-lg shadow-purple-500/50"></div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-gradient-to-br from-orange-400 via-red-500 to-purple-600 rounded-sm shadow-lg shadow-orange-500/50"></div>
-                  <div className="w-3 h-3 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-full shadow-lg shadow-cyan-500/50"></div>
+                <div className="grid grid-cols-2 gap-0.5 sm:gap-1">
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-400 rounded-sm"></div>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-purple-400 rounded-sm"></div>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-pink-400 rounded-sm"></div>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-orange-400 rounded-sm"></div>
                 </div>
               </div>
             </div>
 
-            {/* Right app window (behind) */}
-            <div className="absolute -right-4 top-3 w-20 h-16 bg-gray-800/80 rounded-xl border border-gray-600/50 backdrop-blur-sm">
-              <div className="p-2 space-y-1">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-red-500 rounded-sm"></div>
-                  <div className="w-2 h-2 bg-yellow-500 rounded-sm"></div>
-                  <div className="w-2 h-2 bg-green-500 rounded-sm"></div>
+            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 sm:w-20 md:w-24 h-12 sm:h-16 md:h-20 bg-black rounded-xl border border-gray-500/30 shadow-2xl">
+              <div className="p-2 sm:p-3 flex flex-col items-center justify-center h-full">
+                <div className="w-6 sm:w-8 h-2 sm:h-3 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 rounded-sm mb-1 sm:mb-2 shadow-lg shadow-purple-500/50"></div>
+                <div className="flex items-center gap-0.5 sm:gap-1">
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-gradient-to-br from-orange-400 via-transparent to-purple-600 rounded-sm shadow-lg shadow-orange-500/50"></div>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-full shadow-lg shadow-cyan-500/50"></div>
                 </div>
-                <div className="space-y-1">
-                  <div className="w-full h-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-sm"></div>
-                  <div className="w-3/4 h-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-sm"></div>
-                  <div className="w-1/2 h-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-sm"></div>
+              </div>
+            </div>
+
+            <div className="absolute -right-1 sm:-right-2 md:-right-4 top-2 sm:top-3 w-12 sm:w-16 md:w-20 h-10 sm:h-12 md:h-16 bg-gray-800/80 rounded-xl border border-gray-600/50 backdrop-blur-sm">
+              <div className="p-1 sm:p-2 space-y-0.5 sm:space-y-1">
+                <div className="flex gap-0.5 sm:gap-1">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-transparent rounded-sm"></div>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-yellow-500 rounded-sm"></div>
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-sm"></div>
+                </div>
+                <div className="space-y-0.5 sm:space-y-1">
+                  <div className="w-full h-0.5 sm:h-1 bg-gradient-to-r from-transparent to-orange-500 rounded-sm"></div>
+                  <div className="w-3/4 h-0.5 sm:h-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-sm"></div>
+                  <div className="w-1/2 h-0.5 sm:h-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-sm"></div>
                 </div>
                 <div className="text-xs text-white/60 font-mono">$2,847</div>
               </div>
             </div>
 
-            {/* Subtle glow effects */}
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-30"></div>
           </div>
         </div>
 
-        <h3 className="text-3xl font-bold text-white mb-7 italic text-center">
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3 sm:mb-4 md:mb-7 italic text-center">
           Read less!
         </h3>
 
-        <p className="text-gray-400 mb-8 text-base text-center">
+        <p className="text-gray-400 mb-4 sm:mb-6 md:mb-8 text-sm sm:text-base text-center px-1 sm:px-2 md:px-4 max-w-full">
           Get high-impact summaries{" "}
           <span className="text-orange-400 font-bold"> in seconds</span>. No
           fluff. Just clarity.
         </p>
 
-        {/* Service Tags - Infinite Scroll */}
-        <div className="relative overflow-hidden mb-8 -mx-4">
-          <div className="flex gap-4 animate-scroll px-4">
-            {/* First set of tags */}
+        <div className="relative overflow-hidden mb-4 sm:mb-6 md:mb-8">
+          <div className="flex gap-1 sm:gap-1.5 md:gap-2 lg:gap-4 animate-scroll overflow-x-hidden">
             {serviceTags.map((tag, index) => (
               <span
                 key={`first-${index}`}
-                className="px-4 py-2 border border-gray-600 text-white/70 text-sm font-medium rounded-full uppercase tracking-wide whitespace-nowrap flex-shrink-0"
+                className="px-1.5 sm:px-3 md:px-4 py-0.5 sm:py-1 md:py-1.5 border border-gray-600 text-white/70 text-xs font-medium rounded-full uppercase tracking-wide whitespace-nowrap flex-shrink-0"
               >
                 {tag}
               </span>
             ))}
-            {/* Duplicate set for seamless loop */}
+
             {serviceTags.map((tag, index) => (
               <span
                 key={`second-${index}`}
-                className="px-4 py-2 bg-gray-700 border border-gray-600 text-white text-sm font-medium rounded-full uppercase tracking-wide whitespace-nowrap flex-shrink-0"
+                className="px-1.5 sm:px-3 md:px-4 py-0.5 sm:py-1 md:py-1.5 bg-gray-700 border border-gray-600 text-white text-xs font-medium rounded-full uppercase tracking-wide whitespace-nowrap flex-shrink-0"
               >
                 {tag}
               </span>
@@ -260,13 +245,13 @@ const StartSmallCard = () => {
           whileTap={{ scale: 0.98 }}
         >
           <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-          <span className="relative flex h-full w-full cursor-pointer items-center justify-between rounded-2xl bg-transparent px-4 py-3 text-white/80 font-bold text-base backdrop-blur-3xl transition-colors hover:bg-green-600/20 disabled:opacity-50">
+          <span className="relative flex h-full w-full cursor-pointer items-center justify-between rounded-2xl bg-transparent px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-white/80 font-bold text-sm sm:text-base backdrop-blur-3xl transition-colors hover:bg-green-600/20 disabled:opacity-50">
             <span>Get a summary</span>
             <span>$20</span>
           </span>
         </motion.button>
 
-        <p className="text-gray-500 text-xs uppercase text-center mt-4">
+        <p className="text-gray-500 text-xs uppercase text-center mt-3 sm:mt-4">
           One Summary, One Price
         </p>
       </div>
@@ -304,18 +289,17 @@ export default function PricingSection() {
 
   return (
     <section
-      className="relative overflow-hidden bg-black py-16 pt-24"
+      className="relative overflow-hidden bg-black py-12 sm:py-16 lg:py-20 xl:pt-24"
       id="pricing"
       ref={ref}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
-          className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16"
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
         >
-          {/* Left Column - Work with us */}
           <motion.div
             className="space-y-8"
             variants={titleVariants}
@@ -324,12 +308,12 @@ export default function PricingSection() {
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <div>
-              <h2 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-500 to-gray-800 mb-12 ml-6">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-500 to-gray-800 mb-6 sm:mb-8 lg:mb-12 text-center">
                 Summarize With AI
               </h2>
-              <p className="text-gray-600 text-xl mb-4 leading-relaxed">
+              <p className="text-gray-600 text-base sm:text-lg lg:text-xl mb-4 leading-relaxed px-2 sm:px-0">
                 Tap in on a <span className="text-white/70 p-1">Basic</span> or{" "}
-                <span className="text-white/70 p-1">Pro</span> basis. You’ll get
+                <span className="text-white/70 p-1">Pro</span> basis. You'll get
                 your very own Slack channel and direct access to instant PDF
                 insights that transform the way you work.
               </p>
@@ -356,24 +340,22 @@ export default function PricingSection() {
               />
             </div>
 
-            {/* Features */}
-            <div className="flex flex-wrap gap-6 pt-4">
-              <div className="flex items-center gap-2 text-white">
-                <CheckIcon className="w-5 h-5 text-green-400" />
+            <div className="flex flex-wrap gap-4 sm:gap-6 pt-4 px-4 justify-center sm:justify-start">
+              <div className="flex items-center gap-2 text-white text-sm sm:text-base">
+                <CheckIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" />
                 <span>Unlimited documents</span>
               </div>
-              <div className="flex items-center gap-2 text-white">
-                <Clock className="w-5 h-5 text-green-400" />
+              <div className="flex items-center gap-2 text-white text-sm sm:text-base">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" />
                 <span>Within 30 Seconds</span>
               </div>
-              <div className="flex items-center gap-2 text-white">
-                <Zap className="w-5 h-5 text-green-400" />
+              <div className="flex items-center gap-2 text-white text-sm sm:text-base">
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" />
                 <span>Instant PDF Insights</span>
               </div>
             </div>
           </motion.div>
 
-          {/* Right Column - Start small */}
           <motion.div
             className="flex items-center"
             variants={titleVariants}

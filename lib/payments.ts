@@ -31,12 +31,11 @@ export async function handleCheckoutSessionCompleted({
   stripe: Stripe;
 }) {
   console.log("Checkout session completed", session);
-  
+
   try {
     const customerId = session.customer as string;
     const customer = await stripe.customers.retrieve(customerId);
-    
-    // Get line items from the session
+
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
     const priceId = lineItems.data[0]?.price?.id;
 
@@ -67,7 +66,10 @@ export async function handleCheckoutSessionCompleted({
 
       console.log("User created/updated successfully for email:", email);
     } else {
-      console.error("Missing email or priceId:", { email: "email" in customer ? customer.email : "not found", priceId });
+      console.error("Missing email or priceId:", {
+        email: "email" in customer ? customer.email : "not found",
+        priceId,
+      });
     }
   } catch (error) {
     console.error("Error in handleCheckoutSessionCompleted:", error);
@@ -91,23 +93,31 @@ async function CreateOrUpdateUser({
   status: string;
 }) {
   try {
-    console.log("Creating/updating user with data:", { email, fullName, customerId, priceId, status });
-    
+    console.log("Creating/updating user with data:", {
+      email,
+      fullName,
+      customerId,
+      priceId,
+      status,
+    });
+
     const user = await sql`SELECT * FROM users WHERE email = ${email}`;
     console.log("Existing user found:", user);
 
     if (user.length === 0) {
       console.log("Creating new user...");
-      const result = await sql`INSERT INTO users (email, full_name, customer_id, price_id, status) VALUES (${email}, ${fullName}, ${customerId}, ${priceId}, ${status}) RETURNING *`;
+      const result =
+        await sql`INSERT INTO users (email, full_name, customer_id, price_id, status) VALUES (${email}, ${fullName}, ${customerId}, ${priceId}, ${status}) RETURNING *`;
       console.log("New user created:", result);
     } else {
       console.log("Updating existing user...");
-      const result = await sql`UPDATE users SET customer_id = ${customerId}, price_id = ${priceId}, status = ${status}, full_name = ${fullName} WHERE email = ${email} RETURNING *`;
+      const result =
+        await sql`UPDATE users SET customer_id = ${customerId}, price_id = ${priceId}, status = ${status}, full_name = ${fullName} WHERE email = ${email} RETURNING *`;
       console.log("User updated:", result);
     }
   } catch (error) {
     console.error("Error creating or updating user:", error);
-    throw error; 
+    throw error;
   }
 }
 
@@ -124,13 +134,20 @@ async function createPayment({
 }) {
   try {
     const { amount_total, id, status } = session;
-    
-    console.log("Creating payment record:", { amount_total, id, status, priceId, userEmail });
 
-    const result = await sql`INSERT INTO payments (amount, status, stripe_payment_id, price_id, user_email) VALUES (${amount_total}, ${status}, ${id}, ${priceId}, ${userEmail}) RETURNING *`;
+    console.log("Creating payment record:", {
+      amount_total,
+      id,
+      status,
+      priceId,
+      userEmail,
+    });
+
+    const result =
+      await sql`INSERT INTO payments (amount, status, stripe_payment_id, price_id, user_email) VALUES (${amount_total}, ${status}, ${id}, ${priceId}, ${userEmail}) RETURNING *`;
     console.log("Payment record created:", result);
   } catch (error) {
     console.error("Error creating payment:", error);
-    throw error; // Re-throw to see the error in the webhook
+    throw error;
   }
 }

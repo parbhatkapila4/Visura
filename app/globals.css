@@ -125,15 +125,15 @@
   }
 
   h1 {
-    @apply text-4xl md:text-6xl xl:text-7xl font-bold;
+    @apply text-3xl sm:text-4xl md:text-6xl xl:text-7xl font-bold;
   }
 
   h2 {
-    @apply text-xl lg:text-3xl font-medium; 
+    @apply text-lg sm:text-xl lg:text-3xl font-medium; 
   }
 
   h3 {
-    @apply text-2xl lg:text-4xl font-medium; 
+    @apply text-xl sm:text-2xl lg:text-4xl font-medium; 
   }
 
   a {
@@ -141,13 +141,14 @@
   }
 
   button {
-    @apply hover:cursor-pointer bg-rose-600 hover:bg-rose-700;
+    @apply hover:cursor-pointer bg-black hover:bg-gray-800;
   } 
 
   .container {
     margin-inline: auto;
-    padding-inline: 2rem;
+    padding-inline: 1rem;
     @media (min-width: 640px) {
+      padding-inline: 2rem;
       max-width: none;
     }
     @media (min-width: 1400px) {
@@ -252,4 +253,108 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Mobile-specific utilities */
+@media (max-width: 768px) {
+  .mobile-padding {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .mobile-text-sm {
+    font-size: 0.875rem;
+  }
+  
+  .mobile-text-base {
+    font-size: 1rem;
+  }
+  
+  .mobile-hidden {
+    display: none;
+  }
+  
+  .mobile-block {
+    display: block;
+  }
+  
+  .mobile-flex {
+    display: flex;
+  }
+  
+  .mobile-grid {
+    display: grid;
+  }
+  
+  .mobile-grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  .mobile-gap-4 {
+    gap: 1rem;
+  }
+  
+  .mobile-gap-2 {
+    gap: 0.5rem;
+  }
+  
+  .mobile-p-4 {
+    padding: 1rem;
+  }
+  
+  .mobile-p-2 {
+    padding: 0.5rem;
+  }
+  
+  .mobile-mb-4 {
+    margin-bottom: 1rem;
+  }
+  
+  .mobile-mb-2 {
+    margin-bottom: 0.5rem;
+  }
+  
+  .mobile-w-full {
+    width: 100%;
+  }
+  
+  .mobile-h-auto {
+    height: auto;
+  }
+  
+  .mobile-text-center {
+    text-align: center;
+  }
+  
+  .mobile-flex-col {
+    flex-direction: column;
+  }
+  
+  .mobile-items-center {
+    align-items: center;
+  }
+  
+  .mobile-justify-center {
+    justify-content: center;
+  }
+  
+  .mobile-space-y-4 > * + * {
+    margin-top: 1rem;
+  }
+  
+  .mobile-space-y-2 > * + * {
+    margin-top: 0.5rem;
+  }
+}
+
+/* Touch-friendly button sizes */
+@media (max-width: 768px) {
+  button, .btn, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  input, textarea, select {
+    min-height: 44px;
+  }
 }

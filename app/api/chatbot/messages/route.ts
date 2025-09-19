@@ -13,20 +13,24 @@ export async function POST(request: NextRequest) {
     const { sessionId, message } = await request.json();
 
     if (!sessionId || !message) {
-      return NextResponse.json({ error: "Session ID and message are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Session ID and message are required" },
+        { status: 400 }
+      );
     }
 
-    // Save user message
     const userMessage = await saveQAMessage({
       sessionId,
       messageType: "user",
       messageContent: message,
     });
 
-    // Generate AI response
-    const aiResponse = await generateChatbotResponse(sessionId, message, userId);
+    const aiResponse = await generateChatbotResponse(
+      sessionId,
+      message,
+      userId
+    );
 
-    // Save AI response
     const assistantMessage = await saveQAMessage({
       sessionId,
       messageType: "assistant",
@@ -40,10 +44,15 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error processing chatbot message:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to process message",
         details: error instanceof Error ? error.message : "Unknown error",
-        stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
+        stack:
+          process.env.NODE_ENV === "development"
+            ? error instanceof Error
+              ? error.stack
+              : undefined
+            : undefined,
       },
       { status: 500 }
     );
@@ -61,7 +70,10 @@ export async function GET(request: NextRequest) {
     const sessionId = searchParams.get("sessionId");
 
     if (!sessionId) {
-      return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Session ID is required" },
+        { status: 400 }
+      );
     }
 
     const messages = await getQAMessagesBySession(sessionId, userId);

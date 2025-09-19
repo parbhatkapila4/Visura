@@ -11,10 +11,13 @@ export async function GET(request: NextRequest) {
     }
 
     const priceId = await getPriceIdForUser(email);
-    
+
     return NextResponse.json({ priceId });
   } catch (error) {
     console.error("Error fetching price ID:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

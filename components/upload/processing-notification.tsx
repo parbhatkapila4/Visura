@@ -6,7 +6,9 @@ interface ProcessingNotificationProps {
   isVisible: boolean;
 }
 
-export default function ProcessingNotification({ isVisible }: ProcessingNotificationProps) {
+export default function ProcessingNotification({
+  isVisible,
+}: ProcessingNotificationProps) {
   if (!isVisible) return null;
 
   return (
