@@ -1,12 +1,15 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, Play } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { WavyBackground } from "../ui/wavy-background";
-import Link from "next/link";
+import { VideoModal } from "@/components/ui/video-modal";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 export default function HeroSection() {
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -114,23 +117,28 @@ export default function HeroSection() {
             <Button
               variant={"link"}
               className="text-white mt-6 sm:mt-8 md:mt-10 lg:mt-16 text-sm sm:text-base md:text-lg lg:text-xl rounded-full px-6 sm:px-8 md:px-10 lg:px-12 py-3 sm:py-4 md:py-5 lg:py-6 no-underline hover:no-underline bg-gradient-to-r from-[#625EC3] to-[#020203] hover:from-[#000000] hover:to-[#625EC3] font-bold shadow-lg transition-all duration-300 w-full"
+              onClick={() => setIsVideoModalOpen(true)}
             >
-              <Link
-                href="/#pricing"
-                className="flex gap-2 items-center justify-center w-full"
-              >
-                <span>Try Visura</span>
+              <div className="flex gap-2 items-center justify-center w-full">
+                <Play className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span>See Visura Works</span>
                 <motion.div
                   animate={{ x: [0, 5, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 >
                   <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 </motion.div>
-              </Link>
+              </div>
             </Button>
           </motion.div>
         </motion.div>
       </motion.section>
+      
+      <VideoModal
+        videoSrc="/Visurademo.mp4"
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+      />
     </WavyBackground>
   );
 }
