@@ -135,7 +135,7 @@ export default function HeroSection() {
       </motion.section>
       
       <VideoModal
-        videoSrc="/Visurademo.mp4"
+        videoSrc="https://lcbcrithcxdbqynfmtxk.supabase.co/storage/v1/object/public/Videos/Visura-Demo-1758303349310.mp4"
         isOpen={isVideoModalOpen}
         onClose={() => setIsVideoModalOpen(false)}
       />
