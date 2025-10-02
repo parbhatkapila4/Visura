@@ -475,4 +475,4 @@ PRs welcome for:
 
 ---
 
-Built by [@parbhatkapila4](https://github.com/parbhatkapila4) | [LinkedIn](https://www.linkedin.com/in/parbhatkapila/) | [Email](mailto:parbhatkapila@gmail.com)
+Built by [@parbhatkapila4](https://github.com/parbhatkapila4) | [LinkedIn](https://www.linkedin.com/in/parbhat-kapila/) | [Email](mailto:parbhatkapila4@gmail.com)
