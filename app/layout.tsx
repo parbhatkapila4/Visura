@@ -16,11 +16,21 @@ export const metadata: Metadata = {
   title: "Visura - Smart PDF Analysis Platform",
   description:
     "Visura transforms complex PDF documents into clear, actionable insights that help you make better decisions faster",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
   icons: {
-    icon: "/Visura logo.png",
+    icon: [
+      { url: "/Visura logo.png", sizes: "any" },
+      { url: "/Visura logo.png", sizes: "32x32", type: "image/png" },
+      { url: "/Visura logo.png", sizes: "16x16", type: "image/png" },
+    ],
     apple: "/Visura logo.png",
+    shortcut: "/Visura logo.png",
   },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -31,6 +41,11 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
+        <head>
+          <link rel="icon" href="/favicon.ico" sizes="any" />
+          <link rel="icon" href="/Visura logo.png" type="image/png" />
+          <link rel="apple-touch-icon" href="/Visura logo.png" />
+        </head>
         <body
           className={`${fontSans.variable} font-sans antialiased bg-gray-900 text-white overflow-x-hidden`}
         >

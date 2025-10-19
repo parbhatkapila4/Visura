@@ -15,7 +15,7 @@ export default function CTASection() {
     <section className="bg-black py-20 pb-32 relative overflow-hidden" ref={ref}>
       {/* Dynamic Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900/20 to-black -z-10" />
-      <div className="absolute top-0 left-0 w-full h-full bg-[url('/noise.webp')] opacity-5 -z-10" />
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-gray-900/10 to-black/20 opacity-5 -z-10" />
       
       {/* Animated Orbs */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#625EC3]/20 rounded-full blur-3xl animate-pulse -z-10" />
