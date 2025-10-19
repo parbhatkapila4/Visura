@@ -43,14 +43,14 @@ export async function openrouterChatCompletion(
 
     if (!response.ok) {
       throw new Error(
-        `OpenRouter API error: ${response.status} ${response.statusText}`
+        `API request failed: ${response.status} ${response.statusText}`
       );
     }
 
     const data = await response.json();
     return data.choices[0].message.content;
   } catch (error) {
-    console.error("Error calling OpenRouter chat completion:", error);
+    console.error("Error processing chat request:", error);
     throw error;
   }
 }

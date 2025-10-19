@@ -1,7 +1,7 @@
 import { openrouterChatCompletion } from "@/lib/openrouter";
 import { getQASessionById, getQAMessagesBySession } from "./chatbot";
 
-const CHATBOT_SYSTEM_PROMPT = `You are an intelligent assistant that helps users understand and analyze PDF documents. You have access to the full text content of the PDF document that the user is asking about.
+const CHATBOT_SYSTEM_PROMPT = `You are a helpful document assistant that helps users understand and analyze PDF documents. You have access to the full text content of the PDF document that the user is asking about.
 
 Your role is to:
 1. Answer questions about the content of the PDF document accurately
@@ -86,7 +86,7 @@ Please answer the user's question based on the PDF content above. If the questio
 export async function generateInitialChatbotGreeting(
   pdfTitle: string
 ): Promise<string> {
-  return `Hello! I'm your AI assistant for this document: "${pdfTitle}". I can help you understand and analyze the content of this PDF. You can ask me questions about:
+  return `Hello! I'm your document assistant for this document: "${pdfTitle}". I can help you understand and analyze the content of this PDF. You can ask me questions about:
 
 • Key concepts and main points
 • Specific sections or topics

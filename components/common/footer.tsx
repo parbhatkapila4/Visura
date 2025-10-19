@@ -15,7 +15,7 @@ export default function Footer() {
           </div>
           <div className="flex items-center gap-2 text-white/80 text-sm">
             <Link
-              href="mailto:helpvisura@gmail.com"
+              href="mailto:help@productsolution.net"
               className="flex items-center gap-2 hover:text-white transition-colors"
             >
               <Mail size={16} />

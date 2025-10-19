@@ -1,6 +1,6 @@
 import { getDbConnection } from "./db";
 
-export async function getSummaries(userId: string, userPlan: string = "basic") {
+export async function getUserSummaries(userId: string, userPlan: string = "basic") {
   const sql = await getDbConnection();
 
   const limit = userPlan === "pro" ? null : 5;
@@ -12,7 +12,7 @@ export async function getSummaries(userId: string, userPlan: string = "basic") {
   return summaries;
 }
 
-export async function getSummaryById(id: string) {
+export async function findSummaryById(id: string) {
   try {
     const sql = await getDbConnection();
 
@@ -29,12 +29,12 @@ export async function getSummaryById(id: string) {
     FROM pdf_summaries WHERE id = ${id}`;
     return summary;
   } catch (error) {
-    console.error("Error fetching summary by id", error);
+    console.error("Error finding summary by id", error);
     return null;
   }
 }
 
-export async function deleteSummary(id: string, userId: string) {
+export async function removeSummary(id: string, userId: string) {
   try {
     const sql = await getDbConnection();
 
@@ -49,19 +49,19 @@ export async function deleteSummary(id: string, userId: string) {
 
     return { success: true };
   } catch (error) {
-    console.error("Error deleting summary", error);
+    console.error("Error removing summary", error);
     throw error;
   }
 }
 
-export async function getUserUploadCount(userId: string) {
+export async function getUserDocumentCount(userId: string) {
   const sql = await getDbConnection();
   try {
     const [result] =
       await sql`SELECT COUNT(*) as count FROM pdf_summaries WHERE user_id = ${userId}`;
     return result?.count || 0;
   } catch (error) {
-    console.error("Error getting user upload count", error);
+    console.error("Error getting user document count", error);
     return 0;
   }
 }

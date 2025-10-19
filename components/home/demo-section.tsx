@@ -187,7 +187,7 @@ export default function DemoSection() {
           </div>
 
           <div className="text-white text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold leading-relaxed px-4">
-            We've built AI that cuts through the noise - delivering fast,
+            We've built smart technology that cuts through the noise - delivering fast,
             focused summaries so you can skip the overwhelm, find what matters,
             and act on insights that truly{" "}
             <span className="text-[#625EC3] italic font-semibold">

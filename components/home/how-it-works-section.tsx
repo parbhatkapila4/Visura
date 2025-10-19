@@ -33,12 +33,12 @@ const steps: Step[] = [
     title: "Process",
     icon: <Brain size={32} strokeWidth={1.5} />,
     description:
-      "Our advanced AI analyzes and breaks down your document content intelligently.",
+      "Our advanced technology analyzes and breaks down your document content intelligently.",
     benefits: [
-      "AI-POWERED ANALYSIS",
+      "SMART ANALYSIS",
       "CONTENT EXTRACTION",
       "KEY INSIGHTS IDENTIFIED",
-      "SMART SUMMARIZATION",
+      "INTELLIGENT SUMMARIZATION",
     ],
   },
   {

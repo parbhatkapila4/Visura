@@ -1,7 +1,7 @@
 import { openrouterChatCompletion } from "@/lib/openrouter";
 import { SUMMARY_SYSTEM_PROMPT } from "@/utils/prompts";
 
-export async function generateSummaryFromOpenAI(pdfText: string) {
+export async function generateSummaryFromText(pdfText: string) {
   try {
     const summary = await openrouterChatCompletion({
       model: "google/gemini-2.5-flash",
@@ -20,7 +20,7 @@ export async function generateSummaryFromOpenAI(pdfText: string) {
     });
     return summary;
   } catch (error: any) {
-    console.error("OpenRouter error:", error);
+    console.error("Summary generation error:", error);
     throw error;
   }
 }

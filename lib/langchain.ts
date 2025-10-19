@@ -6,7 +6,7 @@ export async function fetchAndExtractPdfText(fileUrl: string, maxRetries = 3) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(
-        `Fetching PDF from URL (attempt ${attempt}/${maxRetries}):`,
+        `Loading PDF from URL (attempt ${attempt}/${maxRetries}):`,
         fileUrl
       );
 
@@ -39,15 +39,15 @@ export async function fetchAndExtractPdfText(fileUrl: string, maxRetries = 3) {
       }
 
       const blob = await response.blob();
-      console.log("PDF blob size:", blob.size);
+      console.log("PDF file size:", blob.size);
 
       const arrayBuffer = await blob.arrayBuffer();
-      console.log("Array buffer size:", arrayBuffer.byteLength);
+      console.log("File buffer size:", arrayBuffer.byteLength);
 
       const loader = new PDFLoader(new Blob([arrayBuffer]));
 
       const docs = await loader.load();
-      console.log("Extracted pages:", docs.length);
+      console.log("Processed pages:", docs.length);
 
       return docs.map((doc) => doc.pageContent).join("\n");
     } catch (error) {
@@ -93,10 +93,10 @@ export async function extractPdfTextFromBuffer(
     const loader = new PDFLoader(blob);
     const docs = await loader.load();
 
-    console.log("Successfully extracted pages:", docs.length);
+    console.log("Successfully processed pages:", docs.length);
 
     const text = docs.map((doc) => doc.pageContent).join("\n");
-    console.log("Extracted text length:", text.length);
+    console.log("Text content length:", text.length);
 
     return text;
   } catch (error) {

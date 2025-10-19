@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { ArrowRight, Upload, FileText } from "lucide-react";
+import { ArrowRight, Upload, FileText, Sparkles, Zap, Shield, Brain } from "lucide-react";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
@@ -11,107 +11,83 @@ export default function CTASection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.3,
-        delayChildren: 0.2,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: {
-      opacity: 0,
-      y: 50,
-      scale: 0.9,
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-    },
-  };
-
-  const buttonVariants = {
-    hidden: {
-      opacity: 0,
-      y: 30,
-      scale: 0.9,
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-    },
-  };
-
   return (
-    <section className="bg-black py-12 pb-24" ref={ref}>
-      <div className="py-12 lg:py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="bg-black py-20 pb-32 relative overflow-hidden" ref={ref}>
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900/20 to-black -z-10" />
+      <div className="absolute top-0 left-0 w-full h-full bg-[url('/noise.webp')] opacity-5 -z-10" />
+      
+      {/* Animated Orbs */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#625EC3]/20 rounded-full blur-3xl animate-pulse -z-10" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#A3C4C3]/15 rounded-full blur-3xl animate-pulse -z-10" style={{animationDelay: '2s'}} />
+      <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-[#625EC3]/10 rounded-full animate-pulse -z-10" style={{animationDelay: '4s'}} />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Hero Section */}
         <motion.div
-          className="flex flex-col items-center justify-center space-y-4 text-center"
-          variants={containerVariants}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+          className="text-center mb-20"
+          initial={{ opacity: 0, y: 50 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.8 }}
         >
           <motion.div
-            className="space-y-2"
-            variants={itemVariants}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="inline-block mb-6"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <motion.h2
-              className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-white"
-              whileHover={{
-                scale: 1.02,
-                transition: { duration: 0.3 },
-              }}
-            >
-              Ready to unlock hours of productive reading time?
-            </motion.h2>
-            <motion.p
-              className="mx-auto max-w-6xl text-gray-300 md:text-xl/relaxed lg:text-base/relaxed xl:text-[20px]/relaxed"
-              animate={{
-                opacity: [0.7, 1, 0.7],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            >
-              Convert lengthy documents into clear, actionable knowledge with
-              our AI-powered synthesizer.
-            </motion.p>
+            <span className="px-6 py-3 bg-gradient-to-r from-[#625EC3]/20 to-[#A3C4C3]/20 border border-[#625EC3]/40 rounded-full text-[#625EC3] text-sm font-semibold flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Trusted by professionals worldwide
+            </span>
           </motion.div>
+          
+          <motion.h2
+            className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-[#A3C4C3] to-white bg-clip-text text-transparent leading-tight"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            Transform Documents
+            <br />
+            <span className="bg-gradient-to-r from-[#625EC3] to-[#A3C4C3] bg-clip-text text-transparent">
+              Into Insights
+            </span>
+          </motion.h2>
+          
+          <motion.p
+            className="text-xl text-gray-300 max-w-3xl mx-auto mb-12 leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            Stop wasting hours reading lengthy documents. Our smart technology extracts the key insights 
+            you need in seconds, not hours.
+          </motion.p>
 
+          {/* CTA Buttons */}
           <motion.div
-            className="flex flex-col gap-2 min-[400px]:flex-row justify-center"
-            variants={buttonVariants}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="flex flex-col sm:flex-row gap-4 justify-center mb-20"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
           >
             <SignedOut>
               <motion.div
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <Button
                   size="lg"
-                  variant={"link"}
-                  className="w-full min-[400px]:w-auto bg-gradient-to-r from-[#625EC3] to-[#000000] hover:from-[#000000] hover:to-[#625EC3] hover:text-white text-white transition-all duration-300 hover:no-underline"
+                  className="px-8 py-4 bg-gradient-to-r from-[#625EC3] to-[#A3C4C3] hover:from-[#A3C4C3] hover:to-[#625EC3] text-white font-bold text-lg rounded-full shadow-2xl shadow-[#625EC3]/30 hover:shadow-[#625EC3]/50 transition-all duration-300"
                 >
-                  <Link
-                    href="/#pricing"
-                    className="flex items-center justify-center"
-                  >
-                    Get Started{" "}
+                  <Link href="/#pricing" className="flex items-center gap-2">
+                    Get Started Free
                     <motion.div
                       animate={{ x: [0, 5, 0] }}
                       transition={{ duration: 1.5, repeat: Infinity }}
                     >
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                      <ArrowRight className="w-5 h-5" />
                     </motion.div>
                   </Link>
                 </Button>
@@ -120,70 +96,37 @@ export default function CTASection() {
 
             <SignedIn>
               <motion.div
-                className="flex flex-col gap-2 min-[400px]:flex-row"
-                variants={containerVariants}
+                className="flex flex-col sm:flex-row gap-4"
+                initial={{ opacity: 0 }}
+                animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
               >
                 <motion.div
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  variants={buttonVariants}
-                  transition={{ duration: 0.6, ease: "easeOut" }}
                 >
                   <Button
                     size="lg"
-                    variant={"link"}
-                    className="w-full min-[400px]:w-auto bg-gradient-to-r from-[#625EC3] to-[#000000] hover:from-[#000000] hover:to-[#625EC3] hover:text-white text-white transition-all duration-300 hover:no-underline"
+                    className="px-8 py-4 bg-gradient-to-r from-[#625EC3] to-[#A3C4C3] hover:from-[#A3C4C3] hover:to-[#625EC3] text-white font-bold text-lg rounded-full shadow-2xl shadow-[#625EC3]/30 hover:shadow-[#625EC3]/50 transition-all duration-300"
                   >
-                    <Link
-                      href="/upload"
-                      className="flex items-center justify-center"
-                    >
-                      <motion.div
-                        animate={{
-                          rotate: [0, 10, -10, 0],
-                          scale: [1, 1.1, 1],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          delay: 0.5,
-                        }}
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                      </motion.div>
+                    <Link href="/upload" className="flex items-center gap-2">
+                      <Upload className="w-5 h-5" />
                       Upload PDF
                     </Link>
                   </Button>
                 </motion.div>
 
                 <motion.div
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  variants={buttonVariants}
-                  transition={{ duration: 0.6, ease: "easeOut" }}
                 >
                   <Button
                     size="lg"
-                    variant={"outline"}
-                    className="w-full min-[400px]:w-auto border-[#625EC3] text-white hover:bg-[#625EC3] hover:text-white transition-all duration-300"
+                    variant="outline"
+                    className="px-8 py-4 border-2 border-[#625EC3] text-white hover:bg-[#625EC3] hover:text-white font-bold text-lg rounded-full transition-all duration-300"
                   >
-                    <Link
-                      href="/dashboard"
-                      className="flex items-center justify-center"
-                    >
-                      <motion.div
-                        animate={{
-                          rotate: [0, -5, 5, 0],
-                          scale: [1, 1.1, 1],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          delay: 1,
-                        }}
-                      >
-                        <FileText className="mr-2 h-4 w-4" />
-                      </motion.div>
+                    <Link href="/dashboard" className="flex items-center gap-2">
+                      <FileText className="w-5 h-5" />
                       View Summaries
                     </Link>
                   </Button>
@@ -191,75 +134,72 @@ export default function CTASection() {
               </motion.div>
             </SignedIn>
           </motion.div>
+        </motion.div>
 
-          <motion.div
-            className="w-full max-w-6xl mx-auto mt-24 mb-8"
-            variants={itemVariants}
-          >
-            <div className="relative">
-              <div className="absolute inset-0 bg-[url('/noise.webp')] opacity-20 rounded-2xl"></div>
-
-              <div className="absolute top-8 left-0 right-0 h-px bg-gray-600/30"></div>
-
-              <div className="relative grid md:grid-cols-2 gap-12 p-12">
-                <motion.div
-                  className="text-center space-y-6"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={
-                    isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }
-                  }
-                  transition={{ delay: 0.5, duration: 0.8 }}
-                >
-                  <div className="flex justify-center">
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#625EC3]/30">
-                      <img
-                        src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face"
-                        alt="Sarah M"
-                        className="w-full h-full object-cover"
-                      />
+        {/* Feature Showcase */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          initial={{ opacity: 0, y: 50 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+        >
+          {[
+            {
+              icon: Zap,
+              title: "Lightning Fast",
+              description: "Process any document in seconds with our advanced AI technology",
+              color: "from-yellow-500/20 to-orange-500/20",
+              iconColor: "text-yellow-400",
+              borderColor: "border-yellow-500/30"
+            },
+            {
+              icon: Brain,
+              title: "Smart Analysis",
+              description: "Advanced algorithms understand context and extract key insights",
+              color: "from-blue-500/20 to-cyan-500/20",
+              iconColor: "text-blue-400",
+              borderColor: "border-blue-500/30"
+            },
+            {
+              icon: Shield,
+              title: "Secure & Private",
+              description: "Enterprise-grade security protects your documents and data",
+              color: "from-green-500/20 to-emerald-500/20",
+              iconColor: "text-green-400",
+              borderColor: "border-green-500/30"
+            }
+          ].map((feature, index) => {
+            const Icon = feature.icon;
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                transition={{ duration: 0.6, delay: 0.7 + index * 0.1 }}
+                whileHover={{ y: -10, scale: 1.02 }}
+                className="group"
+              >
+                <div className={`relative p-8 bg-gradient-to-br from-gray-900/50 to-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-3xl hover:border-[#625EC3]/50 transition-all duration-300 overflow-hidden ${feature.borderColor}`}>
+                  {/* Glow effect */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                  
+                  <div className="relative z-10">
+                    <div className={`w-16 h-16 mb-6 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                      <Icon className={`w-8 h-8 ${feature.iconColor}`} />
                     </div>
+                    
+                    <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-[#625EC3] transition-colors duration-300">
+                      {feature.title}
+                    </h3>
+                    
+                    <p className="text-gray-300 leading-relaxed">
+                      {feature.description}
+                    </p>
                   </div>
-
-                  <blockquote className="text-xl md:text-2xl font-serif italic text-white/90 leading-relaxed">
-                    "Visura transformed our document workflow completely. What
-                    used to take hours now takes minutes."
-                  </blockquote>
-
-                  <cite className="block text-sm font-medium uppercase tracking-wider text-gray-300">
-                    Sarah M, TechCorp
-                  </cite>
-                </motion.div>
-
-                <motion.div
-                  className="text-center space-y-6"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={
-                    isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }
-                  }
-                  transition={{ delay: 0.7, duration: 0.8 }}
-                >
-                  <div className="flex justify-center">
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-blue-500/30">
-                      <img
-                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
-                        alt="Michael R"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-
-                  <blockquote className="text-xl md:text-2xl font-serif italic text-white/90 leading-relaxed">
-                    "The AI summaries are incredibly accurate and save our team
-                    countless hours every week."
-                  </blockquote>
-
-                  <cite className="block text-sm font-medium uppercase tracking-wider text-gray-300">
-                    Michael R, DataFlow Inc
-                  </cite>
-                </motion.div>
-              </div>
-            </div>
-          </motion.div>
+                </div>
+              </motion.div>
+            );
+          })}
         </motion.div>
       </div>
     </section>

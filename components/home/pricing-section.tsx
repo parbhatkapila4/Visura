@@ -139,7 +139,7 @@ const StartSmallCard = () => {
     "PDF Summaries",
     "Quick Insights",
     "Executive Overviews",
-    "AI-Powered Highlights",
+    "Smart Highlights",
     "Research Digests",
     "Meeting Notes Extraction",
     "Report Condensing",
@@ -309,7 +309,7 @@ export default function PricingSection() {
           >
             <div>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-500 to-gray-800 mb-6 sm:mb-8 lg:mb-12 text-center">
-                Summarize With AI
+                Smart Document Analysis
               </h2>
               <p className="text-gray-600 text-base sm:text-lg lg:text-xl mb-4 leading-relaxed px-2 sm:px-0">
                 Tap in on a <span className="text-white/70 p-1">Basic</span> or{" "}

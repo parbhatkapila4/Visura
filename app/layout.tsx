@@ -13,10 +13,14 @@ const fontSans = FontSans({
 });
 
 export const metadata: Metadata = {
-  title: "Visura - AI-Driven PDF Insight Engine",
+  title: "Visura - Smart PDF Analysis Platform",
   description:
-    "Visura is an AI-powered app that distills PDF documents into clear, concise insights you can grasp in seconds",
+    "Visura transforms complex PDF documents into clear, actionable insights that help you make better decisions faster",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+  icons: {
+    icon: "/Visura logo.png",
+    apple: "/Visura logo.png",
+  },
 };
 
 export default function RootLayout({

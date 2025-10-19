@@ -75,7 +75,7 @@ export default function HeroSection() {
             >
               <Sparkles className="h-4 w-4 sm:h-6 sm:w-6 mr-2 text-[#625EC3]" />
             </motion.div>
-            <p className="text-sm sm:text-base text-white">Powered by AI</p>
+            <p className="text-sm sm:text-base text-white">Smart Technology</p>
           </Badge>
         </motion.div>
 
