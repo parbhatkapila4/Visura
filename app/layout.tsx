@@ -18,12 +18,12 @@ export const metadata: Metadata = {
     "Visura transforms complex PDF documents into clear, actionable insights that help you make better decisions faster",
   icons: {
     icon: [
-      { url: "/Visura logo.png", sizes: "any" },
-      { url: "/Visura logo.png", sizes: "32x32", type: "image/png" },
-      { url: "/Visura logo.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
     ],
-    apple: "/Visura logo.png",
-    shortcut: "/Visura logo.png",
+    apple: "/visura-logo.png",
+    shortcut: "/favicon.ico",
   },
 };
 
@@ -43,8 +43,10 @@ export default function RootLayout({
       <html lang="en">
         <head>
           <link rel="icon" href="/favicon.ico" sizes="any" />
-          <link rel="icon" href="/Visura logo.png" type="image/png" />
-          <link rel="apple-touch-icon" href="/Visura logo.png" />
+          <link rel="icon" href="/favicon-16x16.png" sizes="16x16" type="image/png" />
+          <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
+          <link rel="apple-touch-icon" href="/visura-logo.png" />
+          <link rel="shortcut icon" href="/favicon.ico" />
         </head>
         <body
           className={`${fontSans.variable} font-sans antialiased bg-gray-900 text-white overflow-x-hidden`}
