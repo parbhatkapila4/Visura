@@ -1,5 +1,53 @@
 "use client";
 import { FileText, Brain, Download, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+
+// Animated Progress Component
+function AnimatedProgress() {
+  const [displayText, setDisplayText] = useState("0%");
+  const [subText, setSubText] = useState("PROCESSING");
+
+  useEffect(() => {
+    let step = 0;
+    let cycle = 0;
+    
+    const animate = () => {
+      if (cycle >= 2) {
+        // After 2 cycles, show SUMMARIZED permanently
+        setDisplayText("SUMMARIZED");
+        setSubText("");
+        return;
+      }
+
+      if (step <= 100) {
+        setDisplayText(`${step}%`);
+        setSubText("PROCESSING");
+        step++;
+        setTimeout(animate, 50);
+      } else {
+        // Show SUMMARIZED for 2 seconds
+        setDisplayText("SUMMARIZED");
+        setSubText("");
+        cycle++;
+        step = 0;
+        setTimeout(animate, 2000);
+      }
+    };
+
+    animate();
+  }, []);
+
+  return (
+    <div className="w-48 h-32 bg-gray-800 rounded-lg flex items-center justify-center mb-4">
+      <div className="text-center text-white">
+        <div className={`text-2xl font-bold ${displayText === "SUMMARIZED" ? "text-green-400 animate-pulse" : ""}`}>
+          {displayText}
+        </div>
+        {subText && <div className="text-sm">{subText}</div>}
+      </div>
+    </div>
+  );
+}
 
 export default function ManualControlsSection() {
   return (
@@ -22,12 +70,7 @@ export default function ManualControlsSection() {
           <div className="flex justify-center">
             <div className="relative w-80 h-80 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center shadow-2xl shadow-amber-600 animate-pulse">
               {/* Main Screen */}
-              <div className="w-48 h-32 bg-gray-800 rounded-lg flex items-center justify-center mb-4">
-                <div className="text-center text-white">
-                  <div className="text-2xl font-bold">85%</div>
-                  <div className="text-sm">PROCESSING</div>
-                </div>
-              </div>
+              <AnimatedProgress />
               
               {/* Controls */}
               <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-4">
