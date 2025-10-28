@@ -40,10 +40,10 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body
-          className={`${fontSans.variable} font-sans antialiased bg-gray-900 text-white overflow-x-hidden`}
-        >
-          <div className="relative w-full flex flex-col min-h-screen bg-black">
+            <body
+              className={`${fontSans.variable} font-sans antialiased bg-white text-gray-900 overflow-x-hidden`}
+            >
+          <div className="relative w-full flex flex-col min-h-screen bg-white">
             <Header />
             <main className="flex-1 w-full"> {children}</main>
             <Footer />

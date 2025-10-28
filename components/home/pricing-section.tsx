@@ -75,10 +75,25 @@ const WorkWithUsCard = ({
   return (
     <motion.div
       className="relative"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.2 }}
+      transition={{ 
+        delay: index * 0.2,
+        duration: 0.6,
+        ease: [0.25, 0.46, 0.45, 0.94],
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }}
+      whileHover={{
+        scale: 1.02,
+        y: -2,
+        transition: {
+          duration: 0.3,
+          ease: [0.25, 0.46, 0.45, 0.94]
+        }
+      }}
     >
       <div
         className="relative p-[1px] rounded-[2rem] overflow-hidden bg-gray-900/50 backdrop-blur-sm shadow-lg"
@@ -88,7 +103,7 @@ const WorkWithUsCard = ({
       >
         <div className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
         <div className="relative h-full w-full rounded-[2rem] bg-black backdrop-blur-sm ">
-          <div className="relative h-full w-full rounded-[2rem] bg-gray-900/50 backdrop-blur-sm p-6">
+          <div className="relative h-full w-full rounded-[2rem] bg-gray-900/50 backdrop-blur-sm p-6 flex flex-col">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">{name}</h3>
@@ -100,18 +115,34 @@ const WorkWithUsCard = ({
               </div>
             </div>
 
-            <motion.button
+            <div className="flex-1"></div>
+
+            <div className="mt-8">
+              <motion.button
               onClick={handleCheckout}
               disabled={isLoading}
               className="relative w-full overflow-hidden rounded-2xl p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ 
+                scale: 1.03,
+                transition: {
+                  duration: 0.2,
+                  ease: [0.25, 0.46, 0.45, 0.94]
+                }
+              }}
+              whileTap={{ 
+                scale: 0.97,
+                transition: {
+                  duration: 0.1,
+                  ease: [0.25, 0.46, 0.45, 0.94]
+                }
+              }}
             >
               <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
               <span className="relative flex h-full w-full cursor-pointer items-center justify-center rounded-2xl bg-gray-800 px-4 py-3 text-white font-medium backdrop-blur-3xl transition-colors hover:bg-gray-700 disabled:opacity-50">
                 {isLoading ? "Loading..." : "Try Now"}
               </span>
-            </motion.button>
+              </motion.button>
+            </div>
           </div>
         </div>
       </div>
@@ -149,10 +180,25 @@ const StartSmallCard = () => {
   return (
     <motion.div
       className="relative w-full max-w-full overflow-hidden"
-      initial={{ opacity: 0, x: 20 }}
-      whileInView={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, x: 30, scale: 0.95 }}
+      whileInView={{ opacity: 1, x: 0, scale: 1 }}
       viewport={{ once: true }}
-      transition={{ delay: 0.3 }}
+      transition={{ 
+        delay: 0.3,
+        duration: 0.7,
+        ease: [0.25, 0.46, 0.45, 0.94],
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }}
+      whileHover={{
+        scale: 1.02,
+        y: -4,
+        transition: {
+          duration: 0.3,
+          ease: [0.25, 0.46, 0.45, 0.94]
+        }
+      }}
     >
       <div className="bg-gray-800/50 border border-gray-700/50 rounded-[2rem] p-3 sm:p-6 lg:p-8 backdrop-blur-sm max-w-xs sm:max-w-sm md:max-w-md mx-auto w-full overflow-hidden">
         <div className="hidden md:flex justify-center w-full mb-4 sm:mb-6 md:mb-8 h-24 sm:h-32 md:h-44 items-center overflow-hidden">
@@ -241,8 +287,20 @@ const StartSmallCard = () => {
           onClick={handleCheckout}
           disabled={isLoading}
           className="relative w-full overflow-hidden rounded-2xl p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ 
+            scale: 1.03,
+            transition: {
+              duration: 0.2,
+              ease: [0.25, 0.46, 0.45, 0.94]
+            }
+          }}
+          whileTap={{ 
+            scale: 0.97,
+            transition: {
+              duration: 0.1,
+              ease: [0.25, 0.46, 0.45, 0.94]
+            }
+          }}
         >
           <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
           <span className="relative flex h-full w-full cursor-pointer items-center justify-between rounded-2xl bg-transparent px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-white/80 font-bold text-sm sm:text-base backdrop-blur-3xl transition-colors hover:bg-green-600/20 disabled:opacity-50">
@@ -263,95 +321,261 @@ export default function PricingSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.2 },
+  const plans = [
+    {
+      name: "Starter",
+      price: "10",
+      period: "month",
+      description: "Perfect for individuals and small teams getting started with document analysis",
+      features: [
+        "Up to 50 documents/month",
+        "Basic AI summarization",
+        "PDF & Word support",
+        "Email support",
+        "Standard processing speed"
+      ],
+      priceId: "price_1S82BQIDKmPOE5aT0N1VCGT4",
+      popular: false
     },
-  };
-
-  const titleVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: { opacity: 1, y: 0 },
-  };
+    {
+      name: "Professional",
+      price: "20",
+      period: "month",
+      description: "Ideal for growing businesses and power users who need advanced document analysis",
+      features: [
+        "Unlimited documents",
+        "Advanced AI summarization",
+        "All file formats (PDF, Word, PowerPoint)",
+        "Priority support",
+        "Fast processing (30s)",
+        "Export in multiple formats",
+        "Team collaboration"
+      ],
+      priceId: "price_1S82BQIDKmPOE5aTwhecvlb9",
+      popular: true
+    },
+    {
+      name: "Enterprise",
+      price: "Custom",
+      period: "contact",
+      description: "Tailored solutions for large organizations with high-volume document processing needs",
+      features: [
+        "Everything in Professional",
+        "Custom AI models for specific document types",
+        "API access and webhooks",
+        "Dedicated support",
+        "On-premise deployment options",
+        "Custom integrations",
+        "SLA guarantee"
+      ],
+      priceId: null,
+      popular: false
+    }
+  ];
 
   return (
-    <section
-      className="relative overflow-hidden bg-black py-12 sm:py-16 lg:py-20 xl:pt-24"
-      id="pricing"
-      ref={ref}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16"
-          variants={containerVariants}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+        <section
+          className="py-20 bg-white"
+          id="pricing"
+          ref={ref}
         >
-          <motion.div
-            className="space-y-8"
-            variants={titleVariants}
-            initial="hidden"
-            animate={isInView ? "visible" : "hidden"}
-          >
-            <div>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-500 to-gray-800 mb-6 sm:mb-8 lg:mb-12 text-center">
-                Smart Document Analysis
-              </h2>
-              <p className="text-gray-600 text-base sm:text-lg lg:text-xl mb-4 leading-relaxed px-2 sm:px-0">
-                Tap in on a <span className="text-white/70 p-1">Basic</span> or{" "}
-                <span className="text-white/70 p-1">Pro</span> basis. You'll get
-                your very own Slack channel and direct access to instant PDF
-                insights that transform the way you work.
-              </p>
-            </div>
 
-            <div className="space-y-4">
-              <WorkWithUsCard
-                name="Starter"
-                price="10"
-                description="Quick support for small fixes, updates, and testing."
-                period="Monthly"
-                borderColor="blue"
-                index={0}
-                priceId="price_1S82BQIDKmPOE5aT0N1VCGT4"
-              />
-              <WorkWithUsCard
-                name="Elite"
-                price="20"
-                description="Priority handling for launches, major fixes, and advanced testing."
-                period="Monthly"
-                borderColor="purple"
-                index={1}
-                priceId="price_1S82BQIDKmPOE5aTwhecvlb9"
-              />
-            </div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 40 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+          transition={{ 
+            duration: 0.8,
+            ease: [0.25, 0.46, 0.45, 0.94]
+          }}
+        >
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Choose the plan that fits your document analysis needs. All plans include our core AI-powered
+              summarization features with no hidden fees.
+            </p>
+        </motion.div>
 
-            <div className="flex flex-wrap gap-4 sm:gap-6 pt-4 px-4 justify-center sm:justify-start">
-              <div className="flex items-center gap-2 text-white text-sm sm:text-base">
-                <CheckIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" />
-                <span>Unlimited documents</span>
-              </div>
-              <div className="flex items-center gap-2 text-white text-sm sm:text-base">
-                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" />
-                <span>Within 30 Seconds</span>
-              </div>
-              <div className="flex items-center gap-2 text-white text-sm sm:text-base">
-                <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" />
-                <span>Instant PDF Insights</span>
-              </div>
-            </div>
-          </motion.div>
+        {/* Pricing Cards */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ 
+            duration: 0.8, 
+            delay: 0.2,
+            ease: [0.25, 0.46, 0.45, 0.94]
+          }}
+        >
+          {plans.map((plan, index) => (
+            <motion.div
+              key={index}
+              className={`relative group ${plan.popular ? 'md:-mt-8' : ''}`}
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 50, scale: 0.9 }}
+              transition={{ 
+                duration: 0.7, 
+                delay: 0.1 * index,
+                ease: [0.25, 0.46, 0.45, 0.94],
+                type: "spring",
+                stiffness: 100,
+                damping: 15
+              }}
+              whileHover={{ 
+                y: -8, 
+                scale: 1.02,
+                transition: {
+                  duration: 0.3,
+                  ease: [0.25, 0.46, 0.45, 0.94]
+                }
+              }}
+              whileTap={{ 
+                scale: 0.98,
+                transition: {
+                  duration: 0.1,
+                  ease: [0.25, 0.46, 0.45, 0.94]
+                }
+              }}
+            >
+              {/* Popular Badge */}
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                  <div className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-semibold rounded-full">
+                    Most Popular
+                  </div>
+                </div>
+              )}
 
-          <motion.div
-            className="flex items-center"
-            variants={titleVariants}
-            initial="hidden"
-            animate={isInView ? "visible" : "hidden"}
-          >
-            <StartSmallCard />
-          </motion.div>
+                  <motion.div 
+                    className={`relative h-full p-8 rounded-3xl border transition-all duration-500 ${
+                      plan.popular
+                        ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-500/50 shadow-2xl shadow-orange-500/20'
+                        : 'bg-gray-50 border-gray-200 group-hover:border-gray-300 group-hover:shadow-xl group-hover:shadow-gray-200/50'
+                    }`}
+                    whileHover={{
+                      boxShadow: plan.popular 
+                        ? "0 25px 50px -12px rgba(249, 115, 22, 0.25)" 
+                        : "0 25px 50px -12px rgba(0, 0, 0, 0.1)",
+                      transition: {
+                        duration: 0.3,
+                        ease: [0.25, 0.46, 0.45, 0.94]
+                      }
+                    }}
+                  >
+                {/* Background Glow */}
+                {plan.popular && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-orange-600/10 rounded-3xl blur-xl" />
+                )}
+
+                <div className="relative z-10">
+                  {/* Plan Header */}
+                  <div className="mb-8">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+                    <p className="text-gray-600 mb-6">{plan.description}</p>
+                    
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-5xl font-bold text-gray-900">
+                        {plan.price === 'Custom' ? 'Custom' : `$${plan.price}`}
+                      </span>
+                      {plan.price !== 'Custom' && (
+                        <span className="text-gray-600">/{plan.period}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Features */}
+                  <motion.div 
+                    className="space-y-4 mb-8"
+                    initial={{ opacity: 0 }}
+                    animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+                    transition={{ 
+                      duration: 0.6, 
+                      delay: 0.2 + (0.1 * index),
+                      staggerChildren: 0.1
+                    }}
+                  >
+                    {plan.features.map((feature, featureIndex) => (
+                      <motion.div 
+                        key={featureIndex} 
+                        className="flex items-center gap-3"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                        transition={{ 
+                          duration: 0.4, 
+                          delay: 0.3 + (0.1 * index) + (0.05 * featureIndex),
+                          ease: [0.25, 0.46, 0.45, 0.94]
+                        }}
+                        whileHover={{
+                          x: 4,
+                          transition: {
+                            duration: 0.2,
+                            ease: [0.25, 0.46, 0.45, 0.94]
+                          }
+                        }}
+                      >
+                        <motion.div
+                          whileHover={{ 
+                            scale: 1.2, 
+                            rotate: 5,
+                            transition: {
+                              duration: 0.2,
+                              ease: [0.25, 0.46, 0.45, 0.94]
+                            }
+                          }}
+                        >
+                          <CheckIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+                        </motion.div>
+                        <span className="text-gray-700">{feature}</span>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+
+                  {/* CTA Button */}
+                  {plan.priceId ? (
+                    <div className="mt-6">
+                      <WorkWithUsCard
+                        name={plan.name}
+                        price={plan.price}
+                        description={plan.description}
+                        period={plan.period}
+                        borderColor="blue"
+                        index={index}
+                        priceId={plan.priceId}
+                      />
+                    </div>
+                  ) : (
+                    <button className="w-full py-4 px-6 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-xl transition-all duration-300">
+                      Contact Sales
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Additional Info */}
+        <motion.div
+          className="text-center"
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+          animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 30, scale: 0.95 }}
+          transition={{ 
+            duration: 0.8, 
+            delay: 0.6,
+            ease: [0.25, 0.46, 0.45, 0.94],
+            type: "spring",
+            stiffness: 100,
+            damping: 15
+          }}
+        >
+              <div className="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 border border-gray-300 rounded-full text-gray-700">
+            <CheckIcon className="w-5 h-5 text-green-500" />
+            <span>All plans include 30-day money-back guarantee</span>
+          </div>
         </motion.div>
       </div>
     </section>

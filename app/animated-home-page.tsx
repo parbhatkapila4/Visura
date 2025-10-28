@@ -1,9 +1,11 @@
 "use client";
-import CTASection from "@/components/home/cta-section";
 import DemoSection from "@/components/home/demo-section";
 import HeroSection from "@/components/home/hero-section";
-import HowItWorksSection from "@/components/home/how-it-works-section";
+import LiveAnalysisSection from "@/components/home/live-analysis-section";
+import ManualControlsSection from "@/components/home/manual-controls-section";
+import StatusDisplaySection from "@/components/home/status-display-section";
 import PricingSection from "@/components/home/pricing-section";
+import DeveloperFriendlySection from "@/components/home/developer-friendly-section";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -80,19 +82,31 @@ export default function AnimatedHomePage({
         variants={sectionVariants}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
-        <HowItWorksSection />
+        <LiveAnalysisSection />
+      </motion.div>
+      <motion.div
+        variants={sectionVariants}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      >
+        <ManualControlsSection />
+      </motion.div>
+      <motion.div
+        variants={sectionVariants}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      >
+        <StatusDisplaySection />
+      </motion.div>
+      <motion.div
+        variants={sectionVariants}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      >
+        <DeveloperFriendlySection />
       </motion.div>
       <motion.div
         variants={sectionVariants}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <PricingSection />
-      </motion.div>
-      <motion.div
-        variants={sectionVariants}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-      >
-        <CTASection />
       </motion.div>
     </motion.div>
   );
