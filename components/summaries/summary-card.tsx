@@ -1,7 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import DeleteButton from "./delete-button";
-import Link from "next/link";
 import {
   FileText,
   Hash,
@@ -144,12 +143,14 @@ export default function SummaryCard({
         <DeleteButton summaryId={summary.id} onDelete={onDelete} />
       </div>
 
-      <Link href={`/summaries/${summary.id}`} className="block h-full">
-        <Card
-          className={`h-full ${getDocumentTypeColor(
-            preview.documentType
-          )} hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border backdrop-blur-sm`}
-        >
+      <Card
+        className={`h-full ${getDocumentTypeColor(
+          preview.documentType
+        )} hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border backdrop-blur-sm cursor-pointer`}
+        onClick={() => {
+          window.location.href = `/summaries/${summary.id}`;
+        }}
+      >
           <div className="p-4 sm:p-6 h-full flex flex-col">
             <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5">
               <div className="text-xl sm:text-2xl flex-shrink-0">
@@ -262,7 +263,6 @@ export default function SummaryCard({
             </div>
           </div>
         </Card>
-      </Link>
     </div>
   );
 }

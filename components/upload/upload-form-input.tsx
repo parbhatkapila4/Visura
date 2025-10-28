@@ -96,19 +96,40 @@ export const UploadFormInput = forwardRef<
         </form>
 
         {/* PDF Compatibility Notice */}
-        <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <svg className="h-4 w-4 text-amber-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
+        <div className="mt-6 relative group">
+          <div className="bg-gradient-to-r from-slate-800/40 to-gray-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-6 shadow-lg transition-all duration-500 hover:shadow-slate-500/20 hover:shadow-2xl hover:scale-[1.02] hover:border-slate-500/60">
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-600/10 to-gray-600/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-700/5 to-gray-700/5 rounded-xl animate-pulse"></div>
+            <div className="relative flex flex-col items-center text-center">
+              <div className="mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-gray-600 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-slate-500/50 group-hover:shadow-lg">
+                  <svg className="h-5 w-5 text-white transition-transform duration-300 group-hover:rotate-12" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+              <div className="w-full">
+                <h4 className="text-lg font-semibold text-white/90 mb-4 transition-colors duration-300 group-hover:text-white">
+                  Chatbot Feature Compatibility
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-center">
+                    <span className="text-emerald-400 animate-pulse mr-2 text-lg">✓</span>
+                    <span className="text-sm text-white/70 transition-colors duration-300 group-hover:text-white/80">
+                      Text-based PDFs support AI chat functionality
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <span className="text-amber-400 animate-bounce mr-2 text-lg">⚠</span>
+                    <span className="text-sm text-white/70 transition-colors duration-300 group-hover:text-white/80">
+                      Scanned documents will be uploaded and summarized but won't have chatbot access
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="ml-2">
-              <p className="text-xs text-amber-700 dark:text-amber-300">
-                <strong>Chatbot Feature:</strong> Only text-based PDFs support AI chat functionality. 
-                Scanned documents and image-based PDFs will be uploaded and summarized but won't have chatbot access.
-              </p>
-            </div>
+            {/* Animated border effect */}
+            <div className="absolute inset-0 rounded-xl border border-transparent bg-gradient-to-r from-slate-500/20 via-gray-500/20 to-slate-500/20 bg-clip-border opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           </div>
         </div>
 
