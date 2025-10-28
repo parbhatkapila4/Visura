@@ -1,17 +1,7 @@
 "use client";
-import { FileText, Brain, Zap, Play, X } from "lucide-react";
-import { useState } from "react";
+import { FileText, Brain, Zap } from "lucide-react";
 
 export default function DemoSection() {
-  const [isVideoOpen, setIsVideoOpen] = useState(false);
-
-  const openVideo = () => {
-    setIsVideoOpen(true);
-  };
-
-  const closeVideo = () => {
-    setIsVideoOpen(false);
-  };
 
   return (
     <>
@@ -71,51 +61,28 @@ export default function DemoSection() {
               </div>
             </div>
 
-            {/* Demo Video Placeholder */}
+            {/* Demo Video */}
             <div className="flex justify-center">
               <div className="relative w-full max-w-lg">
-                <button
-                  onClick={openVideo}
-                  className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center shadow-2xl hover:shadow-3xl transition-all duration-300 w-full group cursor-pointer"
-                >
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <Play className="w-8 h-8 text-white ml-1" />
-                    </div>
-                    <div className="text-2xl font-bold text-gray-800 mb-2">Watch Demo</div>
-                    <div className="text-sm text-gray-600">See Visura in action</div>
-                  </div>
-                </button>
+                <div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300">
+                  <video
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls
+                  >
+                    <source src="/Visurademo.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Video Modal */}
-      {isVideoOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
-          <div className="relative w-full max-w-4xl mx-4">
-            <button
-              onClick={closeVideo}
-              className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
-            >
-              <X className="w-8 h-8" />
-            </button>
-            <div className="aspect-video bg-black rounded-lg overflow-hidden">
-              <video
-                className="w-full h-full"
-                controls
-                autoPlay
-                onEnded={closeVideo}
-              >
-                <source src="/Visurademo.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
