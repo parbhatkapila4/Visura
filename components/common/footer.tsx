@@ -28,7 +28,7 @@ export default function Footer() {
   return (
     <footer className="w-full px-4 py-8">
       <div className="max-w-6xl mx-auto">
-        <div className="bg-black rounded-3xl px-6 py-8 relative overflow-hidden">
+        <div className="bg-black rounded-3xl px-6 py-8 relative overflow-hidden shadow-lg border border-gray-200">
           {/* Gradient overlay at top */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-gray-400 to-transparent opacity-30"></div>
           
@@ -36,13 +36,13 @@ export default function Footer() {
             {/* Brand Section */}
             <div className="lg:col-span-1">
               <Link href="/" className="flex items-center gap-3 mb-4 group">
-                <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-                  <div className="w-4 h-4 bg-gray-600 rounded"></div>
+                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                  <div className="w-4 h-4 bg-gray-400 rounded"></div>
                 </div>
                 <span className="text-white font-bold text-lg">Visura</span>
               </Link>
-              <p className="text-gray-300 mb-6 max-w-sm text-sm leading-relaxed">
-                Visura empowers teams to transform complex documents into clear, actionable insights — making data easier to understand, analyze, and act on.
+              <p className="text-white mb-6 max-w-sm text-sm leading-relaxed">
+                Visura empowers teams to transform complex documents into clear, actionable insights - making data easier to understand, analyze, and act on.
               </p>
               
               {/* Social Links */}
@@ -72,7 +72,7 @@ export default function Footer() {
                   <li key={link.name}>
                     <Link
                       href={link.href}
-                      className="text-gray-300 hover:text-white transition-colors duration-200 text-sm"
+                      className="text-white hover:text-gray-300 transition-colors duration-200 text-sm"
                     >
                       {link.name}
                     </Link>
@@ -88,7 +88,7 @@ export default function Footer() {
                   <li key={link.name}>
                     <Link
                       href={link.href}
-                      className="text-gray-300 hover:text-white transition-colors duration-200 text-sm"
+                      className="text-white hover:text-gray-300 transition-colors duration-200 text-sm"
                     >
                       {link.name}
                     </Link>
@@ -104,7 +104,7 @@ export default function Footer() {
                   <li key={link.name}>
                     <Link
                       href={link.href}
-                      className="text-gray-300 hover:text-white transition-colors duration-200 text-sm"
+                      className="text-white hover:text-gray-300 transition-colors duration-200 text-sm"
                     >
                       {link.name}
                     </Link>
@@ -115,29 +115,29 @@ export default function Footer() {
           </div>
 
           {/* Bottom Section */}
-          <div className="mt-8 pt-4 border-t border-gray-800">
+          <div className="mt-8 pt-4 border-t border-gray-200">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
               <div className="text-center sm:text-left">
-                <p className="text-gray-400 text-sm">
+                <p className="text-white text-sm">
                   © {currentYear} Visura. All rights reserved.
                 </p>
               </div>
               <div className="flex items-center gap-4">
                 <Link
                   href="/privacy"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                  className="text-white hover:text-gray-300 transition-colors text-sm"
                 >
                   Privacy Policy
                 </Link>
                 <Link
                   href="/terms"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                  className="text-white hover:text-gray-300 transition-colors text-sm"
                 >
                   Terms of Service
                 </Link>
                 <Link
                   href="/cookies"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                  className="text-white hover:text-gray-300 transition-colors text-sm"
                 >
                   Cookies Settings
                 </Link>

@@ -3,9 +3,12 @@ import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
 import { 
-  Clock, 
-  ShoppingBag, 
-  Code
+  FileText, 
+  Brain, 
+  BarChart3,
+  Sparkles,
+  ArrowRight,
+  CheckCircle
 } from "lucide-react";
 
 export default function LiveAnalysisSection() {
@@ -22,7 +25,10 @@ export default function LiveAnalysisSection() {
         "Context-aware analysis",
         "Multi-language support"
       ],
-      iconType: "no-entry"
+      icon: FileText,
+      gradient: "from-orange-500 to-red-500",
+      bgGradient: "from-orange-50 to-red-50",
+      accentColor: "orange"
     },
     {
       title: "Document Processing",
@@ -33,207 +39,254 @@ export default function LiveAnalysisSection() {
         "Document structure analysis",
         "Content categorization"
       ],
-      iconType: "open-sign"
+      icon: Brain,
+      gradient: "from-orange-600 to-amber-500",
+      bgGradient: "from-orange-50 to-amber-50",
+      accentColor: "orange"
     },
     {
-      title: ">_ API Integration",
-      description: "Developer-friendly API for seamless integration with your existing workflow",
+      title: "Smart Analytics",
+      description: "Advanced insights and analytics to track your document processing performance",
       features: [
-        "RESTful API endpoints",
-        "Webhook notifications",
-        "SDK for popular languages",
-        "Custom integration support",
-        "Batch processing capabilities",
-        "Real-time status updates",
-        "Comprehensive documentation"
+        "Processing time analytics",
+        "Document type insights",
+        "Usage statistics",
+        "Performance metrics",
+        "Export analytics data",
+        "Visual dashboards",
+        "Historical trends"
       ],
-      iconType: "command-prompt",
+      icon: BarChart3,
+      gradient: "from-orange-500 to-amber-600",
+      bgGradient: "from-orange-50 to-amber-50",
+      accentColor: "orange",
       twoColumn: true
     }
   ];
 
   return (
-    <section className="py-20 bg-gray-100" ref={ref}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Large Header */}
+    <section className="py-24 bg-black relative overflow-hidden" ref={ref}>
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-grid-white/[0.02] [mask-image:linear-gradient(0deg,black,rgba(0,0,0,0.6))] -z-10" />
+      <div className="absolute top-0 left-1/4 w-72 h-72 bg-orange-500/10 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob" />
+      <div className="absolute top-0 right-1/4 w-72 h-72 bg-amber-500/10 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000" />
+      <div className="absolute -bottom-8 left-1/3 w-72 h-72 bg-red-500/10 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000" />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        {/* Enhanced Header */}
         <motion.div
           className="text-center mb-20"
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.8 }}
         >
-          <h2 className="text-6xl font-bold text-gray-900 mb-6">
+          <motion.div
+            className="inline-flex items-center gap-2 bg-orange-500/20 text-orange-300 px-4 py-2 rounded-full text-sm font-medium mb-6"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <Sparkles className="w-4 h-4" />
+            Powered by Advanced AI
+          </motion.div>
+          
+          <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-white via-orange-400 to-red-400 bg-clip-text text-transparent mb-6 leading-tight">
             AI Document Analysis
           </h2>
+          
+          <motion.p
+            className="text-xl text-neutral-300 max-w-3xl mx-auto leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            Transform complex documents into actionable insights with our cutting-edge AI technology. 
+            Experience the future of document intelligence.
+          </motion.p>
         </motion.div>
 
-        {/* Cards Grid - Buttery Smooth */}
+        {/* Enhanced Cards Grid */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.6, staggerChildren: 0.2 }}
         >
           {cards.map((card, index) => {
-            const renderIcon = () => {
-              switch (card.iconType) {
-                case "no-entry":
-                  return (
-                    <motion.div 
-                      className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0"
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" strokeWidth="2" fill="none"/>
-                        <path d="M14 2v6h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                        <path d="M16 13H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                        <path d="M16 17H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                        <path d="M10 9H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                      </svg>
-                    </motion.div>
-                  );
-                case "open-sign":
-                  return (
-                    <motion.div 
-                      className="w-16 h-16 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0"
-                      whileHover={{ scale: 1.1, y: -2 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" stroke="currentColor" strokeWidth="2" fill="none"/>
-                      </svg>
-                    </motion.div>
-                  );
-                case "command-prompt":
-                  return (
-                    <motion.div 
-                      className="w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0"
-                      whileHover={{ scale: 1.1, rotate: -5 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <span className="text-white text-xl font-mono">{'>'}_</span>
-                    </motion.div>
-                  );
-                default:
-                  return null;
-              }
-            };
+            const Icon = card.icon;
 
             return (
               <motion.div
                 key={index}
-                className="group"
-                initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                animate={isInView ? { 
-                  opacity: 1, 
-                  y: 0, 
-                  scale: 1 
-                } : { 
-                  opacity: 0, 
-                  y: 50, 
-                  scale: 0.9 
-                }}
+                className="group relative"
+                initial={{ opacity: 0, y: 60 }}
+                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
                 transition={{ 
-                  type: "spring",
-                  stiffness: 100,
-                  damping: 15,
-                  delay: index * 0.1,
-                  duration: 0.6
+                  duration: 0.8,
+                  delay: index * 0.2,
+                  ease: [0.25, 0.46, 0.45, 0.94]
                 }}
                 whileHover={{ 
-                  y: -8,
-                  scale: 1.02,
+                  y: -12,
                   transition: { 
-                    type: "spring", 
-                    stiffness: 400, 
-                    damping: 25 
+                    duration: 0.4,
+                    ease: [0.25, 0.46, 0.45, 0.94]
                   }
                 }}
-                whileTap={{ scale: 0.98 }}
               >
+                {/* Card Background with Gradient */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${card.bgGradient} rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                
+                {/* Main Card */}
                 <motion.div 
-                  className="bg-white rounded-2xl shadow-lg p-8 h-full cursor-pointer"
+                  className={`relative bg-gray-900/80 backdrop-blur-sm rounded-3xl border border-gray-700/50 p-8 h-full overflow-hidden group-hover:border-${card.accentColor}-400/50 transition-all duration-500`}
                   whileHover={{ 
-                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-                    transition: { duration: 0.3 }
+                    boxShadow: "0 32px 64px -12px rgba(0, 0, 0, 0.3)",
+                    borderColor: `rgb(var(--${card.accentColor}-400))`
                   }}
-                  transition={{ duration: 0.3 }}
                 >
+                  {/* Animated Background Pattern */}
+                  <div className="absolute top-0 right-0 w-32 h-32 opacity-5 group-hover:opacity-10 transition-opacity duration-500">
+                    <div className={`w-full h-full bg-gradient-to-br ${card.gradient} rounded-full blur-2xl`} />
+                  </div>
+                  
+                  {/* Icon Section */}
                   <motion.div 
-                    className="flex items-start gap-6 mb-6"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                    className="relative mb-6"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
                     transition={{ 
-                      delay: index * 0.1 + 0.2,
-                      duration: 0.5,
-                      ease: "easeOut"
+                      delay: index * 0.2 + 0.3,
+                      duration: 0.6,
+                      ease: [0.25, 0.46, 0.45, 0.94]
                     }}
                   >
-                    {renderIcon()}
+                    <motion.div 
+                      className={`w-16 h-16 bg-gradient-to-br ${card.gradient} rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300`}
+                      whileHover={{ 
+                        scale: 1.1, 
+                        rotate: 5,
+                        transition: { duration: 0.3 }
+                      }}
+                    >
+                      <Icon className="w-8 h-8 text-white" />
+                    </motion.div>
                     
-                    <div className="flex-1 min-w-0">
-                      <motion.h3 
-                        className="text-2xl font-bold text-black mb-3"
-                        whileHover={{ color: "#f97316" }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        {card.title}
-                      </motion.h3>
-                      
-                      <motion.p 
-                        className="text-black text-base mb-6 leading-relaxed"
-                        initial={{ opacity: 0 }}
-                        animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-                        transition={{ 
-                          delay: index * 0.1 + 0.4,
-                          duration: 0.5
-                        }}
-                      >
-                        {card.description}
-                      </motion.p>
-                    </div>
+                    {/* Floating accent */}
+                    <motion.div 
+                      className={`absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br ${card.gradient} rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+                      animate={{ 
+                        scale: [1, 1.2, 1],
+                        opacity: [0.3, 0.6, 0.3]
+                      }}
+                      transition={{ 
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    />
                   </motion.div>
                   
-                  <motion.ul 
-                    className={`space-y-2 ${card.twoColumn ? 'grid grid-cols-2 gap-x-6' : ''}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                    transition={{ 
-                      delay: index * 0.1 + 0.6,
-                      duration: 0.5,
-                      staggerChildren: 0.1
-                    }}
-                  >
-                    {card.features.map((item, itemIndex) => (
-                      <motion.li 
-                        key={itemIndex} 
-                        className="text-black text-sm flex items-start"
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
-                        transition={{ 
-                          delay: index * 0.1 + 0.8 + itemIndex * 0.05,
-                          duration: 0.3
-                        }}
-                        whileHover={{ 
-                          x: 5,
-                          transition: { duration: 0.2 }
-                        }}
-                      >
-                        <span className="text-gray-500 mr-2 flex-shrink-0 mt-0.5 text-sm">
-                          {card.iconType === "command-prompt" ? ">" : "•"}
-                        </span>
-                        <span className="leading-relaxed">{item}</span>
-                      </motion.li>
-                    ))}
-                  </motion.ul>
+                  {/* Content */}
+                  <div className="relative space-y-4">
+                    {/* Title */}
+                    <motion.h3 
+                      className={`text-2xl font-bold text-white group-hover:text-${card.accentColor}-400 transition-colors duration-300`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                      transition={{ 
+                        delay: index * 0.2 + 0.4,
+                        duration: 0.6
+                      }}
+                    >
+                      {card.title}
+                    </motion.h3>
+                    
+                    {/* Description */}
+                    <motion.div 
+                      className="text-neutral-300 text-base leading-relaxed"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                      transition={{ 
+                        delay: index * 0.2 + 0.5,
+                        duration: 0.6
+                      }}
+                    >
+                      {card.description}
+                    </motion.div>
+                    
+                    {/* Features List */}
+                    <motion.div 
+                      className={`space-y-3 ${card.twoColumn ? 'grid grid-cols-2 gap-x-4 gap-y-3' : ''}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                      transition={{ 
+                        delay: index * 0.2 + 0.6,
+                        duration: 0.6,
+                        staggerChildren: 0.1
+                      }}
+                    >
+                      {card.features.map((item, itemIndex) => (
+                        <motion.div 
+                          key={itemIndex} 
+                          className="flex items-center gap-3 group/item"
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
+                          transition={{ 
+                            delay: index * 0.2 + 0.7 + itemIndex * 0.05,
+                            duration: 0.4
+                          }}
+                          whileHover={{ 
+                            x: 4,
+                            transition: { duration: 0.2 }
+                          }}
+                        >
+                          <motion.div 
+                            className={`w-2 h-2 bg-gradient-to-r ${card.gradient} rounded-full flex-shrink-0`}
+                            whileHover={{ scale: 1.2 }}
+                            transition={{ duration: 0.2 }}
+                          />
+                          <span className="text-neutral-300 text-sm leading-relaxed group-hover/item:text-white transition-colors duration-200">
+                            {item}
+                          </span>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                    
+                  </div>
                 </motion.div>
               </motion.div>
             );
           })}
         </motion.div>
       </div>
+      
+      {/* Add CSS for blob animations */}
+      <style jsx>{`
+        @keyframes blob {
+          0% {
+            transform: translate(0px, 0px) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+          100% {
+            transform: translate(0px, 0px) scale(1);
+          }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
     </section>
   );
 }

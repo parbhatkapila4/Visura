@@ -375,7 +375,7 @@ export default function PricingSection() {
 
   return (
         <section
-          className="py-20 bg-white"
+          className="py-20 bg-black"
           id="pricing"
           ref={ref}
         >
@@ -391,10 +391,10 @@ export default function PricingSection() {
             ease: [0.25, 0.46, 0.45, 0.94]
           }}
         >
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
               Simple, Transparent Pricing
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               Choose the plan that fits your document analysis needs. All plans include our core AI-powered
               summarization features with no hidden fees.
             </p>
@@ -453,8 +453,8 @@ export default function PricingSection() {
                   <motion.div 
                     className={`relative h-full p-8 rounded-3xl border transition-all duration-500 ${
                       plan.popular
-                        ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-500/50 shadow-2xl shadow-orange-500/20'
-                        : 'bg-gray-50 border-gray-200 group-hover:border-gray-300 group-hover:shadow-xl group-hover:shadow-gray-200/50'
+                        ? 'bg-gradient-to-br from-orange-900/20 to-orange-800/20 border-orange-500/50 shadow-2xl shadow-orange-500/20'
+                        : 'bg-gray-900/50 border-gray-700 group-hover:border-gray-600 group-hover:shadow-xl group-hover:shadow-gray-800/50'
                     }`}
                     whileHover={{
                       boxShadow: plan.popular 
@@ -474,15 +474,15 @@ export default function PricingSection() {
                 <div className="relative z-10">
                   {/* Plan Header */}
                   <div className="mb-8">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                    <p className="text-gray-600 mb-6">{plan.description}</p>
+                    <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
+                    <p className="text-gray-300 mb-6">{plan.description}</p>
                     
                     <div className="flex items-baseline gap-2">
-                      <span className="text-5xl font-bold text-gray-900">
+                      <span className="text-5xl font-bold text-white">
                         {plan.price === 'Custom' ? 'Custom' : `$${plan.price}`}
                       </span>
                       {plan.price !== 'Custom' && (
-                        <span className="text-gray-600">/{plan.period}</span>
+                        <span className="text-gray-300">/{plan.period}</span>
                       )}
                     </div>
                   </div>
@@ -529,7 +529,7 @@ export default function PricingSection() {
                         >
                           <CheckIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
                         </motion.div>
-                        <span className="text-gray-700">{feature}</span>
+                        <span className="text-gray-200">{feature}</span>
                       </motion.div>
                     ))}
                   </motion.div>
@@ -572,7 +572,7 @@ export default function PricingSection() {
             damping: 15
           }}
         >
-              <div className="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 border border-gray-300 rounded-full text-gray-700">
+              <div className="inline-flex items-center gap-2 px-6 py-3 bg-gray-800 border border-gray-600 rounded-full text-gray-200">
             <CheckIcon className="w-5 h-5 text-green-500" />
             <span>All plans include 30-day money-back guarantee</span>
           </div>

@@ -67,7 +67,7 @@ export default function FeaturesSection() {
   ];
 
   return (
-    <section className="py-20 bg-white" ref={ref}>
+    <section className="py-20 bg-black" ref={ref}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -76,7 +76,7 @@ export default function FeaturesSection() {
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.8 }}
         >
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
             Powerful Document Analysis
           </h2>
         </motion.div>
@@ -107,18 +107,18 @@ export default function FeaturesSection() {
                       </div>
                       
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">
+                        <h3 className="text-lg font-bold text-white mb-2">
                           {feature.title}
                         </h3>
                         
-                        <p className="text-sm text-gray-600 mb-3">
+                        <p className="text-sm text-neutral-300 mb-3 w-full leading-relaxed">
                           {feature.description}
                         </p>
                         
                         <ul className="space-y-1">
                           {feature.features.map((item, itemIndex) => (
-                            <li key={itemIndex} className="text-sm text-gray-600 flex items-center">
-                              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2 flex-shrink-0"></span>
+                            <li key={itemIndex} className="text-sm text-neutral-300 flex items-center">
+                              <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full mr-2 flex-shrink-0"></span>
                               {item}
                             </li>
                           ))}
@@ -138,16 +138,16 @@ export default function FeaturesSection() {
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+            <div className="bg-gray-900 rounded-2xl shadow-lg border border-gray-700 p-8">
               <div className="text-center">
-                <div className="text-6xl font-bold text-gray-900 mb-4">
+                <div className="text-6xl font-bold text-white mb-4">
                   85%
                 </div>
-                <div className="text-lg font-bold text-blue-500 mb-6">
+                <div className="text-lg font-bold text-orange-500 mb-6">
                   PROCESSING
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: '85%' }}></div>
+                <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div className="bg-orange-500 h-2 rounded-full" style={{ width: '85%' }}></div>
                 </div>
               </div>
             </div>

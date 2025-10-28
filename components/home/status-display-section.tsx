@@ -3,14 +3,14 @@ import { BarChart3, Clock } from "lucide-react";
 
 export default function StatusDisplaySection() {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-black">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-5xl font-bold text-white mb-6">
             Real-time Analytics
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-300 max-w-3xl mx-auto">
             Track your document analysis progress with real-time updates and detailed analytics. 
             Monitor processing status and view comprehensive insights as they're generated.
           </p>
@@ -24,8 +24,8 @@ export default function StatusDisplaySection() {
                 <BarChart3 className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Processing Analytics</h3>
-                <p className="text-gray-600">View detailed metrics on document processing speed and accuracy</p>
+                <h3 className="text-lg font-semibold text-white">Processing Analytics</h3>
+                <p className="text-gray-300">View detailed metrics on document processing speed and accuracy</p>
               </div>
             </div>
 
@@ -34,8 +34,8 @@ export default function StatusDisplaySection() {
                 <Clock className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Real-time Updates</h3>
-                <p className="text-gray-600">Get instant notifications when analysis is complete and insights are ready</p>
+                <h3 className="text-lg font-semibold text-white">Real-time Updates</h3>
+                <p className="text-gray-300">Get instant notifications when analysis is complete and insights are ready</p>
               </div>
             </div>
           </div>

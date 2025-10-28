@@ -6,25 +6,20 @@ import { Play, Clock, Square, Home, Settings, FileText, Bot, Zap } from "lucide-
 
 export default function HeroSection() {
   return (
-    <section className="min-h-screen bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
-      {/* Subtle Background Pattern */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-orange-100 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-100 rounded-full blur-3xl"></div>
-      </div>
+    <section className="min-h-screen relative overflow-hidden">
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Hero Content */}
         <div className="text-center space-y-12 pt-16">
           {/* Main Headline */}
           <div className="space-y-6">
-            <h1 className="text-6xl md:text-7xl font-bold text-gray-900 leading-tight">
+            <h1 className="text-6xl md:text-7xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50 leading-tight">
               Transform Documents
               <br />
               <span className="text-orange-500">Into Insights</span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              <span className="font-bold text-gray-900">VISURA</span> is an AI-powered document analysis platform that transforms 
+            <p className="text-xl text-neutral-300 max-w-3xl mx-auto leading-relaxed">
+              <span className="font-bold text-white">VISURA</span> is an AI-powered document analysis platform that transforms 
               complex PDFs, reports, and documents into clear, actionable insights in seconds. 
               Perfect for professionals, researchers, and businesses who need to extract value from documents quickly.
             </p>
@@ -112,8 +107,8 @@ export default function HeroSection() {
                 <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </div>
-            <h3 className="text-base font-bold text-gray-800 mb-2">AI-Powered Analysis</h3>
-            <p className="text-sm text-gray-600 leading-tight">
+            <h3 className="text-base font-bold text-white mb-2">AI-Powered Analysis</h3>
+            <p className="text-sm text-neutral-300 leading-tight">
               Advanced AI algorithms extract<br />
               key insights, summarize content,<br />
               and identify important patterns
@@ -131,8 +126,8 @@ export default function HeroSection() {
                 <path d="M17 6h2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </div>
-            <h3 className="text-base font-bold text-gray-800 mb-2">Multiple Formats</h3>
-            <p className="text-sm text-gray-600 leading-tight">
+            <h3 className="text-base font-bold text-white mb-2">Multiple Formats</h3>
+            <p className="text-sm text-neutral-300 leading-tight">
               Support for PDF, Word, PowerPoint,<br />
               and more document types with<br />
               seamless processing
@@ -142,7 +137,7 @@ export default function HeroSection() {
           <div className="text-center">
             {/* Smart Home Icon */}
             <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <svg className="w-12 h-12 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-12 h-12 text-neutral-400" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" strokeWidth="2" fill="none"/>
                 <path d="M9 22V12h6v10" stroke="currentColor" strokeWidth="2" fill="none"/>
                 <path d="M12 2v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -153,8 +148,8 @@ export default function HeroSection() {
                 <path d="M10 12h4" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
               </svg>
             </div>
-            <h3 className="text-base font-bold text-gray-800 mb-2">Secure & Private</h3>
-            <p className="text-sm text-gray-600 leading-tight">
+            <h3 className="text-base font-bold text-white mb-2">Secure & Private</h3>
+            <p className="text-sm text-neutral-300 leading-tight">
               Enterprise-grade security with<br />
               encrypted processing and<br />
               data privacy protection
@@ -164,12 +159,12 @@ export default function HeroSection() {
           <div className="text-center">
             {/* Star/Asterisk Icon */}
             <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-              <svg className="w-12 h-12 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-12 h-12 text-neutral-400" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="2" fill="none"/>
               </svg>
             </div>
-            <h3 className="text-base font-bold text-gray-800 mb-2">Export & Share</h3>
-            <p className="text-sm text-gray-600 leading-tight">
+            <h3 className="text-base font-bold text-white mb-2">Export & Share</h3>
+            <p className="text-sm text-neutral-300 leading-tight">
               Download summaries in multiple<br />
               formats, share with teams,<br />
               and integrate with your workflow

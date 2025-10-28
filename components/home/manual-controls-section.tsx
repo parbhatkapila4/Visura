@@ -3,37 +3,24 @@ import { FileText, Brain, Download, Users } from "lucide-react";
 
 export default function ManualControlsSection() {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-black">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-5xl font-bold text-white mb-6">
             Document Management
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-300 max-w-3xl mx-auto">
             Easily manage your documents with intuitive controls and quick access to all analysis features. 
             Upload, process, and export your documents with just a few clicks.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative">
-          {/* Dotted Line */}
-          <div className="hidden lg:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-px">
-            <svg width="100%" height="100%" viewBox="0 0 100 2" className="overflow-visible">
-              <path
-                d="M 0 1 Q 25 0.5 50 1 Q 75 1.5 100 1"
-                stroke="#9CA3AF"
-                strokeWidth="2"
-                fill="none"
-                strokeDasharray="4 4"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
 
           {/* Product Image */}
           <div className="flex justify-center">
-            <div className="relative w-80 h-80 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center shadow-2xl">
+            <div className="relative w-80 h-80 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center shadow-2xl shadow-amber-600 animate-pulse">
               {/* Main Screen */}
               <div className="w-48 h-32 bg-gray-800 rounded-lg flex items-center justify-center mb-4">
                 <div className="text-center text-white">
@@ -69,9 +56,9 @@ export default function ManualControlsSection() {
                 <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
                   <FileText className="w-5 h-5 text-gray-700" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Upload Documents</h3>
+                <h3 className="text-lg font-semibold text-white">Upload Documents</h3>
               </div>
-              <p className="text-sm text-gray-600">Drag and drop PDFs, Word docs, and other formats for analysis</p>
+              <p className="text-sm text-gray-300">Drag and drop PDFs, Word docs, and other formats for analysis</p>
             </div>
 
             <div className="space-y-4">
@@ -79,9 +66,9 @@ export default function ManualControlsSection() {
                 <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
                   <Brain className="w-5 h-5 text-gray-700" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">AI Analysis</h3>
+                <h3 className="text-lg font-semibold text-white">AI Analysis</h3>
               </div>
-              <p className="text-sm text-gray-600">Automatically extract key insights and generate summaries</p>
+              <p className="text-sm text-gray-300">Automatically extract key insights and generate summaries</p>
             </div>
 
             <div className="space-y-4">
@@ -89,9 +76,9 @@ export default function ManualControlsSection() {
                 <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
                   <Download className="w-5 h-5 text-gray-700" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Export Results</h3>
+                <h3 className="text-lg font-semibold text-white">Export Results</h3>
               </div>
-              <p className="text-sm text-gray-600">Download summaries in PDF, Word, or text formats</p>
+              <p className="text-sm text-gray-300">Download summaries in PDF, Word, or text formats</p>
             </div>
 
             <div className="space-y-4">
@@ -99,9 +86,9 @@ export default function ManualControlsSection() {
                 <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
                   <Users className="w-5 h-5 text-gray-700" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Share & Collaborate</h3>
+                <h3 className="text-lg font-semibold text-white">Share & Collaborate</h3>
               </div>
-              <p className="text-sm text-gray-600">Share insights with your team via secure links</p>
+              <p className="text-sm text-gray-300">Share insights with your team via secure links</p>
             </div>
           </div>
         </div>
