@@ -211,7 +211,7 @@ export default function ChatbotClient({
   return (
     <div className="flex flex-col lg:grid lg:grid-cols-10 gap-4 lg:gap-6 h-[calc(100vh-120px)] lg:h-[calc(100vh-200px)] min-h-[400px] lg:min-h-[600px] max-h-[700px] lg:max-h-[800px]">
       <div className="lg:col-span-3 min-h-[180px] lg:min-h-[400px] order-2 lg:order-1">
-        <div className="relative p-3 lg:p-6 bg-gray-800 rounded-2xl lg:rounded-3xl shadow-2xl border border-gray-600 h-full flex flex-col min-h-0 transition-all duration-500 hover:shadow-3xl hover:scale-[1.02] group">
+        <div className="relative p-3 lg:p-6 bg-gray-800 rounded-2xl lg:rounded-3xl shadow-2xl border border-gray-600 h-full flex flex-col min-h-0">
           <div className="relative flex flex-col h-full min-h-0 z-10">
             <div className="pb-3 lg:pb-4 flex-shrink-0">
               <div className="flex items-center justify-between mb-2">
@@ -226,7 +226,7 @@ export default function ChatbotClient({
                 <Button
                   size="sm"
                   onClick={createNewSession}
-                  className="h-8 w-8 lg:h-10 lg:w-10 p-0 bg-gradient-to-br from-[#484593] to-[#484593]/90 hover:from-[#484593]/90 hover:to-[#484593] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 rounded-xl"
+                  className="h-8 w-8 lg:h-10 lg:w-10 p-0 bg-gradient-to-br from-[#484593] to-[#484593]/90 hover:from-[#484593]/90 hover:to-[#484593] shadow-lg rounded-xl"
                 >
                   <Plus className="h-4 w-4 lg:h-5 lg:w-5" />
                 </Button>
@@ -255,10 +255,10 @@ export default function ChatbotClient({
                   sessions.map((session) => (
                     <div
                       key={session.id}
-                      className={`group relative p-2.5 lg:p-4 rounded-xl lg:rounded-2xl w-full cursor-pointer transition-all duration-300 hover:scale-[1.02] ${
+                      className={`group relative p-2.5 lg:p-4 rounded-xl lg:rounded-2xl w-full cursor-pointer transition-all duration-300 ${
                         currentSessionId === session.id
                           ? "bg-gradient-to-r from-gray-800 to-gray-700 border-2 border-[#484593]/50 shadow-lg"
-                          : "bg-gray-800 hover:bg-gray-700 border border-gray-600 hover:border-gray-500 hover:shadow-md"
+                          : "bg-gray-800 hover:bg-gray-700 border border-gray-600 hover:border-gray-500"
                       }`}
                       onClick={() => setCurrentSessionId(session.id)}
                     >
@@ -285,7 +285,7 @@ export default function ChatbotClient({
                           <DropdownMenuTrigger asChild>
                             <Button
                               size="sm"
-                              className="h-7 w-7 lg:h-8 lg:w-8 p-0 bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white border border-gray-600 hover:border-gray-500 rounded-lg lg:rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 backdrop-blur-sm shadow-lg hover:shadow-xl"
+                              className="h-7 w-7 lg:h-8 lg:w-8 p-0 bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white border border-gray-600 hover:border-gray-500 rounded-lg lg:rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <MoreVertical className="h-3 w-3 lg:h-4 lg:w-4" />
@@ -297,7 +297,7 @@ export default function ChatbotClient({
                           >
                             <DropdownMenuItem
                               onClick={() => deleteSession(session.id)}
-                              className="text-red-600 hover:bg-red-50/80 rounded-lg lg:rounded-xl px-3 py-2 transition-all duration-200 hover:scale-105"
+                              className="text-red-600 hover:bg-red-50/80 rounded-lg lg:rounded-xl px-3 py-2"
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete
@@ -315,7 +315,7 @@ export default function ChatbotClient({
       </div>
 
       <div className="lg:col-span-6 order-1 lg:order-2 min-h-[300px]">
-        <div className="relative p-3 lg:p-6 bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-xl rounded-2xl lg:rounded-3xl shadow-2xl border border-white/20 h-full flex flex-col min-h-0 transition-all duration-500 hover:shadow-3xl hover:from-white/25 hover:via-white/15 hover:to-white/10 hover:scale-[1.01] group">
+        <div className="relative p-3 lg:p-6 bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-xl rounded-2xl lg:rounded-3xl shadow-2xl border border-white/20 h-full flex flex-col min-h-0">
           <div className="absolute inset-0 bg-gradient-to-br from-[#484593]/20 via-[#484593]/10 to-transparent opacity-60 rounded-2xl lg:rounded-3xl" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent rounded-2xl lg:rounded-3xl" />
 
@@ -504,7 +504,7 @@ export default function ChatbotClient({
                         onClick={sendMessage}
                         disabled={!inputMessage.trim() || isLoading}
                         size="sm"
-                        className="h-10 w-10 lg:h-12 lg:w-12 p-0 bg-gradient-to-br from-[#484593] to-[#484593]/90 hover:from-[#484593]/90 hover:to-[#484593] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 rounded-xl lg:rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex-shrink-0"
+                        className="h-10 w-10 lg:h-12 lg:w-12 p-0 bg-gradient-to-br from-[#484593] to-[#484593]/90 hover:from-[#484593]/90 hover:to-[#484593] text-white shadow-lg rounded-xl lg:rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                       >
                         <Send className="h-4 w-4 lg:h-5 lg:w-5" />
                       </Button>

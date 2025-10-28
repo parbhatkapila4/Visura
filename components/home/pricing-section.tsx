@@ -267,24 +267,13 @@ export default function PricingSection() {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.1,
-      },
+      transition: { staggerChildren: 0.2 },
     },
   };
 
   const titleVariants = {
-    hidden: {
-      opacity: 0,
-      y: -30,
-      scale: 0.9,
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-    },
+    hidden: { opacity: 0, y: -20 },
+    visible: { opacity: 1, y: 0 },
   };
 
   return (
@@ -305,7 +294,6 @@ export default function PricingSection() {
             variants={titleVariants}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
-            transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <div>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-500 to-gray-800 mb-6 sm:mb-8 lg:mb-12 text-center">
@@ -361,7 +349,6 @@ export default function PricingSection() {
             variants={titleVariants}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
           >
             <StartSmallCard />
           </motion.div>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { deleteSummary } from "@/lib/summaries";
+import { removeSummary } from "@/lib/summaries";
 
 export async function DELETE(
   request: NextRequest,
@@ -22,7 +22,7 @@ export async function DELETE(
       );
     }
 
-    await deleteSummary(id, userId);
+    await removeSummary(id, userId);
 
     return NextResponse.json(
       { message: "Summary deleted successfully" },

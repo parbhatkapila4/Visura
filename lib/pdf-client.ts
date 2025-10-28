@@ -37,14 +37,11 @@ export async function extractTextFromPDF(file: File): Promise<string> {
     console.error("PDF text extraction failed:", error);
 
     const fallbackText = `PDF Document: ${file.name}
+Size: ${Math.round(file.size / 1024)} KB
+Type: ${file.type}
+Last Modified: ${new Date(file.lastModified).toLocaleDateString()}
 
-File Information:
-- Size: ${Math.round(file.size / 1024)} KB
-- Type: ${file.type}
-- Last Modified: ${new Date(file.lastModified).toLocaleDateString()}
-
-Note: Automatic text extraction failed, but the document has been uploaded successfully.
-This may be due to the PDF being image-based, encrypted, or having complex formatting.`;
+Note: Text extraction failed. The document was uploaded successfully.`;
 
     return fallbackText;
   }

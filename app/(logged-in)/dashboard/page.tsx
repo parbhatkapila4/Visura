@@ -1,5 +1,5 @@
 import DashboardClient from "@/components/dashboard/dashboard-client";
-import { getSummaries } from "@/lib/summaries";
+import { getUserSummaries } from "@/lib/summaries";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { ensureUserExistsInDatabase } from "@/lib/auth-utils";
@@ -33,7 +33,7 @@ export default async function DashboardPage() {
     userId,
     email!
   );
-  const summaries = (await getSummaries(userId, userPlan)) as Summary[];
+  const summaries = (await getUserSummaries(userId, userPlan)) as Summary[];
   return (
     <main className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">

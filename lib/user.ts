@@ -1,6 +1,6 @@
 import { pricingPlans } from "@/utils/constants";
 import { getDbConnection } from "./db";
-import { getUserUploadCount } from "./summaries";
+import { getUserDocumentCount } from "./summaries";
 
 export async function getPriceIdForActiveUser(email: string) {
   const sql = await getDbConnection();
@@ -64,7 +64,7 @@ export async function getUserByEmail(email: string) {
 }
 
 export async function hasReachedUploadLimit(userId: string, email: string) {
-  const uploadCount = await getUserUploadCount(userId);
+  const uploadCount = await getUserDocumentCount(userId);
 
   const priceId = await getPriceIdForActiveUser(email);
 

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import ChatbotClient from "@/components/chatbot/chatbot-client";
-import { getSummaryById } from "@/lib/summaries";
+import { findSummaryById } from "@/lib/summaries";
 import { getPdfStoreBySummaryId } from "@/lib/chatbot";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
@@ -25,7 +25,7 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
 
   const { pdfSummaryId } = params;
 
-  const summary = await getSummaryById(pdfSummaryId);
+  const summary = await findSummaryById(pdfSummaryId);
   if (!summary || summary.user_id !== userId) {
     redirect("/dashboard");
   }
@@ -40,18 +40,12 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
         <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-12 xl:py-24">
           <div className="flex flex-col">
             <div className="flex items-center justify-between mb-4 lg:mb-6">
-              <Link href="/dashboard" className="group">
-                <div className="sm:hidden p-2 rounded-full hover:bg-[#484593]/20 transition-all duration-200">
-                  <ArrowLeft className="h-5 w-5 text-[#484593] transition-transform duration-200 group-hover:-translate-x-1" />
-                </div>
-
-                <Button
-                  variant="outline"
-                  className="hidden sm:flex items-center px-3 py-1.5 lg:px-4 lg:py-2 bg-[#484593] border border-[#484593] text-white hover:bg-[#484593]/90 hover:border-[#484593]/90 hover:shadow-lg hover:shadow-[#484593]/30 transition-all duration-300 hover:scale-105 active:scale-95 rounded-lg lg:rounded-xl font-medium text-sm lg:text-base h-7 lg:h-10"
-                >
-                  <ArrowLeft className="h-3 w-3 lg:h-4 lg:w-4 transition-transform duration-200 group-hover:-translate-x-1" />
-                  <span className="ml-2">Go Back</span>
-                </Button>
+              <Link 
+                href="/dashboard" 
+                className="group flex items-center px-3 py-1.5 lg:px-4 lg:py-2 bg-[#484593] border border-[#484593] text-white hover:bg-[#484593]/90 hover:border-[#484593]/90 hover:shadow-lg hover:shadow-[#484593]/30 transition-all duration-300 hover:scale-105 active:scale-95 rounded-lg lg:rounded-xl font-medium text-sm lg:text-base h-7 lg:h-10"
+              >
+                <ArrowLeft className="h-3 w-3 lg:h-4 lg:w-4 transition-transform duration-200 group-hover:-translate-x-1" />
+                <span className="ml-2">Go Back</span>
               </Link>
               <div className="flex items-center gap-2 lg:gap-3 flex-1 justify-center">
                 <Bot className="h-6 w-6 lg:h-8 lg:w-8 text-[#484593]" />
@@ -90,9 +84,12 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
                     </h3>
                     <p className="text-gray-600 text-center mb-4 text-sm lg:text-base px-4">
                       The chatbot functionality is not yet initialized for this
-                      document. Please try uploading the document again or
-                      contact support.
+                      document. This usually happens when PDF text extraction failed during upload.
                     </p>
+                    <div className="text-xs text-gray-500 space-y-1 mb-4">
+                      <p>Document ID: {pdfSummaryId}</p>
+                      <p>Title: {summary?.title || "Unknown"}</p>
+                    </div>
                   </CardContent>
                 </div>
               </div>

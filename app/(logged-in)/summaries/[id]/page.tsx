@@ -1,6 +1,6 @@
 import BgGradient from "@/components/common/bg-gradient";
 import SummaryHeader from "@/components/summaries/summary-header";
-import { getSummaryById } from "@/lib/summaries";
+import { findSummaryById } from "@/lib/summaries";
 import { notFound } from "next/navigation";
 import SummaryViewer from "@/components/summaries/summary-viewer";
 
@@ -10,7 +10,7 @@ export default async function SummaryPage(props: {
   const params = await props.params;
   const id = params.id;
 
-  const summary = await getSummaryById(id);
+  const summary = await findSummaryById(id);
 
   if (!summary) {
     notFound();

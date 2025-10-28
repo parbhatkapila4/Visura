@@ -1,24 +1,7 @@
 import { openrouterChatCompletion } from "@/lib/openrouter";
 import { getQASessionById, getQAMessagesBySession } from "./chatbot";
 
-const CHATBOT_SYSTEM_PROMPT = `You are a helpful document assistant that helps users understand and analyze PDF documents. You have access to the full text content of the PDF document that the user is asking about.
-
-Your role is to:
-1. Answer questions about the content of the PDF document accurately
-2. Provide summaries, explanations, and insights based on the PDF content
-3. Help users find specific information within the document
-4. Maintain context throughout the conversation
-5. Be helpful, accurate, and concise in your responses
-
-Guidelines:
-- Always base your answers on the actual content of the PDF document
-- If you cannot find information in the document, clearly state that
-- Provide page references or section references when possible
-- Ask clarifying questions if the user's question is ambiguous
-- Keep responses focused and relevant to the PDF content
-- If asked about topics not covered in the PDF, politely redirect to the document content
-
-Remember: You should only answer questions related to the PDF document content. Do not provide information from external sources unless it's directly relevant to understanding the document.`;
+const CHATBOT_SYSTEM_PROMPT = `You are a document assistant that helps users understand PDF content. Answer questions based on the document text only. If information isn't in the document, say so. Provide page references when possible. Keep responses clear and relevant to the document.`;
 
 export async function generateChatbotResponse(
   sessionId: string,
@@ -86,13 +69,5 @@ Please answer the user's question based on the PDF content above. If the questio
 export async function generateInitialChatbotGreeting(
   pdfTitle: string
 ): Promise<string> {
-  return `Hello! I'm your document assistant for this document: "${pdfTitle}". I can help you understand and analyze the content of this PDF. You can ask me questions about:
-
-• Key concepts and main points
-• Specific sections or topics
-• Summaries of particular parts
-• Explanations of complex ideas
-• Finding specific information
-
-What would you like to know about this document?`;
+  return `Hi! I can help you understand "${pdfTitle}". Ask me about key points, specific sections, or anything else in the document.`;
 }

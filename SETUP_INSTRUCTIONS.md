@@ -1,77 +1,41 @@
 # Visura Setup Instructions
 
-## Environment Variables Required
+## Database Setup
 
-To fix the "Upload Your PDF" button, you need to set up the following environment variables. Create a `.env.local` file in your project root with the following variables:
+The chatbot functionality requires additional database tables. Follow these steps:
 
-```bash
-# Supabase Configuration (Required for file uploads)
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+### 1. Run the Chatbot Schema
 
-# OpenAI Configuration (Required for AI summaries)
-OPENAI_API_KEY=your_openai_api_key
+Execute the `chatbot_schema.sql` file in your Supabase SQL editor:
 
-# Clerk Authentication (Required for user management)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
-CLERK_SECRET_KEY=your_clerk_secret_key
+1. Go to your Supabase dashboard
+2. Navigate to the SQL Editor
+3. Copy and paste the contents of `chatbot_schema.sql`
+4. Click "Run" to execute the SQL
 
-# Database (if using Neon/PostgreSQL)
-DATABASE_URL=your_database_connection_string
+### 2. Verify Tables
 
-# Stripe (if using payments)
-STRIPE_SECRET_KEY=your_stripe_secret_key
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-```
+After running the schema, you should have these new tables:
+- `pdf_stores` - Stores full PDF text content for chatbot
+- `pdf_qa_sessions` - Stores chat sessions
+- `pdf_qa_messages` - Stores individual messages
 
-## How to Get These Values
+### 3. Test Upload and Chat
 
-### 1. Supabase Setup
-1. Go to [supabase.com](https://supabase.com) and create a new project
-2. Go to Settings > API
-3. Copy the Project URL and anon/public key
-4. Create a storage bucket named "pdf" in your Supabase dashboard
-
-### 2. OpenAI Setup
-1. Go to [platform.openai.com](https://platform.openai.com)
-2. Create an API key in the API Keys section
-3. Copy the key (starts with "sk-")
-
-### 3. Clerk Setup
-1. Go to [clerk.com](https://clerk.com) and create an account
-2. Create a new application
-3. Copy the publishable key and secret key from the API Keys section
-
-## Fixed Issues
-
-The following issues with the upload button have been resolved:
-
-1. **Button was disabled when no file selected** - Now the button is always enabled and shows appropriate error messages
-2. **Missing environment variable validation** - Added checks for required configuration
-3. **PDF.js worker loading issues** - Added fallback worker URLs for better reliability
-4. **Better user feedback** - Button text changes based on file selection status
-
-## Testing the Upload
-
-1. Make sure all environment variables are set
-2. Start the development server: `npm run dev`
-3. Navigate to the upload page
-4. Select a PDF file - the button text should change to show the filename
-5. Click "Upload Your PDF" - you should see processing indicators and success messages
+1. Upload a new PDF document
+2. The system should now create both the summary and the PDF store
+3. Click "Chat with Document" - it should work now
 
 ## Troubleshooting
 
-If the upload still doesn't work:
+If you still see "Chatbot Not Available":
+1. Check the browser console for any errors
+2. Verify the database tables were created successfully
+3. Try uploading a new document after running the schema
 
-1. Check the browser console for error messages
-2. Verify all environment variables are correctly set
-3. Ensure you're signed in (Clerk authentication)
-4. Check that your Supabase project has the "pdf" storage bucket created
-5. Verify your OpenAI API key has sufficient credits
+## Environment Variables
 
-## Common Issues
-
-- **"Configuration Error"** - Missing Supabase environment variables
-- **"Please sign in"** - Not authenticated with Clerk
-- **"Invalid file"** - File is not a PDF or exceeds 32MB limit
-- **Worker loading errors** - Network issues with PDF.js worker, will fallback automatically
+Make sure you have these environment variables set:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (for server-side operations)

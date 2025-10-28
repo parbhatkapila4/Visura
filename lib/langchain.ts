@@ -5,10 +5,7 @@ export async function fetchAndExtractPdfText(fileUrl: string, maxRetries = 3) {
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(
-        `Loading PDF from URL (attempt ${attempt}/${maxRetries}):`,
-        fileUrl
-      );
+      console.log(`Loading PDF from URL (attempt ${attempt}/${maxRetries}):`, fileUrl);
 
       const abortController = new AbortController();
       const timeoutId = setTimeout(() => {
@@ -18,17 +15,8 @@ export async function fetchAndExtractPdfText(fileUrl: string, maxRetries = 3) {
       const response = await fetch(fileUrl, {
         signal: abortController.signal,
         headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
           Accept: "application/pdf,application/octet-stream,*/*",
-          "Accept-Encoding": "gzip, deflate, br",
-          "Accept-Language": "en-US,en;q=0.9",
-          "Cache-Control": "no-cache",
-          Connection: "keep-alive",
-          "Sec-Fetch-Dest": "document",
-          "Sec-Fetch-Mode": "navigate",
-          "Sec-Fetch-Site": "cross-site",
-          "Upgrade-Insecure-Requests": "1",
         },
       });
 
@@ -49,30 +37,33 @@ export async function fetchAndExtractPdfText(fileUrl: string, maxRetries = 3) {
       const docs = await loader.load();
       console.log("Processed pages:", docs.length);
 
-      return docs.map((doc) => doc.pageContent).join("\n");
+      if (docs.length === 0) {
+        throw new Error("No pages could be processed from PDF");
+      }
+
+      const extractedText = docs.map((doc) => doc.pageContent).join("\n");
+      console.log("Extracted text length:", extractedText.length);
+
+      if (extractedText.trim().length === 0) {
+        throw new Error("No text content could be extracted from PDF");
+      }
+
+      return extractedText;
     } catch (error) {
       lastError = error;
       console.error(`Attempt ${attempt} failed:`, error);
 
       if (error instanceof Error) {
-        if (error.name === "AbortError") {
-          console.error("Request was aborted due to timeout (60s)");
-        } else if (error.message.includes("ECONNRESET")) {
-          console.error("Connection was reset by server");
-        } else if (error.message.includes("ENOTFOUND")) {
-          console.error("DNS resolution failed - domain not found");
-        } else if (error.message.includes("ECONNREFUSED")) {
-          console.error("Connection refused - server not responding");
-        } else if (error.message.includes("ETIMEDOUT")) {
-          console.error("Connection timed out");
-        }
+        console.error(`Attempt ${attempt} error details:`, {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        });
       }
 
       if (attempt < maxRetries) {
-        const baseWaitTime = Math.pow(2, attempt) * 1000;
-        const jitter = Math.random() * 1000;
-        const waitTime = baseWaitTime + jitter;
-        console.log(`Waiting ${Math.round(waitTime)}ms before retry...`);
+        const waitTime = Math.pow(2, attempt) * 1000;
+        console.log(`Waiting ${waitTime}ms before retry...`);
         await new Promise((resolve) => setTimeout(resolve, waitTime));
       }
     }

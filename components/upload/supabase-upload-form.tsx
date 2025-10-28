@@ -60,77 +60,94 @@ export default function SupabaseUploadForm({
       }
 
       console.log("Starting client-side PDF text extraction...");
+      console.log("File details:", {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      });
 
       const pdfjsLib = await import("pdfjs-dist");
 
-      try {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
-      } catch (error) {
-        console.warn("Failed to set worker from unpkg, trying alternative...");
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+      // Try multiple worker sources
+      const workerSources = [
+        `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`,
+        `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`,
+        `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+      ];
+
+      let workerSet = false;
+      for (const workerSrc of workerSources) {
+        try {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+          workerSet = true;
+          console.log("Worker set successfully:", workerSrc);
+          break;
+        } catch (error) {
+          console.warn("Failed to set worker from:", workerSrc);
+        }
+      }
+
+      if (!workerSet) {
+        throw new Error("Could not set PDF.js worker");
       }
 
       const arrayBuffer = await file.arrayBuffer();
       const uint8Array = new Uint8Array(arrayBuffer);
 
-      const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
+      console.log("Loading PDF document...");
+      const loadingTask = pdfjsLib.getDocument({ 
+        data: uint8Array,
+        verbosity: 0, // Reduce console output
+        disableAutoFetch: false,
+        disableStream: false
+      });
+      
       const pdf = await loadingTask.promise;
-
-      console.log(`PDF loaded with ${pdf.numPages} pages`);
+      console.log(`PDF loaded successfully with ${pdf.numPages} pages`);
 
       let fullText = "";
+      let pagesWithText = 0;
 
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        const page = await pdf.getPage(pageNum);
-        const textContent = await page.getTextContent();
-
-        const pageText = textContent.items
-          .map((item: any) => item.str)
-          .join(" ");
-
-        fullText += `Page ${pageNum}:\n${pageText}\n\n`;
-      }
-
-      console.log(`Extracted ${fullText.length} characters from PDF`);
-      return fullText.trim();
-    } catch (error) {
-      console.error("PDF text extraction failed:", error);
-
-      if (error instanceof Error && error.message.includes("worker")) {
-        console.log("Worker error detected, trying alternative approach...");
-
         try {
-          const pdfjsLib = await import("pdfjs-dist");
+          console.log(`Processing page ${pageNum}...`);
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
 
-          pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+          const pageText = textContent.items
+            .map((item: any) => item.str)
+            .join(" ")
+            .trim();
 
-          const arrayBuffer = await file.arrayBuffer();
-          const uint8Array = new Uint8Array(arrayBuffer);
-
-          const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
-          const pdf = await loadingTask.promise;
-
-          let fullText = "";
-          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-            const page = await pdf.getPage(pageNum);
-            const textContent = await page.getTextContent();
-
-            const pageText = textContent.items
-              .map((item: any) => item.str)
-              .join(" ");
-
+          if (pageText.length > 0) {
+            pagesWithText++;
             fullText += `Page ${pageNum}:\n${pageText}\n\n`;
+            console.log(`Page ${pageNum} extracted: ${pageText.length} characters`);
+          } else {
+            console.log(`Page ${pageNum} has no extractable text`);
           }
-
-          console.log(
-            `Alternative extraction successful, length: ${fullText.length}`
-          );
-          return fullText.trim();
-        } catch (retryError) {
-          console.error("Alternative extraction also failed:", retryError);
+        } catch (pageError) {
+          console.error(`Error processing page ${pageNum}:`, pageError);
         }
       }
 
+      console.log(`Extraction complete: ${pagesWithText}/${pdf.numPages} pages had text`);
+      console.log(`Total extracted: ${fullText.length} characters`);
+
+      if (fullText.trim().length === 0) {
+        throw new Error("No text content could be extracted from any page");
+      }
+
+      return fullText.trim();
+    } catch (error) {
+      console.error("PDF text extraction failed:", error);
+      console.error("Error details:", {
+        name: error instanceof Error ? error.name : "Unknown",
+        message: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined
+      });
+
+      // Return a more informative fallback
       const fallbackText = `PDF Document: ${file.name}
 
 File Information:
@@ -138,8 +155,15 @@ File Information:
 - Type: ${file.type}
 - Last Modified: ${new Date(file.lastModified).toLocaleDateString()}
 
-Note: Automatic text extraction failed, but the document has been uploaded successfully.
-This may be due to the PDF being image-based, encrypted, or having complex formatting.`;
+Extraction Error: ${error instanceof Error ? error.message : "Unknown error"}
+
+Note: This PDF could not be processed for text extraction. This commonly happens with:
+- Image-based PDFs (scanned documents)
+- Password-protected or encrypted PDFs
+- PDFs with complex formatting
+- Corrupted PDF files
+
+The document has been uploaded successfully, but AI analysis and chatbot functionality will not be available.`;
 
       return fallbackText;
     }

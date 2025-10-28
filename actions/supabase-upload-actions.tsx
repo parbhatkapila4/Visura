@@ -1,6 +1,6 @@
 "use server";
 
-import { generateSummaryFromOpenAI } from "@/lib/openai";
+import { generateSummaryFromText } from "@/lib/openai";
 
 export async function generatePdfSummaryFromText(
   pdfText: string,
@@ -19,7 +19,7 @@ export async function generatePdfSummaryFromText(
   }
 
   try {
-    const summary = await generateSummaryFromOpenAI(pdfText);
+    const summary = await generateSummaryFromText(pdfText);
     console.log("Summary generated successfully");
 
     if (!summary) {
@@ -146,7 +146,7 @@ The ${documentType} "${fileName}" was successfully uploaded to Supabase Storage$
 This analysis is generated using intelligent fallback processing when direct PDF text extraction is not available.`;
 
   try {
-    const summary = await generateSummaryFromOpenAI(fallbackText);
+    const summary = await generateSummaryFromText(fallbackText);
     console.log("Fallback summary generated successfully");
 
     return {

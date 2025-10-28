@@ -79,18 +79,31 @@ export async function storePdfSummaryAction({
 
     try {
       console.log("Initializing document chat functionality...");
+      console.log("PDF Summary ID:", savedSummary.id);
+      console.log("User ID:", userId);
+      console.log("File URL:", fileUrl);
+      
       const fullTextContent = await fetchAndExtractPdfText(fileUrl);
+      console.log("Extracted text length:", fullTextContent?.length || 0);
 
       if (fullTextContent && fullTextContent.trim().length > 0) {
-        await savePdfStore({
+        console.log("Saving PDF store...");
+        const pdfStoreResult = await savePdfStore({
           pdfSummaryId: savedSummary.id,
           userId,
           fullTextContent,
         });
+        console.log("PDF store saved successfully:", pdfStoreResult);
         console.log("Document chat functionality initialized successfully");
+      } else {
+        console.warn("No text content extracted, skipping PDF store creation");
       }
     } catch (chatbotError) {
       console.error("Error initializing document chat functionality:", chatbotError);
+      console.error("Error details:", {
+        message: chatbotError instanceof Error ? chatbotError.message : "Unknown error",
+        stack: chatbotError instanceof Error ? chatbotError.stack : undefined
+      });
     }
   } catch (error) {
     return {
