@@ -6,32 +6,29 @@ export default function Footer() {
 
   const footerLinks = {
     product: [
-      { name: "Features", href: "/#features" },
-      { name: "Pricing", href: "/#pricing" },
+      { name: "Features", href: "/features" },
       { name: "Changelog", href: "/changelog" },
     ],
     resources: [
       { name: "Documentation", href: "/docs" },
-      { name: "Tutorials", href: "/tutorials" },
       { name: "Support", href: "/support" },
     ],
     company: [
       { name: "About", href: "/about" },
       { name: "Contact", href: "/contact" },
-      { name: "Partners", href: "/partners" },
     ],
   };
 
   const socialLinks = [
-    { name: "Twitter", href: "https://twitter.com/visura", icon: Twitter },
-    { name: "Instagram", href: "https://instagram.com/visura", icon: Linkedin },
-    { name: "GitHub", href: "https://github.com/visura", icon: Github },
+    { name: "Twitter", href: "https://x.com/Devcodies", icon: Twitter },
+    { name: "LinkedIn", href: "https://www.linkedin.com/in/parbhat-kapila/", icon: Linkedin },
+    { name: "GitHub", href: "https://github.com/parbhatkapila4/Visura", icon: Github },
   ];
 
   return (
     <footer className="w-full px-4 py-8">
       <div className="max-w-6xl mx-auto">
-        <div className="bg-black rounded-3xl px-8 py-12 relative overflow-hidden">
+        <div className="bg-black rounded-3xl px-6 py-8 relative overflow-hidden">
           {/* Gradient overlay at top */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-gray-400 to-transparent opacity-30"></div>
           
@@ -69,8 +66,8 @@ export default function Footer() {
 
             {/* Navigation Links */}
             <div className="text-center">
-              <h3 className="text-white font-semibold mb-4">Product</h3>
-              <ul className="space-y-3">
+              <h3 className="text-white font-semibold text-base mb-3">Product</h3>
+              <ul className="space-y-2">
                 {footerLinks.product.map((link) => (
                   <li key={link.name}>
                     <Link
@@ -85,8 +82,8 @@ export default function Footer() {
             </div>
 
             <div className="text-center">
-              <h3 className="text-white font-semibold mb-4">Resources</h3>
-              <ul className="space-y-3">
+              <h3 className="text-white font-semibold text-base mb-3">Resources</h3>
+              <ul className="space-y-2">
                 {footerLinks.resources.map((link) => (
                   <li key={link.name}>
                     <Link
@@ -101,8 +98,8 @@ export default function Footer() {
             </div>
 
             <div className="text-center">
-              <h3 className="text-white font-semibold mb-4">Company</h3>
-              <ul className="space-y-3">
+              <h3 className="text-white font-semibold text-base mb-3">Company</h3>
+              <ul className="space-y-2">
                 {footerLinks.company.map((link) => (
                   <li key={link.name}>
                     <Link
@@ -118,14 +115,14 @@ export default function Footer() {
           </div>
 
           {/* Bottom Section */}
-          <div className="mt-12 pt-6 border-t border-gray-800">
+          <div className="mt-8 pt-4 border-t border-gray-800">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
               <div className="text-center sm:text-left">
                 <p className="text-gray-400 text-sm">
                   © {currentYear} Visura. All rights reserved.
                 </p>
               </div>
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4">
                 <Link
                   href="/privacy"
                   className="text-gray-400 hover:text-white transition-colors text-sm"
