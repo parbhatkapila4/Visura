@@ -3,98 +3,234 @@ import { Button } from "@/components/ui/button";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import Link from "next/link";
 import { Play, Clock, Square, Home, Settings, FileText, Bot, Zap } from "lucide-react";
+import { motion } from "framer-motion";
+import { useInView } from "framer-motion";
+import { useRef } from "react";
 
 export default function HeroSection() {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
   return (
-    <section className="min-h-screen relative overflow-hidden">
+    <section className="min-h-screen relative overflow-hidden" ref={ref}>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Hero Content */}
         <div className="text-center space-y-12 pt-16">
           {/* Main Headline */}
-          <div className="space-y-6">
-            <h1 className="text-6xl md:text-7xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50 leading-tight">
+          <motion.div 
+            className="space-y-6"
+            initial={{ opacity: 0, y: 50 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+            transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <motion.h1 
+              className="text-6xl md:text-7xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50 leading-tight"
+              initial={{ opacity: 0, y: 30 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
               Transform Documents
               <br />
-              <span className="text-orange-500">Into Insights</span>
-            </h1>
-            <p className="text-xl text-neutral-300 max-w-3xl mx-auto leading-relaxed">
+              <motion.span 
+                className="text-orange-500"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+              >
+                Into Insights
+              </motion.span>
+            </motion.h1>
+            <motion.p 
+              className="text-xl text-neutral-300 max-w-3xl mx-auto leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
               <span className="font-bold text-white">VISURA</span> is an AI-powered document analysis platform that transforms 
               complex PDFs, reports, and documents into clear, actionable insights in seconds. 
               Perfect for professionals, researchers, and businesses who need to extract value from documents quickly.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
           {/* CTA Button */}
-          <div className="flex justify-center">
+          <motion.div 
+            className="flex justify-center"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
             <SignedOut>
-              <Button
-                size="lg"
-                className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              <motion.div
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
               >
-                <Link href="/sign-up">Get Started Free</Link>
-              </Button>
+                <Button
+                  size="lg"
+                  className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Link href="/sign-up">Get Started Free</Link>
+                </Button>
+              </motion.div>
             </SignedOut>
             <SignedIn>
-              <Button
-                size="lg"
-                className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              <motion.div
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
               >
-                <Link href="/upload">Upload Document</Link>
-              </Button>
+                <Button
+                  size="lg"
+                  className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Link href="/upload">Upload Document</Link>
+                </Button>
+              </motion.div>
             </SignedIn>
-          </div>
+          </motion.div>
 
           {/* Product Mockup */}
-          <div className="relative mt-16">
+          <motion.div 
+            className="relative mt-16"
+            initial={{ opacity: 0, y: 50 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+            transition={{ duration: 1, delay: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
             <div className="w-full max-w-4xl mx-auto">
-              <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
+              <motion.div 
+                className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100"
+                whileHover={{ 
+                  scale: 1.02, 
+                  y: -5,
+                  transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }
+                }}
+              >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
                   {/* Left - Document Input */}
-                  <div className="space-y-4">
+                  <motion.div 
+                    className="space-y-4"
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
+                    transition={{ duration: 0.8, delay: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  >
                     <div className="flex items-center gap-3">
                       <FileText className="w-6 h-6 text-orange-500" />
                       <span className="font-semibold text-gray-900">Upload Document</span>
                     </div>
-                    <div className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-200 hover:border-orange-300 transition-colors duration-300">
+                    <motion.div 
+                      className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-200 hover:border-orange-300 transition-colors duration-300"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.2 }}
+                    >
                       <div className="text-center text-gray-500">
                         <FileText className="w-12 h-12 mx-auto mb-2 animate-bounce" />
                         <p>Drop your PDF here</p>
                       </div>
-                    </div>
-                  </div>
+                    </motion.div>
+                  </motion.div>
 
                   {/* Center - AI Processing */}
-                  <div className="text-center space-y-4">
-                    <div className="w-20 h-20 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto animate-pulse">
-                      <Bot className="w-10 h-10 text-white animate-pulse" />
-                    </div>
+                  <motion.div 
+                    className="text-center space-y-4"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                    transition={{ duration: 0.8, delay: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  >
+                    <motion.div 
+                      className="w-20 h-20 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto"
+                      animate={{ 
+                        scale: [1, 1.1, 1],
+                        rotate: [0, 5, -5, 0]
+                      }}
+                      transition={{ 
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <Bot className="w-10 h-10 text-white" />
+                    </motion.div>
                     <div className="space-y-2">
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full w-3/4 animate-pulse"></div>
+                        <motion.div 
+                          className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full"
+                          animate={{ width: ["0%", "75%", "100%", "75%"] }}
+                          transition={{ 
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                        ></motion.div>
                       </div>
-                      <p className="text-sm text-gray-600 animate-pulse">AI Processing...</p>
+                      <motion.p 
+                        className="text-sm text-gray-600"
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ 
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      >
+                        AI Processing...
+                      </motion.p>
                     </div>
-                  </div>
+                  </motion.div>
 
                   {/* Right - Results */}
-                  <div className="space-y-4">
+                  <motion.div 
+                    className="space-y-4"
+                    initial={{ opacity: 0, x: 30 }}
+                    animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 30 }}
+                    transition={{ duration: 0.8, delay: 1.0, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  >
                     <div className="flex items-center gap-3">
-                      <Zap className="w-6 h-6 text-green-500 animate-pulse" />
+                      <motion.div
+                        animate={{ 
+                          scale: [1, 1.2, 1],
+                          rotate: [0, 10, -10, 0]
+                        }}
+                        transition={{ 
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      >
+                        <Zap className="w-6 h-6 text-green-500" />
+                      </motion.div>
                       <span className="font-semibold text-gray-900">Get Insights</span>
                     </div>
-                    <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                    <motion.div 
+                      className="bg-green-50 rounded-lg p-4 border border-green-200"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.2 }}
+                    >
                       <div className="space-y-2">
-                        <div className="h-2 bg-green-200 rounded w-full animate-pulse"></div>
-                        <div className="h-2 bg-green-200 rounded w-3/4 animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                        <div className="h-2 bg-green-200 rounded w-1/2 animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                        <motion.div 
+                          className="h-2 bg-green-200 rounded w-full"
+                          initial={{ width: 0 }}
+                          animate={{ width: "100%" }}
+                          transition={{ duration: 1, delay: 1.2 }}
+                        ></motion.div>
+                        <motion.div 
+                          className="h-2 bg-green-200 rounded w-3/4"
+                          initial={{ width: 0 }}
+                          animate={{ width: "75%" }}
+                          transition={{ duration: 1, delay: 1.3 }}
+                        ></motion.div>
+                        <motion.div 
+                          className="h-2 bg-green-200 rounded w-1/2"
+                          initial={{ width: 0 }}
+                          animate={{ width: "50%" }}
+                          transition={{ duration: 1, delay: 1.4 }}
+                        ></motion.div>
                       </div>
-                    </div>
-                  </div>
+                    </motion.div>
+                  </motion.div>
                 </div>
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Bottom Feature Section - Clean Icons */}

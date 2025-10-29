@@ -100,11 +100,23 @@ export default function FeaturesSection() {
                     initial={{ opacity: 0, y: 30 }}
                     animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                     transition={{ duration: 0.6, delay: 0.1 * index }}
+                    whileHover={{ 
+                      y: -5, 
+                      scale: 1.02,
+                      transition: { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }
+                    }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className={`w-8 h-8 ${feature.iconColor} rounded-full flex items-center justify-center flex-shrink-0 mt-1`}>
+                      <motion.div 
+                        className={`w-8 h-8 ${feature.iconColor} rounded-full flex items-center justify-center flex-shrink-0 mt-1`}
+                        whileHover={{ 
+                          scale: 1.2, 
+                          rotate: 5,
+                          transition: { duration: 0.2 }
+                        }}
+                      >
                         <Icon className="w-4 h-4 text-white" />
-                      </div>
+                      </motion.div>
                       
                       <div className="flex-1 min-w-0">
                         <h3 className="text-lg font-bold text-white mb-2">
