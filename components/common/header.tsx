@@ -109,18 +109,6 @@ export default function Header() {
                   animate={{ width: "100%" }}
                   transition={{ duration: 1, delay: 0.5 }}
                 />
-                <motion.div
-                  className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full"
-                  animate={{ 
-                    scale: [1, 1.5, 1],
-                    opacity: [0.7, 1, 0.7]
-                  }}
-                  transition={{ 
-                    duration: 2, 
-                    repeat: Infinity, 
-                    ease: "easeInOut" 
-                  }}
-                />
               </NavLink>
             </motion.div>
           </motion.div>
@@ -128,7 +116,7 @@ export default function Header() {
           {/* Navigation Links - Centered */}
           <div className="hidden md:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2">
             <NavLink
-              href="/#features"
+              href="/features"
               className="text-white hover:text-gray-300 transition-colors duration-200 text-sm font-medium"
             >
               Features
@@ -140,10 +128,10 @@ export default function Header() {
               Pricing
             </NavLink>
             <NavLink
-              href="/blog"
+              href="/about"
               className="text-white hover:text-gray-300 transition-colors duration-200 text-sm font-medium"
             >
-              Blog
+              About
             </NavLink>
             <NavLink
               href="/changelog"
