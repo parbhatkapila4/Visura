@@ -5,30 +5,68 @@ export const parseSection = (section: string): { title: string; points: string[]
       ? title.substring(1).trim()
       : title.trim();
   
-    const points: String[] = [];
+    const points: string[] = [];
   
     let currentPoint = "";
+    let hasBulletPoints = false;
   
+    // First pass: check if section has bullet points
     content.forEach((line) => {
       const trimmedLine = line.trim();
       if (trimmedLine.startsWith("•")) {
-        if (currentPoint) points.push(currentPoint.trim());
-        currentPoint = trimmedLine;
-      } else if (!trimmedLine) {
-        if (currentPoint) points.push(currentPoint.trim());
-        currentPoint = "";
-      } else {
-        currentPoint += " " + trimmedLine;
+        hasBulletPoints = true;
       }
     });
   
-    if (currentPoint) points.push(currentPoint.trim());
+    if (hasBulletPoints) {
+      // Process bullet points format
+      content.forEach((line) => {
+        const trimmedLine = line.trim();
+        if (trimmedLine.startsWith("•")) {
+          if (currentPoint) points.push(currentPoint.trim());
+          currentPoint = trimmedLine;
+        } else if (!trimmedLine) {
+          if (currentPoint) points.push(currentPoint.trim());
+          currentPoint = "";
+        } else {
+          currentPoint += " " + trimmedLine;
+        }
+      });
+      
+      if (currentPoint) points.push(currentPoint.trim());
+    } else {
+      // Process plain text format - treat each paragraph as a point
+      const paragraphs: string[] = [];
+      let currentParagraph = "";
+      
+      content.forEach((line) => {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) {
+          if (currentParagraph.trim()) {
+            paragraphs.push(currentParagraph.trim());
+            currentParagraph = "";
+          }
+        } else if (!trimmedLine.startsWith("#") && !trimmedLine.startsWith("[Choose]")) {
+          currentParagraph += (currentParagraph ? " " : "") + trimmedLine;
+        }
+      });
+      
+      if (currentParagraph.trim()) {
+        paragraphs.push(currentParagraph.trim());
+      }
+      
+      points.push(...paragraphs.filter(p => p.length > 0));
+    }
   
     return {
       title: cleanTitle,
       points: points.filter(
         (point) =>
-          point && !point.startsWith("#") && !point.startsWith("[Choose]")
+          point && 
+          point.trim().length > 0 &&
+          !point.startsWith("#") && 
+          !point.startsWith("[Choose]") &&
+          !point.toLowerCase().startsWith("type:")
       ) as string[],
     };
   };

@@ -1,7 +1,10 @@
 "use client";
 
 import { parseSection } from "@/utils/summary-helpers";
-import { BookOpen, Clock, ArrowRight } from "lucide-react";
+import { BookOpen, Clock, ArrowRight, Sparkles, Zap, FileText } from "lucide-react";
+import { motion } from "framer-motion";
+import { useInView } from "framer-motion";
+import { useRef } from "react";
 
 const SectionNavItem = ({
   title,
@@ -72,10 +75,15 @@ const SectionNavItem = ({
 const DarkContentSection = ({
   title,
   points,
+  index,
 }: {
   title: string;
   points: string[];
+  index: number;
 }) => {
+  const sectionRef = useRef(null);
+  const isInView = useInView(sectionRef, { once: true, margin: "-50px" });
+
   const getSectionIcon = (title: string) => {
     if (title.includes("Overview") || title.includes("Summary")) return "📋";
     if (title.includes("Findings") || title.includes("Insights")) return "🔍";
@@ -91,147 +99,298 @@ const DarkContentSection = ({
 
   const getSectionColor = (title: string) => {
     if (title.includes("Overview") || title.includes("Summary"))
-      return "text-blue-400";
+      return "from-blue-500/20 to-blue-600/10 border-blue-500/30";
     if (title.includes("Findings") || title.includes("Insights"))
-      return "text-orange-400";
-    if (title.includes("Analysis")) return "text-amber-400";
+      return "from-orange-500/20 to-orange-600/10 border-orange-500/30";
+    if (title.includes("Analysis"))
+      return "from-amber-500/20 to-amber-600/10 border-amber-500/30";
     if (title.includes("Critical") || title.includes("Warning"))
-      return "text-red-400";
+      return "from-red-500/20 to-red-600/10 border-red-500/30";
     if (title.includes("Action") || title.includes("Recommendation"))
-      return "text-emerald-400";
+      return "from-emerald-500/20 to-emerald-600/10 border-emerald-500/30";
     if (title.includes("Terms") || title.includes("Definition"))
-      return "text-orange-400";
+      return "from-orange-500/20 to-orange-600/10 border-orange-500/30";
     if (title.includes("Context") || title.includes("Background"))
-      return "text-cyan-400";
+      return "from-cyan-500/20 to-cyan-600/10 border-cyan-500/30";
     if (title.includes("Bottom") || title.includes("Line"))
-      return "text-yellow-400";
-    return "text-gray-400";
+      return "from-yellow-500/20 to-yellow-600/10 border-yellow-500/30";
+    return "from-gray-500/20 to-gray-600/10 border-gray-500/30";
   };
 
+  const colorClass = getSectionColor(title);
+
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <div className="mb-3 sm:mb-4">
-        <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-          <div>
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-1 sm:mb-2">
+    <motion.div
+      ref={sectionRef}
+      className="space-y-4 sm:space-y-6"
+      initial={{ opacity: 0, y: 30 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+    >
+      {/* Section Header */}
+      <div className="relative">
+        <div className="flex items-start gap-4 mb-4">
+          {/* Section Number Badge */}
+          <motion.div
+            className="flex-shrink-0"
+            initial={{ scale: 0 }}
+            animate={isInView ? { scale: 1 } : { scale: 0 }}
+            transition={{ duration: 0.4, delay: index * 0.1 + 0.2, type: "spring" }}
+          >
+            <div className={`relative bg-gradient-to-br ${colorClass} p-3 rounded-xl border backdrop-blur-sm shadow-lg`}>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-xl"></div>
+              <span className="relative text-2xl">{getSectionIcon(title)}</span>
+            </div>
+          </motion.div>
+
+          {/* Title */}
+          <div className="flex-1 min-w-0">
+            <motion.h2
+              className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2 leading-tight"
+              initial={{ opacity: 0, x: -20 }}
+              animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+              transition={{ duration: 0.5, delay: index * 0.1 + 0.1 }}
+            >
               {title}
-            </h2>
+            </motion.h2>
+            <motion.div
+              className="h-1 w-20 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full"
+              initial={{ width: 0 }}
+              animate={isInView ? { width: 80 } : { width: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 + 0.3 }}
+            />
           </div>
         </div>
-
-        <div className="border-t border-gray-600 mb-3 sm:mb-4"></div>
       </div>
 
-      <div className="space-y-3 sm:space-y-4">
-        {points
-          .map((point, index) => {
-            const cleanText = point
-              .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/u, "")
-              .replace(/\*\*(.*?)\*\*/g, "$1")
-              .replace(/\*(.*?)\*/g, "$1")
-              .replace(/^•\s*/, "")
-              .trim();
+      {/* Content Points */}
+      <div className="space-y-4 sm:space-y-5 pl-0 sm:pl-16">
+        {points && points.length > 0 ? (
+          points
+            .map((point, pointIndex) => {
+              const cleanText = point
+                .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/u, "")
+                .replace(/\*\*(.*?)\*\*/g, "$1")
+                .replace(/\*(.*?)\*/g, "$1")
+                .replace(/^•\s*/, "")
+                .trim();
 
-            if (cleanText.toLowerCase().startsWith("type:")) {
-              return null;
-            }
+              if (!cleanText || cleanText.length === 0 || cleanText.toLowerCase().startsWith("type:")) {
+                return null;
+              }
 
-            return (
-              <p
-                key={index}
-                className="text-gray-300 leading-relaxed text-sm sm:text-base hover:text-gray-100 transition-colors duration-200"
-              >
-                {cleanText}
-              </p>
-            );
-          })
-          .filter(Boolean)}
+              return (
+                <motion.div
+                  key={pointIndex}
+                  className="group relative"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 + pointIndex * 0.05 + 0.2 }}
+                >
+                  <div className="flex gap-4">
+                    {/* Decorative line */}
+                    <div className="flex-shrink-0 w-1 h-full bg-gradient-to-b from-orange-500/40 via-amber-500/30 to-transparent rounded-full group-hover:from-orange-500/60 group-hover:via-amber-500/50 transition-all duration-300"></div>
+                    
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 pt-1">
+                      <p className="text-gray-300 leading-relaxed text-sm sm:text-base group-hover:text-gray-100 transition-colors duration-300">
+                        {cleanText}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })
+            .filter(Boolean)
+        ) : (
+          <motion.div
+            className="text-gray-400 italic text-sm sm:text-base"
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.4, delay: index * 0.1 + 0.2 }}
+          >
+            No content available for this section.
+          </motion.div>
+        )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
 export default function SummaryViewer({ summary }: { summary: string }) {
+  const containerRef = useRef(null);
+  const isInView = useInView(containerRef, { once: true, margin: "-50px" });
+
   const sections = summary
     .split("\n#")
     .map((section) => section.trim())
     .filter(Boolean)
     .map(parseSection);
 
+  const totalInsights = sections.reduce(
+    (total, section) => total + section.points.length,
+    0
+  );
+  const estimatedReadTime = Math.ceil(totalInsights * 0.5);
+
   return (
-    <div className="w-full max-w-7xl mx-auto bg-gradient-to-br from-gray-900 via-black to-gray-800 min-h-screen border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl shadow-orange-500/10 backdrop-blur-sm">
-      {/* Enhanced Header */}
-      <div className="mb-4 p-4 sm:p-6 relative">
-        {/* Background gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent rounded-t-3xl"></div>
+    <motion.div
+      ref={containerRef}
+      className="w-full max-w-7xl mx-auto relative"
+      initial={{ opacity: 0 }}
+      animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+      transition={{ duration: 0.6 }}
+    >
+      {/* Main Container */}
+      <div className="relative bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-transparent to-orange-500/5"></div>
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-orange-500/30 to-transparent"></div>
 
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 sm:gap-3 mb-4">
-            <div className="bg-gradient-to-br from-orange-500 to-amber-500 p-1.5 sm:p-2 rounded-lg sm:rounded-xl shadow-lg shadow-orange-500/25 animate-pulse">
-              <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                Document Analysis
-              </h1>
-              <p className="text-gray-400 text-xs sm:text-sm mt-1">
-                AI-Powered Document Intelligence
-              </p>
+        {/* Header Section */}
+        <motion.div
+          className="relative p-6 sm:p-8 lg:p-10 border-b border-gray-800/50"
+          initial={{ opacity: 0, y: -20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          {/* Title Row */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-4">
+              <motion.div
+                className="relative"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl blur-lg opacity-50"></div>
+                <div className="relative bg-gradient-to-br from-orange-500 to-amber-500 p-3 rounded-xl shadow-lg border border-orange-400/50">
+                  <BookOpen className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                </div>
+              </motion.div>
+              <div>
+                <motion.h1
+                  className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold bg-gradient-to-r from-white via-orange-100 to-amber-100 bg-clip-text text-transparent mb-1"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                  Document Analysis
+                </motion.h1>
+                <motion.p
+                  className="text-gray-400 text-sm sm:text-base flex items-center gap-2"
+                  initial={{ opacity: 0 }}
+                  animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                >
+                  <Sparkles className="w-4 h-4 text-orange-400 animate-pulse" />
+                  AI-Powered Document Intelligence
+                </motion.p>
+              </div>
             </div>
           </div>
 
-          {/* Enhanced separator line */}
-          <div className="relative mb-4">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/30 to-transparent h-px"></div>
-            <div className="border-t border-gray-600/50"></div>
-          </div>
+          {/* Stats Grid */}
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            {/* Sections Stat */}
+            <motion.div
+              className="group relative bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-md rounded-xl p-4 border border-gray-700/50 hover:border-orange-500/40 transition-all duration-300 overflow-hidden"
+              whileHover={{ scale: 1.02, y: -2 }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500/20 to-amber-500/10 border border-orange-500/20">
+                    <FileText className="w-5 h-5 text-orange-400" />
+                  </div>
+                  <span className="text-gray-400 text-sm font-medium">Sections</span>
+                </div>
+                <div className="text-3xl font-bold text-white">{sections.length}</div>
+              </div>
+            </motion.div>
 
-          {/* Enhanced summary info */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm">
-            <div className="flex items-center gap-2 bg-gray-800/50 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-700/50">
-              <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500" />
-              <span className="text-gray-300 font-medium">
-                {sections.length} sections
-              </span>
-            </div>
-            <div className="flex items-center gap-2 bg-gray-800/50 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-700/50">
-              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500" />
-              <span className="text-gray-300 font-medium">
-                {Math.ceil(
-                  sections.reduce(
-                    (total, section) => total + section.points.length,
-                    0
-                  ) * 0.5
-                )}{" "}
-                min read
-              </span>
-            </div>
-          </div>
+            {/* Insights Stat */}
+            <motion.div
+              className="group relative bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-md rounded-xl p-4 border border-gray-700/50 hover:border-orange-500/40 transition-all duration-300 overflow-hidden"
+              whileHover={{ scale: 1.02, y: -2 }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500/20 to-amber-500/10 border border-orange-500/20">
+                    <Zap className="w-5 h-5 text-orange-400" />
+                  </div>
+                  <span className="text-gray-400 text-sm font-medium">Insights</span>
+                </div>
+                <div className="text-3xl font-bold text-white">{totalInsights}</div>
+              </div>
+            </motion.div>
+
+            {/* Read Time Stat */}
+            <motion.div
+              className="group relative bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-md rounded-xl p-4 border border-gray-700/50 hover:border-orange-500/40 transition-all duration-300 overflow-hidden"
+              whileHover={{ scale: 1.02, y: -2 }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500/20 to-amber-500/10 border border-orange-500/20">
+                    <Clock className="w-5 h-5 text-orange-400" />
+                  </div>
+                  <span className="text-gray-400 text-sm font-medium">Read Time</span>
+                </div>
+                <div className="text-3xl font-bold text-white">{estimatedReadTime} min</div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+
+        {/* Sections Display */}
+        <div className="p-6 sm:p-8 lg:p-10 space-y-8 sm:space-y-12">
+          {sections.map((section, index) => (
+            <motion.div
+              key={index}
+              className="relative group"
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+            >
+              {/* Section Card */}
+              <div className="relative bg-gradient-to-br from-gray-800/30 via-gray-900/40 to-gray-800/30 backdrop-blur-sm rounded-2xl border border-gray-700/30 p-6 sm:p-8 hover:border-orange-500/30 transition-all duration-500 overflow-hidden">
+                {/* Hover Glow Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-transparent to-orange-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                {/* Content */}
+                <div className="relative z-10">
+                  <DarkContentSection
+                    title={`${index + 1}. ${section.title}`}
+                    points={section.points}
+                    index={index}
+                  />
+                </div>
+
+                {/* Section Divider */}
+                {index < sections.length - 1 && (
+                  <motion.div
+                    className="relative mt-8 sm:mt-12"
+                    initial={{ scaleX: 0 }}
+                    animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
+                    transition={{ duration: 0.6, delay: 0.7 + index * 0.1 }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/20 to-transparent h-px"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent h-px blur-sm"></div>
+                    <div className="border-t border-gray-700/30"></div>
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
-
-      {/* Enhanced Sections Display */}
-      <div className="p-4 sm:p-6 space-y-6 sm:space-y-8">
-        {sections.map((section, index) => (
-          <div key={index} className="relative group">
-            {/* Section background glow */}
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-transparent to-orange-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-            <div className="relative z-10 space-y-4">
-              <DarkContentSection
-                title={`${index + 1}. ${section.title}`}
-                points={section.points}
-              />
-              {index < sections.length - 1 && (
-                <div className="relative my-6">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/20 to-transparent h-px"></div>
-                  <div className="border-t border-gray-700/50"></div>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+    </motion.div>
   );
 }
