@@ -101,7 +101,7 @@ export default function CTASection() {
                 >
                   <Button
                     size="lg"
-                    className="px-8 py-4 bg-gradient-to-r from-[#625EC3] to-[#A3C4C3] hover:from-[#A3C4C3] hover:to-[#625EC3] text-white font-bold text-lg rounded-full shadow-2xl shadow-[#625EC3]/30 hover:shadow-[#625EC3]/50 transition-all duration-300"
+                    className="px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-lg rounded-full shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300"
                   >
                     <Link href="/upload" className="flex items-center gap-2">
                       <Upload className="w-5 h-5" />
@@ -117,7 +117,7 @@ export default function CTASection() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="px-8 py-4 border-2 border-[#625EC3] text-white hover:bg-[#625EC3] hover:text-white font-bold text-lg rounded-full transition-all duration-300"
+                    className="px-8 py-4 border-2 border-orange-500 text-white hover:bg-orange-500 hover:text-white font-bold text-lg rounded-full transition-all duration-300"
                   >
                     <Link href="/dashboard" className="flex items-center gap-2">
                       <FileText className="w-5 h-5" />
@@ -173,7 +173,7 @@ export default function CTASection() {
                 whileHover={{ y: -10, scale: 1.02 }}
                 className="group"
               >
-                <div className={`relative p-8 bg-gradient-to-br from-gray-900/50 to-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-3xl hover:border-[#625EC3]/50 transition-all duration-300 overflow-hidden ${feature.borderColor}`}>
+                <div className={`relative p-8 bg-gradient-to-br from-gray-900/50 to-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-3xl hover:border-orange-500/50 transition-all duration-300 overflow-hidden ${feature.borderColor}`}>
                   {/* Glow effect */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                   
@@ -182,7 +182,7 @@ export default function CTASection() {
                       <Icon className={`w-8 h-8 ${feature.iconColor}`} />
                     </div>
                     
-                    <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-[#625EC3] transition-colors duration-300">
+                    <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-orange-400 transition-colors duration-300">
                       {feature.title}
                     </h3>
                     

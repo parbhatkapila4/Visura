@@ -24,7 +24,7 @@ export default function ProgressBar({
           >
             <div
               className={cn(
-                "h-full bg-gradient-to-r from-gray-500 to-[#625EC3] transition-all duration-500",
+                "h-full bg-gradient-to-r from-gray-500 to-orange-500 transition-all duration-500",
                 index === currentSection
                   ? "w-full"
                   : currentSection > index

@@ -28,7 +28,7 @@ const SummaryHeader = ({
 }) => {
   return (
     <div className="flex items-start gap-3">
-      <FileText className="w-5 h-5 text-[#4C4899] mt-0.5 flex-shrink-0" />
+      <FileText className="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0" />
       <div className="flex-1 min-w-0">
         <h3 className="text-base font-bold text-white truncate">
           {title || formatFileName(fileUrl)}
@@ -52,7 +52,7 @@ const StatusBadge = ({ status }: { status: string }) => {
       className={cn(
         "px-2.5 py-1 text-xs font-medium rounded-full",
         status === "completed"
-          ? "bg-[#4C4899]/20 text-white border border-[#4C4899]/30"
+          ? "bg-orange-500/15 text-orange-300 border border-orange-500/30"
           : "bg-yellow-600/20 text-yellow-400 border border-yellow-500/30"
       )}
     >
@@ -160,7 +160,7 @@ export default function SummaryCard({
                 )}
               </div>
               <div className="flex-1 min-w-0 overflow-hidden">
-                <h3 className="text-base sm:text-lg font-semibold text-white mb-2 line-clamp-2 group-hover:text-purple-300 transition-colors break-words">
+                <h3 className="text-base sm:text-lg font-semibold text-white mb-2 line-clamp-2 group-hover:text-orange-300 transition-colors break-words">
                   {summary.title || preview.title}
                 </h3>
                 <div className="flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm text-gray-400">
@@ -207,7 +207,7 @@ export default function SummaryCard({
                         key={index}
                         className="flex items-start gap-2 sm:gap-3 text-xs sm:text-sm text-gray-300 min-w-0"
                       >
-                        <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-purple-400 rounded-full mt-1.5 sm:mt-2 flex-shrink-0" />
+                        <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-orange-400 rounded-full mt-1.5 sm:mt-2 flex-shrink-0" />
                         <span className="line-clamp-1 break-words overflow-hidden">
                           {point}
                         </span>
@@ -250,7 +250,7 @@ export default function SummaryCard({
                 </Button>
                 <Button
                   size="sm"
-                  className="h-7 sm:h-8 px-2 sm:px-3 text-xs font-medium transition-all duration-200 hover:scale-105 bg-[#625EC3] hover:bg-[#4A46A0] hover:animate-pulse text-white/70 flex-1 sm:flex-none"
+                  className="h-7 sm:h-8 px-2 sm:px-3 text-xs font-medium transition-all duration-200 hover:scale-105 bg-orange-500 hover:bg-orange-600 hover:animate-pulse text-white/80 flex-1 sm:flex-none"
                   onClick={(e) => {
                     e.stopPropagation();
                     window.location.href = `/chatbot/${summary.id}`;

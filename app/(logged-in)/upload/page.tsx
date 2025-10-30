@@ -1,4 +1,5 @@
 import BgGradient from "@/components/common/bg-gradient";
+import NoScroll from "@/components/common/no-scroll";
 import SupabaseUploadForm from "@/components/upload/supabase-upload-form";
 import UploadHeader from "@/components/upload/upload-header";
 import { BackgroundLines } from "@/components/ui/background-lines";
@@ -19,8 +20,9 @@ export default async function UploadPage() {
   );
 
   return (
-    <section className="min-h-screen bg-black flex items-center justify-center">
-      <BackgroundLines className="flex items-center justify-center w-full flex-col px-4 bg-black">
+    <section className="fixed inset-0 overflow-hidden bg-black flex items-center justify-center">
+      <NoScroll />
+      <BackgroundLines className="h-full flex items-center justify-center w-full flex-col px-4 bg-black">
         <BgGradient />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex flex-col items-center justify-center gap-4 sm:gap-6 text-center">

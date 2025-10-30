@@ -61,27 +61,32 @@ export default function DashboardClient({
           )}
           <Button
             disabled={currentHasReachedLimit}
-            className="bg-gradient-to-r from-[#625EC3] to-[#000000] hover:animate-pulse text-white/80 w-full sm:w-auto order-1 sm:order-2"
+            className="relative overflow-hidden p-0 text-white/90 w-full sm:w-auto order-1 sm:order-2 rounded-xl"
             title={
               currentHasReachedLimit
                 ? "You have reached the maximum limit for your Basic plan. Upgrade to Pro to continue."
                 : "Create a new PDF summary"
             }
           >
-            {currentHasReachedLimit ? (
-              <div className="flex items-center justify-center">
-                <Lock className="w-4 h-4 mr-2" />
-                Limit Reached
-              </div>
-            ) : (
-              <Link
-                href="/upload"
-                className="flex items-center justify-center text-white/80"
-              >
-                <Plus className="w-4 h-4 mr-2 text-white/80" />
-                New Summary
-              </Link>
-            )}
+            {/* animated gradient ring */}
+            <span className="pointer-events-none absolute inset-[-1000%] animate-[spin_2.5s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#fb923c_0%,#f97316_50%,#fb923c_100%)]" />
+            {/* inner button */}
+            <span className="relative flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-500 px-4 py-2 rounded-xl">
+              {currentHasReachedLimit ? (
+                <>
+                  <Lock className="w-4 h-4" />
+                  <span>Limit Reached</span>
+                </>
+              ) : (
+                <Link href="/upload" className="flex items-center gap-2">
+                  <span className="relative inline-flex h-6 w-6 items-center justify-center rounded-md bg-white/10 ring-1 ring-white/20 shadow-sm">
+                    <span className="absolute -inset-1 rounded-md bg-orange-400/20 blur-sm" />
+                    <Plus className="relative w-3.5 h-3.5 text-white transition-transform duration-300 group-hover:scale-110" />
+                  </span>
+                  <span>New Summary</span>
+                </Link>
+              )}
+            </span>
           </Button>
         </div>
       </div>

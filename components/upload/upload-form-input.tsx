@@ -48,13 +48,13 @@ export const UploadFormInput = forwardRef<
                   <div
                     className={cn(
                       "h-12 border-2 border-r-sidebar-accent-foreground border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors px-4",
-                      selectedFile && "border-[#625EC3] bg-white/70",
+                      selectedFile && "border-[#f97316] bg-white/70",
                       (isLoading || hasReachedLimit) &&
                         "opacity-50 cursor-not-allowed"
                     )}
                   >
                     {selectedFile ? (
-                      <span className="text-[#625EC3] font-medium text-sm truncate">
+                      <span className="text-[#f97316] font-medium text-sm truncate">
                         {selectedFile.name}
                       </span>
                     ) : (
@@ -69,7 +69,7 @@ export const UploadFormInput = forwardRef<
               <Button
                 type="submit"
                 disabled={isLoading || hasReachedLimit}
-                className="h-12 px-6 sm:px-8 bg-[#625EC3] text-white font-semibold rounded-lg hover:bg-[#625EC3]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed z-50 w-full sm:w-auto"
+                className="h-12 px-6 sm:px-8 bg-[#f97316] text-white font-semibold rounded-lg hover:bg-[#ea580c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed z-50 w-full sm:w-auto"
                 style={{ color: "#ffffff" }}
               >
                 {isLoading ? (
@@ -95,84 +95,124 @@ export const UploadFormInput = forwardRef<
           </div>
         </form>
 
-        {/* PDF Compatibility Notice */}
-        <div className="mt-6 relative group">
-          <div className="bg-gradient-to-r from-slate-800/40 to-gray-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-6 shadow-lg transition-all duration-500 hover:shadow-slate-500/20 hover:shadow-2xl hover:scale-[1.02] hover:border-slate-500/60">
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-600/10 to-gray-600/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-700/5 to-gray-700/5 rounded-xl animate-pulse"></div>
-            <div className="relative flex flex-col items-center text-center">
-              <div className="mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-gray-600 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-slate-500/50 group-hover:shadow-lg">
-                  <svg className="h-5 w-5 text-white transition-transform duration-300 group-hover:rotate-12" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
+        {/* Chatbot Compatibility Card */}
+        <div className="mt-8">
+          <div className="relative mx-auto max-w-3xl">
+            {/* soft glow */}
+            <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-orange-600/15 via-amber-500/10 to-red-500/15 blur opacity-70" />
+
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md p-6 sm:p-8 shadow-xl">
+              {/* subtle grid */}
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:16px_16px] opacity-20" />
+              <div className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-orange-500/10 blur-2xl" />
+
+              {/* badge */}
+              <div className="flex items-center gap-2 text-xs font-medium text-orange-300/90 bg-orange-500/10 border border-orange-400/20 rounded-full w-max px-3 py-1 mb-4">
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse" />
+                Compatibility
+              </div>
+
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center shadow-lg shadow-orange-500/20">
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l4 4-4 4-4-4 4-4z"/><path d="M12 22l4-4-4-4-4 4 4 4z"/></svg>
+                </div>
+                <h4 className="text-xl font-semibold text-white/90 tracking-tight">Chatbot Feature Compatibility</h4>
+              </div>
+
+              {/* feature chips */}
+              <div className="mb-4 flex flex-wrap gap-2">
+                {[
+                  "AI chat",
+                  "Instant summary",
+                  "PDF support",
+                  "Secure",
+                ].map((chip) => (
+                  <span key={chip} className="text-[11px] tracking-wide uppercase text-white/70 bg-white/5 border border-white/10 rounded-full px-2.5 py-1">
+                    {chip}
+                  </span>
+                ))}
+              </div>
+
+              <div className="space-y-3 relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className="h-5 w-5 rounded-full bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center">
+                    <span className="text-emerald-300 text-sm">✓</span>
+                  </div>
+                  <p className="text-sm text-white/85">Text-based PDFs fully support AI chat functionality</p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="h-5 w-5 rounded-full bg-amber-500/15 border border-amber-400/30 flex items-center justify-center">
+                    <span className="text-amber-300 text-sm">!</span>
+                  </div>
+                  <p className="text-sm text-white/70">Scanned documents will be uploaded and summarized, but chat is not available</p>
                 </div>
               </div>
-              <div className="w-full">
-                <h4 className="text-lg font-semibold text-white/90 mb-4 transition-colors duration-300 group-hover:text-white">
-                  Chatbot Feature Compatibility
-                </h4>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-center">
-                    <span className="text-emerald-400 animate-pulse mr-2 text-lg">✓</span>
-                    <span className="text-sm text-white/70 transition-colors duration-300 group-hover:text-white/80">
-                      Text-based PDFs support AI chat functionality
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <span className="text-amber-400 animate-bounce mr-2 text-lg">⚠</span>
-                    <span className="text-sm text-white/70 transition-colors duration-300 group-hover:text-white/80">
-                      Scanned documents will be uploaded and summarized but won't have chatbot access
-                    </span>
-                  </div>
-                </div>
+
+              {/* footer note */}
+              <div className="mt-5 flex items-center gap-2 text-[12px] text-white/60">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Your files remain private and are processed securely.
               </div>
             </div>
-            {/* Animated border effect */}
-            <div className="absolute inset-0 rounded-xl border border-transparent bg-gradient-to-r from-slate-500/20 via-gray-500/20 to-slate-500/20 bg-clip-border opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           </div>
         </div>
 
         {isLoading && (
-          <div className="mt-6 sm:mt-8 space-y-4 sm:space-y-6">
-            <div className="text-center">
-              <h3 className="text-lg sm:text-xl font-semibold text-white/70 mb-4">
-                Processing
-              </h3>
+          <div className="mt-8 sm:mt-10">
+            <div className="relative mx-auto max-w-3xl">
+              {/* Glow ring */}
+              <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-orange-600/20 via-amber-500/10 to-red-500/20 blur opacity-60" />
 
-              <div className="w-full bg-white/20 rounded-full h-2 mb-4 sm:mb-6">
-                <div
-                  className="bg-[#625EC3] h-2 rounded-full animate-pulse"
-                  style={{ width: "35%" }}
-                ></div>
-              </div>
+              {/* Card */}
+              <div className="relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6 sm:p-8 shadow-xl">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="h-2 w-2 rounded-full bg-orange-500 animate-ping" />
+                    <h3 className="text-base sm:text-lg font-semibold text-white/90 tracking-tight">Processing your PDF</h3>
+                  </div>
+                  <span className="text-xs sm:text-sm text-white/60">This may take a moment</span>
+                </div>
 
-              <div className="bg-white/20 rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
-                <div className="bg-white/20 rounded-lg h-6 sm:h-8 w-full animate-pulse"></div>
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-2 h-2 bg-[#625EC3] rounded-full flex-shrink-0"></div>
-                    <div className="bg-white/20 rounded h-3 sm:h-4 w-3/4 animate-pulse"></div>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-2 h-2 bg-[#625EC3] rounded-full flex-shrink-0"></div>
-                    <div className="bg-white/20 rounded h-3 sm:h-4 w-2/3 animate-pulse"></div>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-2 h-2 bg-[#625EC3] rounded-full flex-shrink-0"></div>
-                    <div className="bg-white/20 rounded h-3 sm:h-4 w-4/5 animate-pulse"></div>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-2 h-2 bg-[#625EC3] rounded-full flex-shrink-0"></div>
-                    <div className="bg-white/20 rounded h-3 sm:h-4 w-1/2 animate-pulse"></div>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-2 h-2 bg-[#625EC3] rounded-full flex-shrink-0"></div>
-                    <div className="bg-white/20 rounded h-3 sm:h-4 w-3/5 animate-pulse"></div>
-                  </div>
+                {/* Progress bar */}
+                <div className="relative w-full h-2 rounded-full bg-white/10 overflow-hidden mb-6">
+                  <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent)] animate-[shimmer_1.5s_linear_infinite]" />
+                  <div className="h-full bg-gradient-to-r from-orange-500 via-amber-500 to-red-500 rounded-full transition-all duration-700" style={{ width: "38%" }} />
+                </div>
+
+                {/* Steps */}
+                <div className="grid grid-cols-1 gap-3">
+                  {[
+                    "Uploading file to secure storage",
+                    "Extracting text and structure",
+                    "Analyzing content with AI",
+                    "Generating concise summary",
+                    "Saving result for you",
+                  ].map((label, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="relative">
+                        <span className="block h-2 w-2 rounded-full bg-orange-500" />
+                        {i === 0 && <span className="absolute inset-0 -m-1 rounded-full bg-orange-500/40 blur-sm" />}
+                      </div>
+                      <div className="flex-1 h-3 rounded-md bg-white/10 overflow-hidden">
+                        <div className="h-full w-3/4 bg-white/15">
+                          <div className="h-full w-full bg-white/10 animate-pulse" />
+                        </div>
+                      </div>
+                      <span className="hidden sm:block text-xs text-white/70 whitespace-nowrap">{label}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
+
+            <style jsx>{`
+              @keyframes shimmer { 
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(100%); }
+              }
+            `}</style>
           </div>
         )}
       </div>

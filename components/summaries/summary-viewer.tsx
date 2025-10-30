@@ -31,8 +31,8 @@ const SectionNavItem = ({
     if (title.includes("Overview") || title.includes("Summary"))
       return "text-blue-400";
     if (title.includes("Findings") || title.includes("Insights"))
-      return "text-[#4C4899]";
-    if (title.includes("Analysis")) return "text-purple-400";
+      return "text-orange-400";
+    if (title.includes("Analysis")) return "text-amber-400";
     if (title.includes("Critical") || title.includes("Warning"))
       return "text-red-400";
     if (title.includes("Action") || title.includes("Recommendation"))
@@ -51,7 +51,7 @@ const SectionNavItem = ({
       onClick={onClick}
       className={`w-full text-left p-4 rounded-lg transition-all duration-300 hover:bg-gray-800/50 ${
         isActive
-          ? "bg-gray-800/80 border-l-4 border-[#504DA2]"
+          ? "bg-gray-800/80 border-l-4 border-orange-500"
           : "hover:border-l-4 hover:border-gray-600"
       }`}
     >
@@ -63,7 +63,7 @@ const SectionNavItem = ({
           </h3>
           <p className="text-xs text-gray-500">{points.length} insights</p>
         </div>
-        {isActive && <ArrowRight className="w-4 h-4 text-[#504DA2]" />}
+        {isActive && <ArrowRight className="w-4 h-4 text-orange-500" />}
       </div>
     </button>
   );
@@ -93,8 +93,8 @@ const DarkContentSection = ({
     if (title.includes("Overview") || title.includes("Summary"))
       return "text-blue-400";
     if (title.includes("Findings") || title.includes("Insights"))
-      return "text-[#4C4899]";
-    if (title.includes("Analysis")) return "text-purple-400";
+      return "text-orange-400";
+    if (title.includes("Analysis")) return "text-amber-400";
     if (title.includes("Critical") || title.includes("Warning"))
       return "text-red-400";
     if (title.includes("Action") || title.includes("Recommendation"))
@@ -159,15 +159,15 @@ export default function SummaryViewer({ summary }: { summary: string }) {
     .map(parseSection);
 
   return (
-    <div className="w-full max-w-7xl mx-auto bg-gradient-to-br from-gray-900 via-black to-gray-800 min-h-screen border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl shadow-purple-500/10 backdrop-blur-sm">
+    <div className="w-full max-w-7xl mx-auto bg-gradient-to-br from-gray-900 via-black to-gray-800 min-h-screen border border-white/20 rounded-2xl sm:rounded-3xl shadow-2xl shadow-orange-500/10 backdrop-blur-sm">
       {/* Enhanced Header */}
       <div className="mb-4 p-4 sm:p-6 relative">
         {/* Background gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#504DA2]/5 to-transparent rounded-t-3xl"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent rounded-t-3xl"></div>
 
         <div className="relative z-10">
           <div className="flex items-center gap-2 sm:gap-3 mb-4">
-            <div className="bg-gradient-to-br from-[#504DA2] to-[#4338a3] p-1.5 sm:p-2 rounded-lg sm:rounded-xl shadow-lg shadow-purple-500/25 animate-pulse">
+            <div className="bg-gradient-to-br from-orange-500 to-amber-500 p-1.5 sm:p-2 rounded-lg sm:rounded-xl shadow-lg shadow-orange-500/25 animate-pulse">
               <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <div>
@@ -182,20 +182,20 @@ export default function SummaryViewer({ summary }: { summary: string }) {
 
           {/* Enhanced separator line */}
           <div className="relative mb-4">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#504DA2]/30 to-transparent h-px"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/30 to-transparent h-px"></div>
             <div className="border-t border-gray-600/50"></div>
           </div>
 
           {/* Enhanced summary info */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm">
             <div className="flex items-center gap-2 bg-gray-800/50 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-700/50">
-              <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#504DA2]" />
+              <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500" />
               <span className="text-gray-300 font-medium">
                 {sections.length} sections
               </span>
             </div>
             <div className="flex items-center gap-2 bg-gray-800/50 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg border border-gray-700/50">
-              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#504DA2]" />
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500" />
               <span className="text-gray-300 font-medium">
                 {Math.ceil(
                   sections.reduce(
@@ -215,7 +215,7 @@ export default function SummaryViewer({ summary }: { summary: string }) {
         {sections.map((section, index) => (
           <div key={index} className="relative group">
             {/* Section background glow */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#504DA2]/5 via-transparent to-[#504DA2]/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-transparent to-orange-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
             <div className="relative z-10 space-y-4">
               <DarkContentSection
@@ -224,7 +224,7 @@ export default function SummaryViewer({ summary }: { summary: string }) {
               />
               {index < sections.length - 1 && (
                 <div className="relative my-6">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#504DA2]/20 to-transparent h-px"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500/20 to-transparent h-px"></div>
                   <div className="border-t border-gray-700/50"></div>
                 </div>
               )}
