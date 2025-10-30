@@ -25,7 +25,7 @@ export default function HeroSection() {
             transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             <motion.h1 
-              className="text-6xl md:text-7xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50 leading-tight"
+              className="text-5xl sm:text-6xl md:text-8xl font-bold text-center break-words hyphens-auto max-w-full bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400 bg-opacity-50 leading-tight overflow-y-hidden max-h-[calc(100vh-8rem)] mx-auto"
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
               transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -33,7 +33,7 @@ export default function HeroSection() {
               Transform Documents
               <br />
               <motion.span 
-                className="text-orange-500"
+                className="text-orange-500 drop-shadow-sm"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -42,7 +42,7 @@ export default function HeroSection() {
               </motion.span>
             </motion.h1>
             <motion.p 
-              className="text-xl text-neutral-300 max-w-3xl mx-auto leading-relaxed"
+              className="text-base sm:text-lg text-neutral-300 max-w-3xl mx-auto leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}

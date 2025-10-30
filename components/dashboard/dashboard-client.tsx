@@ -59,35 +59,31 @@ export default function DashboardClient({
               {currentUploadCount}/{uploadLimit} summaries
             </div>
           )}
-          <Button
-            disabled={currentHasReachedLimit}
-            className="relative overflow-hidden p-0 text-white/90 w-full sm:w-auto order-1 sm:order-2 rounded-xl"
-            title={
-              currentHasReachedLimit
-                ? "You have reached the maximum limit for your Basic plan. Upgrade to Pro to continue."
-                : "Create a new PDF summary"
-            }
-          >
-            {/* animated gradient ring */}
-            <span className="pointer-events-none absolute inset-[-1000%] animate-[spin_2.5s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#fb923c_0%,#f97316_50%,#fb923c_100%)]" />
-            {/* inner button */}
-            <span className="relative flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-500 px-4 py-2 rounded-xl">
-              {currentHasReachedLimit ? (
-                <>
+          <div className="order-1 sm:order-2 w-full sm:w-auto">
+            {currentHasReachedLimit ? (
+              <button
+                disabled
+                title="You have reached the maximum limit for your Basic plan. Upgrade to Pro to continue."
+                className="p-[3px] relative w-full sm:w-auto opacity-60 cursor-not-allowed"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg" />
+                <div className="px-4 py-2 bg-black rounded-[6px] relative group transition duration-200 text-white flex items-center gap-2">
                   <Lock className="w-4 h-4" />
-                  <span>Limit Reached</span>
-                </>
-              ) : (
-                <Link href="/upload" className="flex items-center gap-2">
-                  <span className="relative inline-flex h-6 w-6 items-center justify-center rounded-md bg-white/10 ring-1 ring-white/20 shadow-sm">
-                    <span className="absolute -inset-1 rounded-md bg-orange-400/20 blur-sm" />
-                    <Plus className="relative w-3.5 h-3.5 text-white transition-transform duration-300 group-hover:scale-110" />
-                  </span>
-                  <span>New Summary</span>
-                </Link>
-              )}
-            </span>
-          </Button>
+                  Limit Reached
+                </div>
+              </button>
+            ) : (
+              <Link href="/upload" title="Create a new PDF summary" className="inline-block w-full sm:w-auto">
+                <button className="p-[3px] relative w-full sm:w-auto">
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg" />
+                  <div className="px-6 py-2 bg-black rounded-[6px] relative group transition duration-200 text-white hover:bg-transparent flex items-center gap-2">
+                    <Plus className="w-4 h-4" />
+                    New Summary
+                  </div>
+                </button>
+              </Link>
+            )}
+          </div>
         </div>
       </div>
 

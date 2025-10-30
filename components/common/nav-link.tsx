@@ -8,10 +8,12 @@ export default function NavLink({
   href,
   children,
   className,
+  ...props
 }: {
   href: string;
   children: React.ReactNode;
   className?: string;
+  [key: string]: any; // capture other props
 }) {
   const pathname = usePathname();
   const isActive =
@@ -24,6 +26,7 @@ export default function NavLink({
         className,
         isActive && "text-orange-400"
       )}
+      {...props}
     >
       {children}
     </Link>
