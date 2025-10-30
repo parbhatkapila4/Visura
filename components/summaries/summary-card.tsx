@@ -280,7 +280,7 @@ export default function SummaryCard({
                   ) : (
                     <StatusBadge status={statusToShow} />
                   )}
-                  <span className="inline-flex h-8 items-center gap-1.5 px-3 rounded-full bg-slate-800/70 border border-slate-700 text-xs text-slate-200 leading-none">
+                  <span className="inline-flex h-8 sm:h-8 items-center gap-1.5 px-4 sm:px-4 rounded-full bg-transparent border border-slate-600/70 text-xs sm:text-xs text-slate-200 leading-none">
                     <Clock className="w-3.5 h-3.5" />
                     <span className="whitespace-nowrap">
                       {Math.ceil((summary.summary_text?.length || 0) / 200)} min read
@@ -289,11 +289,11 @@ export default function SummaryCard({
                 </div>
 
                 {/* Right: actions */}
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2 sm:gap-1.5">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-2 px-4 text-xs font-medium rounded-full transition-all duration-200 hover:scale-[1.03] border-slate-600/70 text-slate-200 hover:bg-slate-700/70 hover:text-white"
+                    className="h-8 sm:h-8 px-4 sm:px-4 py-2 sm:py-2 text-xs font-medium rounded-full transition-all duration-200 hover:scale-[1.03] border-slate-600/70 text-slate-200 hover:bg-slate-700/70 hover:text-white"
                     onClick={(e) => {
                       e.stopPropagation();
                       window.location.href = `/summaries/${summary.id}`;
@@ -304,7 +304,7 @@ export default function SummaryCard({
                   </Button>
                   <Button
                     size="sm"
-                    className="h-2 px-4 py-2 text-xs font-semibold rounded-full transition-all duration-200 hover:scale-[1.03] bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white shadow-md hover:shadow-lg"
+                    className="h-8 sm:h-8 px-4 sm:px-4 py-2 sm:py-2 text-xs font-semibold rounded-full transition-all duration-200 hover:scale-[1.03] bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white shadow-md hover:shadow-lg"
                     onClick={(e) => {
                       e.stopPropagation();
                       window.location.href = `/chatbot/${summary.id}`;

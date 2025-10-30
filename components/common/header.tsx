@@ -14,7 +14,7 @@ export default function Header() {
           <div className="flex flex-row items-center justify-between w-full min-w-0">
             {/* Logo */}
             <motion.div 
-              className="flex flex-row items-center gap-3 min-w-0"
+              className="flex flex-row items-center gap-3 min-w-0 md:flex-1"
               whileHover={{ scale: 1.05 }}
               transition={{ type: 'spring', stiffness: 400, damping: 10 }}
             >
@@ -85,7 +85,7 @@ export default function Header() {
               >
                 <NavLink
                   href="/"
-                  className="text-white font-semibold text-lg relative break-all min-w-0"
+                  className="text-white font-semibold text-lg relative whitespace-nowrap truncate min-w-0"
                 >
                   <motion.span
                     className="text-white"
@@ -111,6 +111,13 @@ export default function Header() {
               </motion.div>
             </motion.div>
 
+            {/* Center nav - desktop only */}
+            <div className="hidden md:flex flex-1 items-center justify-center gap-6 mx-6 md:ml-6 lg:ml-10">
+              <NavLink href="/features" className="text-sm text-gray-300 hover:text-orange-400">Features</NavLink>
+              <NavLink href="/about" className="text-sm text-gray-300 hover:text-orange-400">About</NavLink>
+              <NavLink href="/changelog" className="text-sm text-gray-300 hover:text-orange-400">Changelog</NavLink>
+            </div>
+
             {/* Mobile Dashboard button only (no hamburger) */}
             <NavLink
               href="/dashboard"
@@ -120,7 +127,7 @@ export default function Header() {
             </NavLink>
             
             {/* Right Section (navbar) */}
-            <div className="hidden md:flex flex-row flex-wrap items-center gap-3 gap-x-4 pl-0 sm:pl-6 min-w-0 w-full justify-end">
+            <div className="hidden md:flex flex-row flex-wrap items-center gap-3 gap-x-4 pl-0 sm:pl-6 min-w-0 md:flex-1 justify-end">
               <SignedIn>
                 <NavLink href="/dashboard" className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white hover:text-orange-500 font-medium text-sm rounded-lg transition-colors duration-200 border border-gray-700 break-all min-w-[90px] text-center">Dashboard</NavLink>
                 <PlanBadge />

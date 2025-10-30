@@ -59,7 +59,7 @@ const SectionNavItem = ({
       }`}
     >
       <div className="flex items-center gap-3">
-        <span className="text-2xl">{getSectionIcon(title)}</span>
+        <span className="hidden sm:inline text-2xl">{getSectionIcon(title)}</span>
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-semibold text-gray-200 mb-1 truncate">
             {title}
@@ -129,10 +129,10 @@ const DarkContentSection = ({
     >
       {/* Section Header */}
       <div className="relative">
-        <div className="flex items-start gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4 mb-4 text-center sm:text-left">
           {/* Section Number Badge */}
           <motion.div
-            className="flex-shrink-0"
+            className="flex-shrink-0 hidden sm:block"
             initial={{ scale: 0 }}
             animate={isInView ? { scale: 1 } : { scale: 0 }}
             transition={{ duration: 0.4, delay: index * 0.1 + 0.2, type: "spring" }}
@@ -154,7 +154,7 @@ const DarkContentSection = ({
               {title}
             </motion.h2>
             <motion.div
-              className="h-1 w-20 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full"
+              className="h-1 w-20 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full mx-auto sm:mx-0"
               initial={{ width: 0 }}
               animate={isInView ? { width: 80 } : { width: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 + 0.3 }}
@@ -187,13 +187,13 @@ const DarkContentSection = ({
                   animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
                   transition={{ duration: 0.4, delay: index * 0.1 + pointIndex * 0.05 + 0.2 }}
                 >
-                  <div className="flex gap-4">
-                    {/* Decorative line */}
-                    <div className="flex-shrink-0 w-1 h-full bg-gradient-to-b from-orange-500/40 via-amber-500/30 to-transparent rounded-full group-hover:from-orange-500/60 group-hover:via-amber-500/50 transition-all duration-300"></div>
+                  <div className="flex gap-3 sm:gap-4">
+                    {/* Decorative line (hide on mobile to balance left/right padding) */}
+                    <div className="hidden sm:block flex-shrink-0 w-1 h-full bg-gradient-to-b from-orange-500/40 via-amber-500/30 to-transparent rounded-full group-hover:from-orange-500/60 group-hover:via-amber-500/50 transition-all duration-300"></div>
                     
                     {/* Content */}
-                    <div className="flex-1 min-w-0 pt-1">
-                      <p className="text-gray-300 leading-relaxed text-sm sm:text-base group-hover:text-gray-100 transition-colors duration-300">
+                    <div className="flex-1 min-w-0 pt-1 overflow-hidden">
+                      <p className="text-gray-300 leading-relaxed text-sm sm:text-base text-left sm:text-justify break-all sm:break-words hyphens-auto overflow-hidden group-hover:text-gray-100 transition-colors duration-300">
                         {cleanText}
                       </p>
                     </div>
@@ -236,7 +236,7 @@ export default function SummaryViewer({ summary }: { summary: string }) {
   return (
     <motion.div
       ref={containerRef}
-      className="w-full max-w-7xl mx-auto relative"
+      className="w-full max-w-7xl mx-auto relative overflow-x-hidden"
       initial={{ opacity: 0 }}
       animate={isInView ? { opacity: 1 } : { opacity: 0 }}
       transition={{ duration: 0.6 }}
@@ -249,7 +249,7 @@ export default function SummaryViewer({ summary }: { summary: string }) {
 
         {/* Header Section */}
         <motion.div
-          className="relative p-6 sm:p-8 lg:p-10 border-b border-gray-800/50"
+          className="relative px-3 py-6 sm:p-8 lg:p-10 border-b border-gray-800/50"
           initial={{ opacity: 0, y: -20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
           transition={{ duration: 0.6, delay: 0.1 }}
@@ -309,7 +309,7 @@ export default function SummaryViewer({ summary }: { summary: string }) {
                   </div>
                   <span className="text-gray-400 text-sm font-medium">Sections</span>
                 </div>
-                <div className="text-3xl font-bold text-white">{sections.length}</div>
+                <div className="text-3xl font-bold text-white text-center sm:text-left w-full">{sections.length}</div>
               </div>
             </motion.div>
 
@@ -326,7 +326,7 @@ export default function SummaryViewer({ summary }: { summary: string }) {
                   </div>
                   <span className="text-gray-400 text-sm font-medium">Insights</span>
                 </div>
-                <div className="text-3xl font-bold text-white">{totalInsights}</div>
+                <div className="text-3xl font-bold text-white text-center sm:text-left w-full">{totalInsights}</div>
               </div>
             </motion.div>
 
@@ -343,14 +343,14 @@ export default function SummaryViewer({ summary }: { summary: string }) {
                   </div>
                   <span className="text-gray-400 text-sm font-medium">Read Time</span>
                 </div>
-                <div className="text-3xl font-bold text-white">{estimatedReadTime} min</div>
+                <div className="text-3xl font-bold text-white text-center sm:text-left w-full">{estimatedReadTime} min</div>
               </div>
             </motion.div>
           </motion.div>
         </motion.div>
 
         {/* Sections Display */}
-        <div className="p-6 sm:p-8 lg:p-10 space-y-8 sm:space-y-12">
+        <div className="px-3 py-6 sm:p-8 lg:p-10 space-y-8 sm:space-y-12">
           {sections.map((section, index) => (
             <motion.div
               key={index}
@@ -360,7 +360,7 @@ export default function SummaryViewer({ summary }: { summary: string }) {
               transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
             >
               {/* Section Card */}
-              <div className="relative bg-gradient-to-br from-gray-800/30 via-gray-900/40 to-gray-800/30 backdrop-blur-sm rounded-2xl border border-gray-700/30 p-6 sm:p-8 hover:border-orange-500/30 transition-all duration-500 overflow-hidden">
+              <div className="relative bg-gradient-to-br from-gray-800/30 via-gray-900/40 to-gray-800/30 backdrop-blur-sm rounded-2xl border border-gray-700/30 px-3 py-6 sm:p-8 hover:border-orange-500/30 transition-all duration-500 overflow-hidden">
                 {/* Hover Glow Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-transparent to-orange-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 

@@ -67,7 +67,7 @@ export default function DashboardClient({
                 className="p-[3px] relative w-full sm:w-auto opacity-60 cursor-not-allowed"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg" />
-                <div className="px-4 py-2 bg-black rounded-[6px] relative group transition duration-200 text-white flex items-center gap-2">
+                <div className="px-4 py-2 bg-black rounded-[6px] relative group transition duration-200 text-white flex items-center justify-center gap-2">
                   <Lock className="w-4 h-4" />
                   Limit Reached
                 </div>
@@ -76,7 +76,7 @@ export default function DashboardClient({
               <Link href="/upload" title="Create a new PDF summary" className="inline-block w-full sm:w-auto">
                 <button className="p-[3px] relative w-full sm:w-auto">
                   <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg" />
-                  <div className="px-6 py-2 bg-black rounded-[6px] relative group transition duration-200 text-white hover:bg-transparent flex items-center gap-2">
+                  <div className="px-6 py-2 bg-black rounded-[6px] relative group transition duration-200 text-white hover:bg-transparent flex items-center justify-center gap-2">
                     <Plus className="w-4 h-4" />
                     New Summary
                   </div>

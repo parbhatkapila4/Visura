@@ -1,15 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Calendar,
-  ChevronLeft,
-  Clock,
-  Sparkles,
-  MessageCircle,
-  BookOpen,
-  ArrowRight,
-} from "lucide-react";
+import { ChevronLeft, MessageCircle, BookOpen, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
 import { motion } from "framer-motion";
@@ -40,20 +32,19 @@ export default function SummaryHeader({
         <div className="flex flex-col gap-8 mb-12">
           {/* Navigation & Actions */}
           <motion.div
-            className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-4"
+            className="flex flex-row justify-between items-center w-full gap-2 sm:gap-4"
             initial={{ opacity: 0, y: -20 }}
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <Link href="/dashboard" className="w-full sm:w-auto">
+            <Link href="/dashboard" className="w-auto ml-2 sm:ml-0">
               <motion.div
                 whileHover={{ scale: 1.02, x: -2 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <Button
                   variant="ghost"
-                  size="lg"
-                  className="group flex items-center gap-3 hover:bg-gray-800/80 backdrop-blur-md rounded-xl transition-all duration-300 bg-gray-900/40 border border-gray-700/50 hover:border-orange-500/30 px-5 py-3 w-full sm:w-auto"
+                  className="group flex items-center gap-2 hover:bg-gray-800/80 backdrop-blur-md rounded-xl transition-all duration-300 bg-gray-900/40 border border-gray-700/50 hover:border-orange-500/30 px-3 py-2 sm:px-5 sm:py-3 w-auto"
                 >
                   <div className="p-1.5 rounded-lg bg-gradient-to-br from-orange-500/20 to-amber-500/10 group-hover:from-orange-500/30 group-hover:to-amber-500/20 transition-all duration-300 border border-orange-500/20">
                     <ChevronLeft className="h-4 w-4 text-orange-400 transition-transform group-hover:-translate-x-1" />
@@ -65,30 +56,7 @@ export default function SummaryHeader({
               </motion.div>
             </Link>
 
-            {summaryId && (
-              <Link href={`/chatbot/${summaryId}`} className="w-full sm:w-auto">
-                <motion.div
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    size="lg"
-                    className="group relative flex items-center gap-3 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 hover:from-orange-400 hover:via-amber-400 hover:to-orange-400 text-white rounded-xl transition-all duration-300 shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 px-6 py-3 w-full sm:w-auto overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                    <div className="relative z-10 flex items-center gap-3">
-                      <div className="p-1.5 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30">
-                        <MessageCircle className="h-4 w-4" />
-                      </div>
-                      <span className="font-bold text-sm sm:text-base">
-                        Chat with Document
-                      </span>
-                      <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
-                    </div>
-                  </Button>
-                </motion.div>
-              </Link>
-            )}
+            {/* Chat button removed from the top row as requested */}
           </motion.div>
 
           {/* Main Document Card */}
@@ -164,69 +132,28 @@ export default function SummaryHeader({
             </div>
           </motion.div>
 
-          {/* Metadata Cards */}
-          <motion.div
-            className="flex flex-wrap items-center justify-center gap-3 sm:gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            {/* AI Summary Badge */}
+          {/* Replace badges with a centered Chat button */}
+          {summaryId && (
             <motion.div
-              whileHover={{ scale: 1.05, y: -2 }}
-              transition={{ type: "spring", stiffness: 400 }}
+              className="flex justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <Badge
-                variant="secondary"
-                className="relative px-6 py-3 text-sm font-semibold bg-gradient-to-r from-orange-500/20 via-amber-500/15 to-orange-500/20 backdrop-blur-md rounded-full border border-orange-500/40 hover:border-orange-500/60 transition-all duration-300 shadow-lg hover:shadow-xl overflow-hidden group"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative z-10 flex items-center gap-2.5">
-                  <div className="relative">
-                    <Sparkles className="h-4 w-4 text-orange-400 animate-pulse" />
-                    <div className="absolute inset-0 bg-orange-400/30 rounded-full blur-sm"></div>
+              <Link href={`/chatbot/${summaryId}`}>
+                <Button className="group relative flex items-center gap-2 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 hover:from-orange-400 hover:via-amber-400 hover:to-orange-400 text-white rounded-xl transition-all duration-300 shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 px-4 py-2 sm:px-6 sm:py-3 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  <div className="relative z-10 flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30">
+                      <MessageCircle className="h-4 w-4" />
+                    </div>
+                    <span className="font-bold text-sm sm:text-base">Chat with Document</span>
+                    <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
                   </div>
-                  <span className="text-white font-bold">AI Summary</span>
-                </div>
-              </Badge>
+                </Button>
+              </Link>
             </motion.div>
-
-            {/* Reading time removed as requested */}
-
-            {/* Date */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="hidden sm:flex items-center gap-2.5 bg-gray-800/60 backdrop-blur-md px-4 py-2.5 rounded-full border border-gray-700/50 hover:border-orange-500/30 transition-all duration-300 shadow-md hover:shadow-lg"
-            >
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-orange-500/20 to-amber-500/10 border border-orange-500/20">
-                <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-400" />
-              </div>
-              <span className="text-gray-200 font-semibold text-sm sm:text-base">
-                {new Date(createdAt).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </span>
-            </motion.div>
-
-            {/* Mobile Date */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="flex sm:hidden items-center gap-2.5 bg-gray-800/60 backdrop-blur-md px-4 py-2.5 rounded-full border border-gray-700/50 hover:border-orange-500/30 transition-all duration-300 shadow-md hover:shadow-lg"
-            >
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-orange-500/20 to-amber-500/10 border border-orange-500/20">
-                <Calendar className="h-3.5 w-3.5 text-orange-400" />
-              </div>
-              <span className="text-gray-200 font-semibold text-sm">
-                {new Date(createdAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </span>
-            </motion.div>
-          </motion.div>
+          )}
 
           {/* Decorative separator */}
           <motion.div
