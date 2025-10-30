@@ -299,12 +299,24 @@ The document has been uploaded successfully, but AI analysis and chatbot functio
       }
     } catch (error) {
       console.error("Upload/processing error:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+      const rawMessage = error instanceof Error ? error.message : "Unknown error";
+      const friendlyMessage = /\b402\b|Payment Required/i.test(rawMessage)
+        ? "AI summary generation failed due to billing/credits. Please check your LLM provider billing status or API key quota."
+        : rawMessage;
 
       toast.error("Processing failed", {
-        description: errorMessage,
+        description: friendlyMessage,
+        action: {
+          label: "Close",
+          onClick: () => {},
+        },
+        duration: 8000,
       });
+
+      // Redirect the user to dashboard so they aren't stuck on the upload screen
+      try {
+        router.push("/dashboard");
+      } catch {}
 
       try {
         const fallbackResult = await generateFallbackSummary(

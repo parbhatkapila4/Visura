@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 import { cn } from "@/lib/utils";
 import { LoaderCircle } from "lucide-react";
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 
 interface UploadFormInputProps {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -18,6 +18,15 @@ export const UploadFormInput = forwardRef<
   UploadFormInputProps
 >(({ onSubmit, isLoading, hasReachedLimit, uploadLimit }, ref) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const processingRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isLoading && processingRef.current) {
+      try {
+        processingRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      } catch {}
+    }
+  }, [isLoading]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -29,7 +38,7 @@ export const UploadFormInput = forwardRef<
       <div className="w-full max-w-2xl mx-auto">
         <form ref={ref} className="flex flex-col gap-4" onSubmit={onSubmit}>
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4">
               <div className="w-full sm:flex-1 sm:max-w-xs">
                 <div className="relative">
                   <input
@@ -47,7 +56,7 @@ export const UploadFormInput = forwardRef<
                   />
                   <div
                     className={cn(
-                      "h-12 border-2 border-r-sidebar-accent-foreground border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors px-4",
+                      "h-12 border-2 border-r-sidebar-accent-foreground border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors px-3 sm:px-4",
                       selectedFile && "border-[#f97316] bg-white/70",
                       (isLoading || hasReachedLimit) &&
                         "opacity-50 cursor-not-allowed"
@@ -69,7 +78,7 @@ export const UploadFormInput = forwardRef<
               <Button
                 type="submit"
                 disabled={isLoading || hasReachedLimit}
-                className="h-12 px-6 sm:px-8 bg-[#f97316] text-white font-semibold rounded-lg hover:bg-[#ea580c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed z-50 w-full sm:w-auto"
+                className="h-12 px-4 sm:px-8 bg-[#f97316] text-white font-semibold rounded-lg hover:bg-[#ea580c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed z-50 w-full sm:w-auto"
                 style={{ color: "#ffffff" }}
               >
                 {isLoading ? (
@@ -159,13 +168,13 @@ export const UploadFormInput = forwardRef<
         </div>
 
         {isLoading && (
-          <div className="mt-8 sm:mt-10">
-            <div className="relative mx-auto max-w-3xl">
+          <div ref={processingRef} className="mt-8 sm:mt-10">
+            <div className="relative mx-auto max-w-3xl px-3 overflow-hidden">
               {/* Glow ring */}
               <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-orange-600/20 via-amber-500/10 to-red-500/20 blur opacity-60" />
 
               {/* Card */}
-              <div className="relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6 sm:p-8 shadow-xl">
+              <div className="relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6 sm:p-8 shadow-xl overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3">
