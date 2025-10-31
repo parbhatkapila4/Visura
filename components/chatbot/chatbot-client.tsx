@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +13,7 @@ import {
   MessageSquare,
   MoreVertical,
   Trash2,
+  Sparkles,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -141,7 +141,13 @@ export default function ChatbotClient({
   };
 
   const sendMessage = async () => {
-    if (!inputMessage.trim() || !currentSessionId || isLoading) return;
+    if (!inputMessage.trim() || isLoading) return;
+
+    if (!currentSessionId) {
+      await createNewSession();
+      setTimeout(sendMessage, 100);
+      return;
+    }
 
     const messageText = inputMessage.trim();
     setInputMessage("");
@@ -209,326 +215,324 @@ export default function ChatbotClient({
   const currentSession = sessions.find((s) => s.id === currentSessionId);
 
   return (
-    <div className="flex flex-col lg:grid lg:grid-cols-10 gap-4 lg:gap-6 h-[calc(100vh-120px)] lg:h-[calc(100vh-200px)] min-h-[400px] lg:min-h-[600px] max-h-[700px] lg:max-h-[800px]">
-      <div className="lg:col-span-3 min-h-[180px] lg:min-h-[400px] order-2 lg:order-1">
-        <div className="relative p-3 lg:p-6 bg-gray-800 rounded-2xl lg:rounded-3xl shadow-2xl border border-gray-600 h-full flex flex-col min-h-0">
-          <div className="relative flex flex-col h-full min-h-0 z-10">
-            <div className="pb-3 lg:pb-4 flex-shrink-0">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 lg:gap-3">
-                  <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl lg:rounded-2xl bg-gradient-to-br from-[#484593] to-[#484593]/80 flex items-center justify-center shadow-lg">
-                    <MessageSquare className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
-                  </div>
-                  <CardTitle className="text-lg lg:text-xl font-bold text-white/80">
-                    Chat Sessions
-                  </CardTitle>
+    <div className="flex h-full gap-4 lg:gap-6 overflow-hidden">
+      {/* Left Sidebar - Chat Sessions */}
+      <div className="w-full lg:w-80 flex-shrink-0">
+        <div className="h-full bg-gradient-to-br from-black via-gray-900 to-black rounded-2xl lg:rounded-3xl border border-orange-500/20 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden relative">
+          {/* Glossy overlay effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent rounded-2xl lg:rounded-3xl pointer-events-none"></div>
+          {/* Orange glow accent */}
+          <div className="absolute inset-0 rounded-2xl lg:rounded-3xl pointer-events-none" style={{
+            background: 'radial-gradient(circle at top left, rgba(249, 115, 22, 0.1) 0%, transparent 50%)'
+          }}></div>
+          
+          {/* Header */}
+          <div className="relative z-10 p-4 lg:p-5 border-b border-orange-500/20 flex items-center justify-between backdrop-blur-sm flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/50">
+                <MessageSquare className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">Chat Sessions</h3>
+            </div>
+            <Button
+              size="sm"
+              onClick={createNewSession}
+              className="h-9 w-9 p-0 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-500 rounded-xl shadow-lg shadow-orange-500/30 transition-all"
+            >
+              <Plus className="w-4 h-4 text-white" />
+            </Button>
+          </div>
+
+          {/* Sessions List */}
+          <div className="relative z-10 flex-1 min-h-0 overflow-y-auto p-3">
+            {isLoadingSessions ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-orange-500/30 border-t-orange-500"></div>
+              </div>
+            ) : sessions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full py-12 text-center">
+                <div className="w-20 h-20 mb-6 rounded-2xl bg-gradient-to-br from-orange-500/20 via-orange-600/10 to-black/40 flex items-center justify-center shadow-lg border border-orange-500/20">
+                  <MessageSquare className="w-10 h-10 text-orange-500" />
                 </div>
-                <Button
-                  size="sm"
-                  onClick={createNewSession}
-                  className="h-8 w-8 lg:h-10 lg:w-10 p-0 bg-gradient-to-br from-[#484593] to-[#484593]/90 hover:from-[#484593]/90 hover:to-[#484593] shadow-lg rounded-xl"
-                >
-                  <Plus className="h-4 w-4 lg:h-5 lg:w-5" />
-                </Button>
+                <p className="text-sm font-medium text-gray-400 mb-1">No chats yet</p>
+                <p className="text-xs text-gray-500">Start a new conversation</p>
               </div>
-            </div>
-            <div className="p-0 flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-[#484593]/30 scrollbar-track-transparent hover:scrollbar-thumb-[#484593]/50">
-              <div className="space-y-2 lg:space-y-3 px-1 lg:px-2 py-2 pb-6">
-                {isLoadingSessions ? (
-                  <div className="flex items-center justify-center py-8 lg:py-12">
-                    <div className="relative">
-                      <div className="animate-spin rounded-full h-6 w-6 lg:h-8 lg:w-8 border-2 border-[#484593]/20"></div>
-                      <div className="animate-spin rounded-full h-6 w-6 lg:h-8 lg:w-8 border-2 border-t-[#484593] absolute top-0 left-0"></div>
-                    </div>
-                  </div>
-                ) : sessions.length === 0 ? (
-                  <div className="text-center py-8 lg:py-12 text-white/80">
-                    <div className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-3 lg:mb-4 rounded-xl lg:rounded-2xl bg-gradient-to-br from-[#484593]/20 to-[#484593]/10 flex items-center justify-center">
-                      <MessageSquare className="h-6 w-6 lg:h-8 lg:w-8 text-[#484593]/60" />
-                    </div>
-                    <p className="text-sm font-medium mb-1">No chats yet</p>
-                    <p className="text-xs text-white/60">
-                      Start a new conversation
-                    </p>
-                  </div>
-                ) : (
-                  sessions.map((session) => (
-                    <div
-                      key={session.id}
-                      className={`group relative p-2.5 lg:p-4 rounded-xl lg:rounded-2xl w-full cursor-pointer transition-all duration-300 ${
-                        currentSessionId === session.id
-                          ? "bg-gradient-to-r from-gray-800 to-gray-700 border-2 border-[#484593]/50 shadow-lg"
-                          : "bg-gray-800 hover:bg-gray-700 border border-gray-600 hover:border-gray-500"
-                      }`}
-                      onClick={() => setCurrentSessionId(session.id)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate text-white mb-1 lg:mb-2">
-                            {session.session_name}
-                          </p>
-                          <div className="flex items-center gap-1 lg:gap-2 flex-wrap">
-                            <Badge
-                              variant="secondary"
-                              className="text-xs bg-gradient-to-r from-[#484593]/20 to-[#484593]/10 text-[#484593] border-0 px-2 py-1 rounded-lg"
-                            >
-                              {session.message_count} msgs
-                            </Badge>
-                            <span className="text-xs text-white/80">
-                              {new Date(
-                                session.updated_at
-                              ).toLocaleDateString()}
-                            </span>
-                          </div>
+            ) : (
+              <div className="space-y-2">
+                {sessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className={`group relative p-3 rounded-xl cursor-pointer transition-all backdrop-blur-sm ${
+                      currentSessionId === session.id
+                        ? "bg-gradient-to-r from-orange-500/20 via-orange-600/10 to-orange-500/20 border border-orange-500/50 shadow-lg shadow-orange-500/20"
+                        : "bg-gradient-to-r from-gray-800/50 via-black/30 to-gray-800/50 border border-gray-700/30 hover:from-orange-500/10 hover:via-gray-800/40 hover:to-orange-500/10 hover:border-orange-500/30 hover:shadow-md"
+                    }`}
+                    onClick={() => setCurrentSessionId(session.id)}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate mb-1">
+                          {session.session_name}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="text-xs bg-gradient-to-r from-orange-500/30 via-orange-600/20 to-orange-500/30 text-white border border-orange-500/40 backdrop-blur-sm">
+                            {session.message_count} msgs
+                          </Badge>
+                          <span className="text-xs text-gray-400">
+                            {new Date(session.updated_at).toLocaleDateString()}
+                          </span>
                         </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              size="sm"
-                              className="h-7 w-7 lg:h-8 lg:w-8 p-0 bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white border border-gray-600 hover:border-gray-500 rounded-lg lg:rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <MoreVertical className="h-3 w-3 lg:h-4 lg:w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="end"
-                            className="bg-white/95 backdrop-blur-xl border border-white/30 shadow-2xl rounded-xl lg:rounded-2xl p-2"
-                          >
-                            <DropdownMenuItem
-                              onClick={() => deleteSession(session.id)}
-                              className="text-red-600 hover:bg-red-50/80 rounded-lg lg:rounded-xl px-3 py-2"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size="sm"
+                            className="h-7 w-7 p-0 bg-transparent hover:bg-orange-500/20 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-gray-900 border border-gray-700 rounded-xl p-2">
+                          <DropdownMenuItem
+                            onClick={() => deleteSession(session.id)}
+                            className="text-red-400 hover:bg-red-500/20 rounded-lg"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-                  ))
-                )}
+                  </div>
+                ))}
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="lg:col-span-6 order-1 lg:order-2 min-h-[300px]">
-        <div className="relative p-3 lg:p-6 bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-xl rounded-2xl lg:rounded-3xl shadow-2xl border border-white/20 h-full flex flex-col min-h-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#484593]/20 via-[#484593]/10 to-transparent opacity-60 rounded-2xl lg:rounded-3xl" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent rounded-2xl lg:rounded-3xl" />
-
-          <div className="relative flex flex-col h-full min-h-0 z-10">
-            <div className="pb-3 lg:pb-4 flex-shrink-0 border-b border-white/20">
-              <div className="flex items-center gap-2 lg:gap-3">
-                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl lg:rounded-2xl bg-gradient-to-br from-[#484593] to-[#484593]/80 flex items-center justify-center shadow-lg">
-                  <Bot className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
+      {/* Right Main Chat Area */}
+      <div className="flex-1 min-w-0 h-full overflow-hidden">
+        <div className="h-full bg-gradient-to-br from-black via-gray-900 to-black rounded-2xl lg:rounded-3xl border border-orange-500/20 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden relative">
+          {/* Radial gradient overlay for depth */}
+          <div className="absolute inset-0 rounded-2xl lg:rounded-3xl pointer-events-none" style={{
+            background: 'radial-gradient(circle at center, rgba(249, 115, 22, 0.08) 0%, transparent 70%)'
+          }}></div>
+          {/* Glossy top shine */}
+          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/10 via-white/5 to-transparent rounded-t-2xl lg:rounded-t-3xl pointer-events-none"></div>
+          {/* Orange accent glow */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl pointer-events-none"></div>
+          
+          {currentSessionId ? (
+            <>
+              {/* Chat Header */}
+              <div className="relative z-10 p-4 lg:p-5 border-b border-orange-500/20 flex items-center gap-3 backdrop-blur-sm flex-shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/50">
+                  <Bot className="w-5 h-5 text-white" />
                 </div>
-                <CardTitle className="text-lg lg:text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent truncate">
-                  {currentSession
-                    ? currentSession.session_name
-                    : "Select a chat session"}
-                </CardTitle>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">{currentSession?.session_name}</h3>
+                </div>
               </div>
-            </div>
-            <div className="flex-1 flex flex-col p-0 min-h-0">
-              {currentSessionId ? (
-                <>
-                  <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-4 lg:space-y-6 min-h-0 max-h-[calc(100vh-160px)] lg:max-h-[calc(100vh-190px)] scrollbar-thin scrollbar-thumb-[#484593]/30 scrollbar-track-transparent hover:scrollbar-thumb-[#484593]/50">
-                    {messages.length === 0 ? (
-                      <div className="flex items-center justify-center h-full">
-                        <div className="text-center px-4">
-                          <div className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 rounded-2xl lg:rounded-3xl bg-gradient-to-br from-[#484593]/20 to-[#484593]/10 flex items-center justify-center">
-                            <Bot className="h-8 w-8 lg:h-10 lg:w-10 text-[#484593]/70" />
-                          </div>
-                          <h3 className="text-lg lg:text-xl font-bold mb-2 lg:mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                            Start a conversation
-                          </h3>
-                          <p className="text-gray-600 max-w-md text-sm lg:text-base">
-                            Ask questions about your document:{" "}
-                            <span className="font-semibold text-[#484593]">
-                              "{pdfTitle}"
-                            </span>
-                          </p>
-                        </div>
+
+              {/* Messages Area */}
+              <div className="relative z-10 flex-1 min-h-0 overflow-y-auto p-5 lg:p-6 space-y-5">
+                {messages.length === 0 ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-orange-500/20 via-orange-600/10 to-black/40 flex items-center justify-center shadow-lg border border-orange-500/20">
+                        <Bot className="w-8 h-8 text-orange-500" />
                       </div>
-                    ) : (
-                      messages.map((message) => (
+                      <h3 className="text-xl font-semibold text-white mb-2">Start a conversation</h3>
+                      <p className="text-gray-400 text-sm">
+                        Ask questions about: <span className="text-orange-500 font-medium">"{pdfTitle}"</span>
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex gap-4 ${
+                          message.message_type === "user" ? "justify-end" : "justify-start"
+                        }`}
+                      >
                         <div
-                          key={message.id}
-                          className={`flex gap-2 lg:gap-4 ${
-                            message.message_type === "user"
-                              ? "justify-end"
-                              : "justify-start"
+                          className={`flex gap-3 max-w-[80%] ${
+                            message.message_type === "user" ? "flex-row-reverse" : "flex-row"
                           }`}
                         >
-                          <div
-                            className={`flex gap-2 lg:gap-4 max-w-[90%] lg:max-w-[85%] ${
-                              message.message_type === "user"
-                                ? "flex-row-reverse"
-                                : "flex-row"
-                            }`}
-                          >
-                            <div
-                              className={`flex-shrink-0 w-8 h-8 lg:w-10 lg:h-10 rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg ${
-                                message.message_type === "user"
-                                  ? "bg-gradient-to-br from-[#484593] to-[#484593]/90 text-white"
-                                  : "bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700"
-                              }`}
-                            >
-                              {message.message_type === "user" ? (
-                                <User className="h-4 w-4 lg:h-5 lg:w-5" />
-                              ) : (
-                                <Bot className="h-4 w-4 lg:h-5 lg:w-5" />
-                              )}
-                            </div>
-                            <div
-                              className={`rounded-xl lg:rounded-2xl px-3 py-3 lg:px-5 lg:py-4 shadow-lg ${
-                                message.message_type === "user"
-                                  ? "bg-gradient-to-br from-[#484593] to-[#484593]/90 text-white"
-                                  : "bg-white/90 text-gray-900 border border-white/20 backdrop-blur-sm"
-                              }`}
-                            >
-                              {message.message_type === "assistant" ? (
-                                <div className="prose prose-sm max-w-none">
-                                  <ReactMarkdown
-                                    components={{
-                                      p: ({ children }) => (
-                                        <p className="mb-2 last:mb-0">
-                                          {children}
-                                        </p>
-                                      ),
-                                      ul: ({ children }) => (
-                                        <ul className="list-disc pl-4 mb-2 space-y-1">
-                                          {children}
-                                        </ul>
-                                      ),
-                                      ol: ({ children }) => (
-                                        <ol className="list-decimal pl-4 mb-2 space-y-1">
-                                          {children}
-                                        </ol>
-                                      ),
-                                      li: ({ children }) => (
-                                        <li className="leading-relaxed">
-                                          {children}
-                                        </li>
-                                      ),
-                                      strong: ({ children }) => (
-                                        <strong className="font-semibold text-gray-900">
-                                          {children}
-                                        </strong>
-                                      ),
-                                      code: ({ children }) => (
-                                        <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">
-                                          {children}
-                                        </code>
-                                      ),
-                                      h1: ({ children }) => (
-                                        <h1 className="text-lg font-bold mb-2 mt-4 first:mt-0">
-                                          {children}
-                                        </h1>
-                                      ),
-                                      h2: ({ children }) => (
-                                        <h2 className="text-base font-bold mb-2 mt-3 first:mt-0">
-                                          {children}
-                                        </h2>
-                                      ),
-                                      h3: ({ children }) => (
-                                        <h3 className="text-sm font-bold mb-1 mt-2 first:mt-0">
-                                          {children}
-                                        </h3>
-                                      ),
-                                    }}
-                                  >
-                                    {message.message_content}
-                                  </ReactMarkdown>
-                                </div>
-                              ) : (
-                                <p className="whitespace-pre-wrap">
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg ${
+                            message.message_type === "user"
+                              ? "bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 shadow-orange-500/30"
+                              : "bg-gradient-to-br from-gray-800/80 to-black/60 backdrop-blur-sm border border-gray-700/50"
+                          }`}>
+                            {message.message_type === "user" ? (
+                              <User className="w-5 h-5 text-white" />
+                            ) : (
+                              <Bot className="w-5 h-5 text-white" />
+                            )}
+                          </div>
+                          <div className={`rounded-2xl px-4 py-3 shadow-lg backdrop-blur-sm ${
+                            message.message_type === "user"
+                              ? "bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 text-white shadow-orange-500/20"
+                              : "bg-gradient-to-br from-gray-800/80 via-gray-900/60 to-black/80 text-gray-200 border border-gray-700/50"
+                          }`}>
+                            {message.message_type === "assistant" ? (
+                              <div className="prose prose-sm max-w-none prose-invert">
+                                <ReactMarkdown
+                                  components={{
+                                    p: ({ children }) => <p className="mb-2 last:mb-0 text-gray-200">{children}</p>,
+                                    ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1 text-gray-200">{children}</ul>,
+                                    ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1 text-gray-200">{children}</ol>,
+                                    li: ({ children }) => <li className="leading-relaxed text-gray-200">{children}</li>,
+                                    strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                                    code: ({ children }) => (
+                                      <code className="bg-black/60 px-1.5 py-0.5 rounded text-sm font-mono text-orange-400 border border-orange-500/20">
+                                        {children}
+                                      </code>
+                                    ),
+                                  }}
+                                >
                                   {message.message_content}
-                                </p>
-                              )}
-                              <p
-                                className={`text-xs mt-1 ${
-                                  message.message_type === "user"
-                                    ? "text-[#484593]/80"
-                                    : "text-gray-500"
-                                }`}
-                              >
-                                {new Date(
-                                  message.created_at
-                                ).toLocaleTimeString()}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                    {isLoading && (
-                      <div className="flex gap-4 justify-start">
-                        <div className="flex gap-4">
-                          <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 flex items-center justify-center shadow-lg">
-                            <Bot className="h-5 w-5" />
-                          </div>
-                          <div className="bg-white/90 border border-white/20 backdrop-blur-sm rounded-2xl px-5 py-4 shadow-lg">
-                            <div className="flex items-center gap-3">
-                              <div className="relative">
-                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#484593]/20"></div>
-                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-[#484593] absolute top-0 left-0"></div>
+                                </ReactMarkdown>
                               </div>
-                              <span className="text-gray-700 font-medium">
-                                Thinking...
-                              </span>
-                            </div>
+                            ) : (
+                              <p className="whitespace-pre-wrap text-white">{message.message_content}</p>
+                            )}
+                            <p className={`text-xs mt-2 ${
+                              message.message_type === "user" ? "text-white/70" : "text-gray-400"
+                            }`}>
+                              {new Date(message.created_at).toLocaleTimeString()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {isLoading && (
+                      <div className="flex gap-3 justify-start">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gray-800/80 to-black/60 backdrop-blur-sm border border-gray-700/50 flex items-center justify-center shadow-lg">
+                          <Bot className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="bg-gradient-to-br from-gray-800/80 via-gray-900/60 to-black/80 backdrop-blur-sm border border-gray-700/50 rounded-2xl px-4 py-3 shadow-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-500/30 border-t-orange-500"></div>
+                            <span className="text-gray-300 text-sm">Thinking...</span>
                           </div>
                         </div>
                       </div>
                     )}
-                    <div ref={messagesEndRef} className="pb-4" />
-                  </div>
+                    <div ref={messagesEndRef} />
+                  </>
+                )}
+              </div>
 
-                  <div className="border-t border-white/20 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl p-3 lg:p-6 flex-shrink-0 bottom-0 w-full">
-                    <div className="flex gap-2 lg:gap-3 w-full">
-                      <div className="flex-1 relative min-w-0">
-                        <Input
-                          value={inputMessage}
-                          onChange={(e) => setInputMessage(e.target.value)}
-                          onKeyPress={handleKeyPress}
-                          placeholder="Ask a question about your document..."
-                          disabled={isLoading}
-                          className="w-full h-10 lg:h-12 px-3 lg:px-4 bg-white/90 border border-white/30 rounded-xl lg:rounded-2xl focus:border-[#484593] focus:ring-2 focus:ring-[#484593]/20 placeholder:text-gray-500 text-black shadow-lg backdrop-blur-sm transition-all duration-300 hover:shadow-xl focus:shadow-xl text-sm lg:text-base min-w-0"
-                        />
+              {/* Input Area */}
+              <div className="relative z-10 p-4 lg:p-5 border-t border-orange-500/20 backdrop-blur-sm flex-shrink-0">
+                <div className="flex gap-3">
+                  <div className="flex-1 relative">
+                    <Input
+                      value={inputMessage}
+                      onChange={(e) => setInputMessage(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Ask a question about your document..."
+                      disabled={isLoading}
+                      className="w-full h-12 bg-gradient-to-r from-gray-800/60 via-black/40 to-gray-800/60 border border-gray-700/50 rounded-xl text-white placeholder:text-gray-400 focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 backdrop-blur-sm shadow-lg"
+                    />
+                  </div>
+                  <Button
+                    onClick={sendMessage}
+                    disabled={!inputMessage.trim() || isLoading}
+                    className="h-12 w-12 p-0 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-500 rounded-xl disabled:opacity-50 shadow-lg shadow-orange-500/30 transition-all"
+                  >
+                    <Send className="w-5 h-5 text-white" />
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Welcome State */
+            <div className="relative z-10 flex-1 flex flex-col justify-center items-center px-4 sm:px-8 py-8 lg:py-12 min-h-0 overflow-y-auto">
+              <div className="w-full max-w-3xl mx-auto flex flex-col items-center text-center gap-8 sm:gap-10">
+                {/* Welcome Message */}
+                <div className="space-y-2 sm:space-y-3">
+                  <p className="text-sm sm:text-base text-gray-400">Welcome back</p>
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                    How can I <span className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 bg-clip-text text-transparent">assist</span> you today?
+                  </h2>
+                </div>
+
+                {/* Input Area with Glossy Glass Effect */}
+                <div className="relative w-full bg-gradient-to-br from-gray-900/85 via-black/60 to-gray-900/85 backdrop-blur-xl border border-orange-500/35 rounded-3xl p-5 sm:p-6 lg:p-8 shadow-[0_25px_60px_-25px_rgba(249,115,22,0.45)] overflow-hidden">
+                  {/* Glossy shine overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/12 via-transparent to-transparent rounded-3xl pointer-events-none"></div>
+                  {/* Orange glow accent */}
+                  <div className="absolute inset-0 rounded-3xl" style={{
+                    background: 'radial-gradient(circle at 25% 20%, rgba(249, 115, 22, 0.18) 0%, transparent 55%)'
+                  }}></div>
+                  
+                  <div className="relative z-10 flex flex-col gap-4 sm:gap-5">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                      <div className="flex items-center justify-center w-full sm:w-auto h-12 sm:h-14 rounded-xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 shadow-lg shadow-orange-500/40">
+                        <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                       </div>
+                      <Input
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Initiate a query or send a command to the AI..."
+                        className="flex-1 h-12 sm:h-14 bg-black/30 backdrop-blur-sm border border-gray-700/50 rounded-xl text-white placeholder:text-gray-400 focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 text-sm sm:text-base"
+                      />
                       <Button
                         onClick={sendMessage}
                         disabled={!inputMessage.trim() || isLoading}
-                        size="sm"
-                        className="h-10 w-10 lg:h-12 lg:w-12 p-0 bg-gradient-to-br from-[#484593] to-[#484593]/90 hover:from-[#484593]/90 hover:to-[#484593] text-white shadow-lg rounded-xl lg:rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                        className="h-12 sm:h-14 w-full sm:w-14 p-0 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-500 rounded-xl disabled:opacity-50 shadow-lg shadow-orange-500/30 transition-all"
                       >
-                        <Send className="h-4 w-4 lg:h-5 lg:w-5" />
+                        <Send className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                       </Button>
                     </div>
-                  </div>
-                </>
-              ) : (
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="text-center px-4">
-                    <div className="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4 lg:mb-6 rounded-2xl lg:rounded-3xl bg-gradient-to-br from-[#484593]/20 to-[#484593]/10 flex items-center justify-center">
-                      <MessageSquare className="h-8 w-8 lg:h-10 lg:w-10 text-[#484593]/70" />
+
+                    <div className="space-y-2">
+                      <p className="text-xs sm:text-sm uppercase tracking-[0.35em] text-orange-400/80">
+                        Quick Actions
+                      </p>
+                      <div className="flex flex-wrap justify-center gap-2.5 sm:gap-3.5">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setInputMessage("Help me reason through this document")}
+                          className="rounded-full border-orange-500/30 bg-gradient-to-r from-black/60 via-gray-900/40 to-black/60 text-gray-300 hover:from-orange-500/20 hover:via-gray-900/60 hover:to-orange-500/20 hover:text-white hover:border-orange-500/50 text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 sm:py-2 backdrop-blur-sm transition-all"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                          Reasoning
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setInputMessage("Create an illustrative image for this document")}
+                          className="rounded-full border-orange-500/30 bg-gradient-to-r from-black/60 via-gray-900/40 to-black/60 text-gray-300 hover:from-orange-500/20 hover:via-gray-900/60 hover:to-orange-500/20 hover:text-white hover:border-orange-500/50 text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 sm:py-2 backdrop-blur-sm transition-all"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                          Create Image
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setInputMessage("Do deep research on the key topics in this document")}
+                          className="rounded-full border-orange-500/30 bg-gradient-to-r from-black/60 via-gray-900/40 to-black/60 text-gray-300 hover:from-orange-500/20 hover:via-gray-900/60 hover:to-orange-500/20 hover:text-white hover:border-orange-500/50 text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 sm:py-2 backdrop-blur-sm transition-all"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                          Deep Research
+                        </Button>
+                      </div>
                     </div>
-                    <h3 className="text-lg lg:text-xl font-bold mb-2 lg:mb-3 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                      No chat selected
-                    </h3>
-                    <p className="text-gray-600 max-w-md text-sm lg:text-base">
-                      Create a new chat session to start asking questions about
-                      your document.
-                    </p>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

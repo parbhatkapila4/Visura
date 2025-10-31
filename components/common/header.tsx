@@ -4,9 +4,16 @@ import { UserButton } from "@clerk/nextjs";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import PlanBadge from "./plan-badge";
 import { motion } from "framer-motion";
-import { useState } from 'react';
+import { usePathname } from "next/navigation";
 
 export default function Header() {
+  const pathname = usePathname();
+  const isChatbotPage = pathname?.includes('/chatbot');
+  
+  if (isChatbotPage) {
+    return null;
+  }
+  
   return (
     <nav className="w-full px-4 py-2 sm:py-4 min-h-[60px] sm:min-h-[80px] relative z-20">
       <div className="max-w-6xl mx-auto">
