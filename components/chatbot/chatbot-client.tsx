@@ -116,7 +116,7 @@ export default function ChatbotClient({
     }
   };
 
-  const createNewSession = async () => {
+  const createNewSession = async (): Promise<string | null> => {
     try {
       const response = await fetch("/api/chatbot/sessions", {
         method: "POST",
@@ -131,22 +131,34 @@ export default function ChatbotClient({
 
       const data = await response.json();
 
-      if (response.ok) {
-        await loadSessions();
-        setCurrentSessionId(data.session.id);
+      if (!response.ok || !data.session?.id) {
+        console.error("Error creating session:", data);
+        return null;
       }
+
+      const newSessionId: string = data.session.id;
+      setCurrentSessionId(newSessionId);
+
+      // refresh sessions list but don't block the return
+      loadSessions();
+
+      return newSessionId;
     } catch (error) {
       console.error("Error creating session:", error);
+      return null;
     }
   };
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
-    if (!currentSessionId) {
-      await createNewSession();
-      setTimeout(sendMessage, 100);
-      return;
+    let activeSessionId = currentSessionId;
+
+    if (!activeSessionId) {
+      activeSessionId = await createNewSession();
+      if (!activeSessionId) {
+        return;
+      }
     }
 
     const messageText = inputMessage.trim();
@@ -160,7 +172,7 @@ export default function ChatbotClient({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          sessionId: currentSessionId,
+          sessionId: activeSessionId,
           message: messageText,
         }),
       });
@@ -254,8 +266,11 @@ export default function ChatbotClient({
                 <div className="w-20 h-20 mb-6 rounded-2xl bg-gradient-to-br from-orange-500/20 via-orange-600/10 to-black/40 flex items-center justify-center shadow-lg border border-orange-500/20">
                   <MessageSquare className="w-10 h-10 text-orange-500" />
                 </div>
-                <p className="text-sm font-medium text-gray-400 mb-1">No chats yet</p>
-                <p className="text-xs text-gray-500">Start a new conversation</p>
+                <p className="text-sm font-medium text-gray-200 uppercase tracking-[0.35em]">No chats yet</p>
+                <p className="text-xs text-gray-400 mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 text-[11px] tracking-wide">
+                  <span className="inline-flex h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse"></span>
+                  Click + and start
+                </p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -475,8 +490,10 @@ export default function ChatbotClient({
                   
                   <div className="relative z-10 flex flex-col gap-4 sm:gap-5">
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                      <div className="flex items-center justify-center w-full sm:w-auto h-12 sm:h-14 rounded-xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 shadow-lg shadow-orange-500/40">
-                        <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                      <div className="flex items-center justify-center w-full sm:w-auto h-12 sm:h-14 rounded-xl bg-[#f97316] shadow-lg shadow-orange-500/40 border border-white/10">
+                        <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 backdrop-blur-md">
+                          <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                        </div>
                       </div>
                       <Input
                         value={inputMessage}
@@ -526,6 +543,11 @@ export default function ChatbotClient({
                           <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                           Deep Research
                         </Button>
+                      </div>
+                      <div className="flex justify-end">
+                        <span className="text-[10px] sm:text-xs uppercase tracking-[0.35em] text-orange-300/70">
+                          Under Building
+                        </span>
                       </div>
                     </div>
                   </div>
