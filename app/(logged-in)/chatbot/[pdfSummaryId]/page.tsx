@@ -37,27 +37,27 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
       <BgGradient className="from-black via-gray-900 to-black" />
 
       {/* Fixed Header - Always Visible */}
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-4 bg-black/50 backdrop-blur-sm border-b border-gray-800 z-30 flex-shrink-0">
-        <div className="max-w-[1600px] mx-auto flex items-center justify-between">
+      <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4 bg-black/50 backdrop-blur-sm border-b border-gray-800 z-30 flex-shrink-0">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-2">
           <Link 
             href="/dashboard" 
-            className="group flex items-center px-3 py-1.5 lg:px-4 lg:py-2 bg-orange-500 border border-orange-500 text-white hover:bg-orange-600 hover:border-orange-600 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300 hover:scale-105 active:scale-95 rounded-lg lg:rounded-xl font-medium text-sm lg:text-base h-7 lg:h-10"
+            className="group flex items-center px-2 py-1 sm:px-3 sm:py-1.5 lg:px-4 lg:py-2 bg-orange-500 border border-orange-500 text-white hover:bg-orange-600 hover:border-orange-600 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300 hover:scale-105 active:scale-95 rounded-md sm:rounded-lg lg:rounded-xl font-medium text-xs sm:text-sm lg:text-base h-6 sm:h-7 lg:h-10 flex-shrink-0"
           >
-            <ArrowLeft className="h-3 w-3 lg:h-4 lg:w-4 transition-transform duration-200 group-hover:-translate-x-1" />
-            <span className="ml-2">Go Back</span>
+            <ArrowLeft className="h-2.5 w-2.5 sm:h-3 sm:w-3 lg:h-4 lg:w-4 transition-transform duration-200 group-hover:-translate-x-1" />
+            <span className="ml-1 sm:ml-2">Go Back</span>
           </Link>
-          <div className="flex items-center gap-2 lg:gap-3">
-            <Bot className="h-6 w-6 lg:h-8 lg:w-8 text-orange-500" />
-            <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold bg-gradient-to-r from-gray-400 to-white bg-clip-text text-transparent">
+          <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 flex-1 justify-center min-w-0">
+            <Bot className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 text-orange-500 flex-shrink-0" />
+            <h1 className="text-sm sm:text-base md:text-lg lg:text-2xl xl:text-3xl font-bold bg-gradient-to-r from-gray-400 to-white bg-clip-text text-transparent truncate">
               Chat with Your Document
             </h1>
           </div>
-          <div className="w-20 lg:w-24"></div>
+          <div className="w-0 sm:w-10 lg:w-24 flex-shrink-0"></div>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-4 overflow-hidden">
+      <div className="flex-1 w-full px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4 overflow-hidden">
         <div className="max-w-[1600px] mx-auto h-full">
           {pdfStore ? (
             <Suspense
