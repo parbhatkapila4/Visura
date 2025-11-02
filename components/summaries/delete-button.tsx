@@ -29,23 +29,31 @@ export default function DeleteButton({
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
+      console.log("Deleting summary:", summaryId);
+      
       const response = await fetch(`/api/summaries/${summaryId}`, {
         method: "DELETE",
       });
 
-      if (response.ok) {
-        toast.success("Summary deleted successfully");
-        setIsOpen(false);
-        onDelete?.(summaryId);
-      } else {
+      console.log("Delete response status:", response.status);
+
+      if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        const errorMessage =
-          errorData.message || `Failed to delete summary (${response.status})`;
-        throw new Error(errorMessage);
+        console.error("Delete failed:", errorData);
+        throw new Error(errorData.error || errorData.message || `Failed to delete (${response.status})`);
       }
+
+      toast.success("Summary deleted successfully");
+      setIsOpen(false);
+      
+      if (onDelete) {
+        onDelete(summaryId);
+      }
+      
+      window.location.reload();
     } catch (error) {
       console.error("Delete error:", error);
-      toast.error("Failed to delete summary");
+      toast.error(error instanceof Error ? error.message : "Failed to delete summary");
     } finally {
       setIsDeleting(false);
     }

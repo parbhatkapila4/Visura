@@ -4,7 +4,7 @@ import { removeSummary } from "@/lib/summaries";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -13,6 +13,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const params = await props.params;
     const { id } = params;
 
     if (!id) {
