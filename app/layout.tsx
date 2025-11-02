@@ -46,7 +46,7 @@ export default function RootLayout({
             >
           {/* Fixed black background to prevent light gradient showing on long scrolls */}
           <div className="fixed inset-0 bg-black -z-10" />
-          <div className="relative w-full flex flex-col min-h-screen bg-black antialiased bg-grid-white/[0.02] overflow-hidden">
+          <div className="relative w-full flex flex-col min-h-screen bg-black antialiased overflow-hidden">
             <Spotlight />
             <Header />
             <main className="flex-1 w-full relative z-10"> {children}</main>

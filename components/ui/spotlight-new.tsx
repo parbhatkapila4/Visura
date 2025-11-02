@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { motion } from "motion/react";
+import { usePathname } from "next/navigation";
 
 type SpotlightProps = {
   gradientFirst?: string;
@@ -25,6 +26,13 @@ export const Spotlight = ({
   duration = 7,
   xOffset = 100,
 }: SpotlightProps = {}) => {
+  const pathname = usePathname();
+  
+  // Don't render on features page
+  if (pathname === '/features') {
+    return null;
+  }
+  
   return (
     <motion.div
       initial={{
