@@ -14,6 +14,9 @@ import {
   MoreVertical,
   Trash2,
   Sparkles,
+  Brain,
+  FileText,
+  Search,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -56,6 +59,8 @@ export default function ChatbotClient({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isSendingRef = useRef(false);
+  const lastSentMessageRef = useRef<{text: string, timestamp: number} | null>(null);
 
   useEffect(() => {
     loadSessions();
@@ -116,8 +121,28 @@ export default function ChatbotClient({
     }
   };
 
-  const createNewSession = async (): Promise<string | null> => {
+  const generateSessionName = (message: string): string => {
+    // Extract meaningful words, limit length
+    const cleanMessage = message
+      .replace(/[?!.,]/g, '')
+      .trim()
+      .split(' ')
+      .filter(word => word.length > 2) // Skip short words like "me", "my", "the"
+      .slice(0, 4) // Take first 4 meaningful words
+      .join(' ');
+    
+    // Limit to 35 characters
+    return cleanMessage.length > 35 
+      ? cleanMessage.substring(0, 32) + '...' 
+      : cleanMessage || `Chat ${sessions.length + 1}`;
+  };
+
+  const createNewSession = async (firstMessage?: string): Promise<string | null> => {
     try {
+      const sessionName = firstMessage 
+        ? generateSessionName(firstMessage)
+        : `Chat ${sessions.length + 1}`;
+        
       const response = await fetch("/api/chatbot/sessions", {
         method: "POST",
         headers: {
@@ -125,7 +150,7 @@ export default function ChatbotClient({
         },
         body: JSON.stringify({
           pdfStoreId,
-          sessionName: `Chat ${sessions.length + 1}`,
+          sessionName: sessionName,
         }),
       });
 
@@ -149,19 +174,36 @@ export default function ChatbotClient({
     }
   };
 
-  const sendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return;
+  const sendMessage = async (messageOverride?: string) => {
+    const messageToSend = messageOverride || inputMessage;
+    if (!messageToSend.trim() || isLoading || isSendingRef.current) return;
+
+    // Prevent duplicate sends within 1 second
+    const now = Date.now();
+    if (lastSentMessageRef.current && 
+        lastSentMessageRef.current.text === messageToSend.trim() && 
+        now - lastSentMessageRef.current.timestamp < 1000) {
+      console.log("Blocking duplicate message send");
+      return;
+    }
+
+    // Track this message
+    lastSentMessageRef.current = { text: messageToSend.trim(), timestamp: now };
+    
+    // Prevent duplicate sends
+    isSendingRef.current = true;
 
     let activeSessionId = currentSessionId;
 
     if (!activeSessionId) {
-      activeSessionId = await createNewSession();
+      activeSessionId = await createNewSession(messageToSend);
       if (!activeSessionId) {
+        isSendingRef.current = false;
         return;
       }
     }
 
-    const messageText = inputMessage.trim();
+    const messageText = messageToSend.trim();
     setInputMessage("");
     setIsLoading(true);
 
@@ -194,6 +236,7 @@ export default function ChatbotClient({
       console.error("Error sending message:", error);
     } finally {
       setIsLoading(false);
+      isSendingRef.current = false;
     }
   };
 
@@ -227,7 +270,7 @@ export default function ChatbotClient({
   const currentSession = sessions.find((s) => s.id === currentSessionId);
 
   return (
-    <div className="flex h-full gap-4 lg:gap-6 overflow-hidden">
+    <div className="flex h-full gap-4 lg:gap-6">
       {/* Left Sidebar - Chat Sessions */}
       <div className="w-full lg:w-80 flex-shrink-0">
         <div className="h-full bg-gradient-to-br from-black via-gray-900 to-black rounded-2xl lg:rounded-3xl border border-orange-500/20 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden relative">
@@ -248,7 +291,7 @@ export default function ChatbotClient({
             </div>
             <Button
               size="sm"
-              onClick={createNewSession}
+              onClick={() => createNewSession()}
               className="h-9 w-9 p-0 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-500 rounded-xl shadow-lg shadow-orange-500/30 transition-all"
             >
               <Plus className="w-4 h-4 text-white" />
@@ -328,7 +371,7 @@ export default function ChatbotClient({
       </div>
 
       {/* Right Main Chat Area */}
-      <div className="flex-1 min-w-0 h-full overflow-hidden">
+      <div className="flex-1 min-w-0">
         <div className="h-full bg-gradient-to-br from-black via-gray-900 to-black rounded-2xl lg:rounded-3xl border border-orange-500/20 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden relative">
           {/* Radial gradient overlay for depth */}
           <div className="absolute inset-0 rounded-2xl lg:rounded-3xl pointer-events-none" style={{
@@ -458,7 +501,7 @@ export default function ChatbotClient({
                     />
                   </div>
                   <Button
-                    onClick={sendMessage}
+                    onClick={() => sendMessage()}
                     disabled={!inputMessage.trim() || isLoading}
                     className="h-12 w-12 p-0 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-500 rounded-xl disabled:opacity-50 shadow-lg shadow-orange-500/30 transition-all"
                   >
@@ -479,73 +522,104 @@ export default function ChatbotClient({
                   </h2>
                 </div>
 
-                {/* Input Area with Glossy Glass Effect */}
-                <div className="relative w-full bg-gradient-to-br from-gray-900/85 via-black/60 to-gray-900/85 backdrop-blur-xl border border-orange-500/35 rounded-3xl p-5 sm:p-6 lg:p-8 shadow-[0_25px_60px_-25px_rgba(249,115,22,0.45)] overflow-hidden">
+                {/* Input Area with Enhanced UI */}
+                <div className="relative w-full bg-gradient-to-br from-gray-900/90 via-black/70 to-gray-900/90 backdrop-blur-2xl border-2 border-orange-500/40 rounded-3xl p-8 shadow-[0_30px_80px_-20px_rgba(249,115,22,0.5)] overflow-hidden">
                   {/* Glossy shine overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/12 via-transparent to-transparent rounded-3xl pointer-events-none"></div>
-                  {/* Orange glow accent */}
-                  <div className="absolute inset-0 rounded-3xl" style={{
-                    background: 'radial-gradient(circle at 25% 20%, rgba(249, 115, 22, 0.18) 0%, transparent 55%)'
-                  }}></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-transparent rounded-3xl pointer-events-none"></div>
                   
-                  <div className="relative z-10 flex flex-col gap-4 sm:gap-5">
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                      <div className="flex items-center justify-center w-full sm:w-auto h-12 sm:h-14 rounded-xl bg-[#f97316] shadow-lg shadow-orange-500/40 border border-white/10">
-                        <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 backdrop-blur-md">
-                          <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  {/* Orange glow accent - top left */}
+                  <div className="absolute top-0 left-0 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                  
+                  {/* Orange glow accent - bottom right */}
+                  <div className="absolute bottom-0 right-0 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+                  
+                  <div className="relative z-10 flex flex-col gap-6">
+                    {/* Input Row */}
+                    <div className="flex items-center gap-4">
+                      {/* AI Icon Button */}
+                      <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 shadow-2xl shadow-orange-500/50 border border-orange-400/30 hover:scale-105 transition-transform cursor-pointer">
+                        <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-md">
+                          <Sparkles className="w-7 h-7 text-white drop-shadow-lg" />
                         </div>
                       </div>
+                      
+                      {/* Input Field */}
                       <Input
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="Initiate a query or send a command to the AI..."
-                        className="flex-1 h-12 sm:h-14 bg-black/30 backdrop-blur-sm border border-gray-700/50 rounded-xl text-white placeholder:text-gray-400 focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 text-sm sm:text-base"
+                        className="flex-1 h-16 px-6 bg-gradient-to-r from-black/40 via-gray-900/50 to-black/40 backdrop-blur-md border-2 border-gray-700/60 rounded-2xl text-white text-base placeholder:text-gray-400 focus:border-orange-500/60 focus:ring-4 focus:ring-orange-500/25 shadow-inner transition-all"
                       />
+                      
+                      {/* Send Button */}
                       <Button
-                        onClick={sendMessage}
+                        onClick={() => sendMessage()}
                         disabled={!inputMessage.trim() || isLoading}
-                        className="h-12 sm:h-14 w-full sm:w-14 p-0 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-500 rounded-xl disabled:opacity-50 shadow-lg shadow-orange-500/30 transition-all"
+                        className="h-16 w-16 p-0 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 hover:from-orange-400 hover:via-orange-500 hover:to-orange-400 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed shadow-2xl shadow-orange-500/40 hover:shadow-orange-500/60 transition-all hover:scale-105 active:scale-95 border border-orange-400/30"
                       >
-                        <Send className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                        <Send className="w-6 h-6 text-white drop-shadow-lg" />
                       </Button>
                     </div>
 
-                    <div className="space-y-2">
-                      <p className="text-xs sm:text-sm uppercase tracking-[0.35em] text-orange-400/80">
+                    {/* Quick Actions Section */}
+                    <div className="space-y-3">
+                      <p className="text-xs uppercase tracking-wide text-orange-400/80 text-center">
                         Quick Actions
                       </p>
-                      <div className="flex flex-wrap justify-center gap-2.5 sm:gap-3.5">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setInputMessage("Help me reason through this document")}
-                          className="rounded-full border-orange-500/30 bg-gradient-to-r from-black/60 via-gray-900/40 to-black/60 text-gray-300 hover:from-orange-500/20 hover:via-gray-900/60 hover:to-orange-500/20 hover:text-white hover:border-orange-500/50 text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 sm:py-2 backdrop-blur-sm transition-all"
+                      
+                      <div className="flex justify-center gap-3">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (!isLoading && !isSendingRef.current) {
+                              sendMessage("Help me reason through this document");
+                            }
+                          }}
+                          disabled={isLoading}
+                          className="flex items-center gap-2 px-4 py-2 rounded-full border border-orange-500/30 bg-black/60 text-gray-300 hover:text-white hover:border-orange-500/50 text-sm backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                          <Brain className="w-4 h-4" />
                           Reasoning
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setInputMessage("Create an illustrative image for this document")}
-                          className="rounded-full border-orange-500/30 bg-gradient-to-r from-black/60 via-gray-900/40 to-black/60 text-gray-300 hover:from-orange-500/20 hover:via-gray-900/60 hover:to-orange-500/20 hover:text-white hover:border-orange-500/50 text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 sm:py-2 backdrop-blur-sm transition-all"
+                        </button>
+                        
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (!isLoading && !isSendingRef.current) {
+                              sendMessage("Summarize the key points from this document");
+                            }
+                          }}
+                          disabled={isLoading}
+                          className="flex items-center gap-2 px-4 py-2 rounded-full border border-orange-500/30 bg-black/60 text-gray-300 hover:text-white hover:border-orange-500/50 text-sm backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                          Create Image
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setInputMessage("Do deep research on the key topics in this document")}
-                          className="rounded-full border-orange-500/30 bg-gradient-to-r from-black/60 via-gray-900/40 to-black/60 text-gray-300 hover:from-orange-500/20 hover:via-gray-900/60 hover:to-orange-500/20 hover:text-white hover:border-orange-500/50 text-xs sm:text-sm px-3.5 sm:px-4 py-1.5 sm:py-2 backdrop-blur-sm transition-all"
+                          <FileText className="w-4 h-4" />
+                          Summarize Key Points
+                        </button>
+                        
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (!isLoading && !isSendingRef.current) {
+                              sendMessage("Do deep research on the key topics in this document");
+                            }
+                          }}
+                          disabled={isLoading}
+                          className="flex items-center gap-2 px-4 py-2 rounded-full border border-orange-500/30 bg-black/60 text-gray-300 hover:text-white hover:border-orange-500/50 text-sm backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                          <Search className="w-4 h-4" />
                           Deep Research
-                        </Button>
+                        </button>
                       </div>
+                      
                       <div className="flex justify-end">
-                        <span className="text-[10px] sm:text-xs uppercase tracking-[0.35em] text-orange-300/70">
+                        <span className="text-xs uppercase tracking-wide text-orange-300/70">
                           Under Building
                         </span>
                       </div>
