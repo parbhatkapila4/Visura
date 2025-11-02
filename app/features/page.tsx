@@ -130,9 +130,7 @@ export default function FeaturesPage() {
       <div className="fixed inset-0 bg-white" style={{ zIndex: -999 }} />
       <div className="fixed inset-0 bg-black opacity-0 pointer-events-none" style={{ zIndex: 50 }} />
       
-      {/* Header */}
       <div className="bg-black text-white py-12 sm:py-16 lg:py-20 relative z-10 overflow-hidden">
-        {/* Block patterns in header */}
         <div className="absolute inset-0 bg-black -z-10" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <Link 

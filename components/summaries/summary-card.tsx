@@ -177,7 +177,6 @@ export default function SummaryCard({
 
   return (
     <div className="relative h-full group">
-      {/* floating deletion control */}
       <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
         <DeleteButton summaryId={summary.id} onDelete={onDelete} />
       </div>

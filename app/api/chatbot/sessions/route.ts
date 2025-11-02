@@ -6,6 +6,8 @@ import {
   updateQASessionName,
   deleteQASession,
 } from "@/lib/chatbot";
+import { CreateSessionSchema, DeleteSessionSchema } from "@/lib/validators";
+import { ZodError } from "zod";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,14 +16,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { pdfStoreId, sessionName } = await request.json();
-
-    if (!pdfStoreId) {
-      return NextResponse.json(
-        { error: "PDF Store ID is required" },
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
+    const { pdfStoreId, sessionName } = CreateSessionSchema.parse(body);
 
     const session = await createQASession({
       pdfStoreId,
@@ -32,6 +28,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ session }, { status: 201 });
   } catch (error) {
     console.error("Error creating QA session:", error);
+    
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: "Invalid request data", details: error.errors },
+        { status: 400 }
+      );
+    }
+    
     return NextResponse.json(
       { error: "Failed to create session" },
       { status: 500 }
@@ -107,14 +111,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const sessionId = searchParams.get("sessionId");
-
-    if (!sessionId) {
-      return NextResponse.json(
-        { error: "Session ID is required" },
-        { status: 400 }
-      );
-    }
+    const sessionIdParam = searchParams.get("sessionId");
+    
+    const { sessionId } = DeleteSessionSchema.parse({ sessionId: sessionIdParam });
 
     await deleteQASession(sessionId, userId);
     return NextResponse.json({ success: true });

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { saveQAMessage, getQAMessagesBySession } from "@/lib/chatbot";
 import { generateChatbotResponse } from "@/lib/chatbot-ai";
+import { SendMessageSchema, GetMessagesSchema } from "@/lib/validators";
+import { chatbotRateLimit, checkRateLimit, trackRateLimitHit } from "@/lib/rate-limit";
+import { ZodError } from "zod";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,14 +13,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { sessionId, message } = await request.json();
-
-    if (!sessionId || !message) {
-      return NextResponse.json(
-        { error: "Session ID and message are required" },
-        { status: 400 }
-      );
+    // Check rate limit
+    const rateLimitCheck = await checkRateLimit(chatbotRateLimit, userId);
+    if (!rateLimitCheck.allowed) {
+      trackRateLimitHit('/api/chatbot/messages', userId);
+      return rateLimitCheck.response;
     }
+
+    const body = await request.json();
+    
+    // Validate input with Zod
+    const validatedData = SendMessageSchema.parse(body);
+    const { sessionId, message } = validatedData;
 
     const userMessage = await saveQAMessage({
       sessionId,
@@ -43,6 +50,19 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error processing chatbot message:", error);
+    
+    // Handle validation errors
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { 
+          error: "Invalid request data",
+          details: error.errors.map(e => `${e.path.join('.')}: ${e.message}`)
+        },
+        { status: 400 }
+      );
+    }
+    
+    // Handle other errors
     return NextResponse.json(
       { error: "Failed to process message" },
       { status: 500 }
@@ -58,7 +78,10 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const sessionId = searchParams.get("sessionId");
+    const sessionIdParam = searchParams.get("sessionId");
+    
+    // Validate query parameters
+    const { sessionId } = GetMessagesSchema.parse({ sessionId: sessionIdParam });
 
     if (!sessionId) {
       return NextResponse.json(

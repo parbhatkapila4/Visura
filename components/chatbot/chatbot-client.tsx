@@ -63,15 +63,37 @@ export default function ChatbotClient({
   const lastSentMessageRef = useRef<{text: string, timestamp: number} | null>(null);
 
   useEffect(() => {
-    loadSessions();
+    let mounted = true;
+    
+    const loadData = async () => {
+      if (mounted) {
+        await loadSessions();
+      }
+    };
+    
+    loadData();
+    
+    return () => {
+      mounted = false;
+    };
   }, [pdfStoreId]);
 
   useEffect(() => {
-    if (currentSessionId) {
-      loadMessages(currentSessionId);
-    } else {
-      setMessages([]);
-    }
+    let mounted = true;
+    
+    const loadData = async () => {
+      if (currentSessionId && mounted) {
+        await loadMessages(currentSessionId);
+      } else if (mounted) {
+        setMessages([]);
+      }
+    };
+    
+    loadData();
+    
+    return () => {
+      mounted = false;
+    };
   }, [currentSessionId]);
 
   useEffect(() => {
@@ -178,7 +200,6 @@ export default function ChatbotClient({
     const messageToSend = messageOverride || inputMessage;
     if (!messageToSend.trim() || isLoading || isSendingRef.current) return;
 
-    // Prevent duplicate sends within 1 second
     const now = Date.now();
     if (lastSentMessageRef.current && 
         lastSentMessageRef.current.text === messageToSend.trim() && 
@@ -187,7 +208,6 @@ export default function ChatbotClient({
       return;
     }
 
-    // Track this message
     lastSentMessageRef.current = { text: messageToSend.trim(), timestamp: now };
     
     // Prevent duplicate sends
@@ -524,14 +544,9 @@ export default function ChatbotClient({
 
                 {/* Input Area with Enhanced UI */}
                 <div className="relative w-full bg-gradient-to-br from-gray-900/90 via-black/70 to-gray-900/90 backdrop-blur-2xl border border-orange-500/30 sm:border-2 sm:border-orange-500/40 rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 lg:p-8 shadow-[0_20px_60px_-15px_rgba(249,115,22,0.4)] sm:shadow-[0_30px_80px_-20px_rgba(249,115,22,0.5)] overflow-hidden">
-                  {/* Glossy shine overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 sm:from-white/15 via-transparent to-transparent rounded-2xl sm:rounded-3xl pointer-events-none"></div>
-                  
-                  {/* Orange glow accent - top left */}
-                  <div className="absolute top-0 left-0 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-orange-500/15 sm:bg-orange-500/20 rounded-full blur-3xl pointer-events-none"></div>
-                  
-                  {/* Orange glow accent - bottom right */}
-                  <div className="absolute bottom-0 right-0 w-40 h-40 sm:w-60 sm:h-60 md:w-80 md:h-80 bg-amber-500/10 sm:bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 sm:from-white/15 via-transparent to-transparent rounded-2xl sm:rounded-3xl pointer-events-none"></div>
+                    <div className="absolute top-0 left-0 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-orange-500/15 sm:bg-orange-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                    <div className="absolute bottom-0 right-0 w-40 h-40 sm:w-60 sm:h-60 md:w-80 md:h-80 bg-amber-500/10 sm:bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
                   
                   <div className="relative z-10 flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6">
                     {/* Input Row */}

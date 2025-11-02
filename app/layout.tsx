@@ -6,6 +6,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { Spotlight } from "@/components/ui/spotlight-new";
 import ConditionalFooter from "@/components/common/conditional-footer";
+import KeyboardShortcuts from "@/components/common/keyboard-shortcuts";
 
 const fontSans = FontSans({
   variable: "--font-sans",
@@ -44,13 +45,13 @@ export default function RootLayout({
             <body
               className={`${fontSans.variable} font-sans antialiased bg-black text-white overflow-x-hidden`}
             >
-          {/* Fixed black background to prevent light gradient showing on long scrolls */}
           <div className="fixed inset-0 bg-black -z-10" />
           <div className="relative w-full flex flex-col min-h-screen bg-black antialiased overflow-hidden">
             <Spotlight />
             <Header />
             <main className="flex-1 w-full relative z-10"> {children}</main>
             <ConditionalFooter />
+            <KeyboardShortcuts />
           </div>
           <Toaster />
         </body>
