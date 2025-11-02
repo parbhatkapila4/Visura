@@ -6,10 +6,10 @@ import {
   Hash,
   Lightbulb,
   MessageCircle,
-  Clock,
   Tag,
   ArrowRight,
   Eye,
+  Clock,
 } from "lucide-react";
 import { cn, formatFileName } from "@/lib/utils";
 import { useState } from "react";
@@ -51,15 +51,22 @@ const StatusBadge = ({ status }: { status: string }) => {
   return (
     <span
       className={cn(
-        "inline-flex h-8 items-center rounded-full px-3 text-xs font-medium border transition-colors duration-200 focus:outline-none ring-0 outline-none",
+        "inline-flex h-6 sm:h-7 md:h-8 items-center rounded-lg px-2.5 sm:px-3 md:px-3.5 text-[10px] sm:text-[11px] md:text-xs font-semibold transition-all duration-200 focus:outline-none ring-0 outline-none whitespace-nowrap shadow-sm",
         status === "Completed"
-          ? "bg-slate-800/70 text-slate-200 border-slate-700" // subtle neutral for completed
+          ? "bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border border-emerald-500/30 shadow-emerald-500/10"
           : status === "failed"
-          ? "bg-red-500/15 text-red-300 border-red-500/40"
-          : "bg-amber-500/15 text-amber-300 border-amber-500/30"
+          ? "bg-gradient-to-r from-red-500/20 to-rose-500/20 text-red-300 border border-red-500/40 shadow-red-500/10"
+          : "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-300 border border-amber-500/40 shadow-amber-500/10"
       )}
     >
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      <span className="relative flex items-center gap-1.5">
+        <span className={cn(
+          "w-1.5 h-1.5 rounded-full",
+          status === "Completed" ? "bg-emerald-400 animate-pulse" : 
+          status === "failed" ? "bg-red-400" : "bg-amber-400 animate-pulse"
+        )} />
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
     </span>
   );
 };
@@ -178,7 +185,7 @@ export default function SummaryCard({
       <Card
         className={`h-full ${getDocumentTypeColor(
           preview.documentType
-        )} border-gray-700/60 bg-gradient-to-br from-gray-900/80 via-black/80 to-gray-900/70 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-300 group-hover:scale-[1.015] border backdrop-blur-md cursor-pointer relative overflow-hidden rounded-2xl`}
+        )} border-gray-700/60 bg-gradient-to-br from-gray-900/80 via-black/80 to-gray-900/70 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-300 group-hover:scale-[1.015] border backdrop-blur-md cursor-pointer relative overflow-hidden rounded-xl sm:rounded-2xl`}
         onClick={() => {
           window.location.href = `/summaries/${summary.id}`;
         }}
@@ -188,25 +195,25 @@ export default function SummaryCard({
             <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-transparent blur-xl" />
           </div>
 
-          <div className="p-4 sm:p-6 h-full flex flex-col">
-            <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5">
-              <div className="text-2xl sm:text-3xl flex-shrink-0 select-none">
+          <div className="p-3 sm:p-4 md:p-5 lg:p-6 h-full flex flex-col">
+            <div className="flex items-start gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4 md:mb-5">
+              <div className="text-xl sm:text-2xl md:text-3xl flex-shrink-0 select-none">
                 {getDocumentTypeIcon(
                   preview.documentType,
                   summary.title || preview.title
                 )}
               </div>
               <div className="flex-1 min-w-0 overflow-hidden">
-                <h3 className="text-base sm:text-lg font-bold bg-gradient-to-r from-white via-orange-100 to-amber-100 bg-clip-text text-transparent mb-2 line-clamp-2 break-words">
+                <h3 className="text-sm sm:text-base md:text-lg font-bold bg-gradient-to-r from-white via-orange-100 to-amber-100 bg-clip-text text-transparent mb-1.5 sm:mb-2 line-clamp-2 break-words leading-tight">
                   {summary.title || preview.title}
                 </h3>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 text-xs sm:text-[13px] text-gray-300 min-w-0">
-                  <span className="inline-flex items-center gap-1.5 bg-gray-800/60 border border-gray-700/50 px-2 py-1 rounded-full min-w-0 max-w-[180px] sm:max-w-[260px]">
-                    <Tag className="w-3 h-3" />
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs md:text-[13px] text-gray-300 min-w-0">
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 bg-gray-800/60 border border-gray-700/50 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full min-w-0 max-w-[140px] sm:max-w-[180px] md:max-w-[260px]">
+                    <Tag className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
                     <span className="truncate font-medium">{preview.documentType}</span>
                   </span>
-                  <span className="inline-flex items-center gap-1.5 bg-gray-800/60 border border-gray-700/50 px-2 py-1 rounded-full">
-                    <Clock className="w-3 h-3" />
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 bg-gray-800/60 border border-gray-700/50 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
+                    <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
                     <span className="whitespace-nowrap">
                       {formatDistanceToNow(new Date(summary.created_at), {
                         addSuffix: true,
@@ -217,11 +224,11 @@ export default function SummaryCard({
               </div>
             </div>
 
-            <div className="flex-1 space-y-3 sm:space-y-4 min-h-0">
-              <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-xl p-3 sm:p-4 border border-gray-700/40 group-hover:border-orange-500/30 transition-all duration-300">
-                <div className="flex items-start gap-2 sm:gap-3">
-                  <Lightbulb className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs sm:text-sm text-gray-200 leading-relaxed line-clamp-3 break-words overflow-hidden">
+            <div className="flex-1 space-y-2 sm:space-y-3 md:space-y-4 min-h-0">
+              <div className="bg-gradient-to-br from-gray-800/60 to-gray-900/60 rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 border border-gray-700/40 group-hover:border-orange-500/30 transition-all duration-300">
+                <div className="flex items-start gap-1.5 sm:gap-2 md:gap-3">
+                  <Lightbulb className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-[11px] sm:text-xs md:text-sm text-gray-200 leading-relaxed line-clamp-3 break-words overflow-hidden">
                     {preview.executiveSummary === "Summary not available" ||
                     preview.executiveSummary === "No summary available"
                       ? "Summary is being processed. Please check back in a few moments or click View to see the full document."
@@ -230,41 +237,41 @@ export default function SummaryCard({
                 </div>
               </div>
 
-              <div className="space-y-2 sm:space-y-3">
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-400 font-semibold">
-                  <Hash className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+              <div className="space-y-1.5 sm:space-y-2 md:space-y-3">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs md:text-sm text-gray-400 font-semibold">
+                  <Hash className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 flex-shrink-0" />
                   <span>Key Insights</span>
                 </div>
                 {preview.keyPoints.length > 0 ? (
-                  <div className="space-y-1.5 sm:space-y-2">
+                  <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
                     {preview.keyPoints.slice(0, 2).map((point, index) => (
                       <div
                         key={index}
-                        className="flex items-start gap-2 sm:gap-3 text-xs sm:text-sm text-gray-300 min-w-0"
+                        className="flex items-start gap-1.5 sm:gap-2 md:gap-3 text-[11px] sm:text-xs md:text-sm text-gray-300 min-w-0"
                       >
-                        <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-gradient-to-r from-orange-400 to-amber-400 rounded-full mt-1.5 sm:mt-2 flex-shrink-0" />
+                        <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-gradient-to-r from-orange-400 to-amber-400 rounded-full mt-1 sm:mt-1.5 md:mt-2 flex-shrink-0" />
                         <span className="line-clamp-1 break-words overflow-hidden">
                           {point}
                         </span>
                       </div>
                     ))}
                     {preview.keyPoints.length > 2 && (
-                      <div className="text-xs sm:text-sm text-gray-500 italic">
+                      <div className="text-[11px] sm:text-xs md:text-sm text-gray-500 italic">
                         +{preview.keyPoints.length - 2} more insights...
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="text-xs sm:text-sm text-gray-500 italic">
+                  <div className="text-[11px] sm:text-xs md:text-sm text-gray-500 italic">
                     Key insights will be available once processing is complete.
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-700/40">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
-                {/* Left: status + read time chips */}
+            <div className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 pt-2.5 sm:pt-3 md:pt-4 border-t border-gray-700/40">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-2.5 md:gap-3">
+                {/* Left: status badge */}
                 <div className="flex items-center gap-2 min-w-0">
                   {statusToShow === "failed" ? (
                     <button
@@ -280,43 +287,34 @@ export default function SummaryCard({
                   ) : (
                     <StatusBadge status={statusToShow} />
                   )}
-                  <span className="inline-flex h-8 sm:h-8 items-center gap-1.5 px-4 sm:px-4 rounded-full bg-transparent border border-slate-600/70 text-xs sm:text-xs text-slate-200 leading-none">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span className="whitespace-nowrap">
-                      {Math.ceil((summary.summary_text?.length || 0) / 200)} min read
-                    </span>
-                  </span>
                 </div>
 
                 {/* Right: actions */}
-                <div className="flex items-center gap-2 sm:gap-1.5">
+                <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 sm:h-8 px-4 sm:px-4 py-2 sm:py-2 text-xs font-medium rounded-full transition-all duration-200 hover:scale-[1.03] border-slate-600/70 text-slate-200 hover:bg-slate-700/70 hover:text-white"
+                    className="group relative h-7 sm:h-8 md:h-8 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold rounded-lg transition-all duration-300 border-slate-600/50 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 hover:border-slate-500/70 hover:text-white hover:scale-[1.02] hover:shadow-lg hover:shadow-slate-500/20 backdrop-blur-sm overflow-hidden"
                     onClick={(e) => {
                       e.stopPropagation();
                       window.location.href = `/summaries/${summary.id}`;
                     }}
                   >
-                    <Eye className="w-3.5 h-3.5 mr-1" />
-                    View
+                    <span className="absolute inset-0 bg-gradient-to-r from-slate-500/0 via-slate-400/10 to-slate-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
+                    <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5 relative z-10 group-hover:scale-110 transition-transform" />
+                    <span className="relative z-10">View</span>
                   </Button>
                   <Button
                     size="sm"
-                    className="h-8 sm:h-8 px-4 sm:px-4 py-2 sm:py-2 text-xs font-semibold rounded-full transition-all duration-200 hover:scale-[1.03] bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white shadow-md hover:shadow-lg"
+                    className="group relative h-7 sm:h-8 md:h-8 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold rounded-lg transition-all duration-300 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 hover:from-orange-400 hover:via-orange-500 hover:to-amber-400 text-white shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 hover:scale-[1.02] border border-orange-400/20 overflow-hidden"
                     onClick={(e) => {
                       e.stopPropagation();
                       window.location.href = `/chatbot/${summary.id}`;
                     }}
                   >
-                    <span className="relative mr-1">
-                      <span className="absolute inset-0 rounded-full bg-white/40 blur-[3px] opacity-60"></span>
-                      <span className="relative inline-flex items-center justify-center w-4 h-4 rounded-full bg-gradient-to-br from-white/30 to-white/10 ring-1 ring-white/30">
-                        <MessageCircle className="w-2.5 h-2.5 text-white" />
-                      </span>
-                    </span>
-                    Chat
+                    <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
+                    <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5 relative z-10 group-hover:rotate-12 transition-transform" />
+                    <span className="relative z-10">Chat</span>
                   </Button>
                 </div>
               </div>
