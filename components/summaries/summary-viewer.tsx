@@ -1,7 +1,7 @@
 "use client";
 
 import { parseSection } from "@/utils/summary-helpers";
-import { BookOpen, Clock, ArrowRight, Sparkles, Zap, FileText } from "lucide-react";
+import { BookOpen, Clock, ArrowRight, Sparkles, Zap, FileText, AlertTriangle, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
@@ -220,6 +220,96 @@ const DarkContentSection = ({
 export default function SummaryViewer({ summary }: { summary: string }) {
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, margin: "-50px" });
+
+  const isErrorSummary = 
+    summary.toLowerCase().includes('extraction error') ||
+    summary.toLowerCase().includes('object.defineproperty') ||
+    summary.toLowerCase().includes('was unable to access') ||
+    summary.toLowerCase().includes('i apologize');
+
+  if (isErrorSummary) {
+    const errorMessage = summary.includes('Extraction Error:') 
+      ? summary.split('Extraction Error:')[1]?.split('\n')[0]?.trim() || 'Unknown error'
+      : 'Text extraction failed';
+
+    const isScanned = errorMessage.includes('scanned') || errorMessage.includes('no text layer');
+    const isEncrypted = errorMessage.includes('password') || errorMessage.includes('encrypted');
+    const isCorrupted = errorMessage.includes('corrupted');
+
+    return (
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-xl rounded-3xl border border-red-500/30 shadow-2xl p-8">
+          <div className="flex items-start gap-6">
+            <div className="flex-shrink-0">
+              <div className="w-16 h-16 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+                <AlertTriangle className="w-8 h-8 text-red-400" />
+              </div>
+            </div>
+            
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-white mb-3">
+                Processing Failed
+              </h2>
+              
+              <div className="space-y-4">
+                <p className="text-gray-300 leading-relaxed">
+                  {isScanned && "This appears to be a scanned document without a text layer."}
+                  {isEncrypted && "This PDF is password-protected and cannot be processed."}
+                  {isCorrupted && "This PDF file appears to be corrupted or damaged."}
+                  {!isScanned && !isEncrypted && !isCorrupted && "We couldn't extract text from this document."}
+                </p>
+
+                {isScanned && (
+                  <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
+                    <p className="text-sm text-orange-300 mb-2 font-semibold">
+                      💡 Scanned Document Detected
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      This PDF contains images rather than text. OCR (Optical Character Recognition) 
+                      support is coming soon to handle scanned documents.
+                    </p>
+                  </div>
+                )}
+
+                {isEncrypted && (
+                  <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                    <p className="text-sm text-blue-300 mb-2 font-semibold">
+                      🔒 Password Protection Detected
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      Please unlock the PDF and upload it again.
+                    </p>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t border-gray-800">
+                  <p className="text-xs text-gray-500">
+                    Error details: {errorMessage}
+                  </p>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => window.location.href = '/upload'}
+                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Try Another File
+                  </button>
+                  <button
+                    onClick={() => window.location.href = '/dashboard'}
+                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors"
+                  >
+                    Back to Dashboard
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const sections = summary
     .split("\n#")

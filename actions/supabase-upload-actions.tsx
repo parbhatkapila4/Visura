@@ -56,7 +56,9 @@ export async function generateFallbackSummary(
   fileUrl: string,
   errorMessage?: string
 ) {
-  console.log("Generating fallback summary for:", fileName);
+  console.log("⚠️ WARNING: Using fallback summary for:", fileName);
+  console.log("⚠️ This means text extraction failed!");
+  console.log("Error reason:", errorMessage);
 
   const fileExtension = fileName.toLowerCase();
   let documentType = "document";
@@ -123,51 +125,62 @@ Typical educational content that would be analyzed:
 `;
   }
 
-  const fallbackText = `Document Analysis: ${fileName}
+  const fallbackSummary = `# ${fileName}
 
-${possibleContent}**File Status:**
-The ${documentType} "${fileName}" was successfully uploaded to Supabase Storage${
-    errorMessage
-      ? `, but content extraction encountered an issue: ${errorMessage}`
-      : ""
-  }.
+## Document Upload Status
 
-**Upload Details:**
-• Storage: ✅ Supabase Storage (pdf bucket)
-• File Access: ✅ Available via secure URL
-• Processing: ⚠️ Using intelligent fallback analysis
+**📄 File Information:**
+- Filename: ${fileName}
+- Storage: Supabase Storage (pdf bucket)
+- Access: Secure URL available
+- Status: ⚠️ Text extraction failed
 
-**Next Steps:**
-1. The file is safely stored and accessible
-2. Manual review may provide additional insights
-3. Re-upload may resolve extraction issues if needed
+## Issue Encountered
 
-**Technical Note:**
-This analysis is generated using intelligent fallback processing when direct PDF text extraction is not available.`;
+The PDF file was uploaded successfully, but we couldn't extract readable text content. This typically happens with:
+
+- 🖼️ **Scanned documents** - PDFs created from scanned images
+- 🔒 **Password-protected files** - Encrypted PDFs
+- 📸 **Image-based PDFs** - Screenshots or photos saved as PDF
+${errorMessage ? `\n**Error:** ${errorMessage}` : ''}
+
+## Recommendations
+
+1. **If this is a scanned document:**
+   - OCR (Optical Character Recognition) support is in development
+   - Consider re-scanning with text recognition enabled
+   
+2. **If this is a normal PDF:**
+   - Try re-uploading the file
+   - Ensure the PDF is not corrupted
+   - Check if it's password-protected
+
+3. **Alternative:**
+   - Upload a different version of the document
+   - Use a text-based PDF instead of scanned images
+
+## Next Steps
+
+The file is safely stored and accessible. However, AI-powered features like summarization and chat will be limited without text content. Please try uploading a text-based PDF for full functionality.`;
 
   try {
-    const summary = await generateSummaryFromText(fallbackText);
-    console.log("Fallback summary generated successfully");
-
+    console.log("Returning direct fallback summary (not using AI)");
     return {
       success: true,
-      message:
-        "Document uploaded successfully. Used intelligent fallback analysis.",
+      message: "Document uploaded but text extraction failed. Using fallback summary.",
       data: {
-        summary,
+        summary: fallbackSummary,
         fileName,
         pdfUrl: fileUrl,
         fallbackUsed: true,
-        processingMethod: "intelligent-fallback",
+        processingMethod: "fallback-no-text",
       },
     };
   } catch (err) {
-    console.error("Error generating fallback summary:", err);
+    console.error("Error creating fallback summary:", err);
     return {
       success: false,
-      message: `Fallback processing error: ${
-        err instanceof Error ? err.message : "Unknown error"
-      }`,
+      message: `Error: ${err instanceof Error ? err.message : "Unknown error"}`,
       data: null,
     };
   }

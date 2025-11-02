@@ -1,7 +1,7 @@
 import { openrouterChatCompletion } from "@/lib/openrouter";
 import { getQASessionById, getQAMessagesBySession } from "./chatbot";
 
-const CHATBOT_SYSTEM_PROMPT = `You are a document assistant that helps users understand PDF content. Answer questions based on the document text only. If information isn't in the document, say so. Provide page references when possible. Keep responses clear and relevant to the document.`;
+const CHATBOT_SYSTEM_PROMPT = `You are a helpful document assistant. The user has uploaded a PDF and I will provide you with the FULL TEXT CONTENT of that document. Your job is to answer questions based ONLY on the text content I provide. The text is extracted and given to you directly - you DO have access to it. Answer questions naturally and helpfully. If something isn't in the provided text, say so.`;
 
 export async function generateChatbotResponse(
   sessionId: string,
@@ -14,6 +14,28 @@ export async function generateChatbotResponse(
       throw new Error("Session not found");
     }
 
+    const fullText = session.full_text_content || '';
+    const hasValidContent = fullText && 
+                           fullText.trim().length > 100 &&
+                           !fullText.toLowerCase().includes('extraction error') &&
+                           !fullText.toLowerCase().includes('object.defineproperty') &&
+                           !fullText.toLowerCase().includes('was unable to access');
+
+    if (!hasValidContent) {
+      return `I apologize, but this document doesn't have accessible text content. This usually happens with:
+
+📄 **Scanned documents** - PDFs created from scanned images
+🔒 **Encrypted files** - Password-protected PDFs  
+💥 **Corrupted files** - Damaged PDF files
+
+**What you can do:**
+• Upload a different version of the document
+• If it's a scanned PDF, OCR support is coming soon
+• For password-protected files, unlock them first and re-upload
+
+The file was uploaded successfully, but without text content, I can't answer questions about it. Please try uploading a text-based PDF.`;
+    }
+
     const messages = await getQAMessagesBySession(sessionId, userId);
 
     const conversationHistory = messages.map((msg) => ({
@@ -24,15 +46,15 @@ export async function generateChatbotResponse(
       content: msg.message_content,
     }));
 
-    const pdfContext = `
-PDF Document: ${session.title || session.file_name}
-Full Document Content:
-${session.full_text_content}
+    const pdfContext = `Here is the COMPLETE TEXT CONTENT from the PDF titled "${session.title || session.file_name}". This text was extracted and is provided to you directly:
 
-User's Question: ${userMessage}
+---START OF DOCUMENT TEXT---
+${fullText}
+---END OF DOCUMENT TEXT---
 
-Please answer the user's question based on the PDF content above. If the question cannot be answered from the document content, please let the user know.
-`;
+The user's question about this text is: ${userMessage}
+
+Answer their question based on the text content provided above.`;
 
     const aiMessages = [
       {

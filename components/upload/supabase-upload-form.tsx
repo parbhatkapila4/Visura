@@ -14,6 +14,12 @@ import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+declare global {
+  interface Window {
+    pdfjsLib: any;
+  }
+}
+
 const schema = z.object({
   file: z
     .instanceof(File, { message: "Invalid file" })
@@ -66,40 +72,30 @@ export default function SupabaseUploadForm({
         type: file.type
       });
 
-      const pdfjsLib = await import("pdfjs-dist");
-
-      // Try multiple worker sources
-      const workerSources = [
-        `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`,
-        `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`,
-        `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
-      ];
-
-      let workerSet = false;
-      for (const workerSrc of workerSources) {
-        try {
-          pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
-          workerSet = true;
-          console.log("Worker set successfully:", workerSrc);
-          break;
-        } catch (error) {
-          console.warn("Failed to set worker from:", workerSrc);
+      if (!window.pdfjsLib) {
+        console.log("Loading PDF.js from CDN...");
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+        
+        if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
+        
+        console.log("PDF.js loaded successfully");
       }
 
-      if (!workerSet) {
-        throw new Error("Could not set PDF.js worker");
-      }
-
+      const pdfjsLib = window.pdfjsLib;
       const arrayBuffer = await file.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
 
       console.log("Loading PDF document...");
       const loadingTask = pdfjsLib.getDocument({ 
-        data: uint8Array,
-        verbosity: 0, // Reduce console output
-        disableAutoFetch: false,
-        disableStream: false
+        data: arrayBuffer,
       });
       
       const pdf = await loadingTask.promise;
@@ -115,16 +111,20 @@ export default function SupabaseUploadForm({
           const textContent = await page.getTextContent();
 
           const pageText = textContent.items
-            .map((item: any) => item.str)
+            .filter((item: any) => item && typeof item === 'object' && 'str' in item)
+            .map((item: any) => {
+              const str = item.str;
+              return typeof str === 'string' ? str : String(str);
+            })
             .join(" ")
             .trim();
 
           if (pageText.length > 0) {
             pagesWithText++;
-            fullText += `Page ${pageNum}:\n${pageText}\n\n`;
-            console.log(`Page ${pageNum} extracted: ${pageText.length} characters`);
+            fullText += pageText + " ";
+            console.log(`Page ${pageNum}: ${pageText.length} chars`);
           } else {
-            console.log(`Page ${pageNum} has no extractable text`);
+            console.log(`Page ${pageNum}: No text`);
           }
         } catch (pageError) {
           console.error(`Error processing page ${pageNum}:`, pageError);
@@ -135,37 +135,28 @@ export default function SupabaseUploadForm({
       console.log(`Total extracted: ${fullText.length} characters`);
 
       if (fullText.trim().length === 0) {
-        throw new Error("No text content could be extracted from any page");
+        throw new Error("No text found in PDF - this may be a scanned/image-based document");
       }
 
       return fullText.trim();
-    } catch (error) {
+    } catch (error: any) {
       console.error("PDF text extraction failed:", error);
-      console.error("Error details:", {
-        name: error instanceof Error ? error.name : "Unknown",
-        message: error instanceof Error ? error.message : "Unknown error",
-        stack: error instanceof Error ? error.stack : undefined
-      });
 
-      // Return a more informative fallback
-      const fallbackText = `PDF Document: ${file.name}
+      let errorMessage = "Text extraction failed";
+      
+      if (error.message) {
+        if (error.message.includes('password') || error.message.includes('encrypted')) {
+          errorMessage = "PDF is password-protected";
+        } else if (error.message.includes('No text found')) {
+          errorMessage = "Scanned document detected - no text layer";
+        } else if (error.message.includes('Invalid PDF')) {
+          errorMessage = "PDF file appears to be corrupted";
+        } else {
+          errorMessage = error.message;
+        }
+      }
 
-File Information:
-- Size: ${Math.round(file.size / 1024)} KB
-- Type: ${file.type}
-- Last Modified: ${new Date(file.lastModified).toLocaleDateString()}
-
-Extraction Error: ${error instanceof Error ? error.message : "Unknown error"}
-
-Note: This PDF could not be processed for text extraction. This commonly happens with:
-- Image-based PDFs (scanned documents)
-- Password-protected or encrypted PDFs
-- PDFs with complex formatting
-- Corrupted PDF files
-
-The document has been uploaded successfully, but AI analysis and chatbot functionality will not be available.`;
-
-      return fallbackText;
+      throw new Error(`Extraction Error: ${errorMessage}`);
     }
   };
 
@@ -215,11 +206,54 @@ The document has been uploaded successfully, but AI analysis and chatbot functio
       description: "Extracting text and uploading to Supabase",
     });
 
+    let extractedText = "";
+    let hadExtractionError = false;
+    
     try {
       console.log("Step 1: Extracting text from PDF...");
-      const extractedText = await extractTextFromPDF(file);
-      console.log("Text extraction completed, length:", extractedText.length);
+      extractedText = await extractTextFromPDF(file);
+      console.log("✅ Text extraction completed, length:", extractedText.length);
+      console.log("First 300 characters:", extractedText.substring(0, 300));
+    } catch (extractError: any) {
+      console.error("❌ Extraction error:", extractError);
+      
+      const errorMsg = extractError.message || "Unknown extraction error";
+      
+      if (errorMsg.includes('password-protected')) {
+        toast.error("Password-Protected PDF", {
+          description: "This PDF is encrypted. Please unlock it and try again."
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      if (errorMsg.includes('corrupted')) {
+        toast.error("Corrupted PDF File", {
+          description: "This PDF file appears to be damaged. Please try a different file."
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      if (errorMsg.includes('Scanned document') || errorMsg.includes('No text found')) {
+        console.log("🖼️ Scanned PDF detected - will use fallback");
+        hadExtractionError = true;
+        toast.error("Scanned Document - Cannot Process", {
+          description: "This PDF has no text layer. OCR support coming soon. Upload failed."
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      console.error("⚠️ Unexpected extraction error:", errorMsg);
+      toast.error("Text Extraction Failed", {
+        description: errorMsg
+      });
+      setIsLoading(false);
+      return;
+    }
 
+    try {
       console.log("Step 2: Uploading to Supabase Storage...");
       const supabaseResult = await uploadToSupabase(file, user.id);
 
@@ -227,27 +261,31 @@ The document has been uploaded successfully, but AI analysis and chatbot functio
         throw new Error(supabaseResult.error || "Upload failed");
       }
 
-      console.log("Upload successful:", supabaseResult.data);
+      console.log("✅ Upload successful:", supabaseResult.data.fileName);
       toast.success("File uploaded successfully!", {
         description: "Generating AI summary...",
       });
 
       console.log("Step 3: Generating AI summary...");
-      let summaryResult;
-
-      if (extractedText && extractedText.length > 100) {
-        summaryResult = await generatePdfSummaryFromText(
-          extractedText,
-          supabaseResult.data.fileName,
-          supabaseResult.data.publicUrl
-        );
-      } else {
-        summaryResult = await generateFallbackSummary(
-          supabaseResult.data.fileName,
-          supabaseResult.data.publicUrl,
-          "Text extraction returned minimal content"
-        );
+      console.log("📊 Extracted text length:", extractedText.length);
+      console.log("📊 First 500 chars:", extractedText.substring(0, 500));
+      
+      if (!extractedText || extractedText.trim().length < 100) {
+        console.error("❌ CRITICAL: No text extracted! Length:", extractedText.length);
+        toast.error("Cannot Generate Summary", {
+          description: "No text content found in PDF. Please try a different file."
+        });
+        setIsLoading(false);
+        return;
       }
+      
+      console.log("✅ Using REAL PDF text for summary generation");
+      
+      const summaryResult = await generatePdfSummaryFromText(
+        extractedText,
+        supabaseResult.data.fileName,
+        supabaseResult.data.publicUrl
+      );
 
       if (summaryResult.success) {
         toast.success("PDF analysis complete!", {

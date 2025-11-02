@@ -18,7 +18,13 @@ export default async function SummaryPage(props: {
 
   const { title, summary_text, word_count } = summary;
 
-  const reading_time = Math.ceil((word_count || 0) / 200);
+  const isErrorSummary = 
+    summary_text.toLowerCase().includes('extraction error') ||
+    summary_text.toLowerCase().includes('object.defineproperty') ||
+    summary_text.toLowerCase().includes('was unable to access') ||
+    summary_text.toLowerCase().includes('i apologize');
+
+  const reading_time = isErrorSummary ? 1 : Math.ceil((word_count || 0) / 200);
 
   return (
     <div className="relative isolate min-h-screen bg-background">

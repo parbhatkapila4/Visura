@@ -84,7 +84,15 @@ export default function SummaryCard({
   // Derive a user-friendly status based on summary content when not provided
   const derivedStatus = (() => {
     const raw = (summary.summary_text || "").toLowerCase();
-    const hasError = raw.includes("error") || raw.includes("failed") || raw.includes("unable to") || raw.trim() === "";
+    const hasError = 
+      raw.includes("extraction error") || 
+      raw.includes("object.defineproperty") ||
+      raw.includes("was unable to access") ||
+      raw.includes("i apologize") ||
+      raw.includes("error") || 
+      raw.includes("failed") || 
+      raw.includes("unable to") || 
+      raw.trim() === "";
     const processing =
       preview.executiveSummary.includes("being processed") ||
       raw.includes("processing") ||
