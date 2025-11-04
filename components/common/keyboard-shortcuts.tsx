@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { X, Command, Upload, Home, FileText, MessageSquare, Search } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
+import { Command, Upload, Home, FileText } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,42 +11,52 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-const shortcuts = [
-  {
-    key: '/',
-    label: 'Search',
-    action: 'Open search',
-    icon: Search,
-  },
+interface Shortcut {
+  key: string;
+  label: string;
+  action: string;
+  icon: typeof Upload;
+  modifier: boolean;
+}
+
+const shortcuts: Shortcut[] = [
   {
     key: 'u',
     label: 'Upload',
     action: 'Go to upload page',
     icon: Upload,
+    modifier: true,
   },
   {
     key: 'd',
     label: 'Dashboard',
     action: 'Go to dashboard',
     icon: FileText,
+    modifier: true,
   },
   {
     key: 'h',
     label: 'Home',
     action: 'Go to homepage',
     icon: Home,
+    modifier: false,
   },
   {
     key: '?',
     label: 'Help',
     action: 'Show this dialog',
     icon: Command,
+    modifier: false,
   },
 ];
 
 export default function KeyboardShortcuts() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Hide on chatbot pages to avoid UI overlap
+  const isChatbotPage = pathname?.startsWith('/chatbot/');
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -59,10 +69,6 @@ export default function KeyboardShortcuts() {
       // Cmd/Ctrl key shortcuts
       if (e.metaKey || e.ctrlKey) {
         switch (e.key.toLowerCase()) {
-          case 'k':
-            e.preventDefault();
-            console.log('Search shortcut triggered');
-            break;
           case 'u':
             e.preventDefault();
             router.push('/upload');
@@ -70,10 +76,6 @@ export default function KeyboardShortcuts() {
           case 'd':
             e.preventDefault();
             router.push('/dashboard');
-            break;
-          case '/':
-            e.preventDefault();
-            setIsOpen(true);
             break;
         }
         return;
@@ -88,23 +90,9 @@ export default function KeyboardShortcuts() {
         case 'Escape':
           setIsOpen(false);
           break;
-        case 'u':
-          if (!e.metaKey && !e.ctrlKey) {
-            e.preventDefault();
-            router.push('/upload');
-          }
-          break;
-        case 'd':
-          if (!e.metaKey && !e.ctrlKey) {
-            e.preventDefault();
-            router.push('/dashboard');
-          }
-          break;
         case 'h':
-          if (!e.metaKey && !e.ctrlKey) {
-            e.preventDefault();
-            router.push('/');
-          }
+          e.preventDefault();
+          router.push('/');
           break;
       }
     };
@@ -115,17 +103,19 @@ export default function KeyboardShortcuts() {
 
   return (
     <>
-      {/* Help Button - Bottom Right */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full shadow-2xl shadow-orange-500/50 flex items-center justify-center transition-all hover:scale-110 active:scale-95 group"
-        aria-label="Keyboard shortcuts"
-      >
-        <Command className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-        <span className="absolute -top-10 right-0 bg-black/90 text-white text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-          Press ? for shortcuts
-        </span>
-      </button>
+      {/* Help Button - Bottom Right (Hidden on chatbot pages) */}
+      {!isChatbotPage && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 z-50 w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full shadow-2xl shadow-orange-500/50 flex items-center justify-center transition-all hover:scale-110 active:scale-95 group"
+          aria-label="Keyboard shortcuts"
+        >
+          <Command className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+          <span className="absolute -top-10 right-0 bg-black/90 text-white text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            Press ? for shortcuts
+          </span>
+        </button>
+      )}
 
       {/* Shortcuts Modal */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -157,7 +147,7 @@ export default function KeyboardShortcuts() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    {(shortcut.key === 'u' || shortcut.key === 'd' || shortcut.key === '/') && (
+                    {shortcut.modifier && (
                       <>
                         <kbd className="px-2 py-1 text-xs font-semibold text-gray-300 bg-gray-800 border border-gray-700 rounded">
                           Cmd
@@ -166,7 +156,7 @@ export default function KeyboardShortcuts() {
                       </>
                     )}
                     <kbd className="px-3 py-1 text-sm font-semibold text-gray-300 bg-gray-800 border border-gray-700 rounded min-w-[40px] text-center">
-                      {shortcut.key === '/' ? '/' : shortcut.key.toUpperCase()}
+                      {shortcut.key.toUpperCase()}
                     </kbd>
                   </div>
                 </div>
