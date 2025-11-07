@@ -1,6 +1,10 @@
 "use client";
 
-import CheckoutButton from "@/app/components/CheckoutButton";
+import CheckoutButton, {
+  AMOUNT_BY_CURRENCY,
+  SYMBOL,
+  useResolvedCurrency,
+} from "@/app/components/CheckoutButton";
 import BgGradient from "@/components/common/bg-gradient";
 import { ArrowLeft, Check, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { motion } from "framer-motion";
@@ -32,6 +36,10 @@ const planFeatures = [
 ];
 
 export default function Page() {
+  const { currency, loading } = useResolvedCurrency();
+  const displayAmount = AMOUNT_BY_CURRENCY[currency] ?? 20;
+  const symbol = SYMBOL[currency] ?? "$";
+
   return (
     <div className="relative h-screen overflow-hidden bg-[#070809] text-white">
       <BgGradient className="bg-gradient-to-br from-[#F97316]/70 via-transparent to-transparent" />
@@ -39,7 +47,7 @@ export default function Page() {
       <div className="pointer-events-none absolute inset-x-0 bottom-[-30%] h-[32rem] bg-[radial-gradient(circle_at_bottom,_rgba(253,186,116,0.18),_transparent_70%)]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#070809] via-[#070809]/95 to-transparent" />
 
-      <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-12 px-6 pb-20 pt-16">
+      <div className="relative mx-auto flex h-full w-full max-w-5xl flex-col gap-12 px-6 pb-20 pt-16">
         <div className="flex items-center justify-between text-sm text-white/60">
           <Link
             href="/"
@@ -49,7 +57,7 @@ export default function Page() {
             Back to home
           </Link>
           <span className="hidden rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/55 md:inline-flex">
-            Built with real founders since 2024
+            Trusted by bootstrapped teams shipping faster
           </span>
         </div>
 
@@ -59,17 +67,17 @@ export default function Page() {
           transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
           className="rounded-3xl border border-white/10 bg-[#101114]/95 p-10 shadow-[0_30px_80px_-40px_rgba(249,115,22,0.45)] backdrop-blur"
         >
-          <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="grid h-full gap-10 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="space-y-8">
               <div className="space-y-4">
                 <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#161719] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.35em] text-white/60">
                   Visura pro
                 </span>
                 <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-                  Elevate every document hand-off with operational clarity.
+                  Elevate every deliverable with operational clarity.
                 </h1>
                 <p className="max-w-xl text-base text-white/70">
-                  Visura Pro layers advanced summarisation, contextual search, and collaborative review into a single polished workspace. $20 per month keeps your team shipping briefs, decks, and compliance docs on schedule.
+                  Visura Pro layers advanced summarisation, contextual search, and collaborative review into a single polished workspace. Auto-detected currency keeps payments frictionless wherever you operate.
                 </p>
               </div>
 
@@ -89,34 +97,43 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="space-y-6 rounded-2xl border border-[#F97316]/40 bg-gradient-to-br from-[#141517] via-[#0c0d0f] to-[#141517] p-8 shadow-[0_25px_70px_-40px_rgba(249,115,22,0.6)]">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#F97316]/85">
-                  Pro plan
-                </p>
-                <div className="mt-3 flex items-end gap-2">
-                  <span className="text-5xl font-bold text-white">$20</span>
-                  <span className="pb-2 text-sm uppercase tracking-[0.35em] text-white/55">/ month</span>
+            <div className="flex flex-col justify-between rounded-2xl border border-[#F97316]/40 bg-gradient-to-br from-[#141517] via-[#0c0d0f] to-[#141517] p-8 shadow-[0_25px_70px_-40px_rgba(249,115,22,0.6)]">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#F97316]/85">
+                    Pro plan
+                  </p>
+                  <div className="mt-3 flex items-end gap-2">
+                    <span className="text-5xl font-bold text-white">
+                      {loading ? "—" : `${symbol}${displayAmount}`}
+                    </span>
+                    <span className="pb-2 text-sm uppercase tracking-[0.35em] text-white/55">
+                      / month
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs text-white/60">
+                    Currency finalised automatically by your location.
+                  </p>
                 </div>
-                <p className="mt-2 text-xs text-white/60">Secure Razorpay billing · Approx. ₹{20 * 88} per month</p>
+
+                <ul className="space-y-3 text-sm text-white/82">
+                  {planFeatures.map((item) => (
+                    <li key={item} className="flex items-start gap-2">
+                      <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#F97316]/25 text-[#F97316]">
+                        <Check className="h-3 w-3" />
+                      </span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
-              <ul className="space-y-3 text-sm text-white/82">
-                {planFeatures.map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#F97316]/25 text-[#F97316]">
-                      <Check className="h-3 w-3" />
-                    </span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <CheckoutButton amountInUSD={20} receiptId="rcpt_demo_001" />
-
-              <p className="text-[11px] text-white/55">
-                14-day satisfaction guarantee. Cancel any time from billing settings or email support for bespoke enterprise options.
-              </p>
+              <div className="space-y-3">
+                <CheckoutButton amount={displayAmount} />
+                <p className="text-[11px] text-white/55">
+                  14-day satisfaction guarantee. Cancel any time from billing settings or email support for bespoke enterprise options.
+                </p>
+              </div>
             </div>
           </div>
         </motion.div>

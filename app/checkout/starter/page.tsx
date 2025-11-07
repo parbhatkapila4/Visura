@@ -1,38 +1,57 @@
 "use client";
 
-import CheckoutButton from "@/app/components/CheckoutButton";
-import { ArrowLeft, Layers, Shield, Timer } from "lucide-react";
+import CheckoutButton, {
+  SYMBOL,
+  useResolvedCurrency,
+} from "@/app/components/CheckoutButton";
 import BgGradient from "@/components/common/bg-gradient";
+import { ArrowLeft, Layers, ShieldCheck, Timer } from "lucide-react";
 import Link from "next/link";
 
-const USD_TO_INR = 88;
+const starterHighlights = [
+  {
+    icon: Layers,
+    title: "Core feature set",
+    description: "Summaries, highlights, and exports for up to 50 documents a month.",
+  },
+  {
+    icon: Timer,
+    title: "Quick turnaround",
+    description: "90-second processing designed for solo operators and lean teams.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Security included",
+    description: "Clerk auth, encrypted storage, and dependable audit history out of the box.",
+  },
+];
+
+const STARTER_AMOUNT_BY_CURRENCY: Record<string, number> = {
+  INR: 880,
+  USD: 10,
+  EUR: 9,
+};
+
+const starterFeatures = [
+  "Up to 50 documents analysed monthly",
+  "AI summaries with smart highlight extraction",
+  "PDF & DOCX uploads plus shareable exports",
+  "Email support and standard processing speeds",
+];
 
 export default function StarterCheckoutPage() {
-  const highlights = [
-    {
-      icon: Layers,
-      title: "Essential feature set",
-      description: "Everything you need to summarise and share up to 50 docs each month.",
-    },
-    {
-      icon: Timer,
-      title: "Optimised turnaround",
-      description: "Get polished summaries in under two minutes—perfect for solo workflows.",
-    },
-    {
-      icon: Shield,
-      title: "Trusted security",
-      description: "Clerk auth, encrypted storage, and compliant audit trails included.",
-    },
-  ];
+  const { currency, loading } = useResolvedCurrency();
+  const displayAmount = STARTER_AMOUNT_BY_CURRENCY[currency] ?? 10;
+  const symbol = SYMBOL[currency] ?? "$";
 
   return (
-    <div className="relative min-h-[100svh] overflow-hidden bg-black text-white">
-      <BgGradient className="bg-gradient-to-br from-[#38bdf8] via-[#7C3AED] to-transparent opacity-35" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_60%)]" />
-      <div className="pointer-events-none absolute inset-y-16 right-0 hidden w-1/2 bg-[radial-gradient(circle_at_right,_rgba(56,189,248,0.28),_transparent_65%)] blur-3xl sm:block" />
+    <div className="relative min-h-screen bg-[#050810] text-white">
+      <BgGradient className="bg-gradient-to-br from-[#38bdf8]/60 via-transparent to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(56,189,248,0.18),_transparent_65%)]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-[-30%] h-[32rem] bg-[radial-gradient(circle_at_bottom,_rgba(59,130,246,0.2),_transparent_75%)]" />
+      <div className="pointer-events-none sticky top-0 z-10 h-16 bg-gradient-to-b from-[#050810] via-[#050810]/95 to-transparent" />
 
-      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-20 md:px-12">
+      <div className="relative mx-auto flex h-full w-full max-w-5xl flex-col gap-12 px-6 pb-20 pt-16">
         <div className="flex items-center justify-between text-sm text-white/60">
           <Link
             href="/"
@@ -41,93 +60,93 @@ export default function StarterCheckoutPage() {
             <ArrowLeft className="h-4 w-4" />
             Back to home
           </Link>
+          <span className="hidden rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/55 md:inline-flex">
+            Perfect for bootstrapped first hires
+          </span>
         </div>
 
-        <div className="grid items-start gap-12 lg:grid-cols-[1.3fr_1fr]">
-          <section className="space-y-10">
-            <div className="space-y-6">
-              <p className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm text-white/70 backdrop-blur">
-                <span className="inline-flex h-2 w-2 rounded-full bg-sky-400" />
-                Starter plan · solo & small teams
+        <div className="grid h-full gap-10 rounded-3xl border border-white/10 bg-[#0c1018]/95 p-10 shadow-[0_28px_70px_-40px_rgba(59,130,246,0.5)] backdrop-blur lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.35em] text-white/60">
+                Visura starter
+              </span>
+              <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+                Launch your document workflow in under an hour.
+              </h1>
+              <p className="max-w-xl text-base text-white/70">
+                Starter keeps founders and early hires organised with instant summaries, searchable insights,
+                and export-ready briefs. Scale without spreadsheets—or the enterprise price tag.
               </p>
-              <div className="space-y-4">
-                <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-                  Launch your document AI workflow in minutes.
-                </h1>
-                <p className="max-w-2xl text-lg text-white/70">
-                  Perfect for individuals discovering Visura, the Starter tier delivers powerful
-                  summaries, clean exports, and AI insights without the enterprise overhead.
-                  Pay once, get immediate access, and upgrade whenever you&apos;re ready.
-                </p>
-              </div>
             </div>
 
-            <dl className="grid gap-6 sm:grid-cols-3">
-              {highlights.map(({ icon: Icon, title, description }) => (
+            <div className="grid gap-4 sm:grid-cols-3">
+              {starterHighlights.map(({ icon: Icon, title, description }) => (
                 <div
                   key={title}
-                  className="group rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-sky-400/50 hover:bg-sky-400/10"
+                  className="rounded-2xl border border-white/10 bg-[#111722] p-5"
                 >
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400/40 to-[#7C3AED]/40 text-white">
-                    <Icon className="h-6 w-6" />
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#38bdf8]/45 via-[#22d3ee]/30 to-transparent text-white shadow-[0_12px_28px_rgba(56,189,248,0.3)]">
+                    <Icon className="h-5 w-5" />
                   </div>
-                  <dt className="text-base font-medium text-white">{title}</dt>
-                  <dd className="mt-2 text-sm text-white/70">{description}</dd>
+                  <h3 className="text-sm font-semibold text-white">{title}</h3>
+                  <p className="mt-1 text-xs text-white/70">{description}</p>
                 </div>
               ))}
-            </dl>
-          </section>
+            </div>
+          </div>
 
-          <aside className="rounded-4xl border border-sky-400/30 bg-white/[0.04] p-8 shadow-[0_0_60px_rgba(56,189,248,0.2)] backdrop-blur-xl">
-            <div className="mb-8 space-y-3">
-              <p className="text-sm uppercase tracking-[0.3em] text-sky-300/80">Starter Access</p>
-              <h2 className="text-4xl font-semibold text-white">$10</h2>
-              <p className="text-sm text-white/60">
-                Secure Razorpay checkout · Approx. ₹{10 * USD_TO_INR}
-              </p>
+          <div className="flex flex-col justify-between rounded-2xl border border-[#38bdf8]/40 bg-gradient-to-br from-[#101521] via-[#09111e] to-[#101521] p-8 shadow-[0_25px_70px_-40px_rgba(56,189,248,0.55)]">
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#38bdf8]/80">
+                  Starter plan
+                </p>
+                <div className="mt-3 flex items-end gap-2">
+                  <span className="text-5xl font-bold text-white">
+                    {loading ? "—" : `${symbol}${displayAmount}`}
+                  </span>
+                  <span className="pb-2 text-sm uppercase tracking-[0.35em] text-white/55">
+                    / month
+                  </span>
+                </div>
+                <p className="mt-2 text-xs text-white/60">
+                  Currency finalised automatically by your location.
+                </p>
+              </div>
+
+              <ul className="space-y-3 text-sm text-white/82">
+                {starterFeatures.map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#38bdf8]/25 text-[#38bdf8]">
+                      •
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            <ul className="mb-10 space-y-4 text-sm text-white/80">
-              <li className="flex items-start gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-sky-400" />
-                Up to 50 documents analysed each month
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-sky-400" />
-                Core AI summaries with smart highlight extraction
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-sky-400" />
-                PDF & Word uploads plus shareable exports
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-sky-400" />
-                Email support & standard processing speeds
-              </li>
-            </ul>
-
-            <CheckoutButton amountInUSD={10} receiptId="rcpt_starter_demo_001" />
-
-            <p className="mt-6 text-xs text-white/50">
-              By continuing, you agree to the Terms of Service and understand that all
-              payments are processed securely via Razorpay. Upgrading to Professional is
-              seamless—your summaries and chat history stay intact.
-            </p>
-          </aside>
+            <div className="space-y-3">
+              <CheckoutButton amount={10} overrides={STARTER_AMOUNT_BY_CURRENCY} />
+              <p className="text-[11px] text-white/55">
+                14-day satisfaction guarantee. Upgrade to Professional whenever you need more power—your data stays in place.
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="flex flex-col gap-6 rounded-4xl border border-white/10 bg-gradient-to-r from-sky-500/20 via-transparent to-[#7C3AED]/10 p-10 backdrop-blur-xl md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-6 rounded-2xl border border-white/10 bg-gradient-to-r from-[#38bdf8]/25 via-transparent to-[#22d3ee]/20 p-10 backdrop-blur md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-white/50">Need more power?</p>
-            <h3 className="mt-3 text-2xl font-semibold">Upgrade to Visura Professional anytime</h3>
+            <p className="text-sm uppercase tracking-[0.3em] text-white/55">Need advanced workflows?</p>
+            <h3 className="mt-3 text-2xl font-semibold">Hop into Visura Professional when you&apos;re ready</h3>
             <p className="mt-2 max-w-xl text-sm text-white/70">
-              Unlock unlimited documents, collaboration spaces, and priority support with
-              the Professional tier. We pro-rate your payment so you never pay twice.
+              Unlock unlimited documents, collaboration spaces, API access, and priority onboarding. Upgrades are instant—no migration required.
             </p>
           </div>
           <Link
             href="/checkout"
-            className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-3 text-sm font-medium text-white transition hover:border-[#7C3AED]/60 hover:bg-[#7C3AED]/20"
+            className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-6 py-3 text-sm font-medium text-white transition hover:border-[#F97316]/60 hover:bg-[#F97316]/25"
           >
             Explore Professional
           </Link>
