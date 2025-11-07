@@ -1,38 +1,45 @@
 "use client";
 
 import CheckoutButton from "@/app/components/CheckoutButton";
-import { ArrowLeft, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import BgGradient from "@/components/common/bg-gradient";
+import { ArrowLeft, Check, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 
+const sellingPoints = [
+  {
+    icon: Sparkles,
+    title: "Smarter briefs",
+    copy: "AI-crafted summaries tuned for legal, research, and product teams.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Secure by design",
+    copy: "SOC2-ready controls with encrypted storage and audit trails.",
+  },
+  {
+    icon: Zap,
+    title: "Rapid execution",
+    copy: "Upload to actionable insight in under 45 seconds—every time.",
+  },
+];
+
+const planFeatures = [
+  "Unlimited AI summaries & reusable templates",
+  "Cross-document search with highlight exports",
+  "5 collaborator seats with comment histories",
+  "Priority human support & onboarding",
+];
+
 export default function Page() {
-  const highlights = [
-    {
-      icon: Sparkles,
-      title: "AI-powered insights",
-      description:
-        "Sharper summaries tailored to the way your team consumes information.",
-    },
-    {
-      icon: Zap,
-      title: "Lightning-fast delivery",
-      description:
-        "Upload documents and receive structured outputs in under 60 seconds.",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Enterprise-grade security",
-      description: "SOC2-ready architecture with role-based access and audit logs.",
-    },
-  ];
-
   return (
-    <div className="relative min-h-[100svh] overflow-hidden bg-black text-white">
-      <BgGradient className="bg-gradient-to-br from-[#F97316] via-[#7C3AED] to-transparent opacity-40" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(124,58,237,0.18),_transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-y-12 right-0 hidden w-1/2 bg-[radial-gradient(circle_at_right,_rgba(249,115,22,0.28),_transparent_60%)] blur-3xl sm:block" />
+    <div className="relative h-screen overflow-hidden bg-[#070809] text-white">
+      <BgGradient className="bg-gradient-to-br from-[#F97316]/70 via-transparent to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(249,115,22,0.18),_transparent_65%)]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-[-30%] h-[32rem] bg-[radial-gradient(circle_at_bottom,_rgba(253,186,116,0.18),_transparent_70%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#070809] via-[#070809]/95 to-transparent" />
 
-      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-20 md:px-12">
+      <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-12 px-6 pb-20 pt-16">
         <div className="flex items-center justify-between text-sm text-white/60">
           <Link
             href="/"
@@ -41,97 +48,78 @@ export default function Page() {
             <ArrowLeft className="h-4 w-4" />
             Back to home
           </Link>
+          <span className="hidden rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/55 md:inline-flex">
+            Built with real founders since 2024
+          </span>
         </div>
 
-        <div className="grid items-start gap-12 lg:grid-cols-[1.3fr_1fr]">
-          <section className="space-y-10">
-            <div className="space-y-6">
-              <p className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm text-white/70 backdrop-blur">
-                <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-                Instant access after payment
-              </p>
+        <motion.div
+          initial={{ opacity: 0, y: 22 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+          className="rounded-3xl border border-white/10 bg-[#101114]/95 p-10 shadow-[0_30px_80px_-40px_rgba(249,115,22,0.45)] backdrop-blur"
+        >
+          <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-8">
               <div className="space-y-4">
-                <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-                  One checkout away from effortless document intelligence.
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#161719] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.35em] text-white/60">
+                  Visura pro
+                </span>
+                <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+                  Elevate every document hand-off with operational clarity.
                 </h1>
-                <p className="max-w-2xl text-lg text-white/70">
-                  Visura Pro unlocks collaborative workspaces, advanced summarizers,
-                  contextual search, and 200+ file automations designed for legal, research,
-                  and product teams. Pay once, start transforming every document.
+                <p className="max-w-xl text-base text-white/70">
+                  Visura Pro layers advanced summarisation, contextual search, and collaborative review into a single polished workspace. $20 per month keeps your team shipping briefs, decks, and compliance docs on schedule.
                 </p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                {sellingPoints.map(({ icon: Icon, title, copy }) => (
+                  <div
+                    key={title}
+                    className="rounded-2xl border border-white/10 bg-[#161719] p-5"
+                  >
+                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#F97316]/45 via-[#FACC15]/30 to-transparent text-white shadow-[0_12px_28px_rgba(249,115,22,0.28)]">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-white">{title}</h3>
+                    <p className="mt-1 text-xs text-white/70">{copy}</p>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <dl className="grid gap-6 sm:grid-cols-3">
-              {highlights.map(({ icon: Icon, title, description }) => (
-                <div
-                  key={title}
-                  className="group rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-[#F97316]/50 hover:bg-[#F97316]/10"
-                >
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F97316]/50 to-[#7C3AED]/40 text-white">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <dt className="text-base font-medium text-white">{title}</dt>
-                  <dd className="mt-2 text-sm text-white/70">{description}</dd>
+            <div className="space-y-6 rounded-2xl border border-[#F97316]/40 bg-gradient-to-br from-[#141517] via-[#0c0d0f] to-[#141517] p-8 shadow-[0_25px_70px_-40px_rgba(249,115,22,0.6)]">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#F97316]/85">
+                  Pro plan
+                </p>
+                <div className="mt-3 flex items-end gap-2">
+                  <span className="text-5xl font-bold text-white">$20</span>
+                  <span className="pb-2 text-sm uppercase tracking-[0.35em] text-white/55">/ month</span>
                 </div>
-              ))}
-            </dl>
-          </section>
+                <p className="mt-2 text-xs text-white/60">Secure Razorpay billing · Approx. ₹{20 * 88} per month</p>
+              </div>
 
-          <aside className="rounded-4xl border border-[#F97316]/30 bg-white/[0.04] p-8 shadow-[0_0_60px_rgba(147,51,234,0.2)] backdrop-blur-xl">
-            <div className="mb-8 space-y-3">
-              <p className="text-sm uppercase tracking-[0.3em] text-[#F97316]/80">Pro Access</p>
-              <h2 className="text-4xl font-semibold text-white">$20</h2>
-              <p className="text-sm text-white/60">
-                Secure Razorpay checkout · Approx. ₹{20 * 88}
+              <ul className="space-y-3 text-sm text-white/82">
+                {planFeatures.map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#F97316]/25 text-[#F97316]">
+                      <Check className="h-3 w-3" />
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <CheckoutButton amountInUSD={20} receiptId="rcpt_demo_001" />
+
+              <p className="text-[11px] text-white/55">
+                14-day satisfaction guarantee. Cancel any time from billing settings or email support for bespoke enterprise options.
               </p>
             </div>
-
-            <ul className="mb-10 space-y-4 text-sm text-white/80">
-              <li className="flex items-start gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-[#F97316]" />
-                Unlimited AI summaries & smart highlights
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-[#F97316]" />
-                Export-ready briefs, compliance reports, and citations
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-[#F97316]" />
-                Collaboration seats for up to 5 team members
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-[#F97316]" />
-                Priority human support + onboarding workshop
-              </li>
-            </ul>
-
-            <CheckoutButton amountInUSD={20} receiptId="rcpt_demo_001" />
-
-            <p className="mt-6 text-xs text-white/50">
-              By continuing, you agree to the Terms of Service and understand that all
-              payments are processed securely via Razorpay. You can request a refund within
-              the first 14 days if Visura Pro isn&apos;t the right fit for your team.
-            </p>
-          </aside>
-        </div>
-
-        <div className="flex flex-col gap-6 rounded-4xl border border-white/10 bg-gradient-to-r from-[#7C3AED]/20 via-transparent to-[#F97316]/10 p-10 backdrop-blur-xl md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-white/50">Need a custom plan?</p>
-            <h3 className="mt-3 text-2xl font-semibold">Scale Visura across your org</h3>
-            <p className="mt-2 max-w-xl text-sm text-white/70">
-              Talk to our solutions engineers about compliance, private deployments, or
-              onboarding large document archives. We respond in under 24 hours.
-            </p>
           </div>
-          <a
-            href="mailto:parbhat@parbhat.dev?subject=Visura%20Enterprise%20Plan%20Inquiry&body=Hi%20Parbhat%2C%0A%0AI%E2%80%99d%20like%20to%20discuss%20upgrading%20to%20the%20Visura%20Enterprise%20plan.%20Please%20let%20me%20know%20the%20next%20steps.%0A%0AThanks!"
-            className="inline-flex items-center justify-center rounded-2xl border border-[#F97316]/50 bg-[#F97316]/15 px-6 py-3 text-sm font-medium text-white transition hover:border-[#F97316] hover:bg-[#F97316]/25"
-          >
-            Contact sales
-          </a>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
