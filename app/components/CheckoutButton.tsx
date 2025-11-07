@@ -6,7 +6,7 @@ declare global {
   }
 }
 
-const USD_TO_INR = 83;
+const USD_TO_INR = 88;
 
 export default function CheckoutButton({
   amountInUSD,

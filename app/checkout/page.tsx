@@ -83,7 +83,7 @@ export default function Page() {
               <p className="text-sm uppercase tracking-[0.3em] text-[#F97316]/80">Pro Access</p>
               <h2 className="text-4xl font-semibold text-white">$20</h2>
               <p className="text-sm text-white/60">
-                Secure Razorpay checkout · Approx. ₹{20 * 83}
+                Secure Razorpay checkout · Approx. ₹{20 * 88}
               </p>
             </div>
 
@@ -126,7 +126,7 @@ export default function Page() {
             </p>
           </div>
           <a
-            href="mailto:hello@visura.app"
+            href="mailto:parbhat@parbhat.dev?subject=Visura%20Enterprise%20Plan%20Inquiry&body=Hi%20Parbhat%2C%0A%0AI%E2%80%99d%20like%20to%20discuss%20upgrading%20to%20the%20Visura%20Enterprise%20plan.%20Please%20let%20me%20know%20the%20next%20steps.%0A%0AThanks!"
             className="inline-flex items-center justify-center rounded-2xl border border-[#F97316]/50 bg-[#F97316]/15 px-6 py-3 text-sm font-medium text-white transition hover:border-[#F97316] hover:bg-[#F97316]/25"
           >
             Contact sales

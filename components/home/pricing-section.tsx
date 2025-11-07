@@ -11,12 +11,14 @@ const WorkWithUsCard = ({
   description,
   period,
   index,
+  ctaHref,
 }: {
   name: string;
   price: string;
   description: string;
   period: string;
   index: number;
+  ctaHref: string;
 }) => {
   return (
     <motion.div
@@ -52,7 +54,14 @@ const WorkWithUsCard = ({
           <div className="relative h-full w-full rounded-[2rem] bg-gray-900/50 backdrop-blur-sm p-6 flex flex-col">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="text-xl font-bold text-white mb-2">{name}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-white mb-2">{name}</h3>
+                  {name === "Starter" && (
+                    <span className="mb-2 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] uppercase tracking-widest text-white/60">
+                      Coming soon
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-400 text-sm">{description}</p>
               </div>
               <div className="text-right">
@@ -83,7 +92,7 @@ const WorkWithUsCard = ({
               >
                 <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
                 <Link
-                  href="/checkout"
+                  href={ctaHref}
                   className="relative flex h-full w-full items-center justify-center rounded-2xl bg-gray-800 px-4 py-3 text-white font-medium backdrop-blur-3xl transition-colors hover:bg-gray-700"
                 >
                   Start now
@@ -234,7 +243,7 @@ const StartSmallCard = () => {
         >
           <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
           <Link
-            href="/checkout"
+            href="/checkout/starter"
             className="relative flex h-full w-full items-center justify-between rounded-2xl bg-transparent px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-white/80 font-bold text-sm sm:text-base backdrop-blur-3xl transition-colors hover:bg-green-600/20"
           >
             <span>Get a summary</span>
@@ -476,12 +485,16 @@ export default function PricingSection() {
                         description={plan.description}
                         period={plan.period}
                         index={index}
+                        ctaHref={plan.name === "Starter" ? "/checkout/starter" : "/checkout"}
                       />
                     </div>
                   ) : (
-                    <button className="w-full py-4 px-6 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-xl transition-all duration-300">
+                    <a
+                      href="mailto:parbhat@parbhat.dev?subject=Visura%20Enterprise%20Plan%20Inquiry&body=Hi%20Parbhat%2C%0A%0AI%E2%80%99d%20like%20to%20discuss%20upgrading%20to%20the%20Visura%20Enterprise%20plan.%20Please%20let%20me%20know%20the%20next%20steps.%0A%0AThanks!"
+                      className="block w-full rounded-xl bg-gray-600 px-6 py-4 text-center font-semibold text-white transition-all duration-300 hover:bg-gray-700"
+                    >
                       Contact Sales
-                    </button>
+                    </a>
                   )}
                 </div>
               </motion.div>

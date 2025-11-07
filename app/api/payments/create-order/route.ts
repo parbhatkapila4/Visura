@@ -7,7 +7,7 @@ import { rzp } from "@/src/lib/razorpay";
 export async function POST(req: Request) {
   const { amountInUSD, receiptId, notes } = await req.json();
   const order = await rzp.orders.create({
-    amount: Math.round(Number(amountInUSD) * 83 * 100),
+    amount: Math.round(Number(amountInUSD) * 88 * 100),
     currency: "INR",
     receipt: receiptId,
     notes,
