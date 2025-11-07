@@ -111,6 +111,12 @@ OPENROUTER_API_KEY=sk-or-...
 UPLOADTHING_SECRET=sk_live_...
 ```
 
+### Pricing & Checkout (Founders' Overview)
+- The checkout page automatically detects a visitor's country (using Vercel's geo headers) and shows the right currency—no manual toggles needed.
+- Current price points: `₹1770` for India, `$20` for the United States, `€17` for the Eurozone. Starter tier maps to `₹880` / `$10` / `€9`.
+- The same currency is sent to Razorpay when an order is created, so local payment methods appear automatically (e.g. UPI in India, PayPal/cards in the US & EU).
+- If you need to adjust price points later, update `AMOUNT_BY_CURRENCY` in `app/components/CheckoutButton.tsx` (and the starter overrides on the `/checkout/starter` page).
+
 ---
 
 ## 📖 Documentation
