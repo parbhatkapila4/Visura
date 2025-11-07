@@ -15,6 +15,7 @@ export default function Footer() {
     product: [
       { name: "Features", href: "/features" },
       { name: "Changelog", href: "/changelog" },
+      { name: "Shipping", href: "/shipping" },
     ],
     resources: [
       { name: "Documentation", href: "/docs" },
@@ -23,6 +24,7 @@ export default function Footer() {
     company: [
       { name: "About", href: "/about" },
       { name: "Contact", href: "/contact" },
+      { name: "Cancellation & Refund", href: "/cancellation-refund" },
     ],
   };
 
