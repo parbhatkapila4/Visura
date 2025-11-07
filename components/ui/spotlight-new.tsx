@@ -27,9 +27,10 @@ export const Spotlight = ({
   xOffset = 100,
 }: SpotlightProps = {}) => {
   const pathname = usePathname();
-  
-  // Don't render on features page
-  if (pathname === '/features') {
+
+  // Don't render on specific pages where a clean background is needed
+  const hiddenRoutes = ["/features", "/shipping"];
+  if (hiddenRoutes.includes(pathname)) {
     return null;
   }
   
