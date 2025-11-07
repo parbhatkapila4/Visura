@@ -54,19 +54,6 @@ export const UpdateUserPlanSchema = z.object({
   customerId: z.string().optional(),
 });
 
-export const CreateCheckoutSchema = z.object({
-  priceId: z.string().min(1, 'Price ID is required'),
-  userId: z.string().min(1, 'User ID is required'),
-  email: z.string().email('Invalid email'),
-});
-
-export const StripeWebhookSchema = z.object({
-  type: z.string(),
-  data: z.object({
-    object: z.record(z.any()),
-  }),
-});
-
 export const FileUploadSchema = z.object({
   file: z.instanceof(File)
     .refine((file) => file.size <= 52428800, 'File too large (max 50MB)')
@@ -104,7 +91,6 @@ export type CreateSessionInput = z.infer<typeof CreateSessionSchema>;
 export type SendMessageInput = z.infer<typeof SendMessageSchema>;
 export type CreateSummaryInput = z.infer<typeof CreateSummarySchema>;
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;
-export type CreateCheckoutInput = z.infer<typeof CreateCheckoutSchema>;
 export type FileMetadata = z.infer<typeof FileMetadataSchema>;
 export type InitializeChatbotInput = z.infer<typeof InitializeChatbotSchema>;
 export type PaginationParams = z.infer<typeof PaginationSchema>;

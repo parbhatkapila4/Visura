@@ -63,7 +63,7 @@
 | **Auth** | Clerk | User management & sessions |
 | **AI** | OpenRouter (Gemini 2.5 Flash) | LLM for summaries & chat |
 | **File Storage** | UploadThing | PDF uploads to S3 |
-| **Payments** | Stripe | Subscriptions & billing |
+| **Payments** | Razorpay | Orders & payment capture |
 | **PDF Processing** | pdf.js | Client-side text extraction |
 | **Type Safety** | TypeScript + Zod | Compile & runtime validation |
 | **Testing** | Vitest + Testing Library | Unit & integration tests |

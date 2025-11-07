@@ -1,42 +1,9 @@
 "use client";
-import { CheckIcon, Clock, Zap } from "lucide-react";
-import { useState } from "react";
+import { CheckIcon } from "lucide-react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
-
-// Helper function to create checkout session via API
-const createCheckoutSession = async (priceId: string) => {
-  try {
-    const response = await fetch("/api/create-checkout-session", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ priceId }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to create checkout session");
-    }
-
-    const { url } = await response.json();
-    return url;
-  } catch (error) {
-    console.error("Error creating checkout session:", error);
-    throw error;
-  }
-};
-
-type PriceType = {
-  name: string;
-  price: string;
-  description: string;
-  items: string[];
-  id: string;
-  paymentLink: string;
-  priceId: string;
-};
 
 const WorkWithUsCard = ({
   name,
@@ -44,34 +11,13 @@ const WorkWithUsCard = ({
   description,
   period,
   index,
-  priceId,
 }: {
   name: string;
   price: string;
   description: string;
   period: string;
-  borderColor: string;
   index: number;
-  priceId?: string;
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleCheckout = async () => {
-    setIsLoading(true);
-    try {
-      if (priceId) {
-        const checkoutUrl = await createCheckoutSession(priceId);
-        window.location.href = checkoutUrl;
-      } else {
-        throw new Error("Price ID not provided");
-      }
-    } catch (error) {
-      console.error("Checkout failed:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <motion.div
       className="relative"
@@ -118,30 +64,31 @@ const WorkWithUsCard = ({
             <div className="flex-1"></div>
 
             <div className="mt-8">
-              <motion.button
-              onClick={handleCheckout}
-              disabled={isLoading}
-              className="relative w-full overflow-hidden rounded-2xl p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-              whileHover={{ 
-                scale: 1.03,
-                transition: {
-                  duration: 0.2,
-                  ease: [0.25, 0.46, 0.45, 0.94]
-                }
-              }}
-              whileTap={{ 
-                scale: 0.97,
-                transition: {
-                  duration: 0.1,
-                  ease: [0.25, 0.46, 0.45, 0.94]
-                }
-              }}
-            >
-              <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-              <span className="relative flex h-full w-full cursor-pointer items-center justify-center rounded-2xl bg-gray-800 px-4 py-3 text-white font-medium backdrop-blur-3xl transition-colors hover:bg-gray-700 disabled:opacity-50">
-                {isLoading ? "Loading..." : "Try Now"}
-              </span>
-              </motion.button>
+              <motion.div
+                className="relative w-full overflow-hidden rounded-2xl p-[1px] focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+                whileHover={{
+                  scale: 1.03,
+                  transition: {
+                    duration: 0.2,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  },
+                }}
+                whileTap={{
+                  scale: 0.97,
+                  transition: {
+                    duration: 0.1,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  },
+                }}
+              >
+                <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
+                <Link
+                  href="/checkout"
+                  className="relative flex h-full w-full items-center justify-center rounded-2xl bg-gray-800 px-4 py-3 text-white font-medium backdrop-blur-3xl transition-colors hover:bg-gray-700"
+                >
+                  Start now
+                </Link>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -151,21 +98,6 @@ const WorkWithUsCard = ({
 };
 
 const StartSmallCard = () => {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleCheckout = async () => {
-    setIsLoading(true);
-    try {
-      const priceId = "price_1S82BQIDKmPOE5aTwhecvlb9";
-      const checkoutUrl = await createCheckoutSession(priceId);
-      window.location.href = checkoutUrl;
-    } catch (error) {
-      console.error("Checkout failed:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const serviceTags = [
     "PDF Summaries",
     "Quick Insights",
@@ -283,31 +215,32 @@ const StartSmallCard = () => {
           </div>
         </div>
 
-        <motion.button
-          onClick={handleCheckout}
-          disabled={isLoading}
-          className="relative w-full overflow-hidden rounded-2xl p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-          whileHover={{ 
+        <motion.div
+          className="relative w-full overflow-hidden rounded-2xl p-[1px] focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50"
+          whileHover={{
             scale: 1.03,
             transition: {
               duration: 0.2,
-              ease: [0.25, 0.46, 0.45, 0.94]
-            }
+              ease: [0.25, 0.46, 0.45, 0.94],
+            },
           }}
-          whileTap={{ 
+          whileTap={{
             scale: 0.97,
             transition: {
               duration: 0.1,
-              ease: [0.25, 0.46, 0.45, 0.94]
-            }
+              ease: [0.25, 0.46, 0.45, 0.94],
+            },
           }}
         >
           <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-          <span className="relative flex h-full w-full cursor-pointer items-center justify-between rounded-2xl bg-transparent px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-white/80 font-bold text-sm sm:text-base backdrop-blur-3xl transition-colors hover:bg-green-600/20 disabled:opacity-50">
+          <Link
+            href="/checkout"
+            className="relative flex h-full w-full items-center justify-between rounded-2xl bg-transparent px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-white/80 font-bold text-sm sm:text-base backdrop-blur-3xl transition-colors hover:bg-green-600/20"
+          >
             <span>Get a summary</span>
             <span>$20</span>
-          </span>
-        </motion.button>
+          </Link>
+        </motion.div>
 
         <p className="text-gray-500 text-xs uppercase text-center mt-3 sm:mt-4">
           One Summary, One Price
@@ -542,9 +475,7 @@ export default function PricingSection() {
                         price={plan.price}
                         description={plan.description}
                         period={plan.period}
-                        borderColor="blue"
                         index={index}
-                        priceId={plan.priceId}
                       />
                     </div>
                   ) : (
