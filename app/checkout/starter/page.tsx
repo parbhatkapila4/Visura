@@ -12,7 +12,7 @@ const starterHighlights = [
   {
     icon: Layers,
     title: "Core feature set",
-    description: "Summaries, highlights, and exports for up to 50 documents a month.",
+    description: "Summaries, highlights, and exports for up to 10 documents a month.",
   },
   {
     icon: Timer,
@@ -33,7 +33,7 @@ const STARTER_AMOUNT_BY_CURRENCY: Record<string, number> = {
 };
 
 const starterFeatures = [
-  "Up to 50 documents analysed monthly",
+  "Up to 10 documents analysed monthly",
   "AI summaries with smart highlight extraction",
   "PDF & DOCX uploads plus shareable exports",
   "Email support and standard processing speeds",
@@ -51,29 +51,29 @@ export default function StarterCheckoutPage() {
       <div className="pointer-events-none absolute inset-x-0 bottom-[-30%] h-[32rem] bg-[radial-gradient(circle_at_bottom,_rgba(59,130,246,0.2),_transparent_75%)]" />
       <div className="pointer-events-none sticky top-0 z-10 h-16 bg-gradient-to-b from-[#050810] via-[#050810]/95 to-transparent" />
 
-      <div className="relative mx-auto flex h-full w-full max-w-5xl flex-col gap-8 px-6 pb-20 pt-8">
+      <div className="relative mx-auto flex h-full w-full max-w-5xl flex-col gap-2 md:gap-8 px-6 pb-20 pt-2 md:pt-8">
         {/* Back Button */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 font-medium text-white transition hover:border-white/30 hover:bg-white/10 w-fit"
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 font-medium text-white transition hover:border-white/30 hover:bg-white/10 w-fit mb-4 md:mb-6"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to home
         </Link>
 
         {/* Pricing Card with Badge Above */}
-        <div className="flex flex-col gap-4 w-full">
+        <div className="flex flex-col gap-6 md:gap-4 w-full">
             <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/55 w-fit ml-auto">
               Perfect for bootstrapped first hires
             </span>
             
-            <div className="flex flex-col justify-between rounded-2xl border border-[#38bdf8]/40 bg-gradient-to-br from-[#101521] via-[#09111e] to-[#101521] p-8 shadow-[0_25px_70px_-40px_rgba(56,189,248,0.55)] w-full">
+            <div className="flex flex-col justify-between rounded-2xl border border-[#38bdf8]/40 bg-gradient-to-br from-[#101521] via-[#09111e] to-[#101521] p-8 shadow-[0_25px_70px_-40px_rgba(56,189,248,0.55)] w-full text-center">
             <div className="space-y-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#38bdf8]/80">
                   Starter plan
                 </p>
-                <div className="mt-3 flex items-end gap-2">
+                <div className="mt-3 flex items-end justify-center gap-2">
                   <span className="text-5xl font-bold text-white">
                     {loading ? "—" : `${symbol}${displayAmount}`}
                   </span>
@@ -88,8 +88,8 @@ export default function StarterCheckoutPage() {
 
               <ul className="space-y-3 text-sm text-white/82">
                 {starterFeatures.map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#38bdf8]/25 text-[#38bdf8]">
+                  <li key={item} className="flex items-center justify-center gap-2">
+                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#38bdf8]/25 text-[#38bdf8]">
                       •
                     </span>
                     <span>{item}</span>
@@ -99,7 +99,9 @@ export default function StarterCheckoutPage() {
             </div>
 
             <div className="space-y-3 mt-6">
-              <CheckoutButton amount={10} overrides={STARTER_AMOUNT_BY_CURRENCY} />
+              <div className="flex justify-center">
+                <CheckoutButton amount={10} overrides={STARTER_AMOUNT_BY_CURRENCY} />
+              </div>
               <p className="text-[11px] text-white/55">
                 14-day satisfaction guarantee. Upgrade to Professional whenever you need more power—your data stays in place.
               </p>

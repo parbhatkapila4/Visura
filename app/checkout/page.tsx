@@ -41,13 +41,13 @@ export default function Page() {
   const symbol = SYMBOL[currency] ?? "$";
 
   return (
-    <div className="relative h-screen overflow-hidden bg-[#070809] text-white">
+    <div className="relative min-h-screen md:h-screen md:overflow-hidden bg-[#070809] text-white overflow-y-auto md:overflow-y-hidden">
       <BgGradient className="bg-gradient-to-br from-[#F97316]/70 via-transparent to-transparent" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(249,115,22,0.18),_transparent_65%)]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-[-30%] h-[32rem] bg-[radial-gradient(circle_at_bottom,_rgba(253,186,116,0.18),_transparent_70%)]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#070809] via-[#070809]/95 to-transparent" />
 
-      <div className="relative mx-auto flex h-full w-full max-w-5xl flex-col gap-12 px-6 pb-20 pt-16">
+      <div className="relative mx-auto flex min-h-full md:h-full w-full max-w-5xl flex-col gap-12 px-6 pb-20 pt-16">
         <div className="flex items-center justify-between text-sm text-white/60">
           <Link
             href="/"
