@@ -11,7 +11,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?logo=tailwind-css)](https://tailwindcss.com/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-[Demo](https://visura.app) • [Documentation](ARCHITECTURE.md) • [Contributing](CONTRIBUTING.md)
+[Demo](https://visura.parbhat.dev/) • [Documentation](ARCHITECTURE.md) • [Contributing](CONTRIBUTING.md)
 
 </div>
 
@@ -313,12 +313,6 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
-
----
-
 ## 🙏 Acknowledgments
 
 - [Next.js](https://nextjs.org/) - Amazing React framework
@@ -334,14 +328,12 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 ## 📞 Support
 
 - **Email**: help@productsolution.net
-- **Issues**: [GitHub Issues](https://github.com/yourusername/visura/issues)
-- **Docs**: [Architecture](ARCHITECTURE.md) • [Contributing](CONTRIBUTING.md)
 
 ---
 
 <div align="center">
 
-**Made with ❤️ for developers and document enthusiasts**
+**Made by Parbhat for developers and document enthusiasts**
 
 ⭐ Star us on GitHub if you find this useful!
 
