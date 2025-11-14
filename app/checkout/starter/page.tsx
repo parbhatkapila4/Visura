@@ -51,52 +51,23 @@ export default function StarterCheckoutPage() {
       <div className="pointer-events-none absolute inset-x-0 bottom-[-30%] h-[32rem] bg-[radial-gradient(circle_at_bottom,_rgba(59,130,246,0.2),_transparent_75%)]" />
       <div className="pointer-events-none sticky top-0 z-10 h-16 bg-gradient-to-b from-[#050810] via-[#050810]/95 to-transparent" />
 
-      <div className="relative mx-auto flex h-full w-full max-w-5xl flex-col gap-12 px-6 pb-20 pt-16">
-        <div className="flex items-center justify-between text-sm text-white/60">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 font-medium text-white transition hover:border-white/30 hover:bg-white/10"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to home
-          </Link>
-          <span className="hidden rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/55 md:inline-flex">
-            Perfect for bootstrapped first hires
-          </span>
-        </div>
+      <div className="relative mx-auto flex h-full w-full max-w-5xl flex-col gap-8 px-6 pb-20 pt-8">
+        {/* Back Button */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 font-medium text-white transition hover:border-white/30 hover:bg-white/10 w-fit"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to home
+        </Link>
 
-        <div className="grid h-full gap-10 rounded-3xl border border-white/10 bg-[#0c1018]/95 p-10 shadow-[0_28px_70px_-40px_rgba(59,130,246,0.5)] backdrop-blur lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.35em] text-white/60">
-                Visura starter
-              </span>
-              <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-                Launch your document workflow in under an hour.
-              </h1>
-              <p className="max-w-xl text-base text-white/70">
-                Starter keeps founders and early hires organised with instant summaries, searchable insights,
-                and export-ready briefs. Scale without spreadsheets—or the enterprise price tag.
-              </p>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              {starterHighlights.map(({ icon: Icon, title, description }) => (
-                <div
-                  key={title}
-                  className="rounded-2xl border border-white/10 bg-[#111722] p-5"
-                >
-                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#38bdf8]/45 via-[#22d3ee]/30 to-transparent text-white shadow-[0_12px_28px_rgba(56,189,248,0.3)]">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-white">{title}</h3>
-                  <p className="mt-1 text-xs text-white/70">{description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-col justify-between rounded-2xl border border-[#38bdf8]/40 bg-gradient-to-br from-[#101521] via-[#09111e] to-[#101521] p-8 shadow-[0_25px_70px_-40px_rgba(56,189,248,0.55)]">
+        {/* Pricing Card with Badge Above */}
+        <div className="flex flex-col gap-4 w-full">
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/55 w-fit ml-auto">
+              Perfect for bootstrapped first hires
+            </span>
+            
+            <div className="flex flex-col justify-between rounded-2xl border border-[#38bdf8]/40 bg-gradient-to-br from-[#101521] via-[#09111e] to-[#101521] p-8 shadow-[0_25px_70px_-40px_rgba(56,189,248,0.55)] w-full">
             <div className="space-y-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#38bdf8]/80">
@@ -127,11 +98,44 @@ export default function StarterCheckoutPage() {
               </ul>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 mt-6">
               <CheckoutButton amount={10} overrides={STARTER_AMOUNT_BY_CURRENCY} />
               <p className="text-[11px] text-white/55">
                 14-day satisfaction guarantee. Upgrade to Professional whenever you need more power—your data stays in place.
               </p>
+            </div>
+            </div>
+          </div>
+
+        {/* Description Content Below */}
+        <div className="rounded-3xl border border-white/10 bg-[#0c1018]/95 p-10 shadow-[0_28px_70px_-40px_rgba(59,130,246,0.5)] backdrop-blur">
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.35em] text-white/60">
+                Visura starter
+              </span>
+              <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+                Launch your document workflow in under an hour.
+              </h1>
+              <p className="max-w-xl text-base text-white/70">
+                Starter keeps founders and early hires organised with instant summaries, searchable insights,
+                and export-ready briefs. Scale without spreadsheets—or the enterprise price tag.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              {starterHighlights.map(({ icon: Icon, title, description }) => (
+                <div
+                  key={title}
+                  className="rounded-2xl border border-white/10 bg-[#111722] p-5"
+                >
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#38bdf8]/45 via-[#22d3ee]/30 to-transparent text-white shadow-[0_12px_28px_rgba(56,189,248,0.3)]">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-white">{title}</h3>
+                  <p className="mt-1 text-xs text-white/70">{description}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
