@@ -1,7 +1,7 @@
 "use client";
 
 import { parseSection } from "@/utils/summary-helpers";
-import { BookOpen, Clock, ArrowRight, Sparkles, Zap, FileText, AlertTriangle, RefreshCw } from "lucide-react";
+import { BookOpen, Clock, ArrowRight, ScanSearch, Zap, FileText, AlertTriangle, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
@@ -372,7 +372,7 @@ export default function SummaryViewer({ summary }: { summary: string }) {
                   animate={isInView ? { opacity: 1 } : { opacity: 0 }}
                   transition={{ duration: 0.6, delay: 0.3 }}
                 >
-                  <Sparkles className="w-4 h-4 text-orange-400 animate-pulse" />
+                  <ScanSearch className="w-4 h-4 text-orange-400 animate-pulse" />
                   AI-Powered Document Intelligence
                 </motion.p>
               </div>

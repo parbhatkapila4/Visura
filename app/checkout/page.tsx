@@ -6,13 +6,13 @@ import CheckoutButton, {
   useResolvedCurrency,
 } from "@/app/components/CheckoutButton";
 import BgGradient from "@/components/common/bg-gradient";
-import { ArrowLeft, Check, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { ArrowLeft, Check, ShieldCheck, ScanSearch, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
 const sellingPoints = [
   {
-    icon: Sparkles,
+    icon: ScanSearch,
     title: "Smarter briefs",
     copy: "AI-crafted summaries tuned for legal, research, and product teams.",
   },

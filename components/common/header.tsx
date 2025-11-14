@@ -125,13 +125,23 @@ export default function Header() {
               <NavLink href="/changelog" className="text-sm text-gray-300 hover:text-orange-400">Changelog</NavLink>
             </div>
 
-            {/* Mobile Dashboard button only (no hamburger) */}
-            <NavLink
-              href="/dashboard"
-              className="block md:hidden ml-auto px-3 py-1.5 rounded-md font-semibold text-base text-white bg-gray-800 hover:bg-gray-700 transition-colors border border-gray-700 min-w-[96px] text-center"
-            >
-              Dashboard
-            </NavLink>
+            {/* Mobile Dashboard/Sign In button only */}
+            <SignedIn>
+              <NavLink
+                href="/dashboard"
+                className="block md:hidden ml-auto px-3 py-1.5 rounded-md font-semibold text-base text-white bg-gray-800 hover:bg-gray-700 transition-colors border border-gray-700 min-w-[96px] text-center"
+              >
+                Dashboard
+              </NavLink>
+            </SignedIn>
+            <SignedOut>
+              <NavLink
+                href="/sign-in"
+                className="block md:hidden ml-auto px-3 py-1.5 rounded-md font-semibold text-base text-white bg-orange-600 hover:bg-orange-700 transition-colors shadow-sm min-w-[80px] text-center"
+              >
+                Sign In
+              </NavLink>
+            </SignedOut>
             
             {/* Right Section (navbar) */}
             <div className="hidden md:flex flex-row flex-wrap items-center gap-3 gap-x-4 pl-0 sm:pl-6 min-w-0 md:flex-1 justify-end">

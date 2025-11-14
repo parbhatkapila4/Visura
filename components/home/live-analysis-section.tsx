@@ -6,7 +6,7 @@ import {
   FileText, 
   Brain, 
   BarChart3,
-  Sparkles,
+  ScanSearch,
   ArrowRight,
   CheckCircle
 } from "lucide-react";
@@ -86,7 +86,7 @@ export default function LiveAnalysisSection() {
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <Sparkles className="w-4 h-4" />
+            <ScanSearch className="w-4 h-4" />
             Powered by Advanced AI
           </motion.div>
           
@@ -188,7 +188,7 @@ export default function LiveAnalysisSection() {
                   </motion.div>
                   
                   {/* Content */}
-                  <div className="relative space-y-4">
+                  <div className="relative space-y-4 text-center md:text-left">
                     {/* Title */}
                     <motion.h3 
                       className={`text-2xl font-bold text-white group-hover:text-${card.accentColor}-400 transition-colors duration-300`}
@@ -229,7 +229,7 @@ export default function LiveAnalysisSection() {
                       {card.features.map((item, itemIndex) => (
                         <motion.div 
                           key={itemIndex} 
-                          className="flex items-center gap-3 group/item"
+                          className="flex items-start justify-start gap-3 group/item"
                           initial={{ opacity: 0, x: -10 }}
                           animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
                           transition={{ 
@@ -242,7 +242,7 @@ export default function LiveAnalysisSection() {
                           }}
                         >
                           <motion.div 
-                            className={`w-2 h-2 bg-gradient-to-r ${card.gradient} rounded-full flex-shrink-0`}
+                            className={`w-2 h-2 bg-gradient-to-r ${card.gradient} rounded-full flex-shrink-0 mt-1.5`}
                             whileHover={{ scale: 1.2 }}
                             transition={{ duration: 0.2 }}
                           />

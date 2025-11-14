@@ -42,7 +42,7 @@ export default function DeveloperFriendlySection() {
             </div>
 
             {/* Feature Sections */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center md:text-left">
               {/* REST API */}
               <div className="space-y-4">
                 <h3 className="text-xl font-bold text-white">
@@ -58,7 +58,7 @@ export default function DeveloperFriendlySection() {
                 <h3 className="text-xl font-bold text-white">
                   &gt; SDK & Libraries
                 </h3>
-                <div className="flex items-center gap-4 mb-3">
+                <div className="flex items-center justify-center md:justify-start gap-4 mb-3">
                   <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
                     <span className="text-white text-xs font-bold">Go</span>
                   </div>

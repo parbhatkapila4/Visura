@@ -55,8 +55,8 @@ export default function KeyboardShortcuts() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Hide on chatbot pages to avoid UI overlap
-  const isChatbotPage = pathname?.startsWith('/chatbot/');
+  // Only show on home page ("/")
+  const isHomePage = pathname === '/';
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -103,8 +103,8 @@ export default function KeyboardShortcuts() {
 
   return (
     <>
-      {/* Help Button - Bottom Right (Hidden on chatbot pages) */}
-      {!isChatbotPage && (
+      {/* Help Button - Bottom Right (Only on home page) */}
+      {isHomePage && (
         <button
           onClick={() => setIsOpen(true)}
           className="fixed bottom-6 right-6 z-50 w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full shadow-2xl shadow-orange-500/50 flex items-center justify-center transition-all hover:scale-110 active:scale-95 group"

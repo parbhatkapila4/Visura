@@ -76,9 +76,9 @@ export default function StatusDisplaySection() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Content Blocks */}
-          <div className="space-y-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
+          <div className="space-y-8 text-center md:text-left">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
                 <BarChart3 className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -87,8 +87,8 @@ export default function StatusDisplaySection() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-black border-2 border-orange-500 rounded-full flex items-center justify-center shadow-lg">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
+              <div className="w-12 h-12 bg-black border-2 border-orange-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
                 <Clock className="w-6 h-6 text-orange-500" />
               </div>
               <div>
@@ -97,8 +97,8 @@ export default function StatusDisplaySection() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-600 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-orange-600 to-orange-500 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
                 <Zap className="w-6 h-6 text-white" />
               </div>
               <div>

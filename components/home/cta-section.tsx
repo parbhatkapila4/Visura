@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { ArrowRight, Upload, FileText, Sparkles, Zap, Shield, Brain } from "lucide-react";
+import { ArrowRight, Upload, FileText, ScanSearch, Zap, Shield, Brain } from "lucide-react";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
@@ -31,7 +31,7 @@ export default function CTASection() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
                 <span className="px-6 py-3 bg-orange-500/20 border border-orange-500/40 rounded-full text-orange-400 text-sm font-semibold flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
+                  <ScanSearch className="w-4 h-4" />
                   Trusted by professionals worldwide
                 </span>
           </motion.div>

@@ -94,9 +94,9 @@ export default function ManualControlsSection() {
 
           {/* Content Blocks */}
           <div className="grid grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
+            <div className="space-y-4 text-center md:text-left">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200 flex-shrink-0">
                   <FileText className="w-5 h-5 text-gray-700" />
                 </div>
                 <h3 className="text-lg font-semibold text-white">Upload Documents</h3>
@@ -104,9 +104,9 @@ export default function ManualControlsSection() {
               <p className="text-sm text-gray-300">Drag and drop PDFs, Word docs, and other formats for analysis</p>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
+            <div className="space-y-4 text-center md:text-left">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200 flex-shrink-0">
                   <Brain className="w-5 h-5 text-gray-700" />
                 </div>
                 <h3 className="text-lg font-semibold text-white">AI Analysis</h3>
@@ -114,9 +114,9 @@ export default function ManualControlsSection() {
               <p className="text-sm text-gray-300">Automatically extract key insights and generate summaries</p>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
+            <div className="space-y-4 text-center md:text-left">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200 flex-shrink-0">
                   <Download className="w-5 h-5 text-gray-700" />
                 </div>
                 <h3 className="text-lg font-semibold text-white">Export Results</h3>
@@ -124,9 +124,9 @@ export default function ManualControlsSection() {
               <p className="text-sm text-gray-300">Download summaries in PDF, Word, or text formats</p>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
+            <div className="space-y-4 text-center md:text-left">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200 flex-shrink-0">
                   <Users className="w-5 h-5 text-gray-700" />
                 </div>
                 <h3 className="text-lg font-semibold text-white">Share & Collaborate</h3>

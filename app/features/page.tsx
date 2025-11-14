@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { ArrowLeft, Zap, Brain, Download, Users, Shield, BarChart3, FileText, Clock, Share2, CheckCircle, Star, Globe, Lock, Settings, Activity, TrendingUp, Target, Award, Sparkles, MessageCircle } from "lucide-react";
+import { ArrowLeft, Zap, Brain, Download, Users, Shield, BarChart3, FileText, Clock, Share2, CheckCircle, Star, Globe, Lock, Settings, Activity, TrendingUp, Target, Award, ScanSearch, MessageCircle } from "lucide-react";
 
 export default function FeaturesPage() {
   const coreFeatures = [
@@ -118,7 +118,7 @@ export default function FeaturesPage() {
       description: "Process thousands of documents simultaneously"
     },
     {
-      icon: Sparkles,
+      icon: ScanSearch,
       title: "Enhanced Insights",
       description: "Discover patterns and insights you might miss"
     }

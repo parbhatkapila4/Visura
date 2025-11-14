@@ -40,6 +40,7 @@ export default function DemoSection() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Content */}
             <motion.div
+              className="text-center md:text-left"
               initial={{ opacity: 0, x: -30 }}
               animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
               transition={{ duration: 0.8, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -77,7 +78,7 @@ export default function DemoSection() {
                   return (
                     <motion.div 
                       key={index}
-                      className="flex items-center gap-4"
+                      className="flex flex-col md:flex-row items-center md:items-start gap-4 text-center md:text-left"
                       initial={{ opacity: 0, x: -20 }}
                       animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
                       transition={{ duration: 0.6, delay: 0.8 + (index * 0.1), ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -87,7 +88,7 @@ export default function DemoSection() {
                       }}
                     >
                       <motion.div 
-                        className={`w-12 h-12 ${item.bgColor} rounded-full flex items-center justify-center`}
+                        className={`w-12 h-12 ${item.bgColor} rounded-full flex items-center justify-center flex-shrink-0`}
                         whileHover={{ 
                           scale: 1.1, 
                           rotate: 5,

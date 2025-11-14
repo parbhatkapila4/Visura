@@ -13,7 +13,7 @@ import {
   MessageSquare,
   MoreVertical,
   Trash2,
-  Sparkles,
+  ScanSearch,
   Brain,
   FileText,
   Search,
@@ -554,7 +554,7 @@ export default function ChatbotClient({
                       {/* AI Icon Button */}
                       <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 shadow-xl sm:shadow-2xl shadow-orange-500/40 sm:shadow-orange-500/50 border border-orange-400/30 hover:scale-105 transition-transform cursor-pointer flex-shrink-0">
                         <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-md">
-                          <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 md:w-6.5 md:h-6.5 lg:w-7 lg:h-7 text-white drop-shadow-lg" />
+                          <ScanSearch className="w-5 h-5 sm:w-6 sm:h-6 md:w-6.5 md:h-6.5 lg:w-7 lg:h-7 text-white drop-shadow-lg" />
                         </div>
                       </div>
                       
