@@ -52,13 +52,66 @@ const shortcuts: Shortcut[] = [
 
 export default function KeyboardShortcuts() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isFooterVisible, setIsFooterVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   // Only show on home page ("/")
   const isHomePage = pathname === '/';
 
+  // Detect mobile screen size
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Detect footer visibility using Intersection Observer
+  useEffect(() => {
+    if (!isHomePage) return;
+
+    const footer = document.querySelector('footer');
+    if (!footer) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // Footer is visible when it intersects with the viewport
+          setIsFooterVisible(entry.isIntersecting);
+        });
+      },
+      {
+        // Trigger when footer enters viewport
+        threshold: 0.1,
+        rootMargin: '0px',
+      }
+    );
+
+    observer.observe(footer);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isHomePage]);
+
+  // Close dialog when navigating away from home page
+  useEffect(() => {
+    if (!isHomePage && isOpen) {
+      setIsOpen(false);
+    }
+  }, [isHomePage, isOpen]);
+
+  useEffect(() => {
+    // Only attach keyboard listeners on home page
+    if (!isHomePage) {
+      return;
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
       // Check if user is typing in an input/textarea
       const target = e.target as HTMLElement;
@@ -99,16 +152,20 @@ export default function KeyboardShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [router]);
+  }, [router, isHomePage]);
+
+  // Hide button on mobile when footer is visible
+  const shouldShowButton = isHomePage && (!isMobile || !isFooterVisible);
 
   return (
     <>
-      {/* Help Button - Bottom Right (Only on home page) */}
-      {isHomePage && (
+      {/* Help Button - Bottom Right (Only on home page, hidden on mobile when footer is visible) */}
+      {shouldShowButton && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full shadow-2xl shadow-orange-500/50 flex items-center justify-center transition-all hover:scale-110 active:scale-95 group"
+          className="fixed bottom-6 right-6 z-40 w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full shadow-2xl shadow-orange-500/50 flex items-center justify-center transition-all hover:scale-110 active:scale-95 group pointer-events-auto"
           aria-label="Keyboard shortcuts"
+          type="button"
         >
           <Command className="w-5 h-5 group-hover:rotate-12 transition-transform" />
           <span className="absolute -top-10 right-0 bg-black/90 text-white text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
