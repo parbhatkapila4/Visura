@@ -1,8 +1,8 @@
 "use client";
 import NavLink from "./nav-link";
-import { UserButton } from "@clerk/nextjs";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import PlanBadge from "./plan-badge";
+import UserMenu from "./user-menu";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 
@@ -125,14 +125,17 @@ export default function Header() {
               <NavLink href="/changelog" className="text-sm text-gray-300 hover:text-orange-400">Changelog</NavLink>
             </div>
 
-            {/* Mobile Dashboard/Sign In button only */}
+            {/* Mobile Dashboard/Sign In button and User Menu */}
             <SignedIn>
-              <NavLink
-                href="/dashboard"
-                className="block md:hidden ml-auto px-3 py-1.5 rounded-md font-semibold text-base text-white bg-gray-800 hover:bg-gray-700 transition-colors border border-gray-700 min-w-[96px] text-center"
-              >
-                Dashboard
-              </NavLink>
+              <div className="flex md:hidden ml-auto items-center gap-3">
+                <NavLink
+                  href="/dashboard"
+                  className="px-3 py-1.5 rounded-md font-semibold text-base text-white bg-gray-800 hover:bg-gray-700 transition-colors border border-gray-700 min-w-[96px] text-center"
+                >
+                  Dashboard
+                </NavLink>
+                <UserMenu />
+              </div>
             </SignedIn>
             <SignedOut>
               <NavLink
@@ -148,7 +151,7 @@ export default function Header() {
               <SignedIn>
                 <NavLink href="/dashboard" className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white hover:text-orange-500 font-medium text-sm rounded-lg transition-colors duration-200 border border-gray-700 break-all min-w-[90px] text-center">Dashboard</NavLink>
                 <PlanBadge />
-                <UserButton />
+                <UserMenu />
               </SignedIn>
               <SignedOut>
                 <NavLink href="/sign-in" className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-medium text-sm rounded-lg transition-colors duration-200 border border-gray-600 min-w-[70px] text-center">Log in</NavLink>

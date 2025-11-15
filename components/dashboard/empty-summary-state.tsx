@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { Plus, FileText } from "lucide-react";
-import Link from "next/link";
+import { FileText } from "lucide-react";
 
 export default function EmptySummaryState() {
   return (
@@ -14,12 +12,6 @@ export default function EmptySummaryState() {
       <p className="text-muted-foreground mb-8 max-w-md mx-auto">
         Upload your first PDF to get started with AI-powered summaries and insights
       </p>
-      <Link href="/upload">
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-          <Plus className="w-4 h-4 mr-2" />
-          Upload PDF
-        </Button>
-      </Link>
     </div>
   );
 }
