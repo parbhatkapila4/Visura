@@ -135,7 +135,7 @@ export default function FeaturesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <Link 
             href="/" 
-            className="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors mb-6 sm:mb-8"
+            className="inline-flex items-center justify-center md:justify-start gap-2 text-gray-300 hover:text-white transition-colors mb-6 sm:mb-8 w-full md:w-auto -ml-30"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="text-sm sm:text-base">Back to Home</span>
@@ -185,21 +185,21 @@ export default function FeaturesPage() {
               const Icon = feature.icon;
               return (
                 <div key={index} className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-start gap-3 sm:gap-4 lg:gap-6">
+                  <div className="flex flex-col md:flex-row items-center md:items-start gap-3 sm:gap-4 lg:gap-6 text-center md:text-left">
                     <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-blue-100 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
                       <Icon className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-blue-600" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2 mb-2 sm:mb-3">
+                    <div className="flex-1 min-w-0 w-full">
+                      <div className="flex flex-col items-center md:items-start sm:flex-row sm:items-baseline sm:justify-between gap-2 mb-2 sm:mb-3">
                         <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{feature.title}</h3>
-                        <span className="text-xs sm:text-sm font-semibold text-blue-600 bg-blue-100 px-2 sm:px-3 py-1 rounded-full self-start">
+                        <span className="text-xs sm:text-sm font-semibold text-blue-600 bg-blue-100 px-2 sm:px-3 py-1 rounded-full">
                           {feature.stats}
                         </span>
                       </div>
                       <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base lg:text-lg leading-relaxed">{feature.description}</p>
                       <ul className="space-y-1.5 sm:space-y-2">
                         {feature.features.map((item, itemIndex) => (
-                          <li key={itemIndex} className="flex items-center text-gray-700 text-sm sm:text-base">
+                          <li key={itemIndex} className="flex items-center justify-center md:justify-start text-gray-700 text-sm sm:text-base">
                             <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 sm:mr-3 flex-shrink-0" />
                             <span className="break-words">{item}</span>
                           </li>
@@ -234,10 +234,10 @@ export default function FeaturesPage() {
                   </div>
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">{feature.title}</h3>
                   <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 leading-relaxed">{feature.description}</p>
-                  <ul className="space-y-1.5 sm:space-y-2 text-left">
+                  <ul className="space-y-1.5 sm:space-y-2 text-center md:text-left">
                     {feature.details.map((detail, detailIndex) => (
-                      <li key={detailIndex} className="text-xs sm:text-sm text-gray-600 flex items-start">
-                        <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-1.5 sm:mt-2 mr-2 sm:mr-3 flex-shrink-0"></div>
+                      <li key={detailIndex} className="text-xs sm:text-sm text-gray-600 flex items-center justify-center md:justify-start md:items-start">
+                        <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-0 md:mt-1.5 sm:mt-2 mr-2 sm:mr-3 flex-shrink-0"></div>
                         <span className="break-words">{detail}</span>
                       </li>
                     ))}
