@@ -457,7 +457,7 @@ export default function SummaryViewer({ summary }: { summary: string }) {
                 {/* Content */}
                 <div className="relative z-10">
                   <DarkContentSection
-                    title={`${index + 1}. ${section.title}`}
+                    title={`${index + 1}. ${section.title.replace(/^\d+\.\s*/, '')}`}
                     points={section.points}
                     index={index}
                   />

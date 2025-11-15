@@ -24,35 +24,53 @@ export async function generateSummaryFromText(pdfText: string) {
         },
         {
           role: "user",
-          content: `I have extracted the complete text from a PDF. Below is the FULL TEXT CONTENT. Please analyze it and create a detailed summary.
+          content: `I have extracted the complete text from a PDF. Below is the FULL TEXT CONTENT. Please analyze it thoroughly and create a comprehensive summary following this exact structure:
 
-FORMAT YOUR SUMMARY LIKE THIS:
+# [Document Title]
 
-# [Create appropriate title based on content]
+## Core Thesis / Main Argument
 
-## Overview
-- Document type and purpose
-- Target audience  
-- Main topic
+[Provide the document's central claim in 2-3 sentences. What is the main argument or thesis? What is the author trying to prove or convince you of? This is the foundation everything else builds on. Extract this directly from the PDF content.]
 
-## Executive Summary
-- Key findings
-- Main insights
-- Critical points
+## Key Problem Being Solved
 
-## Key Points
-- Important information point 1
-- Important information point 2
-- Important information point 3
+[What gap, pain point, or question does this document address? Why does this problem matter? Who is affected by it? Extract specific details from the PDF about the problem being addressed.]
 
-## Analysis
-- Detailed topic 1
-- Detailed topic 2
-- Detailed topic 3
+## Fundamental Concepts / Mental Models
 
-## Recommendations
-- Actionable step 1
-- Actionable step 2
+[Identify the 3-5 core ideas or frameworks introduced in the document. These are the thinking tools that change how you understand the topic. List each concept with a brief explanation based on the PDF content.]
+
+## Evidence & Research
+
+[What key studies, data points, statistics, or real-world examples does the document use to support its argument? What makes this credible? Extract specific evidence, numbers, and examples from the PDF.]
+
+## Practical Framework / System
+
+[What step-by-step methodology, process, or system does the document propose? This is the 'how-to' distilled to its essence. Extract the practical framework from the PDF content.]
+
+## Common Objections & Rebuttals
+
+[What counterarguments does the document address? What are the limitations or edge cases where the approach doesn't work? Extract any objections and rebuttals mentioned in the PDF.]
+
+## Critical Success Factors
+
+[What makes the approach in the document work or fail? What are the non-negotiable elements, prerequisites, or conditions required? Extract these from the PDF content.]
+
+## Actionable Takeaways
+
+[List 5-10 specific actions someone can implement immediately based on the document. These should be concrete, not abstract advice. Extract actionable items directly from the PDF.]
+
+## Paradigm Shifts / Counterintuitive Insights
+
+[What did the document reveal that challenges conventional wisdom? What surprising insights or counterintuitive ideas does it present? Extract these from the PDF content.]
+
+## Relevance & Application to Your Context
+
+[How does the content apply to different contexts? What are the practical applications? Extract information about how the concepts can be applied from the PDF.]
+
+## Summary of Whole PDF
+
+[Provide a comprehensive summary of the entire document. This should be a complete overview that captures all major points, themes, and conclusions from the PDF.]
 
 ---
 
@@ -62,11 +80,19 @@ ${textToSummarize}
 
 ---
 
-Now create the summary based on the text above.`,
+IMPORTANT INSTRUCTIONS:
+- Extract information directly from the PDF text provided above
+- Each section must contain detailed explanations based on the actual PDF content
+- If a section doesn't directly apply, adapt it to what the document actually contains
+- Be thorough and comprehensive in your analysis
+- Use specific examples, quotes, and details from the PDF when available
+- Write in clear, professional language
+
+Now create the summary based on the text above, following the exact structure provided.`,
         },
       ],
       temperature: 0.7,
-      max_tokens: 3000,
+      max_tokens: 6000,
     });
 
     console.log("Summary generated successfully!");

@@ -1,9 +1,12 @@
 export const parseSection = (section: string): { title: string; points: string[] } => {
     const [title, ...content] = section.split("\n");
   
-    const cleanTitle = title.startsWith("#")
+    let cleanTitle = title.startsWith("#")
       ? title.substring(1).trim()
       : title.trim();
+    
+    // Remove any leading numbers (e.g., "1. Title" -> "Title")
+    cleanTitle = cleanTitle.replace(/^\d+\.\s*/, '');
   
     const points: string[] = [];
   
