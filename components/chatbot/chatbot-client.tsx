@@ -242,12 +242,10 @@ export default function ChatbotClient({
       const data = await response.json();
 
       if (response.ok) {
-        setMessages((prev) => [
-          ...prev,
-          data.userMessage,
-          data.assistantMessage,
-        ]);
-
+        // Always refresh messages from the server to avoid any duplication,
+        // especially for the first message in a new session.
+        await loadMessages(activeSessionId);
+        // Refresh sessions list (message counts, timestamps, etc.)
         await loadSessions();
       } else {
         console.error("API Error:", data);

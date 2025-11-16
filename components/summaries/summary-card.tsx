@@ -81,7 +81,8 @@ export default function SummaryCard({
   const preview = extractSummaryPreview(summary.summary_text);
   const [showError, setShowError] = useState(false);
 
-  // Derive a user-friendly status based on summary content when not provided
+  // Derive a user-friendly status based on summary content when backend status
+  // is missing or indicates non-completed state
   const derivedStatus = (() => {
     const raw = (summary.summary_text || "").toLowerCase();
     const hasError = 
@@ -89,9 +90,6 @@ export default function SummaryCard({
       raw.includes("object.defineproperty") ||
       raw.includes("was unable to access") ||
       raw.includes("i apologize") ||
-      raw.includes("error") || 
-      raw.includes("failed") || 
-      raw.includes("unable to") || 
       raw.trim() === "";
     const processing =
       preview.executiveSummary.includes("being processed") ||
@@ -103,8 +101,22 @@ export default function SummaryCard({
     return "completed";
   })();
 
-  // Prefer derived status when content indicates processing/failed
-  const statusToShow: string = derivedStatus !== "completed" ? derivedStatus : (summary.status || "completed");
+  // Final status logic:
+  // - If backend says failed -> always show "failed"
+  // - If backend says processing/in progress -> show "processing"
+  // - If backend says completed or has no status:
+  //     - Only show "processing" when derived status is processing
+  //     - Otherwise always show "completed" (never show failed here)
+  const backendStatus = (summary.status || "").toLowerCase();
+  const statusToShow: string = (() => {
+    if (backendStatus === "failed") return "failed";
+    if (backendStatus === "processing" || backendStatus === "in_progress")
+      return "processing";
+
+    // Backend thinks it's completed (or didn't provide a status)
+    if (derivedStatus === "processing") return "processing";
+    return "completed";
+  })();
 
   const errorReason: string = (() => {
     if (summary.error_message) return String(summary.error_message);
