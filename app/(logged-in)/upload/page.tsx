@@ -20,11 +20,10 @@ export default async function UploadPage() {
   );
 
   return (
-    <section className="md:fixed md:inset-0 md:overflow-hidden bg-black flex items-start md:items-center justify-center min-h-screen overflow-y-auto overflow-x-hidden">
-      <NoScroll />
-      <BackgroundLines className="min-h-screen md:h-full flex items-start md:items-center justify-center w-full flex-col px-3 sm:px-4 bg-black overflow-x-hidden">
+    <section className="bg-black min-h-screen overflow-x-hidden">
+      <BackgroundLines className="min-h-screen flex items-center justify-center w-full flex-col px-3 sm:px-4 bg-black overflow-x-hidden">
         <BgGradient />
-        <div className="mx-auto max-w-7xl px-3 sm:px-6 pt-4 sm:pt-6 pb-10 sm:pb-8">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 py-12 md:py-20 lg:py-24">
           <div className="flex flex-col items-center justify-center gap-4 sm:gap-6 text-center">
             <UploadHeader />
             <SupabaseUploadForm

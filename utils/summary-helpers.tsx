@@ -170,6 +170,25 @@ export const extractSummaryPreview = (summaryText: string): {
     });
   }
 
+  // If still no key points found, derive them from the first sentences of the
+  // main sections (works well with the new 11-section summary format).
+  if (keyPoints.length === 0 && sections.length > 1) {
+    // Skip the title section (index 0)
+    for (let i = 1; i < sections.length && keyPoints.length < 3; i++) {
+      const lines = sections[i]
+        .split("\n")
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith("#") && !line.startsWith("•"));
+
+      if (lines.length === 0) continue;
+
+      const candidate = lines[0];
+      if (candidate.length > 40) {
+        keyPoints.push(candidate);
+      }
+    }
+  }
+
   return {
     title,
     executiveSummary,
