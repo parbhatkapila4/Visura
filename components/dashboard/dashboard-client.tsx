@@ -88,25 +88,37 @@ export default function DashboardClient({
       </div>
 
       {userPlan === "basic" && !currentHasReachedLimit && (
-        <div className="bg-muted/50 border border-border rounded-lg p-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="bg-gradient-to-r from-gray-900/70 via-gray-800/70 to-gray-900/70 border border-white/10 rounded-2xl p-3 sm:p-4 md:p-5 shadow-[0_18px_45px_-25px_rgba(0,0,0,0.75)] relative overflow-hidden">
+          {/* subtle glow */}
+          <div className="pointer-events-none absolute inset-0 opacity-60 bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.30),transparent_55%),radial-gradient(circle_at_bottom_right,rgba(168,85,247,0.25),transparent_60%)]" />
+          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
-              <FileText className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+              <div className="h-10 w-10 rounded-xl bg-black/40 border border-white/15 flex items-center justify-center shadow-inner shadow-black/40">
+                <FileText className="w-5 h-5 text-orange-300" />
+              </div>
               <div>
-                <p className="text-sm font-medium text-foreground">
+                <p className="text-sm font-semibold text-white">
                   Basic Plan
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  {currentUploadCount} of {uploadLimit} summaries used
+                <p className="text-xs sm:text-sm text-gray-300">
+                  <span className="font-medium text-orange-300">
+                    {currentUploadCount}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-medium text-orange-300">
+                    {uploadLimit}
+                  </span>{" "}
+                  summaries used
                 </p>
               </div>
             </div>
             {currentUploadCount >= uploadLimit * 0.8 && (
               <Link
-                href="/#pricing"
-                className="text-sm text-primary hover:text-primary/80 font-medium text-center sm:text-right"
+                href="/checkout"
+                className="inline-flex items-center justify-center px-4 sm:px-5 py-2 rounded-full bg-gradient-to-r from-orange-500 via-orange-600 to-amber-400 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-orange-500/40 hover:shadow-orange-500/60 hover:scale-[1.02] active:scale-95 border border-orange-300/50 transition-all duration-200 whitespace-nowrap"
               >
-                Upgrade to Pro →
+                <span>Upgrade to Pro</span>
+                <span className="ml-1.5 text-base leading-none">↗</span>
               </Link>
             )}
           </div>

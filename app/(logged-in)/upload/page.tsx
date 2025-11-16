@@ -1,5 +1,4 @@
 import BgGradient from "@/components/common/bg-gradient";
-import NoScroll from "@/components/common/no-scroll";
 import SupabaseUploadForm from "@/components/upload/supabase-upload-form";
 import UploadHeader from "@/components/upload/upload-header";
 import { BackgroundLines } from "@/components/ui/background-lines";
