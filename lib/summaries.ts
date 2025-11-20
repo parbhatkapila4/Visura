@@ -65,3 +65,43 @@ export async function getUserDocumentCount(userId: string) {
     return 0;
   }
 }
+
+export async function getUserDownloadCount(userId: string) {
+  const sql = await getDbConnection();
+  try {
+    const [result] =
+      await sql`SELECT COUNT(DISTINCT summary_id) as count FROM summary_downloads WHERE user_id = ${userId}`;
+    return Number(result?.count || 0);
+  } catch (error) {
+    console.error("Error getting user download count", error);
+    return 0;
+  }
+}
+
+export async function hasSummaryBeenDownloaded(userId: string, summaryId: string) {
+  const sql = await getDbConnection();
+  try {
+    const [result] =
+      await sql`SELECT id FROM summary_downloads WHERE user_id = ${userId} AND summary_id = ${summaryId}`;
+    return !!result;
+  } catch (error) {
+    console.error("Error checking if summary was downloaded", error);
+    return false;
+  }
+}
+
+export async function recordSummaryDownload(userId: string, summaryId: string) {
+  const sql = await getDbConnection();
+  try {
+    // Use INSERT ... ON CONFLICT DO NOTHING to handle unique constraint
+    await sql`
+      INSERT INTO summary_downloads (user_id, summary_id)
+      VALUES (${userId}, ${summaryId})
+      ON CONFLICT (user_id, summary_id) DO NOTHING
+    `;
+    return { success: true };
+  } catch (error) {
+    console.error("Error recording summary download", error);
+    throw error;
+  }
+}

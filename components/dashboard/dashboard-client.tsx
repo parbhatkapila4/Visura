@@ -164,6 +164,7 @@ export default function DashboardClient({
               key={index}
               summary={summary}
               onDelete={() => handleDelete(summary.id)}
+              userPlan={userPlan}
             />
           ))}
         </div>

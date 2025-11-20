@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import DeleteButton from "./delete-button";
+import DownloadSummaryButtonDashboard from "./download-summary-button-dashboard";
 import {
   FileText,
   Hash,
@@ -74,9 +75,11 @@ const StatusBadge = ({ status }: { status: string }) => {
 export default function SummaryCard({
   summary,
   onDelete,
+  userPlan,
 }: {
   summary: any;
   onDelete?: (deletedSummaryId: string) => void;
+  userPlan?: string;
 }) {
   const preview = extractSummaryPreview(summary.summary_text);
   const [showError, setShowError] = useState(false);
@@ -309,7 +312,7 @@ export default function SummaryCard({
                 </div>
 
                 {/* Right: actions */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Button
                     variant="outline"
                     size="sm"
@@ -335,6 +338,14 @@ export default function SummaryCard({
                     <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5 relative z-10 group-hover:rotate-12 transition-transform" />
                     <span className="relative z-10">Chat</span>
                   </Button>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <DownloadSummaryButtonDashboard
+                      summaryId={summary.id}
+                      title={summary.title}
+                      summaryText={summary.summary_text}
+                      userPlan={userPlan || "basic"}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
