@@ -67,17 +67,69 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Record the download
+    // Get user plan to enforce limits
+    const user = await currentUser();
+    const email = user?.emailAddresses[0]?.emailAddress;
+    
+    if (!email) {
+      return NextResponse.json({ error: "User email not found" }, { status: 400 });
+    }
+
+    const userData = await getUserByEmail(email);
+    const userPlan = userData?.price_id ? "pro" : "basic";
+
+    // Check if user has already downloaded this specific summary
+    const hasDownloaded = await hasSummaryBeenDownloaded(userId, summaryId);
+
+    // If they've already downloaded this summary, allow re-download
+    if (hasDownloaded) {
+      return NextResponse.json({
+        success: true,
+        message: "Download allowed (re-download)",
+        isRedownload: true,
+      });
+    }
+
+    // For basic users, check download count BEFORE recording
+    if (userPlan === "basic") {
+      const downloadCount = await getUserDownloadCount(userId);
+      const downloadLimit = 2;
+
+      // Block if they've reached the limit
+      if (downloadCount >= downloadLimit) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Download limit reached",
+            message: `You have reached the download limit of ${downloadLimit} summaries. Upgrade to Pro for unlimited downloads.`,
+            downloadCount,
+            downloadLimit,
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Now record the download (atomic operation - check passed, now record)
     await recordSummaryDownload(userId, summaryId);
+
+    // Get updated count for response
+    const downloadCount = await getUserDownloadCount(userId);
 
     return NextResponse.json({
       success: true,
       message: "Download recorded successfully",
+      downloadCount,
+      downloadLimit: userPlan === "pro" ? null : 2,
     });
   } catch (error) {
     console.error("Error recording download:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { 
+        success: false,
+        error: "Internal server error",
+        message: "Failed to record download. Please try again."
+      },
       { status: 500 }
     );
   }

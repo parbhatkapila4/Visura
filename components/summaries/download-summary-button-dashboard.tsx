@@ -158,27 +158,8 @@ export default function DownloadSummaryButtonDashboard({
     setIsDownloading(true);
 
     try {
-      // Check download status first
-      const status = await checkDownloadStatus();
-      
-      if (!status) {
-        setIsDownloading(false);
-        return;
-      }
-
-      // Check if user can download
-      if (!status.canDownload) {
-        toast.error(
-          `Download limit reached. You have downloaded ${status.downloadCount} out of ${status.downloadLimit} summaries. Upgrade to Pro for unlimited downloads.`
-        );
-        setIsDownloading(false);
-        return;
-      }
-
-      // Generate PDF
-      const doc = generatePDF(summaryText, title || "Summary");
-      
-      // Record the download
+      // FIRST: Record the download (server will check limit and record atomically)
+      // This is done BEFORE generating PDF to prevent bypassing the limit
       const recordResponse = await fetch("/api/downloads/check", {
         method: "POST",
         headers: {
@@ -187,10 +168,18 @@ export default function DownloadSummaryButtonDashboard({
         body: JSON.stringify({ summaryId }),
       });
 
-      if (!recordResponse.ok) {
-        console.error("Failed to record download");
-        // Continue with download anyway
+      const recordData = await recordResponse.json();
+
+      // If server rejects (limit reached), stop here
+      if (!recordResponse.ok || !recordData.success) {
+        const errorMessage = recordData.message || recordData.error || "Download limit reached";
+        toast.error(errorMessage);
+        setIsDownloading(false);
+        return;
       }
+
+      // Server approved - now generate PDF
+      const doc = generatePDF(summaryText, title || "Summary");
 
       // Save PDF with proper filename
       const fileName = `${(title || "Summary").replace(/[^a-z0-9]/gi, "-")}-${new Date().toISOString().split("T")[0]}.pdf`;
@@ -211,19 +200,21 @@ export default function DownloadSummaryButtonDashboard({
   return (
     <Button
       size="sm"
-      className={`relative h-7 sm:h-8 md:h-8 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold rounded-lg transition-all duration-300 overflow-hidden ${
+      className={`group relative h-7 sm:h-8 md:h-8 w-7 sm:w-8 md:w-8 p-0 flex items-center justify-center rounded-lg transition-all duration-300 overflow-hidden ${
         isPro
-          ? "bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-500 hover:from-blue-400 hover:via-blue-500 hover:to-indigo-400 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-[1.02] border border-blue-400/20"
-          : "bg-gradient-to-r from-gray-600 via-gray-700 to-gray-600 hover:from-gray-500 hover:via-gray-600 hover:to-gray-500 text-white shadow-lg shadow-gray-500/20 hover:shadow-xl hover:shadow-gray-500/30 hover:scale-[1.02] border border-gray-500/20"
+          ? "bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-500 hover:from-blue-400 hover:via-blue-500 hover:to-indigo-400 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-[1.05] border border-blue-400/20"
+          : "bg-gradient-to-r from-gray-600 via-gray-700 to-gray-600 hover:from-gray-500 hover:via-gray-600 hover:to-gray-500 text-white shadow-lg shadow-gray-500/20 hover:shadow-xl hover:shadow-gray-500/30 hover:scale-[1.05] border border-gray-500/20"
       } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
       onClick={handleDownload}
       disabled={isDisabled}
+      title={isDownloading ? "Downloading..." : "Download PDF"}
     >
-      <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] hover:translate-x-[100%] transition-transform duration-700"></span>
-      <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5 relative z-10" />
-      <span className="relative z-10">
-        {isDownloading ? "Downloading..." : "Download"}
-      </span>
+      <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
+      {isDownloading ? (
+        <div className="relative z-10 w-3 h-3 sm:w-3.5 sm:h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+      ) : (
+        <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10 group-hover:scale-110 transition-transform" />
+      )}
     </Button>
   );
 }

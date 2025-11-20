@@ -312,11 +312,11 @@ export default function SummaryCard({
                 </div>
 
                 {/* Right: actions */}
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-nowrap">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="group relative h-7 sm:h-8 md:h-8 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold rounded-lg transition-all duration-300 border-slate-600/50 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 hover:border-slate-500/70 hover:text-white hover:scale-[1.02] hover:shadow-lg hover:shadow-slate-500/20 backdrop-blur-sm overflow-hidden"
+                    className="group relative h-7 sm:h-8 md:h-8 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold rounded-lg transition-all duration-300 border-slate-600/50 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 hover:border-slate-500/70 hover:text-white hover:scale-[1.02] hover:shadow-lg hover:shadow-slate-500/20 backdrop-blur-sm overflow-hidden whitespace-nowrap"
                     onClick={(e) => {
                       e.stopPropagation();
                       window.location.href = `/summaries/${summary.id}`;
@@ -328,7 +328,7 @@ export default function SummaryCard({
                   </Button>
                   <Button
                     size="sm"
-                    className="group relative h-7 sm:h-8 md:h-8 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold rounded-lg transition-all duration-300 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 hover:from-orange-400 hover:via-orange-500 hover:to-amber-400 text-white shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 hover:scale-[1.02] border border-orange-400/20 overflow-hidden"
+                    className="group relative h-7 sm:h-8 md:h-8 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold rounded-lg transition-all duration-300 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 hover:from-orange-400 hover:via-orange-500 hover:to-amber-400 text-white shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 hover:scale-[1.02] border border-orange-400/20 overflow-hidden whitespace-nowrap"
                     onClick={(e) => {
                       e.stopPropagation();
                       window.location.href = `/chatbot/${summary.id}`;
@@ -338,7 +338,7 @@ export default function SummaryCard({
                     <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5 relative z-10 group-hover:rotate-12 transition-transform" />
                     <span className="relative z-10">Chat</span>
                   </Button>
-                  <div onClick={(e) => e.stopPropagation()}>
+                  <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
                     <DownloadSummaryButtonDashboard
                       summaryId={summary.id}
                       title={summary.title}
