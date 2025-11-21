@@ -178,6 +178,47 @@ export async function generateShareToken(summaryId: string, userId: string): Pro
   }
 }
 
+// Revoke share token for a summary (sets share_token to NULL)
+export async function revokeShareToken(summaryId: string, userId: string): Promise<{ success: boolean }> {
+  const sql = await getDbConnection();
+  try {
+    // Verify the summary belongs to the user
+    const [summary] = await sql`
+      SELECT id FROM pdf_summaries WHERE id = ${summaryId} AND user_id = ${userId}
+    `;
+
+    if (!summary) {
+      throw new Error("Summary not found or access denied");
+    }
+
+    // Revoke the share token by setting it to NULL
+    await sql`
+      UPDATE pdf_summaries 
+      SET share_token = NULL
+      WHERE id = ${summaryId}
+    `;
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error revoking share token", error);
+    throw error;
+  }
+}
+
+// Check if summary has an active share token
+export async function hasActiveShareToken(summaryId: string): Promise<boolean> {
+  const sql = await getDbConnection();
+  try {
+    const [result] = await sql`
+      SELECT share_token FROM pdf_summaries WHERE id = ${summaryId} AND share_token IS NOT NULL
+    `;
+    return !!result?.share_token;
+  } catch (error) {
+    console.error("Error checking share token status", error);
+    return false;
+  }
+}
+
 // Find summary by share token (for public access)
 export async function findSummaryByShareToken(shareToken: string) {
   try {
