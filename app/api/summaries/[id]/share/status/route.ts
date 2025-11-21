@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { hasActiveShareToken } from "@/lib/summaries";
+import { hasActiveShareToken, getShareUrl } from "@/lib/summaries";
 
 export async function GET(
   request: NextRequest,
@@ -24,9 +24,15 @@ export async function GET(
     }
 
     const hasActiveShare = await hasActiveShareToken(summaryId);
+    let shareUrl = null;
+
+    if (hasActiveShare) {
+      shareUrl = await getShareUrl(summaryId, userId);
+    }
 
     return NextResponse.json({
       hasActiveShare,
+      shareUrl,
     });
   } catch (error) {
     console.error("Error checking share status:", error);

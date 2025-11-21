@@ -1,13 +1,20 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, MessageCircle, BookOpen, ArrowRight, Share2, X } from "lucide-react";
+import { ChevronLeft, MessageCircle, BookOpen, ArrowRight, Share2, X, Copy, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function SummaryHeader({
   title,
@@ -24,27 +31,31 @@ export default function SummaryHeader({
   const isInView = useInView(ref, { once: true, margin: "-50px" });
   const [hasActiveShare, setHasActiveShare] = useState(false);
   const [isCheckingShare, setIsCheckingShare] = useState(true);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
 
-  // Check if summary has an active share token
+  // Check if summary has an active share token and get the URL
   useEffect(() => {
     if (!summaryId) {
       setIsCheckingShare(false);
       return;
     }
 
-    const checkShareStatus = async () => {
-      try {
-        const response = await fetch(`/api/summaries/${summaryId}/share/status`);
-        if (response.ok) {
-          const data = await response.json();
-          setHasActiveShare(data.hasActiveShare || false);
-        }
-      } catch (error) {
-        console.error("Error checking share status:", error);
-      } finally {
-        setIsCheckingShare(false);
-      }
-    };
+        const checkShareStatus = async () => {
+          try {
+            const response = await fetch(`/api/summaries/${summaryId}/share/status`);
+            if (response.ok) {
+              const data = await response.json();
+              setHasActiveShare(data.hasActiveShare || false);
+              if (data.hasActiveShare && data.shareUrl) {
+                setShareUrl(data.shareUrl as string);
+              }
+            }
+          } catch (error) {
+            console.error("Error checking share status:", error);
+          } finally {
+            setIsCheckingShare(false);
+          }
+        };
 
     checkShareStatus();
   }, [summaryId]);
@@ -196,6 +207,7 @@ export default function SummaryHeader({
                       const data = await response.json();
                       const shareUrl = data.shareUrl;
                       setHasActiveShare(true); // Update state after successful share
+                      setShareUrl(shareUrl); // Store the share URL
 
                       // Try to use native share API first (mobile)
                       const shareData = {
@@ -224,8 +236,10 @@ export default function SummaryHeader({
                         });
                         if (response.ok) {
                           const data = await response.json();
-                          await navigator.clipboard.writeText(data.shareUrl);
+                          const shareUrl = data.shareUrl;
                           setHasActiveShare(true);
+                          setShareUrl(shareUrl);
+                          await navigator.clipboard.writeText(shareUrl);
                           toast.success("Share link copied to clipboard!");
                         } else {
                           throw error;
@@ -247,35 +261,88 @@ export default function SummaryHeader({
                   </div>
                 </Button>
               ) : (
-                <Button 
-                  onClick={async () => {
-                    try {
-                      const response = await fetch(`/api/summaries/${summaryId}/share/revoke`, {
-                        method: "POST",
-                      });
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="group relative flex items-center gap-2 bg-gradient-to-r from-gray-700 via-gray-600 to-gray-700 hover:from-gray-600 hover:via-gray-500 hover:to-gray-600 text-white rounded-xl transition-all duration-300 shadow-2xl shadow-gray-500/20 hover:shadow-gray-500/40 px-4 py-2 sm:px-6 sm:py-3 overflow-hidden border border-gray-600/50">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                      <div className="relative z-10 flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20">
+                          <Share2 className="h-4 w-4" />
+                        </div>
+                        <span className="font-bold text-sm sm:text-base">Share</span>
+                        <ChevronDown className="h-4 w-4 opacity-70" />
+                      </div>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent 
+                    align="end" 
+                    className="w-56 bg-gray-900 border-gray-700 text-white"
+                  >
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        try {
+                          // If we have the URL stored, use it, otherwise fetch it
+                          let urlToCopy = shareUrl;
+                          
+                          if (!urlToCopy) {
+                            const response = await fetch(`/api/summaries/${summaryId}/share`, {
+                              method: "POST",
+                            });
+                            if (response.ok) {
+                              const data = await response.json();
+                              urlToCopy = data.shareUrl;
+                              if (urlToCopy) {
+                                setShareUrl(urlToCopy);
+                              }
+                            } else {
+                              throw new Error("Failed to get share link");
+                            }
+                          }
 
-                      if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || "Failed to revoke share link");
-                      }
+                          if (urlToCopy) {
+                            await navigator.clipboard.writeText(urlToCopy);
+                            toast.success("Share link copied to clipboard!");
+                          } else {
+                            throw new Error("Share URL not available");
+                          }
+                        } catch (error) {
+                          console.error("Copy error:", error);
+                          toast.error("Failed to copy share link. Please try again.");
+                        }
+                      }}
+                      className="cursor-pointer focus:bg-gray-800 focus:text-white"
+                    >
+                      <Copy className="mr-2 h-4 w-4" />
+                      <span>Copy Link</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-gray-700" />
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(`/api/summaries/${summaryId}/share/revoke`, {
+                            method: "POST",
+                          });
 
-                      setHasActiveShare(false);
-                      toast.success("Share link revoked successfully. The link is no longer accessible.");
-                    } catch (error) {
-                      console.error("Revoke error:", error);
-                      toast.error("Failed to revoke share link. Please try again.");
-                    }
-                  }}
-                  className="group relative flex items-center gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-500 hover:via-red-400 hover:to-red-500 text-white rounded-xl transition-all duration-300 shadow-2xl shadow-red-500/30 hover:shadow-red-500/50 px-4 py-2 sm:px-6 sm:py-3 overflow-hidden border border-red-500/50"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                  <div className="relative z-10 flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30">
-                      <X className="h-4 w-4" />
-                    </div>
-                    <span className="font-bold text-sm sm:text-base">Revoke Share</span>
-                  </div>
-                </Button>
+                          if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || "Failed to revoke share link");
+                          }
+
+                          setHasActiveShare(false);
+                          setShareUrl(null);
+                          toast.success("Share link revoked successfully. The link is no longer accessible.");
+                        } catch (error) {
+                          console.error("Revoke error:", error);
+                          toast.error("Failed to revoke share link. Please try again.");
+                        }
+                      }}
+                      className="cursor-pointer focus:bg-red-500/20 focus:text-red-400 text-red-400"
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      <span>Revoke Share</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </motion.div>
           )}

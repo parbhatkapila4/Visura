@@ -2,11 +2,14 @@
 
 import SummaryCard from "@/components/summaries/summary-card";
 import EmptySummaryState from "@/components/dashboard/empty-summary-state";
+import AnalyticsDashboard from "@/components/dashboard/analytics-dashboard";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ArrowRight, Plus, FileText, AlertTriangle, Lock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useUser } from "@clerk/nextjs";
 
 interface Summary {
   id: string;
@@ -32,6 +35,7 @@ export default function DashboardClient({
 }: DashboardClientProps) {
   const [summaries, setSummaries] = useState(initialSummaries);
   const router = useRouter();
+  const { user } = useUser();
 
   const currentHasReachedLimit = summaries.length >= uploadLimit;
   const currentUploadCount = summaries.length;
@@ -43,14 +47,14 @@ export default function DashboardClient({
   };
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <Tabs defaultValue="summaries" className="space-y-6 sm:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-2 text-center sm:text-left">
           <h1 className="text-2xl sm:text-3xl font-bold text-white/80">
-            Your Summaries
+            Dashboard
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg">
-            Transform your PDFs into concise summaries with AI
+            Manage your summaries and view analytics
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -87,6 +91,12 @@ export default function DashboardClient({
         </div>
       </div>
 
+      <TabsList className="w-full sm:w-auto">
+        <TabsTrigger value="summaries">Summaries</TabsTrigger>
+        <TabsTrigger value="analytics">Analytics</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="summaries" className="space-y-6 sm:space-y-8 mt-6">
       {userPlan === "basic" && !currentHasReachedLimit && (
         <div className="bg-gradient-to-r from-gray-900/70 via-gray-800/70 to-gray-900/70 border border-white/10 rounded-2xl p-3 sm:p-4 md:p-5 shadow-[0_18px_45px_-25px_rgba(0,0,0,0.75)] relative overflow-hidden">
           {/* subtle glow */}
@@ -155,20 +165,25 @@ export default function DashboardClient({
         </div>
       )}
 
-      {summaries.length === 0 ? (
-        <EmptySummaryState />
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-          {summaries.map((summary, index) => (
-            <SummaryCard
-              key={index}
-              summary={summary}
-              onDelete={() => handleDelete(summary.id)}
-              userPlan={userPlan}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+        {summaries.length === 0 ? (
+          <EmptySummaryState />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+            {summaries.map((summary, index) => (
+              <SummaryCard
+                key={index}
+                summary={summary}
+                onDelete={() => handleDelete(summary.id)}
+                userPlan={userPlan}
+              />
+            ))}
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="analytics" className="mt-6">
+        {user?.id && <AnalyticsDashboard userId={user.id} />}
+      </TabsContent>
+    </Tabs>
   );
 }

@@ -219,6 +219,28 @@ export async function hasActiveShareToken(summaryId: string): Promise<boolean> {
   }
 }
 
+// Get share URL for a summary (if share token exists)
+export async function getShareUrl(summaryId: string, userId: string): Promise<string | null> {
+  const sql = await getDbConnection();
+  try {
+    // Verify the summary belongs to the user
+    const [summary] = await sql`
+      SELECT share_token FROM pdf_summaries WHERE id = ${summaryId} AND user_id = ${userId} AND share_token IS NOT NULL
+    `;
+    
+    if (!summary?.share_token) {
+      return null;
+    }
+
+    // Return the full share URL
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    return `${baseUrl}/share/${summary.share_token}`;
+  } catch (error) {
+    console.error("Error getting share URL", error);
+    return null;
+  }
+}
+
 // Find summary by share token (for public access)
 export async function findSummaryByShareToken(shareToken: string) {
   try {
