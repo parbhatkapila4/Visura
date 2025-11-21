@@ -20,11 +20,10 @@ export const metadata: Metadata = {
     "Visura transforms complex PDF documents into clear, actionable insights that help you make better decisions faster",
   icons: {
     icon: [
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/Logo.png", sizes: "any", type: "image/png" },
     ],
-    shortcut: "/favicon-32x32.png",
-    apple: "/visura-logo.png",
+    shortcut: "/Logo.png",
+    apple: "/Logo.png",
   },
 };
 

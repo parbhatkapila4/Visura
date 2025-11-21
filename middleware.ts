@@ -6,7 +6,16 @@ const isProtectedRoute = createRouteMatcher([
   "/upload(.*)",
 ]);
 
+const isPublicRoute = createRouteMatcher([
+  "/share(.*)",
+]);
+
 export default clerkMiddleware(async (auth, req) => {
+  // Allow public access to share routes
+  if (isPublicRoute(req)) {
+    return;
+  }
+  
   if (isProtectedRoute(req)) await auth.protect();
 });
 
