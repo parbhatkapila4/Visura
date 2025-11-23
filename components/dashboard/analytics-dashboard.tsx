@@ -2,25 +2,30 @@
 
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { FileText, Clock, TrendingUp, CheckCircle, BarChart3, Activity, ArrowUpRight, Sparkles, Zap, Users, Target, Calendar, Filter, Grid, MoreVertical, Eye, Download } from "lucide-react";
+import { FileText, Clock, TrendingUp, CheckCircle, BarChart3, Activity, Zap, MoreVertical } from "lucide-react";
 import { motion } from "framer-motion";
 import { useUser } from "@clerk/nextjs";
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 interface AnalyticsData {
   totalDocuments: number;
   totalWordsProcessed: number;
-  averageProcessingTime: number;
+  avgWordsPerDocument: number;
   successRate: number;
+  totalTimeSavedHours: number;
+  totalTimeSavedDays: number;
+  totalMoneySaved: number;
+  docsThisMonth: number;
+  docsLastMonth: number;
+  docsThisWeek: number;
+  monthOverMonthGrowth: number;
   documentsOverTime: Array<{ date: string; count: number }>;
-  recentActivity: Array<{ id: string; action: string; timestamp: string }>;
+  recentActivity: Array<{ id: string; title: string; action: string; timestamp: string }>;
 }
 
 export default function AnalyticsDashboard({ userId }: { userId: string }) {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedStore, setSelectedStore] = useState("All");
-  const [timeRange, setTimeRange] = useState("Monthly");
   const { user } = useUser();
 
   useEffect(() => {
@@ -74,8 +79,6 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
   };
 
   const userName = user?.fullName || user?.firstName || "User";
-  const documentsGoal = 100;
-  const goalPercentage = Math.min((analytics.totalDocuments / documentsGoal) * 100, 100);
 
   return (
     <div className="space-y-6">
@@ -94,46 +97,96 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
         </p>
       </motion.div>
 
-      {/* Balance Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+      {/* Key Metrics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <Card className="relative overflow-hidden bg-gradient-to-br from-gray-900/90 to-gray-800/90 border-gray-700/50 backdrop-blur-sm hover:border-gray-600/50 transition-all duration-300 shadow-xl">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 rounded-xl bg-black/40 border border-gray-700/50">
+            <div className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2.5 rounded-xl bg-black/40 border border-gray-700/50">
                   <FileText className="w-5 h-5 text-white" />
                 </div>
-                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold border border-emerald-500/30">
-                  +30%
-                </span>
+                {analytics.monthOverMonthGrowth !== 0 && (
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${
+                    analytics.monthOverMonthGrowth > 0
+                      ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                      : "bg-red-500/20 text-red-400 border-red-500/30"
+                  }`}>
+                    {analytics.monthOverMonthGrowth > 0 ? '+' : ''}{analytics.monthOverMonthGrowth}%
+                  </span>
+                )}
               </div>
               <p className="text-sm text-gray-400 mb-2">Total Documents</p>
-              <p className="text-3xl font-bold text-white">{analytics.totalDocuments}</p>
+              <p className="text-3xl font-bold text-white mb-1">{analytics.totalDocuments}</p>
+              <p className="text-sm text-gray-500">{analytics.docsThisMonth} this month</p>
             </div>
           </Card>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <Card className="relative overflow-hidden bg-gradient-to-br from-gray-900/90 to-gray-800/90 border-gray-700/50 backdrop-blur-sm hover:border-gray-600/50 transition-all duration-300 shadow-xl">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 rounded-xl bg-black/40 border border-gray-700/50">
-                  <TrendingUp className="w-5 h-5 text-orange-400" />
+            <div className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2.5 rounded-xl bg-black/40 border border-gray-700/50">
+                  <Zap className="w-5 h-5 text-orange-400" />
                 </div>
-                <span className="px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-semibold border border-red-500/30">
-                  -3%
-                </span>
               </div>
-              <p className="text-sm text-gray-400 mb-2">Words Processed</p>
-              <p className="text-3xl font-bold text-white">{formatNumber(analytics.totalWordsProcessed)}</p>
+              <p className="text-sm text-gray-400 mb-2">Time Saved</p>
+              <p className="text-3xl font-bold text-white mb-1">
+                {analytics.totalTimeSavedHours >= 24 
+                  ? `${analytics.totalTimeSavedDays.toFixed(1)}d`
+                  : `${analytics.totalTimeSavedHours.toFixed(1)}h`
+                }
+              </p>
+              <p className="text-sm text-gray-500">Automated processing</p>
+            </div>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <Card className="relative overflow-hidden bg-gradient-to-br from-gray-900/90 to-gray-800/90 border-gray-700/50 backdrop-blur-sm hover:border-gray-600/50 transition-all duration-300 shadow-xl">
+            <div className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2.5 rounded-xl bg-black/40 border border-gray-700/50">
+                  <TrendingUp className="w-5 h-5 text-emerald-400" />
+                </div>
+              </div>
+              <p className="text-sm text-gray-400 mb-2">Money Saved</p>
+              <p className="text-3xl font-bold text-white mb-1">
+                ${formatNumber(analytics.totalMoneySaved)}
+              </p>
+              <p className="text-sm text-gray-500">Estimated value</p>
+            </div>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <Card className="relative overflow-hidden bg-gradient-to-br from-gray-900/90 to-gray-800/90 border-gray-700/50 backdrop-blur-sm hover:border-gray-600/50 transition-all duration-300 shadow-xl">
+            <div className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2.5 rounded-xl bg-black/40 border border-gray-700/50">
+                  <CheckCircle className="w-5 h-5 text-blue-400" />
+                </div>
+              </div>
+              <p className="text-sm text-gray-400 mb-2">Success Rate</p>
+              <p className="text-3xl font-bold text-white mb-1">{analytics.successRate}%</p>
+              <p className="text-sm text-gray-500">Completed documents</p>
             </div>
           </Card>
         </motion.div>
@@ -146,46 +199,55 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
         transition={{ duration: 0.5, delay: 0.3 }}
       >
         <Card className="relative overflow-hidden bg-gradient-to-br from-gray-900/90 to-gray-800/90 border-gray-700/50 backdrop-blur-sm shadow-xl">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-orange-500/20 border border-orange-500/20">
+                <div className="p-2.5 rounded-lg bg-orange-500/20 border border-orange-500/20">
                   <BarChart3 className="w-5 h-5 text-orange-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-white">Documents Overview</h3>
+                <h3 className="text-lg font-semibold text-white">Documents Overview</h3>
               </div>
               <MoreVertical className="w-5 h-5 text-gray-500 cursor-pointer hover:text-gray-300" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <p className="text-sm text-gray-400 mb-1">Number of Documents</p>
-                    <p className="text-2xl font-bold text-white">{analytics.totalDocuments}</p>
-                  </div>
-                  <div className="flex items-center gap-1 text-emerald-400">
-                    <ArrowUpRight className="w-4 h-4" />
-                    <span className="text-sm font-semibold">3.9%</span>
-                  </div>
+              <div className="space-y-6">
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">Total Documents</p>
+                  <p className="text-3xl font-bold text-white mb-1.5">{analytics.totalDocuments}</p>
+                  <p className="text-sm text-gray-500">
+                    {analytics.docsThisWeek} processed this week
+                  </p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-400 mb-1">Total Words</p>
-                    <p className="text-2xl font-bold text-white">{formatNumber(analytics.totalWordsProcessed)}</p>
-                  </div>
-                  <div className="flex items-center gap-1 text-emerald-400">
-                    <ArrowUpRight className="w-4 h-4" />
-                    <span className="text-sm font-semibold">4.9%</span>
-                  </div>
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">Total Words Processed</p>
+                  <p className="text-3xl font-bold text-white mb-1.5">{formatNumber(analytics.totalWordsProcessed)}</p>
+                  <p className="text-sm text-gray-500">
+                    ~{formatNumber(analytics.avgWordsPerDocument)} words per document
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400 mb-2">This Month</p>
+                  <p className="text-3xl font-bold text-white mb-1.5">{analytics.docsThisMonth}</p>
+                  {analytics.docsLastMonth > 0 && (
+                    <p className="text-sm text-gray-500">
+                      {analytics.docsLastMonth} last month
+                      {analytics.monthOverMonthGrowth !== 0 && (
+                        <span className={`ml-2 ${
+                          analytics.monthOverMonthGrowth > 0 ? 'text-emerald-400' : 'text-red-400'
+                        }`}>
+                          ({analytics.monthOverMonthGrowth > 0 ? '+' : ''}{analytics.monthOverMonthGrowth}%)
+                        </span>
+                      )}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              <div>
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-400">Documents Goal</span>
-                    <span className="text-sm font-semibold text-white">{goalPercentage.toFixed(1)}%</span>
+              <div className="flex flex-col h-full">
+                <div className="mb-8">
+                  <div className="mb-4">
+                    <span className="text-sm font-medium text-gray-300">Time Saved This Month</span>
                   </div>
                   {/* Progress Gauge */}
                   <div className="relative w-full h-32">
@@ -198,37 +260,48 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                         strokeWidth="12"
                         className="text-gray-800"
                       />
-                      {/* Progress arc */}
+                      {/* Progress arc - based on documents this month */}
                       <path
                         d="M 20 100 A 80 80 0 0 1 180 100"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="12"
-                        strokeDasharray={`${(goalPercentage / 100) * 502.65} 502.65`}
+                        strokeDasharray={`${Math.min((analytics.docsThisMonth / 50) * 502.65, 502.65)} 502.65`}
                         strokeLinecap="round"
                         className="text-orange-500"
                       />
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-white">{analytics.totalDocuments}</p>
-                        <p className="text-xs text-gray-400">of {documentsGoal}</p>
+                        <p className="text-2xl font-bold text-white">
+                          {analytics.docsThisMonth > 0 
+                            ? `${(analytics.docsThisMonth * 0.5).toFixed(1)}h`
+                            : '0h'
+                          }
+                        </p>
+                        <p className="text-sm text-gray-400">saved this month</p>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-emerald-400">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="text-sm">Your document volume has increased</span>
-                  <span className="text-sm font-semibold">+10%</span>
+                <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700/50 mt-auto">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-300">Total Value Saved</span>
+                    <span className="text-xl font-bold text-emerald-400">
+                      ${formatNumber(analytics.totalMoneySaved)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Based on automated processing vs manual review
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Documents Over Time Line Chart */}
             {analytics.documentsOverTime.length > 0 && (
-              <div className="h-64 bg-gray-800/30 rounded-xl border border-gray-700/50 p-4">
-                <p className="text-sm font-medium text-gray-300 mb-4">Documents Over Time</p>
+              <div className="h-56 bg-gray-800/30 rounded-xl border border-gray-700/50 p-4">
+                <p className="text-sm font-medium text-gray-300 mb-3">Documents Over Time</p>
                 <ResponsiveContainer width="100%" height="90%">
                   <LineChart data={analytics.documentsOverTime.map((item) => ({
                     date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -277,57 +350,21 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
         transition={{ duration: 0.5, delay: 0.4 }}
       >
         <Card className="relative overflow-hidden bg-gradient-to-br from-gray-900/90 to-gray-800/90 border-gray-700/50 backdrop-blur-sm shadow-xl">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/20 border border-blue-500/20">
+                <div className="p-2.5 rounded-lg bg-blue-500/20 border border-blue-500/20">
                   <Activity className="w-5 h-5 text-blue-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-white">Document Analytics</h3>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800/50 border border-gray-700/50">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <select
-                    value={timeRange}
-                    onChange={(e) => setTimeRange(e.target.value)}
-                    className="bg-transparent text-sm text-white border-none outline-none cursor-pointer"
-                  >
-                    <option value="Monthly">Monthly</option>
-                    <option value="Annually">Annually</option>
-                  </select>
-                </div>
-                <button className="p-2 rounded-lg bg-gray-800/50 border border-gray-700/50 hover:bg-gray-700/50 transition-colors">
-                  <Grid className="w-4 h-4 text-gray-400" />
-                </button>
-                <button className="p-2 rounded-lg bg-gray-800/50 border border-gray-700/50 hover:bg-gray-700/50 transition-colors">
-                  <Filter className="w-4 h-4 text-gray-400" />
-                </button>
+                <h3 className="text-lg font-semibold text-white">Document Analytics</h3>
               </div>
             </div>
 
-            {/* Store Tabs */}
-            <div className="flex items-center gap-2 mb-6">
-              {["All", "Recent", "Shared", "Archived"].map((store) => (
-                <button
-                  key={store}
-                  onClick={() => setSelectedStore(store)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    selectedStore === store
-                      ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                      : "bg-gray-800/50 text-gray-400 border border-gray-700/50 hover:bg-gray-700/50"
-                  }`}
-                >
-                  {store}
-                </button>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
               {/* Document Activity Chart */}
               <div className="lg:col-span-2">
                 <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-medium text-gray-300">Document Activity</p>
                     <div className="flex items-center gap-2 text-xs text-gray-500">
                       <span>&gt;10</span>
@@ -335,7 +372,7 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                       <span>&gt;100</span>
                     </div>
                   </div>
-                  <div className="h-64 bg-gray-900/50 rounded-lg border border-gray-800/50 p-4">
+                  <div className="h-56 bg-gray-900/50 rounded-lg border border-gray-800/50 p-4">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={analytics.documentsOverTime.length > 0 ? analytics.documentsOverTime.map((item, idx) => ({
                         date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -372,48 +409,42 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                 </div>
               </div>
 
-              {/* Growth Donut Chart */}
+              {/* Key Metrics Summary */}
               <div>
                 <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
-                  <p className="text-sm font-medium text-gray-300 mb-4">Growth Rate</p>
-                  <div className="h-48 mb-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={[
-                            { name: 'Growth', value: analytics.successRate },
-                            { name: 'Remaining', value: 100 - analytics.successRate }
-                          ]}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={50}
-                          outerRadius={70}
-                          startAngle={90}
-                          endAngle={-270}
-                          dataKey="value"
-                        >
-                          <Cell fill="#F97316" />
-                          <Cell fill="#374151" />
-                        </Pie>
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: '#1F2937',
-                            border: '1px solid #374151',
-                            borderRadius: '8px',
-                            color: '#fff'
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-white mb-1">+{analytics.successRate}%</p>
-                    <p className="text-xs text-gray-400 mb-1">Growth</p>
-                    <p className="text-lg font-semibold text-white mb-1">{analytics.totalDocuments}</p>
-                    <p className="text-sm text-gray-400 mb-3">Total Documents</p>
-                    <button className="w-full px-4 py-2 rounded-lg bg-orange-500/20 text-orange-400 text-sm font-medium border border-orange-500/30 hover:bg-orange-500/30 transition-colors">
-                      View Details
-                    </button>
+                  <p className="text-sm font-medium text-gray-300 mb-4">This Month Summary</p>
+                  <div className="space-y-3">
+                    <div className="bg-gray-900/50 rounded-lg p-3.5 border border-gray-700/30">
+                      <p className="text-sm text-gray-400 mb-1.5">Documents Processed</p>
+                      <p className="text-2xl font-bold text-white mb-1">{analytics.docsThisMonth}</p>
+                      {analytics.docsLastMonth > 0 && analytics.monthOverMonthGrowth !== 0 && (
+                        <p className={`text-sm mt-1 ${
+                          analytics.monthOverMonthGrowth > 0 ? 'text-emerald-400' : 'text-red-400'
+                        }`}>
+                          {analytics.monthOverMonthGrowth > 0 ? '+' : ''}{analytics.monthOverMonthGrowth}% vs last month
+                        </p>
+                      )}
+                    </div>
+                    <div className="bg-gray-900/50 rounded-lg p-3.5 border border-gray-700/30">
+                      <p className="text-sm text-gray-400 mb-1.5">Time Saved</p>
+                      <p className="text-2xl font-bold text-emerald-400 mb-1">
+                        {analytics.docsThisMonth > 0 
+                          ? `${(analytics.docsThisMonth * 0.5).toFixed(1)} hours`
+                          : '0 hours'
+                        }
+                      </p>
+                      <p className="text-sm text-gray-500">This month</p>
+                    </div>
+                    <div className="bg-gradient-to-r from-orange-500/10 to-amber-500/10 rounded-lg p-3.5 border border-orange-500/20">
+                      <p className="text-sm text-gray-300 mb-1.5 font-medium">Value Saved</p>
+                      <p className="text-2xl font-bold text-orange-400 mb-1">
+                        ${analytics.docsThisMonth > 0 
+                          ? formatNumber(Math.round(analytics.docsThisMonth * 0.5 * 50))
+                          : '0'
+                        }
+                      </p>
+                      <p className="text-sm text-gray-400">This month</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -431,131 +462,122 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
           transition={{ duration: 0.5, delay: 0.5 }}
         >
           <Card className="relative overflow-hidden bg-gradient-to-br from-gray-900/90 to-gray-800/90 border-gray-700/50 backdrop-blur-sm shadow-xl">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
+            <div className="p-5">
+              <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-purple-500/20 border border-purple-500/20">
+                  <div className="p-2.5 rounded-lg bg-purple-500/20 border border-purple-500/20">
                     <Clock className="w-5 h-5 text-purple-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white">Recent Activity</h3>
+                  <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
                 </div>
-                <button className="text-sm text-orange-400 hover:text-orange-300 transition-colors">
-                  See all →
-                </button>
+                {analytics.recentActivity.length > 5 && (
+                  <button className="text-sm text-orange-400 hover:text-orange-300 transition-colors">
+                    See all →
+                  </button>
+                )}
               </div>
-              <div className="space-y-4">
-                {analytics.recentActivity.slice(0, 3).map((activity, index) => (
-                  <div
-                    key={activity.id}
-                    className="flex items-center justify-between p-4 rounded-xl bg-gray-800/30 border border-gray-700/50 hover:border-gray-600/50 transition-all"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500/20 to-amber-500/10 border border-orange-500/20 flex items-center justify-center">
-                        <FileText className="w-5 h-5 text-orange-400" />
+              <div className="space-y-3">
+                {analytics.recentActivity.length > 0 ? (
+                  analytics.recentActivity.slice(0, 5).map((activity) => {
+                    const date = new Date(activity.timestamp);
+                    const now = new Date();
+                    const diffTime = Math.abs(now.getTime() - date.getTime());
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+                    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+                    
+                    let timeAgo = '';
+                    if (diffDays > 0) {
+                      timeAgo = `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+                    } else if (diffHours > 0) {
+                      timeAgo = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+                    } else if (diffMinutes > 0) {
+                      timeAgo = `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+                    } else {
+                      timeAgo = 'Just now';
+                    }
+
+                    return (
+                      <div
+                        key={activity.id}
+                        className="flex items-center justify-between p-3.5 rounded-xl bg-gray-800/30 border border-gray-700/50 hover:border-gray-600/50 transition-all"
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500/20 to-amber-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
+                            <FileText className="w-5 h-5 text-orange-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-white truncate">
+                              {activity.title || 'Untitled Document'}
+                            </p>
+                            <p className="text-sm text-gray-500">{timeAgo}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-white">{activity.action}</p>
-                        <p className="text-xs text-gray-500">
-                          {index === 0 ? "01 Day Ago" : index === 1 ? "02 Days Ago" : "03 Days Ago"}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-sm font-semibold text-emerald-400">+ {analytics.totalDocuments}</span>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-sm">No recent activity</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </Card>
         </motion.div>
 
-        {/* Engagement Rate */}
+        {/* Processing Stats */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
         >
           <Card className="relative overflow-hidden bg-gradient-to-br from-gray-900/90 to-gray-800/90 border-gray-700/50 backdrop-blur-sm shadow-xl">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
+            <div className="p-5">
+              <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-500/20 border border-emerald-500/20">
-                    <BarChart3 className="w-5 h-5 text-emerald-400" />
+                  <div className="p-2.5 rounded-lg bg-blue-500/20 border border-blue-500/20">
+                    <Activity className="w-5 h-5 text-blue-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white">Engagement Rate</h3>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setTimeRange("Monthly")}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                      timeRange === "Monthly"
-                        ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                        : "bg-gray-800/50 text-gray-400 border border-gray-700/50"
-                    }`}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    onClick={() => setTimeRange("Annually")}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                      timeRange === "Annually"
-                        ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                        : "bg-gray-800/50 text-gray-400 border border-gray-700/50"
-                    }`}
-                  >
-                    Annually
-                  </button>
+                  <h3 className="text-lg font-semibold text-white">Processing Stats</h3>
                 </div>
               </div>
-              <div className="h-64 bg-gray-800/30 rounded-xl border border-gray-700/50 p-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={timeRange === "Monthly" 
-                      ? [
-                          { month: 'Jan', engagement: 8.2 },
-                          { month: 'Feb', engagement: 7.5 },
-                          { month: 'Mar', engagement: 9.1 },
-                          { month: 'Apr', engagement: 8.8 },
-                          { month: 'May', engagement: 10.5 },
-                          { month: 'Jun', engagement: 9.8 },
-                          { month: 'Jul', engagement: 11.2 },
-                        ]
-                      : [
-                          { year: '2020', engagement: 8.5 },
-                          { year: '2021', engagement: 9.2 },
-                          { year: '2022', engagement: 9.8 },
-                          { year: '2023', engagement: 10.1 },
-                          { year: '2024', engagement: 10.5 },
-                        ]
-                    }
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
-                    <XAxis 
-                      dataKey={timeRange === "Monthly" ? "month" : "year"}
-                      stroke="#9CA3AF"
-                      fontSize={12}
-                      tick={{ fill: '#9CA3AF' }}
-                    />
-                    <YAxis 
-                      stroke="#9CA3AF"
-                      fontSize={12}
-                      tick={{ fill: '#9CA3AF' }}
-                      domain={[0, 12]}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#1F2937',
-                        border: '1px solid #374151',
-                        borderRadius: '8px',
-                        color: '#fff'
-                      }}
-                    />
-                    <Bar 
-                      dataKey="engagement" 
-                      fill="#10B981"
-                      radius={[8, 8, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="space-y-3">
+                <div className="bg-gray-800/30 rounded-lg p-3.5 border border-gray-700/50">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm font-medium text-gray-300">Documents This Week</span>
+                    <span className="text-xl font-bold text-white">{analytics.docsThisWeek}</span>
+                  </div>
+                  <p className="text-sm text-gray-500">Processed in the last 7 days</p>
+                </div>
+                <div className="bg-gray-800/30 rounded-lg p-3.5 border border-gray-700/50">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm font-medium text-gray-300">Average Words per Document</span>
+                    <span className="text-xl font-bold text-white">{formatNumber(analytics.avgWordsPerDocument)}</span>
+                  </div>
+                  <p className="text-sm text-gray-500">Based on all processed documents</p>
+                </div>
+                <div className="bg-gray-800/30 rounded-lg p-3.5 border border-gray-700/50">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm font-medium text-gray-300">Total Time Saved</span>
+                    <span className="text-xl font-bold text-emerald-400">
+                      {analytics.totalTimeSavedHours >= 24 
+                        ? `${analytics.totalTimeSavedDays.toFixed(1)} days`
+                        : `${analytics.totalTimeSavedHours.toFixed(1)} hours`
+                      }
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500">Compared to manual processing</p>
+                </div>
+                <div className="bg-gradient-to-r from-orange-500/10 to-amber-500/10 rounded-lg p-3.5 border border-orange-500/20">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm text-gray-300 font-medium">Total Value Saved</span>
+                    <span className="text-2xl font-bold text-orange-400">
+                      ${formatNumber(analytics.totalMoneySaved)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-400">Estimated value from automation</p>
+                </div>
               </div>
             </div>
           </Card>
@@ -564,3 +586,4 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
     </div>
   );
 }
+

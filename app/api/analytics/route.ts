@@ -57,26 +57,85 @@ export async function GET(request: NextRequest) {
       LIMIT 10
     `;
 
+    // Get documents this month
+    const [docsThisMonth] = await sql`
+      SELECT COUNT(*) as count 
+      FROM pdf_summaries 
+      WHERE user_id = ${userId}
+        AND created_at >= DATE_TRUNC('month', CURRENT_DATE)
+    `;
+
+    // Get documents last month
+    const [docsLastMonth] = await sql`
+      SELECT COUNT(*) as count 
+      FROM pdf_summaries 
+      WHERE user_id = ${userId}
+        AND created_at >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')
+        AND created_at < DATE_TRUNC('month', CURRENT_DATE)
+    `;
+
+    // Get documents this week
+    const [docsThisWeek] = await sql`
+      SELECT COUNT(*) as count 
+      FROM pdf_summaries 
+      WHERE user_id = ${userId}
+        AND created_at >= DATE_TRUNC('week', CURRENT_DATE)
+    `;
+
     const totalDocuments = Number(totalDocs?.count || 0);
     const totalWordsProcessed = Number(wordsData?.total_words || 0);
     const successRate = successData?.total > 0
       ? Math.round((Number(successData.completed) / Number(successData.total)) * 100)
       : 100;
 
-    // Calculate average processing time (mock for now - you can track this in your upload process)
-    const averageProcessingTime = 3.5; // seconds
+    // Calculate meaningful metrics
+    // Average manual document review: 30 minutes per document
+    // Average automated processing: 3.5 seconds per document
+    const manualReviewTimePerDoc = 30 * 60; // 30 minutes in seconds
+    const automatedProcessingTime = 3.5; // seconds
+    const timeSavedPerDocument = manualReviewTimePerDoc - automatedProcessingTime; // seconds
+    const totalTimeSaved = totalDocuments * timeSavedPerDocument; // seconds
+    const totalTimeSavedHours = totalTimeSaved / 3600; // convert to hours
+    const totalTimeSavedDays = totalTimeSavedHours / 24; // convert to days
+
+    // Calculate money saved (assuming average hourly rate of $50/hour)
+    const averageHourlyRate = 50; // dollars per hour
+    const totalMoneySaved = totalTimeSavedHours * averageHourlyRate;
+
+    // Calculate month-over-month growth
+    const docsThisMonthCount = Number(docsThisMonth?.count || 0);
+    const docsLastMonthCount = Number(docsLastMonth?.count || 0);
+    const monthOverMonthGrowth = docsLastMonthCount > 0
+      ? Math.round(((docsThisMonthCount - docsLastMonthCount) / docsLastMonthCount) * 100)
+      : docsThisMonthCount > 0 ? 100 : 0;
+
+    // Calculate average words per document
+    const avgWordsPerDocument = totalDocuments > 0
+      ? Math.round(totalWordsProcessed / totalDocuments)
+      : 0;
+
+    // Documents this week
+    const docsThisWeekCount = Number(docsThisWeek?.count || 0);
 
     return NextResponse.json({
       totalDocuments,
       totalWordsProcessed,
-      averageProcessingTime,
+      avgWordsPerDocument,
       successRate,
+      totalTimeSavedHours: Math.round(totalTimeSavedHours * 10) / 10,
+      totalTimeSavedDays: Math.round(totalTimeSavedDays * 10) / 10,
+      totalMoneySaved: Math.round(totalMoneySaved),
+      docsThisMonth: docsThisMonthCount,
+      docsLastMonth: docsLastMonthCount,
+      docsThisWeek: docsThisWeekCount,
+      monthOverMonthGrowth,
       documentsOverTime: documentsOverTime.map((row: any) => ({
         date: row.date.toISOString().split('T')[0],
         count: Number(row.count),
       })),
       recentActivity: recentActivity.map((row: any) => ({
         id: row.id,
+        title: row.title || 'Untitled Document',
         action: row.action || 'Document uploaded',
         timestamp: row.created_at.toISOString(),
       })),
