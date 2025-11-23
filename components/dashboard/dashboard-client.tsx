@@ -48,8 +48,8 @@ export default function DashboardClient({
 
   return (
     <Tabs defaultValue="summaries" className="space-y-6 sm:space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="space-y-2 text-center sm:text-left">
+      <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="space-y-2 text-center sm:text-left sm:flex-1">
           <h1 className="text-2xl sm:text-3xl font-bold text-white/80">
             Dashboard
           </h1>
@@ -57,7 +57,15 @@ export default function DashboardClient({
             Manage your summaries and view analytics
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        
+        <div className="flex items-center justify-center sm:absolute sm:left-1/2 sm:-translate-x-1/2">
+          <TabsList className="w-full sm:w-auto">
+            <TabsTrigger value="summaries">Summaries</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          </TabsList>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:flex-1 sm:justify-end">
           {userPlan === "basic" && (
             <div className="text-sm text-muted-foreground order-2 sm:order-1">
               {currentUploadCount}/{uploadLimit} summaries
@@ -90,11 +98,6 @@ export default function DashboardClient({
           </div>
         </div>
       </div>
-
-      <TabsList className="w-full sm:w-auto">
-        <TabsTrigger value="summaries">Summaries</TabsTrigger>
-        <TabsTrigger value="analytics">Analytics</TabsTrigger>
-      </TabsList>
 
       <TabsContent value="summaries" className="space-y-6 sm:space-y-8 mt-6">
       {userPlan === "basic" && !currentHasReachedLimit && (

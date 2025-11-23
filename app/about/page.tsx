@@ -68,7 +68,7 @@ export default function AboutPage() {
                   Complex problems deserve elegant solutions. We've designed Visura to be intuitive and powerful, 
                   where advanced AI capabilities are presented through a clean, user-friendly interface that 
                   anyone can master in minutes.
-                </p>
+                </p>ude 
               </div>
             </div>
           </div>
