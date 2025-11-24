@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useUser } from "@clerk/nextjs";
+import { formatDistanceToNow } from "date-fns";
 import { 
   LineChart, 
   Line, 
@@ -420,63 +421,129 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
       {/* Main Content Area */}
       <div className="px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Main Chart */}
+          {/* Left Column - Processing Efficiency Dashboard */}
           <motion.div variants={itemVariants} className="lg:col-span-2">
             <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl">
               <div className="p-6">
-                {/* Monthly Bar Chart */}
-                <div className="h-[420px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} vertical={false} />
-                      <XAxis 
-                        dataKey="month" 
-                        stroke="#6B7280"
-                        fontSize={12}
-                        tick={{ fill: '#9CA3AF' }}
-                        axisLine={{ stroke: '#374151' }}
-                        interval={0}
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-white">Processing Efficiency</h3>
+                  <Activity className="w-6 h-6 text-orange-400" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Success Rate */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Success Rate</span>
+                      <span className="text-2xl font-bold text-white">{analytics.successRate}%</span>
+                    </div>
+                    <div className="relative h-3 bg-gray-800 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${analytics.successRate}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
                       />
-                      <YAxis 
-                        stroke="#6B7280"
-                        fontSize={12}
-                        tick={{ fill: '#9CA3AF' }}
-                        axisLine={{ stroke: '#374151' }}
-                      />
-                      <Tooltip
-                        cursor={{ fill: 'rgba(249, 115, 22, 0.1)' }}
-                        contentStyle={{
-                          backgroundColor: '#1F2937',
-                          border: '1px solid #374151',
-                          borderRadius: '12px',
-                          color: '#fff',
-                          padding: '12px 16px'
-                        }}
-                        content={({ active, payload, label }) => {
-                          if (active && payload && payload.length) {
-                            return (
-                              <div className="bg-gray-800 border border-gray-700 rounded-xl p-4 shadow-xl">
-                                <p className="text-white font-semibold mb-2">{label} 2025</p>
-                                <div className="space-y-1">
-                                  <p className="text-sm text-orange-400 flex items-center gap-2">
-                                    <span className="w-3 h-3 rounded-full bg-orange-500"></span>
-                                    Documents: <span className="font-bold">{payload[0].value}</span>
-                                  </p>
-                                  <p className="text-sm text-pink-400 flex items-center gap-2">
-                                    <span className="w-3 h-3 rounded-full bg-pink-500"></span>
-                                    Time Saved: <span className="font-bold">{payload[1].value}h</span>
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                      <Bar dataKey="documents" fill="#F97316" radius={[8, 8, 0, 0]} maxBarSize={60} />
-                      <Bar dataKey="timeSaved" fill="#EC4899" radius={[8, 8, 0, 0]} maxBarSize={60} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {analytics.totalDocuments > 0 
+                        ? `${analytics.totalDocuments} documents processed successfully`
+                        : 'No documents processed yet'}
+                    </p>
+                  </div>
+
+                  {/* Average Words Per Document */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Avg Words/Document</span>
+                      <span className="text-2xl font-bold text-white">{formatNumber(analytics.avgWordsPerDocument)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-blue-400" />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-gray-500">Total Words</span>
+                          <span className="text-white font-semibold">{formatNumber(analytics.totalWordsProcessed)}</span>
+                        </div>
+                        <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full"
+                            style={{ width: `${Math.min((analytics.totalWordsProcessed / 100000) * 100, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Processing Speed */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Processing Speed</span>
+                      <Zap className="w-5 h-5 text-yellow-400" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Avg Time Saved</span>
+                        <span className="text-lg font-bold text-white">
+                          {analytics.totalDocuments > 0 
+                            ? `${(analytics.totalTimeSavedHours / analytics.totalDocuments).toFixed(1)}h`
+                            : '0h'}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        Per document vs manual review
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Growth Metrics */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">This Month</span>
+                      <TrendingUp className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Documents</span>
+                        <span className="text-lg font-bold text-white">{analytics.docsThisMonth}</span>
+                      </div>
+                      {analytics.monthOverMonthGrowth !== 0 && (
+                        <div className={`flex items-center gap-1 text-xs ${
+                          analytics.monthOverMonthGrowth > 0 ? 'text-emerald-400' : 'text-red-400'
+                        }`}>
+                          {analytics.monthOverMonthGrowth > 0 ? (
+                            <ArrowUpRight className="w-3 h-3" />
+                          ) : (
+                            <ArrowDownRight className="w-3 h-3" />
+                          )}
+                          {Math.abs(analytics.monthOverMonthGrowth)}% vs last month
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Key Insights */}
+                <div className="mt-6 p-4 rounded-lg bg-gradient-to-r from-gray-800/50 to-gray-800/30 border border-gray-700/50">
+                  <div className="flex items-start gap-3">
+                    <Sparkles className="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-white mb-2">Key Insights</h4>
+                      <ul className="space-y-1 text-xs text-gray-300">
+                        {analytics.totalDocuments > 0 ? (
+                          <>
+                            <li>• You've processed <span className="font-semibold text-orange-400">{analytics.totalDocuments}</span> documents with {analytics.successRate}% success rate</li>
+                            <li>• Saved approximately <span className="font-semibold text-emerald-400">{analytics.totalTimeSavedHours >= 24 ? `${analytics.totalTimeSavedDays.toFixed(1)} days` : `${analytics.totalTimeSavedHours.toFixed(1)} hours`}</span> of manual review time</li>
+                            {analytics.docsThisWeek > 0 && (
+                              <li>• <span className="font-semibold text-blue-400">{analytics.docsThisWeek}</span> documents processed this week</li>
+                            )}
+                          </>
+                        ) : (
+                          <li>Upload your first document to start tracking processing efficiency and insights</li>
+                        )}
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -550,50 +617,52 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
 
         {/* Bottom Three Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          {/* Documents Overview */}
+          {/* Recent Activity */}
           <motion.div variants={itemVariants}>
             <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl">
               <div className="p-6">
-                <h3 className="text-lg font-bold text-white mb-6">Documents Overview</h3>
-
-                <div className="mb-6">
-                  <p className="text-5xl font-bold text-white mb-2">
-                    {analytics.totalDocuments.toLocaleString()}
-                  </p>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-bold text-white">Recent Activity</h3>
+                  <Clock className="w-5 h-5 text-gray-400" />
                 </div>
 
-                {/* Category Breakdown */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                      <span className="text-sm text-gray-300">PDFs</span>
+                <div className="space-y-3 max-h-[280px] overflow-y-auto pr-2">
+                  {analytics.recentActivity && analytics.recentActivity.length > 0 ? (
+                    analytics.recentActivity.slice(0, 5).map((activity, index) => {
+                      const date = new Date(activity.timestamp);
+                      const timeAgo = formatDistanceToNow(date, { addSuffix: true });
+                      const isRecent = (Date.now() - date.getTime()) < 24 * 60 * 60 * 1000; // Within 24 hours
+                      
+                      return (
+                        <motion.div
+                          key={activity.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="flex items-start gap-3 p-3 rounded-lg bg-gray-800/50 hover:bg-gray-800/70 transition-colors border border-gray-700/50"
+                        >
+                          <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                            isRecent ? 'bg-emerald-400' : 'bg-gray-500'
+                          }`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-white truncate">
+                              {activity.title}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-xs text-gray-400">{activity.action}</span>
+                              <span className="text-xs text-gray-500">•</span>
+                              <span className="text-xs text-gray-500">{timeAgo}</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-8">
+                      <FileText className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                      <p className="text-sm text-gray-400">No recent activity</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-white font-semibold">{formatCurrency(Math.floor(analytics.totalDocuments * 0.65 * 25))}</p>
-                      <p className="text-xs text-gray-500">65%</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                      <span className="text-sm text-gray-300">Documents</span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white font-semibold">{formatCurrency(Math.floor(analytics.totalDocuments * 0.25 * 25))}</p>
-                      <p className="text-xs text-gray-500">25%</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
-                      <span className="text-sm text-gray-300">Others</span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-white font-semibold">{formatCurrency(Math.floor(analytics.totalDocuments * 0.10 * 25))}</p>
-                      <p className="text-xs text-gray-500">10%</p>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </Card>
