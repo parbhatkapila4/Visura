@@ -5,7 +5,9 @@ import Footer from "./footer";
 export default function ConditionalFooter() {
   const pathname = usePathname();
 
-  if (pathname !== "/") {
+  // Don't show the old footer on homepage (we have a new custom footer there)
+  // Also don't show on chatbot pages
+  if (pathname === "/" || pathname?.includes('/chatbot')) {
     return null;
   }
 

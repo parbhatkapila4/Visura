@@ -1,166 +1,387 @@
 "use client";
-import NavLink from "./nav-link";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import PlanBadge from "./plan-badge";
 import UserMenu from "./user-menu";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import { usePathname } from "next/navigation";
+import { Menu, X, Sparkles, ArrowRight } from "lucide-react";
 
+// ============================================
+// ANIMATED NAV LINK
+// ============================================
+const AnimatedNavLink = ({ href, children, onClick }: { href: string; children: React.ReactNode; onClick?: () => void }) => {
+  const pathname = usePathname();
+  const isActive = pathname === href || (href !== "/" && pathname?.startsWith(href));
+
+  return (
+    <Link href={href} onClick={onClick}>
+      <motion.span
+        className="relative px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors cursor-pointer group"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        {children}
+        {/* Animated underline */}
+        <motion.span
+          className={`absolute bottom-0 left-1/2 h-[2px] bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] rounded-full ${isActive ? 'w-1/2' : 'w-0'}`}
+          style={{ x: '-50%' }}
+          whileHover={{ width: '50%' }}
+          transition={{ duration: 0.2 }}
+        />
+        {/* Glow effect on hover */}
+        <motion.span
+          className="absolute inset-0 rounded-lg bg-white/0 group-hover:bg-white/5 transition-colors"
+        />
+      </motion.span>
+    </Link>
+  );
+};
+
+// ============================================
+// ANIMATED LOGO
+// ============================================
+const AnimatedLogo = () => {
+  return (
+    <Link href="/">
+      <motion.div
+        className="flex items-center gap-3 cursor-pointer"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        {/* Logo Icon */}
+        <motion.div className="relative">
+          {/* Outer ring with gradient */}
+          <motion.div
+            className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#ff6b00] via-[#ff00ff] to-[#ff6b00] p-[2px]"
+            animate={{
+              backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+            }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            style={{ backgroundSize: "200% 200%" }}
+          >
+            <div className="w-full h-full rounded-[10px] bg-black flex items-center justify-center">
+              <motion.span
+                className="text-lg font-black bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] bg-clip-text text-transparent"
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                V
+              </motion.span>
+            </div>
+          </motion.div>
+          
+          {/* Glow effect */}
+          <motion.div
+            className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] opacity-0 blur-lg"
+            animate={{ opacity: [0, 0.4, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        </motion.div>
+
+        {/* Logo Text */}
+        <motion.span
+          className="text-xl font-bold text-white hidden sm:block"
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
+          Visura
+        </motion.span>
+      </motion.div>
+    </Link>
+  );
+};
+
+// ============================================
+// MOBILE MENU
+// ============================================
+const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+          
+          {/* Menu Panel */}
+          <motion.div
+            className="fixed top-0 right-0 h-full w-[300px] bg-black/90 backdrop-blur-xl border-l border-white/10 z-50 p-6"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          >
+            {/* Close Button */}
+            <motion.button
+              onClick={onClose}
+              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white"
+              whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.2)" }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <X className="w-5 h-5" />
+            </motion.button>
+
+            {/* Menu Links */}
+            <nav className="mt-16 space-y-2">
+              {[
+                { href: "/features", label: "Features" },
+                { href: "/about", label: "About" },
+                { href: "/changelog", label: "Changelog" },
+              ].map((item, i) => (
+                <motion.div
+                  key={item.href}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <Link href={item.href} onClick={onClose}>
+                    <motion.div
+                      className="flex items-center justify-between px-4 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                      whileHover={{ x: 5 }}
+                    >
+                      <span className="text-lg font-medium">{item.label}</span>
+                      <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100" />
+                    </motion.div>
+                  </Link>
+                </motion.div>
+              ))}
+            </nav>
+
+            {/* Auth Buttons */}
+            <div className="mt-8 space-y-3">
+              <SignedOut>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <Link href="/sign-in" onClick={onClose}>
+                    <motion.button
+                      className="w-full py-3 rounded-xl border border-white/20 text-white font-medium"
+                      whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Log in
+                    </motion.button>
+                  </Link>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <Link href="/sign-up" onClick={onClose}>
+                    <motion.button
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] text-white font-medium"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Sign up free
+                    </motion.button>
+                  </Link>
+                </motion.div>
+              </SignedOut>
+              <SignedIn>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <Link href="/dashboard" onClick={onClose}>
+                    <motion.button
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] text-white font-medium"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Dashboard
+                    </motion.button>
+                  </Link>
+                </motion.div>
+              </SignedIn>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+};
+
+// ============================================
+// MAIN HEADER COMPONENT
+// ============================================
 export default function Header() {
   const pathname = usePathname();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const { scrollY } = useScroll();
+  
   const isChatbotPage = pathname?.includes('/chatbot');
+  const isHomePage = pathname === '/';
+  
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setIsScrolled(latest > 50);
+    
+    // Hide navbar when scrolling up, show when scrolling down
+    if (latest < lastScrollY && latest > 100) {
+      // Scrolling up and past 100px
+      setIsVisible(false);
+    } else if (latest > lastScrollY) {
+      // Scrolling down
+      setIsVisible(true);
+    } else if (latest <= 100) {
+      // Always show at top
+      setIsVisible(true);
+    }
+    
+    setLastScrollY(latest);
+    
+    // Close mobile menu on scroll
+    if (isMobileMenuOpen && Math.abs(latest - lastScrollY) > 10) {
+      setIsMobileMenuOpen(false);
+    }
+  });
+  
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
   
   if (isChatbotPage) {
     return null;
   }
   
   return (
-    <nav className="w-full px-4 py-2 sm:py-4 min-h-[60px] sm:min-h-[80px] relative z-20">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-black border-2 border-gray-700 rounded-2xl px-4 sm:px-6 py-2 sm:py-4 shadow-lg flex flex-col md:flex-row md:items-center md:justify-between gap-y-2 md:gap-y-0 min-h-[56px] sm:min-h-[72px]">
-          <div className="flex flex-row items-center justify-between w-full min-w-0">
-            {/* Logo */}
-            <motion.div 
-              className="flex flex-row items-center gap-3 min-w-0 md:flex-1"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+    <>
+      <motion.nav
+        className={`fixed top-0 left-0 right-0 z-50 px-4 transition-all duration-300 ${
+          isScrolled ? 'py-2' : 'py-4'
+        }`}
+        initial={{ y: -100 }}
+        animate={{ 
+          y: isVisible ? 0 : -100,
+          opacity: isVisible ? 1 : 0
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
+        <motion.div
+          className={`max-w-6xl mx-auto rounded-2xl transition-all duration-300 ${
+            isScrolled 
+              ? 'bg-black/80 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/50' 
+              : isHomePage 
+                ? 'bg-black/40 backdrop-blur-md border border-white/5' 
+                : 'bg-black/80 backdrop-blur-xl border border-white/10'
+          }`}
+          layout
+        >
+          {/* Animated gradient border on scroll */}
+          {isScrolled && (
+            <motion.div
+              className="absolute inset-0 rounded-2xl p-[1px] -z-10 overflow-hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
             >
-              <motion.div 
-                className="w-8 h-8 border-2 border-white rounded-full flex items-center justify-center relative overflow-hidden"
-                animate={{ 
-                  rotate: [0, 360],
-                  scale: [1, 1.1, 1]
-                }}
-                transition={{ 
-                  rotate: { 
-                    duration: 8, 
-                    repeat: Infinity, 
-                    ease: "linear" 
-                  },
-                  scale: { 
-                    duration: 2, 
-                    repeat: Infinity, 
-                    ease: "easeInOut" 
-                  }
-                }}
-                whileHover={{
-                  rotate: [0, 720],
-                  scale: 1.2,
-                  transition: { 
-                    duration: 0.6,
-                    type: "spring",
-                    stiffness: 300
-                  }
-                }}
-              >
-                <motion.div 
-                  className="w-4 h-4 border-2 border-white rounded-full"
-                  animate={{ 
-                    rotate: [360, 0],
-                    scale: [1, 0.8, 1]
-                  }}
-                  transition={{ 
-                    rotate: { 
-                      duration: 4, 
-                      repeat: Infinity, 
-                      ease: "linear" 
-                    },
-                    scale: { 
-                      duration: 1.5, 
-                      repeat: Infinity, 
-                      ease: "easeInOut" 
-                    }
-                  }}
-                />
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full opacity-0"
-                  animate={{ 
-                    opacity: [0, 0.3, 0],
-                    scale: [0.8, 1.2, 0.8]
-                  }}
-                  transition={{ 
-                    duration: 3, 
-                    repeat: Infinity, 
-                    ease: "easeInOut" 
-                  }}
-                />
-              </motion.div>
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              >
-                <NavLink
-                  href="/"
-                  className="text-white font-semibold text-lg relative whitespace-nowrap truncate min-w-0"
-                >
-                  <motion.span
-                    className="text-white"
-                    whileHover={{
-                      scale: 1.1,
-                      textShadow: "0 0 20px rgba(255, 255, 255, 0.3)",
-                      transition: { 
-                        duration: 0.3,
-                        type: "spring",
-                        stiffness: 400
-                      }
-                    }}
-                  >
-                    Visura
-                  </motion.span>
-                  <motion.div
-                    className="absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600"
-                    initial={{ width: 0 }}
-                    animate={{ width: "100%" }}
-                    transition={{ duration: 1, delay: 0.5 }}
-                  />
-                </NavLink>
-              </motion.div>
+                className="absolute inset-0 bg-gradient-to-r from-[#ff6b00] via-[#ff00ff] to-[#00ff88]"
+                animate={{
+                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                }}
+                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                style={{ backgroundSize: "200% 200%" }}
+              />
             </motion.div>
+          )}
 
-            {/* Center nav - desktop only */}
-            <div className="hidden md:flex flex-1 items-center justify-center gap-6 mx-6 md:ml-6 lg:ml-10">
-              <NavLink href="/features" className="text-sm text-gray-300 hover:text-orange-400">Features</NavLink>
-              <NavLink href="/about" className="text-sm text-gray-300 hover:text-orange-400">About</NavLink>
-              <NavLink href="/changelog" className="text-sm text-gray-300 hover:text-orange-400">Changelog</NavLink>
+          <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
+            {/* Logo */}
+            <AnimatedLogo />
+
+            {/* Center Navigation - Desktop */}
+            <div className="hidden md:flex items-center gap-1">
+              <AnimatedNavLink href="/features">Features</AnimatedNavLink>
+              <AnimatedNavLink href="/about">About</AnimatedNavLink>
+              <AnimatedNavLink href="/changelog">Changelog</AnimatedNavLink>
             </div>
 
-            {/* Mobile Dashboard/Sign In button and User Menu */}
-            <SignedIn>
-              <div className="flex md:hidden ml-auto items-center gap-3">
-                <NavLink
-                  href="/dashboard"
-                  className="px-3 py-1.5 rounded-md font-semibold text-base text-white bg-gray-800 hover:bg-gray-700 transition-colors border border-gray-700 min-w-[96px] text-center"
-                >
-                  Dashboard
-                </NavLink>
-                <UserMenu />
-              </div>
-            </SignedIn>
-            <SignedOut>
-              <NavLink
-                href="/sign-in"
-                className="block md:hidden ml-auto px-3 py-1.5 rounded-md font-semibold text-base text-white bg-orange-600 hover:bg-orange-700 transition-colors shadow-sm min-w-[80px] text-center"
-              >
-                Sign In
-              </NavLink>
-            </SignedOut>
-            
-            {/* Right Section (navbar) */}
-            <div className="hidden md:flex flex-row flex-wrap items-center gap-3 gap-x-4 pl-0 sm:pl-6 min-w-0 md:flex-1 justify-end">
+            {/* Right Section - Desktop */}
+            <div className="hidden md:flex items-center gap-3">
+              <SignedOut>
+                <Link href="/sign-in">
+                  <motion.button
+                    className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Log in
+                  </motion.button>
+                </Link>
+                <Link href="/sign-up">
+                  <motion.button
+                    className="relative px-5 py-2 text-sm font-semibold text-white rounded-full overflow-hidden group"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {/* Gradient background */}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-[#ff6b00] to-[#ff00ff]"
+                      whileHover={{
+                        backgroundPosition: ["0% 50%", "100% 50%"],
+                      }}
+                      transition={{ duration: 0.5 }}
+                    />
+                    {/* Shine effect */}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: "100%" }}
+                      transition={{ duration: 0.5 }}
+                    />
+                    <span className="relative z-10">Sign up</span>
+                  </motion.button>
+                </Link>
+              </SignedOut>
+              
               <SignedIn>
-                <NavLink href="/dashboard" className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white hover:text-orange-500 font-medium text-sm rounded-lg transition-colors duration-200 border border-gray-700 break-all min-w-[90px] text-center">Dashboard</NavLink>
+                <Link href="/dashboard">
+                  <motion.button
+                    className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-all"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Dashboard
+                  </motion.button>
+                </Link>
                 <PlanBadge />
                 <UserMenu />
               </SignedIn>
-              <SignedOut>
-                <NavLink href="/sign-in" className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-medium text-sm rounded-lg transition-colors duration-200 border border-gray-600 min-w-[70px] text-center">Log in</NavLink>
-                <NavLink href="/sign-up" className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-medium text-sm rounded-lg transition-colors duration-200 shadow-sm min-w-[75px] text-center">Sign up</NavLink>
-              </SignedOut>
             </div>
+
+            {/* Mobile Menu Button */}
+            <motion.button
+              className="md:hidden w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white"
+              onClick={() => setIsMobileMenuOpen(true)}
+              whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.15)" }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <Menu className="w-5 h-5" />
+            </motion.button>
           </div>
-        </div>
-      </div>
-    </nav>
+        </motion.div>
+      </motion.nav>
+
+      {/* Mobile Menu */}
+      <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+      
+      {/* Spacer to prevent content from going under fixed nav */}
+      <div className={`${isScrolled ? 'h-16' : 'h-20'} transition-all duration-300`} />
+    </>
   );
 }

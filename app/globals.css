@@ -218,6 +218,32 @@
   animation: gradient-x 3s ease infinite;
 }
 
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  animation: gradient 8s ease infinite;
+}
+
+/* Hide default cursor on landing page for custom cursor */
+@media (pointer: fine) {
+  .landing-page {
+    cursor: none;
+  }
+  .landing-page * {
+    cursor: none;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

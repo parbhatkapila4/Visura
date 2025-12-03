@@ -1,0 +1,215 @@
+"use client";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+import Link from "next/link";
+import { Twitter, Github, Linkedin, Youtube, Mail, MapPin, Heart } from "lucide-react";
+
+const footerLinks = {
+  product: [
+    { label: "Features", href: "#features" },
+    { label: "Pricing", href: "#pricing" },
+    { label: "Demo", href: "#demo" },
+    { label: "API", href: "/api-docs" },
+    { label: "Changelog", href: "/changelog" },
+  ],
+  company: [
+    { label: "About", href: "/about" },
+    { label: "Blog", href: "/blog" },
+    { label: "Careers", href: "/careers" },
+    { label: "Press", href: "/press" },
+    { label: "Contact", href: "/contact" },
+  ],
+  resources: [
+    { label: "Documentation", href: "/docs" },
+    { label: "Help Center", href: "/help" },
+    { label: "Community", href: "/community" },
+    { label: "Templates", href: "/templates" },
+    { label: "Status", href: "/status" },
+  ],
+  legal: [
+    { label: "Privacy", href: "/privacy" },
+    { label: "Terms", href: "/terms" },
+    { label: "Security", href: "/security" },
+    { label: "Cookies", href: "/cookies" },
+  ],
+};
+
+const socialLinks = [
+  { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
+  { icon: Github, href: "https://github.com", label: "GitHub" },
+  { icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" },
+  { icon: Youtube, href: "https://youtube.com", label: "YouTube" },
+];
+
+export default function FooterSection() {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+
+  return (
+    <footer ref={ref} className="relative bg-black pt-20 pb-8 overflow-hidden -mt-[1px]">
+      {/* Background Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#ff6b00]/5 rounded-full blur-[150px]" />
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#ff00ff]/5 rounded-full blur-[150px]" />
+      </div>
+
+      {/* Grid Pattern */}
+      <div 
+        className="absolute inset-0 opacity-[0.02]"
+        style={{
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px',
+        }}
+      />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 pb-12 border-b border-white/10">
+          {/* Brand Column */}
+          <motion.div
+            className="col-span-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+          >
+            <Link href="/" className="inline-flex items-center gap-2 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] flex items-center justify-center">
+                <span className="text-xl font-black text-white">V</span>
+              </div>
+              <span className="text-2xl font-bold text-white">Visura</span>
+            </Link>
+            <p className="text-white/40 text-sm leading-relaxed mb-6 max-w-xs">
+              Transform how you understand documents with AI-powered intelligence. 
+              Built for the future of work.
+            </p>
+            
+            {/* Social Links */}
+            <div className="flex items-center gap-3">
+              {socialLinks.map((social, i) => (
+                <motion.a
+                  key={i}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  aria-label={social.label}
+                >
+                  <social.icon className="w-5 h-5" />
+                </motion.a>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Product Links */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <h4 className="text-white font-semibold mb-4">Product</h4>
+            <ul className="space-y-3">
+              {footerLinks.product.map((link, i) => (
+                <li key={i}>
+                  <Link 
+                    href={link.href}
+                    className="text-white/40 hover:text-white text-sm transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* Company Links */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <h4 className="text-white font-semibold mb-4">Company</h4>
+            <ul className="space-y-3">
+              {footerLinks.company.map((link, i) => (
+                <li key={i}>
+                  <Link 
+                    href={link.href}
+                    className="text-white/40 hover:text-white text-sm transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* Resources Links */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <h4 className="text-white font-semibold mb-4">Resources</h4>
+            <ul className="space-y-3">
+              {footerLinks.resources.map((link, i) => (
+                <li key={i}>
+                  <Link 
+                    href={link.href}
+                    className="text-white/40 hover:text-white text-sm transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* Legal Links */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <h4 className="text-white font-semibold mb-4">Legal</h4>
+            <ul className="space-y-3">
+              {footerLinks.legal.map((link, i) => (
+                <li key={i}>
+                  <Link 
+                    href={link.href}
+                    className="text-white/40 hover:text-white text-sm transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        </div>
+
+        {/* Bottom Bar */}
+        <motion.div
+          className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6, delay: 0.5 }}
+        >
+          <div className="flex items-center gap-2 text-white/30 text-sm">
+            <span>© {new Date().getFullYear()} Visura. All rights reserved.</span>
+          </div>
+
+          <div className="flex items-center gap-2 text-white/30 text-sm">
+            <span>Made with</span>
+            <motion.span
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            >
+              <Heart className="w-4 h-4 text-red-500 fill-red-500" />
+            </motion.span>
+            <span>for document lovers</span>
+          </div>
+        </motion.div>
+      </div>
+    </footer>
+  );
+}

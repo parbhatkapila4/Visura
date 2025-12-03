@@ -1,10 +1,9 @@
-import BgGradient from "@/components/common/bg-gradient";
 import { currentUser } from "@clerk/nextjs/server";
 import { ensureUserExistsInDatabase } from "@/lib/auth-utils";
 import AnimatedHomePage from "./animated-home-page";
 
 type HomeProps = {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default async function Home({ searchParams }: HomeProps) {
@@ -14,15 +13,13 @@ export default async function Home({ searchParams }: HomeProps) {
     await ensureUserExistsInDatabase();
   }
 
-  const paymentStatus = searchParams.payment;
+  const params = await searchParams;
+  const paymentStatus = params.payment;
   const showSuccessMessage = paymentStatus === "success";
   const showCancelMessage = paymentStatus === "cancelled";
 
   return (
-    <div className="relative w-screen min-h-screen bg-black">
-      <div className="hidden md:block">
-        <BgGradient className="hidden md:block" />
-      </div>
+    <div className="relative w-full min-h-screen bg-black overflow-x-hidden">
       <AnimatedHomePage
         showSuccessMessage={showSuccessMessage}
         showCancelMessage={showCancelMessage}
