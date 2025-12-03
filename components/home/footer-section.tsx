@@ -2,43 +2,29 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import Link from "next/link";
-import { Twitter, Github, Linkedin, Youtube, Mail, MapPin, Heart } from "lucide-react";
+import { Twitter, Github, Linkedin, Youtube, Mail, MapPin } from "lucide-react";
 
 const footerLinks = {
   product: [
     { label: "Features", href: "#features" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "Demo", href: "#demo" },
-    { label: "API", href: "/api-docs" },
     { label: "Changelog", href: "/changelog" },
+    { label: "Shipping", href: "/shipping" },
   ],
   company: [
     { label: "About", href: "/about" },
-    { label: "Blog", href: "/blog" },
-    { label: "Careers", href: "/careers" },
-    { label: "Press", href: "/press" },
     { label: "Contact", href: "/contact" },
+    { label: "Cancellations & Refund", href: "/cancellations-refund" },
   ],
   resources: [
     { label: "Documentation", href: "/docs" },
-    { label: "Help Center", href: "/help" },
-    { label: "Community", href: "/community" },
-    { label: "Templates", href: "/templates" },
-    { label: "Status", href: "/status" },
-  ],
-  legal: [
-    { label: "Privacy", href: "/privacy" },
-    { label: "Terms", href: "/terms" },
-    { label: "Security", href: "/security" },
-    { label: "Cookies", href: "/cookies" },
+    { label: "Support", href: "/support" },
   ],
 };
 
 const socialLinks = [
-  { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
-  { icon: Github, href: "https://github.com", label: "GitHub" },
-  { icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" },
-  { icon: Youtube, href: "https://youtube.com", label: "YouTube" },
+  { icon: Twitter, href: "https://x.com/Parbhat03", label: "Twitter" },
+  { icon: Github, href: "https://github.com/parbhatkapila4", label: "GitHub" },
+  { icon: Linkedin, href: "", label: "LinkedIn" },
 ];
 
 export default function FooterSection() {
@@ -64,7 +50,7 @@ export default function FooterSection() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 pb-12 border-b border-white/10">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 pb-12 border-b border-white/10">
           {/* Brand Column */}
           <motion.div
             className="col-span-2"
@@ -165,26 +151,6 @@ export default function FooterSection() {
             </ul>
           </motion.div>
 
-          {/* Legal Links */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <h4 className="text-white font-semibold mb-4">Legal</h4>
-            <ul className="space-y-3">
-              {footerLinks.legal.map((link, i) => (
-                <li key={i}>
-                  <Link 
-                    href={link.href}
-                    className="text-white/40 hover:text-white text-sm transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
         </div>
 
         {/* Bottom Bar */}
@@ -198,15 +164,18 @@ export default function FooterSection() {
             <span>© {new Date().getFullYear()} Visura. All rights reserved.</span>
           </div>
 
-          <div className="flex items-center gap-2 text-white/30 text-sm">
-            <span>Made with</span>
-            <motion.span
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 1, repeat: Infinity }}
-            >
-              <Heart className="w-4 h-4 text-red-500 fill-red-500" />
-            </motion.span>
-            <span>for document lovers</span>
+          <div className="flex items-center gap-4 text-white/40 text-sm">
+            <Link href="/privacy" className="hover:text-white transition-colors">
+              Privacy policy
+            </Link>
+            <span className="text-white/20">•</span>
+            <Link href="/terms" className="hover:text-white transition-colors">
+              Terms of service
+            </Link>
+            <span className="text-white/20">•</span>
+            <Link href="/cookies" className="hover:text-white transition-colors">
+              Cookies setting
+            </Link>
           </div>
         </motion.div>
       </div>
