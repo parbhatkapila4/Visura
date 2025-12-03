@@ -225,20 +225,9 @@ const ScrollIndicator = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 2 }}
-      className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+      className="absolute bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
     >
       <span className="text-xs text-white/40 uppercase tracking-widest">Scroll to explore</span>
-      <motion.div
-        className="w-6 h-10 rounded-full border-2 border-white/20 flex justify-center pt-2"
-        animate={{ y: [0, 5, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      >
-        <motion.div
-          className="w-1.5 h-3 rounded-full bg-gradient-to-b from-[#ff6b00] to-[#ff00ff]"
-          animate={{ y: [0, 8, 0], opacity: [1, 0.3, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-      </motion.div>
     </motion.div>
   );
 };
@@ -265,11 +254,34 @@ export default function HeroSection() {
         style={{ scaleX: scrollYProgress }}
       />
 
-      <section ref={containerRef} className="relative h-[200vh]">
-        <div className="sticky top-0 h-screen overflow-hidden bg-black">
+      <section ref={containerRef} className="relative h-[200vh]" style={{ 
+        willChange: 'scroll-position',
+        transform: 'translateZ(0)',
+        backfaceVisibility: 'hidden'
+      }}>
+        <div className="sticky top-0 h-screen overflow-hidden bg-black" style={{
+          willChange: 'transform',
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden'
+        }}>
           {/* 3D Background */}
-          <div className="absolute inset-0">
-            <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
+          <div className="absolute inset-0" style={{
+            willChange: 'transform',
+            transform: 'translateZ(0)',
+            backfaceVisibility: 'hidden'
+          }}>
+            <Canvas 
+              camera={{ position: [0, 0, 8], fov: 45 }}
+              dpr={[1, 2]}
+              performance={{ min: 0.5 }}
+              gl={{ 
+                antialias: true,
+                alpha: true,
+                powerPreference: "high-performance",
+                stencil: false,
+                depth: true
+              }}
+            >
               <Suspense fallback={null}>
                 <Scene />
               </Suspense>
@@ -283,7 +295,13 @@ export default function HeroSection() {
           {/* Content */}
           <motion.div
             className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center"
-            style={{ y, opacity, scale }}
+            style={{ 
+              y, 
+              opacity, 
+              scale,
+              willChange: 'transform, opacity',
+              backfaceVisibility: 'hidden'
+            }}
           >
             <FloatingBadge />
 

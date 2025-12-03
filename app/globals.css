@@ -135,12 +135,28 @@
   html,
   body {
     scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    /* Enable hardware acceleration for smooth scrolling */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: scroll-position;
   }
 
   body {
     @apply text-foreground;
     background: var(--background);
     min-height: 100vh;
+    /* Optimize rendering performance */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    perspective: 1000px;
+    -webkit-perspective: 1000px;
   }
 
   h1 {
@@ -200,6 +216,25 @@
 
   * {
     transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Optimize scroll performance for landing page */
+  main,
+  section {
+    contain: layout style paint;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+
+  /* Optimize animated elements */
+  [data-motion],
+  [class*="motion"],
+  canvas {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 }
 
@@ -313,6 +348,31 @@
 .animate-scroll-logos {
   animation: scroll-logos 30s linear infinite;
   will-change: transform;
+}
+
+/* Performance optimizations for smooth scrolling */
+@supports (transform: translateZ(0)) {
+  .gpu-accelerated {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+}
+
+/* Optimize scroll containers */
+.scroll-container {
+  contain: layout style paint;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Reduce repaints during scroll */
+.scroll-optimized {
+  will-change: scroll-position;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .scrollbar-hide {

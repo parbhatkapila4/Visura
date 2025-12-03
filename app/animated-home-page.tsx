@@ -34,7 +34,12 @@ export default function AnimatedHomePage({
   }, [showSuccessMessage, showCancelMessage]);
 
   return (
-    <main className="relative">
+    <main className="relative" style={{ 
+      transform: 'translateZ(0)',
+      willChange: 'scroll-position',
+      backfaceVisibility: 'hidden',
+      WebkitBackfaceVisibility: 'hidden'
+    }}>
       <HeroSection />
       <FeaturesSection />
       <DemoSection />

@@ -213,11 +213,15 @@ export default function FeaturesSection() {
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
 
   return (
-    <section ref={ref} className="relative py-32 overflow-hidden bg-black">
+    <section ref={ref} className="relative py-32 overflow-hidden bg-black scroll-optimized">
       {/* Background Elements */}
       <motion.div
         className="absolute inset-0 pointer-events-none"
-        style={{ y: backgroundY }}
+        style={{ 
+          y: backgroundY,
+          willChange: 'transform',
+          backfaceVisibility: 'hidden'
+        }}
       >
         <div className="absolute top-1/4 -left-32 w-96 h-96 bg-[#ff6b00]/10 rounded-full blur-[128px]" />
         <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-[#00ff88]/10 rounded-full blur-[128px]" />

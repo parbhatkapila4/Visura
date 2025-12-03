@@ -184,6 +184,7 @@ const ProcessingStage = ({ icon: Icon, label, isActive, isComplete, index }: any
 
 export default function DemoSection() {
   const ref = useRef(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [demoStage, setDemoStage] = useState<'idle' | 'uploading' | 'processing' | 'analyzing' | 'complete'>('idle');
   const [showChat, setShowChat] = useState(false);
@@ -197,22 +198,41 @@ export default function DemoSection() {
   ];
 
   const startDemo = () => {
-    setIsPlaying(true);
-    setDemoStage('uploading');
-    setShowChat(false);
-    setTimeout(() => setDemoStage('processing'), 2000);
-    setTimeout(() => setDemoStage('analyzing'), 4000);
-    setTimeout(() => {
-      setDemoStage('complete');
-      setShowChat(true);
-    }, 6000);
+    if (videoRef.current) {
+      videoRef.current.style.display = 'block';
+      setIsPlaying(true);
+      videoRef.current.play().catch((error) => {
+        console.error("Error playing video:", error);
+      });
+    }
   };
 
   const resetDemo = () => {
+    if (videoRef.current) {
+      setIsPlaying(false);
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+      videoRef.current.style.display = 'none';
+      setDemoStage('idle');
+      setShowChat(false);
+    }
+  };
+
+  const handleVideoEnd = () => {
     setIsPlaying(false);
     setDemoStage('idle');
     setShowChat(false);
   };
+
+  useEffect(() => {
+    // Ensure video is loaded and optimize performance
+    if (videoRef.current) {
+      videoRef.current.load();
+      // Optimize video playback
+      videoRef.current.defaultPlaybackRate = 1.0;
+      videoRef.current.playbackRate = 1.0;
+    }
+  }, []);
 
   return (
     <section ref={ref} id="demo" className="relative py-24 overflow-hidden bg-black">
@@ -268,10 +288,20 @@ export default function DemoSection() {
                 <div className="text-sm text-white/50 font-mono font-medium">visura.ai/demo</div>
               </div>
               <motion.button
-                onClick={isPlaying ? resetDemo : startDemo}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log("Button clicked, isPlaying:", isPlaying);
+                  if (isPlaying) {
+                    resetDemo();
+                  } else {
+                    startDemo();
+                  }
+                }}
                 className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] text-white text-sm font-bold shadow-xl overflow-hidden group"
                 whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(255,107,0,0.5)" }}
                 whileTap={{ scale: 0.95 }}
+                type="button"
               >
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-[#ff00ff] to-[#ff6b00] opacity-0 group-hover:opacity-100 transition-opacity"
@@ -292,55 +322,73 @@ export default function DemoSection() {
 
             {/* Main Content */}
             <div className="grid md:grid-cols-2 gap-6 p-6">
-              {/* Left: PDF Viewer */}
+              {/* Left: Video Player */}
               <div className="space-y-4">
-                <div className="relative h-[320px] rounded-xl overflow-hidden group">
-                  <MockPDFViewer />
-                  <AnimatePresence>
-                    {demoStage !== 'idle' && demoStage !== 'complete' && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center"
-                      >
+                <div 
+                  className="relative h-[320px] rounded-xl overflow-hidden group bg-black"
+                  style={{
+                    transform: 'translateZ(0)',
+                    willChange: 'contents',
+                    backfaceVisibility: 'hidden'
+                  }}
+                >
+                  {/* Video element - always in DOM */}
+                  <video
+                    ref={videoRef}
+                    src="/visura-demo.mp4"
+                    className="w-full h-full object-contain"
+                    style={{ 
+                      display: isPlaying ? 'block' : 'none',
+                      transform: 'translateZ(0)',
+                      willChange: 'auto',
+                      backfaceVisibility: 'hidden',
+                      WebkitTransform: 'translateZ(0)',
+                      WebkitBackfaceVisibility: 'hidden'
+                    }}
+                    controls={true}
+                    onEnded={handleVideoEnd}
+                    onPlay={() => {
+                      setIsPlaying(true);
+                    }}
+                    onPause={() => {
+                      setIsPlaying(false);
+                    }}
+                    onError={(e) => {
+                      console.error("Video error:", e, videoRef.current?.error);
+                      setIsPlaying(false);
+                      setIsLoading(false);
+                    }}
+                    playsInline
+                    preload="none"
+                    muted={false}
+                    disablePictureInPicture
+                    disableRemotePlayback
+                  />
+                  
+                  {/* Overlay when not playing */}
+                  {!isPlaying && (
+                    <div className="absolute inset-0">
+                      <MockPDFViewer />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                         <motion.div
-                          className="w-20 h-20 rounded-full border-4 border-[#ff6b00]/30 border-t-[#ff6b00] mb-4"
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        />
-                        <div className="text-base text-white font-semibold">
-                          {stages.find(s => s.id === demoStage)?.label}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                  <AnimatePresence>
-                    {demoStage === 'complete' && !showChat && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-emerald-500/20 backdrop-blur-sm flex flex-col items-center justify-center"
-                      >
-                        <motion.div 
-                          initial={{ scale: 0, rotate: -180 }} 
-                          animate={{ scale: 1, rotate: 0 }} 
-                          transition={{ type: "spring", bounce: 0.5, duration: 0.6 }}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="text-center"
                         >
-                          <CheckCircle2 className="w-16 h-16 text-emerald-400" />
+                          <motion.button
+                            className="w-20 h-20 rounded-full bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] flex items-center justify-center mb-4 mx-auto cursor-pointer"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={startDemo}
+                            type="button"
+                          >
+                            <Play className="w-10 h-10 text-white ml-1" />
+                          </motion.button>
+                          <p className="text-white/80 text-sm font-medium">Click to play demo</p>
                         </motion.div>
-                        <motion.div 
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 }}
-                          className="mt-3 text-base text-white font-semibold"
-                        >
-                          Complete!
-                        </motion.div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 {/* Processing Stages */}

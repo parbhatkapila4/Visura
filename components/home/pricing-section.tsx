@@ -26,7 +26,7 @@ const plans = [
       "Standard processing",
     ],
     cta: "Get Started",
-    ctaLink: "/sign-up",
+    ctaLink: "/checkout/starter",
   },
   {
     id: "pro",
@@ -49,7 +49,7 @@ const plans = [
     ],
     limitations: [],
     cta: "Get Pro",
-    ctaLink: "/#pricing",
+    ctaLink: "/checkout",
   },
   {
     id: "enterprise",

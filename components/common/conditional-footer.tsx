@@ -5,8 +5,9 @@ import Footer from "./footer";
 export default function ConditionalFooter() {
   const pathname = usePathname();
 
-  // Only show footer on landing page
-  if (pathname !== "/") {
+  // Don't show footer on landing page (FooterSection is already there)
+  // Only show on other pages
+  if (pathname === "/") {
     return null;
   }
 

@@ -19,7 +19,15 @@ export default async function Home({ searchParams }: HomeProps) {
   const showCancelMessage = paymentStatus === "cancelled";
 
   return (
-    <div className="relative w-full min-h-screen bg-black overflow-x-hidden">
+    <div 
+      className="relative w-full min-h-screen bg-black overflow-x-hidden"
+      style={{
+        transform: 'translateZ(0)',
+        willChange: 'scroll-position',
+        backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden'
+      }}
+    >
       <AnimatedHomePage
         showSuccessMessage={showSuccessMessage}
         showCancelMessage={showCancelMessage}

@@ -16,12 +16,18 @@ export default function CtaSection() {
   const rotate = useTransform(scrollYProgress, [0, 1], [0, 10]);
 
   return (
-    <section ref={ref} className="relative py-32 overflow-hidden">
+    <section ref={ref} className="relative py-32 overflow-hidden scroll-optimized">
       {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#ff6b00] via-[#ff00ff] to-[#ff6b00] bg-[length:400%_400%] animate-gradient" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#ff6b00] via-[#ff00ff] to-[#ff6b00] bg-[length:400%_400%] animate-gradient" style={{
+        willChange: 'background-position',
+        transform: 'translateZ(0)'
+      }} />
       
       {/* Mesh Gradient Overlay */}
-      <div className="absolute inset-0 opacity-50">
+      <div className="absolute inset-0 opacity-50" style={{
+        transform: 'translateZ(0)',
+        backfaceVisibility: 'hidden'
+      }}>
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.3)_0%,transparent_50%)]" />
         <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_right,rgba(0,0,0,0.3)_0%,transparent_50%)]" />
       </div>
@@ -29,28 +35,46 @@ export default function CtaSection() {
       {/* Floating Elements */}
       <motion.div
         className="absolute top-10 left-10 w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-lg flex items-center justify-center"
-        style={{ y, rotate }}
+        style={{ 
+          y, 
+          rotate,
+          willChange: 'transform',
+          backfaceVisibility: 'hidden'
+        }}
       >
         <FileText className="w-10 h-10 text-white/80" />
       </motion.div>
       
       <motion.div
         className="absolute top-1/4 right-20 w-16 h-16 rounded-full bg-white/10 backdrop-blur-lg flex items-center justify-center"
-        style={{ y: useTransform(scrollYProgress, [0, 1], [-50, 50]) }}
+        style={{ 
+          y: useTransform(scrollYProgress, [0, 1], [-50, 50]),
+          willChange: 'transform',
+          backfaceVisibility: 'hidden'
+        }}
       >
         <Zap className="w-8 h-8 text-white/80" />
       </motion.div>
       
       <motion.div
         className="absolute bottom-20 left-1/4 w-14 h-14 rounded-xl bg-white/10 backdrop-blur-lg flex items-center justify-center"
-        style={{ y: useTransform(scrollYProgress, [0, 1], [50, -50]) }}
+        style={{ 
+          y: useTransform(scrollYProgress, [0, 1], [50, -50]),
+          willChange: 'transform',
+          backfaceVisibility: 'hidden'
+        }}
       >
         <Shield className="w-7 h-7 text-white/80" />
       </motion.div>
 
       <motion.div
         className="absolute bottom-1/4 right-1/4 w-12 h-12 rounded-lg bg-white/10 backdrop-blur-lg flex items-center justify-center"
-        style={{ y: useTransform(scrollYProgress, [0, 1], [-30, 30]), rotate: useTransform(scrollYProgress, [0, 1], [0, -10]) }}
+        style={{ 
+          y: useTransform(scrollYProgress, [0, 1], [-30, 30]), 
+          rotate: useTransform(scrollYProgress, [0, 1], [0, -10]),
+          willChange: 'transform',
+          backfaceVisibility: 'hidden'
+        }}
       >
         <Clock className="w-6 h-6 text-white/80" />
       </motion.div>
@@ -92,30 +116,20 @@ export default function CtaSection() {
           </p>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <Link href="/sign-up">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+            <Link href="/checkout">
               <motion.button
                 className="px-8 py-4 rounded-full bg-white text-black font-bold text-lg flex items-center gap-2 shadow-2xl"
                 whileHover={{ scale: 1.05, boxShadow: "0 25px 50px rgba(0,0,0,0.3)" }}
                 whileTap={{ scale: 0.95 }}
               >
-                Get started free
+                Get exclusive features
                 <motion.span
                   animate={{ x: [0, 5, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 >
                   <ArrowRight className="w-5 h-5" />
                 </motion.span>
-              </motion.button>
-            </Link>
-            
-            <Link href="#demo">
-              <motion.button
-                className="px-8 py-4 rounded-full bg-white/10 backdrop-blur-lg text-white font-medium text-lg border border-white/20"
-                whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.2)" }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Watch demo
               </motion.button>
             </Link>
           </div>
