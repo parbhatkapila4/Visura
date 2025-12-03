@@ -5,7 +5,7 @@ import EmptySummaryState from "@/components/dashboard/empty-summary-state";
 import AnalyticsDashboard from "@/components/dashboard/analytics-dashboard";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowRight, Plus, FileText, AlertTriangle, Lock } from "lucide-react";
+import { ArrowRight, Plus, FileText, AlertTriangle, Lock, Home } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -48,6 +48,16 @@ export default function DashboardClient({
 
   return (
     <Tabs defaultValue="summaries" className="space-y-6 sm:space-y-8">
+      {/* Home Button */}
+      <div className="flex justify-start mb-2">
+        <Link
+          href="/"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors rounded-lg hover:bg-white/10 border border-white/10 hover:border-white/20"
+        >
+          <Home className="w-4 h-4" />
+          <span>Home</span>
+        </Link>
+      </div>
       <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="space-y-2 text-center sm:text-left sm:flex-1">
           <h1 className="text-2xl sm:text-3xl font-bold text-white/80">

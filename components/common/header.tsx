@@ -255,7 +255,8 @@ export default function Header() {
     setIsMobileMenuOpen(false);
   }, [pathname]);
   
-  if (isChatbotPage) {
+  // Only show header on landing page
+  if (!isHomePage || isChatbotPage) {
     return null;
   }
   
@@ -300,19 +301,21 @@ export default function Header() {
             </motion.div>
           )}
 
-          <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
+          <div className="px-4 sm:px-6 py-3 grid grid-cols-3 items-center">
             {/* Logo */}
-            <AnimatedLogo />
+            <div className="flex justify-start">
+              <AnimatedLogo />
+            </div>
 
             {/* Center Navigation - Desktop */}
-            <div className="hidden md:flex items-center gap-1">
+            <div className="hidden md:flex items-center justify-center gap-1">
               <AnimatedNavLink href="/features">Features</AnimatedNavLink>
               <AnimatedNavLink href="/about">About</AnimatedNavLink>
               <AnimatedNavLink href="/changelog">Changelog</AnimatedNavLink>
             </div>
 
             {/* Right Section - Desktop */}
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden md:flex items-center justify-end gap-3">
               <SignedOut>
                 <Link href="/sign-in">
                   <motion.button
@@ -365,14 +368,16 @@ export default function Header() {
             </div>
 
             {/* Mobile Menu Button */}
-            <motion.button
-              className="md:hidden w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white"
-              onClick={() => setIsMobileMenuOpen(true)}
-              whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.15)" }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <Menu className="w-5 h-5" />
-            </motion.button>
+            <div className="md:hidden flex justify-end col-start-3">
+              <motion.button
+                className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white"
+                onClick={() => setIsMobileMenuOpen(true)}
+                whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.15)" }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Menu className="w-5 h-5" />
+              </motion.button>
+            </div>
           </div>
         </motion.div>
       </motion.nav>
