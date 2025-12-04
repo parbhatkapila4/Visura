@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 import { Card } from "@/components/ui/card";
 import { 
   FileText, 
@@ -64,8 +65,14 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
   const [timeFilter, setTimeFilter] = useState('monthly');
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState<{ title: string; description: string; icon: React.ReactNode } | null>(null);
+  const [infoModalCard, setInfoModalCard] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const { user } = useUser();
   const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
@@ -84,6 +91,44 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
 
     fetchAnalytics();
   }, [userId]);
+
+  // Lock body scroll when modal is open (but allow modal content to scroll)
+  useEffect(() => {
+    if (!mounted) return;
+    
+    if (showModal) {
+      const scrollY = window.scrollY;
+      const body = document.body;
+      const html = document.documentElement;
+      
+      // Store original styles
+      const originalBodyOverflow = body.style.overflow;
+      const originalBodyPosition = body.style.position;
+      const originalBodyTop = body.style.top;
+      const originalBodyWidth = body.style.width;
+      const originalHtmlOverflow = html.style.overflow;
+      
+      // Lock background scroll but allow modal content to scroll
+      body.style.overflow = 'hidden';
+      body.style.position = 'fixed';
+      body.style.top = `-${scrollY}px`;
+      body.style.width = '100%';
+      html.style.overflow = 'hidden';
+      html.style.height = '100%';
+      
+      return () => {
+        // Restore original styles
+        body.style.overflow = originalBodyOverflow;
+        body.style.position = originalBodyPosition;
+        body.style.top = originalBodyTop;
+        body.style.width = originalBodyWidth;
+        html.style.overflow = originalHtmlOverflow;
+        html.style.height = '';
+        // Restore scroll position
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [showModal, mounted]);
 
   if (loading) {
     return (
@@ -316,6 +361,43 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
     setShowModal(true);
   };
 
+  // Handle info icon clicks - show explanation modal
+  const handleInfoClick = (cardType: string) => {
+    try {
+      const infoContents: { [key: string]: { title: string; description: string; icon: React.ReactNode } } = {
+        totalDocuments: {
+          title: 'Total Documents',
+          description: `This value represents the total number of documents you have processed through the system. ${timeFilter === 'weekly' ? 'When viewing weekly data, this shows the count from the last 4 weeks.' : 'The count includes all documents processed since you started using the platform. The percentage change shows the growth or decline compared to the previous period.'}`,
+          icon: <FileText className="w-12 h-12 text-blue-400" />
+        },
+        totalTimeSaved: {
+          title: 'Total Time Saved',
+          description: `This metric calculates the time you've saved by using automated document processing instead of manual review. The calculation is based on an estimated 0.5 hours saved per document processed. ${timeFilter === 'weekly' ? 'When viewing weekly data, this shows the time saved in the last 4 weeks.' : 'The total accumulates all time saved across all your processed documents. This represents real time you can use for other important tasks.'}`,
+          icon: <Clock className="w-12 h-12 text-orange-400" />
+        },
+        totalNetValue: {
+          title: 'Total Net Value',
+          description: `This value represents the estimated monetary value saved through automation. It's calculated by multiplying the total time saved (in hours) by an estimated hourly rate of $50. ${timeFilter === 'weekly' ? 'When viewing weekly data, this shows the value from the last 4 weeks.' : 'This is a conservative estimate of the value you have gained by automating document processing instead of manual review. The actual value may vary based on your specific use case.'}`,
+          icon: <DollarSign className="w-12 h-12 text-emerald-400" />
+        },
+        performanceForecast: {
+          title: 'Performance Forecast',
+          description: `This chart shows your document processing trends over time and provides a forecast for future performance. The blue line represents your actual document processing data, while the pink dashed line shows the projected forecast based on your current growth patterns. The forecast helps you anticipate future processing needs and plan capacity accordingly.`,
+          icon: <TrendingUp className="w-12 h-12 text-purple-400" />
+        }
+      };
+
+      const content = infoContents[cardType];
+      if (content) {
+        setInfoModalCard(cardType);
+        setModalContent(content);
+        setShowModal(true);
+      }
+    } catch (error) {
+      console.error('Error opening info modal:', error);
+    }
+  };
+
   return (
     <motion.div 
       className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black"
@@ -333,58 +415,6 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
             <h1 className="text-4xl font-bold text-white mb-3">
               Document analytics
             </h1>
-            <div className="flex flex-wrap items-center gap-4 text-sm">
-              <button
-                onClick={() => handleTabClick('summary')}
-                className={`px-4 py-2 rounded-lg transition-all ${
-                  activeTab === 'summary'
-                    ? 'bg-gray-800 text-white font-semibold'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Summary
-              </button>
-              <button
-                onClick={() => handleTabClick('documents')}
-                className={`px-4 py-2 rounded-lg transition-all ${
-                  activeTab === 'documents'
-                    ? 'bg-gray-800 text-white font-semibold'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Documents
-              </button>
-              <button
-                onClick={() => handleTabClick('processing')}
-                className={`px-4 py-2 rounded-lg transition-all ${
-                  activeTab === 'processing'
-                    ? 'bg-gray-800 text-white font-semibold'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Processing
-              </button>
-              <button
-                onClick={() => handleTabClick('timeSaved')}
-                className={`px-4 py-2 rounded-lg transition-all ${
-                  activeTab === 'timeSaved'
-                    ? 'bg-gray-800 text-white font-semibold'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Time Saved
-              </button>
-              <button
-                onClick={() => handleTabClick('value')}
-                className={`px-4 py-2 rounded-lg transition-all ${
-                  activeTab === 'value'
-                    ? 'bg-gray-800 text-white font-semibold'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Value
-              </button>
-            </div>
           </div>
           
           {/* Filters */}
@@ -422,8 +452,8 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
       <div className="px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Processing Efficiency Dashboard */}
-          <motion.div variants={itemVariants} className="lg:col-span-2">
-            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl">
+          <motion.div variants={itemVariants} className="lg:col-span-2 flex">
+            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl w-full flex flex-col">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold text-white">Processing Efficiency</h3>
@@ -447,7 +477,7 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                     </div>
                     <p className="text-xs text-gray-500">
                       {analytics.totalDocuments > 0 
-                        ? `${analytics.totalDocuments} documents processed successfully`
+                        ? `${analytics.successRate >= 95 ? 'Excellent' : analytics.successRate >= 80 ? 'Good' : 'Needs improvement'} processing reliability`
                         : 'No documents processed yet'}
                     </p>
                   </div>
@@ -496,68 +526,242 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                     </div>
                   </div>
 
-                  {/* Growth Metrics */}
+                  {/* Processing Volume Trend */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">This Month</span>
+                      <span className="text-sm text-gray-400">Volume Trend</span>
                       <TrendingUp className="w-5 h-5 text-emerald-400" />
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">Documents</span>
-                        <span className="text-lg font-bold text-white">{analytics.docsThisMonth}</span>
-                      </div>
-                      {analytics.monthOverMonthGrowth !== 0 && (
-                        <div className={`flex items-center gap-1 text-xs ${
-                          analytics.monthOverMonthGrowth > 0 ? 'text-emerald-400' : 'text-red-400'
+                        <span className="text-xs text-gray-500">Growth Rate</span>
+                        <span className={`text-lg font-bold ${
+                          analytics.monthOverMonthGrowth > 0 ? 'text-emerald-400' : analytics.monthOverMonthGrowth < 0 ? 'text-red-400' : 'text-white'
                         }`}>
-                          {analytics.monthOverMonthGrowth > 0 ? (
-                            <ArrowUpRight className="w-3 h-3" />
-                          ) : (
-                            <ArrowDownRight className="w-3 h-3" />
-                          )}
-                          {Math.abs(analytics.monthOverMonthGrowth)}% vs last month
-                        </div>
-                      )}
+                          {analytics.monthOverMonthGrowth !== 0 
+                            ? `${analytics.monthOverMonthGrowth > 0 ? '+' : ''}${analytics.monthOverMonthGrowth}%`
+                            : '0%'
+                          }
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {analytics.monthOverMonthGrowth > 0 
+                          ? 'Increasing processing activity'
+                          : analytics.monthOverMonthGrowth < 0
+                          ? 'Decreasing processing activity'
+                          : 'Stable processing activity'
+                        }
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Key Insights */}
-                <div className="mt-6 p-4 rounded-lg bg-gradient-to-r from-gray-800/50 to-gray-800/30 border border-gray-700/50">
-                  <div className="flex items-start gap-3">
-                    <Sparkles className="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-white mb-2">Key Insights</h4>
-                      <ul className="space-y-1 text-xs text-gray-300">
-                        {analytics.totalDocuments > 0 ? (
-                          <>
-                            <li>• You've processed <span className="font-semibold text-orange-400">{analytics.totalDocuments}</span> documents with {analytics.successRate}% success rate</li>
-                            <li>• Saved approximately <span className="font-semibold text-emerald-400">{analytics.totalTimeSavedHours >= 24 ? `${analytics.totalTimeSavedDays.toFixed(1)} days` : `${analytics.totalTimeSavedHours.toFixed(1)} hours`}</span> of manual review time</li>
-                            {analytics.docsThisWeek > 0 && (
-                              <li>• <span className="font-semibold text-blue-400">{analytics.docsThisWeek}</span> documents processed this week</li>
-                            )}
-                          </>
-                        ) : (
-                          <li>Upload your first document to start tracking processing efficiency and insights</li>
-                        )}
-                      </ul>
+                {/* Performance Recommendations */}
+                {analytics.totalDocuments > 0 && (
+                  <div className="mt-6 p-4 rounded-lg bg-gradient-to-r from-gray-800/50 to-gray-800/30 border border-gray-700/50">
+                    <div className="flex items-start gap-3">
+                      <Sparkles className="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h4 className="text-sm font-semibold text-white mb-2">Performance Recommendations</h4>
+                        <ul className="space-y-1 text-xs text-gray-300">
+                          {analytics.successRate < 95 && (
+                            <li>• Consider reviewing failed documents to improve your <span className="font-semibold text-orange-400">{analytics.successRate}%</span> success rate</li>
+                          )}
+                          {analytics.docsThisMonth < analytics.docsLastMonth && analytics.docsLastMonth > 0 && (
+                            <li>• Processing volume decreased by <span className="font-semibold text-red-400">{Math.abs(analytics.monthOverMonthGrowth)}%</span> this month - consider increasing activity</li>
+                          )}
+                          {analytics.avgWordsPerDocument > 1000 && (
+                            <li>• Large document sizes detected - processing may take longer but provides more detailed insights</li>
+                          )}
+                          {analytics.totalDocuments > 0 && analytics.successRate >= 95 && analytics.monthOverMonthGrowth >= 0 && (
+                            <li>• Excellent performance! Your processing efficiency is optimal - keep up the great work</li>
+                          )}
+                        </ul>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
+
+                {/* Additional Performance Metrics */}
+                {analytics.totalDocuments > 0 && (
+                  <>
+                    <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-gray-700/50">
+                      {/* Processing Rate */}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Target className="w-4 h-4 text-purple-400" />
+                          <span className="text-xs text-gray-400 font-medium">Processing Rate</span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-bold text-white">
+                            {analytics.docsThisWeek > 0 
+                              ? (analytics.docsThisWeek / 7).toFixed(1)
+                              : analytics.docsThisMonth > 0
+                              ? (analytics.docsThisMonth / 30).toFixed(1)
+                              : '0'
+                            }
+                          </span>
+                          <span className="text-xs text-gray-400">docs/day</span>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {analytics.docsThisWeek > 0 
+                            ? 'Average daily processing this week'
+                            : analytics.docsThisMonth > 0
+                            ? 'Average daily processing this month'
+                            : 'No recent activity'
+                          }
+                        </p>
+                      </div>
+
+                      {/* Efficiency Score */}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-emerald-400" />
+                          <span className="text-xs text-gray-400 font-medium">Efficiency Score</span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-bold text-white">
+                            {Math.round(analytics.successRate * 0.7 + Math.min((analytics.totalDocuments / 10) * 30, 30))}
+                          </span>
+                          <span className="text-xs text-gray-400">/100</span>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Based on success rate and processing volume
+                        </p>
+                      </div>
+
+                      {/* Average Document Size */}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-blue-400" />
+                          <span className="text-xs text-gray-400 font-medium">Avg Document Size</span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-bold text-white">
+                            {formatNumber(analytics.avgWordsPerDocument)}
+                          </span>
+                          <span className="text-xs text-gray-400">words</span>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {analytics.avgWordsPerDocument > 1000 
+                            ? 'Large documents - complex processing'
+                            : analytics.avgWordsPerDocument > 500
+                            ? 'Medium documents - standard processing'
+                            : 'Small documents - quick processing'
+                          }
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Second Row of Metrics */}
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Cost Efficiency */}
+                      <div className="space-y-2 p-3 rounded-lg bg-gray-800/30 border border-gray-700/30">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="w-4 h-4 text-emerald-400" />
+                          <span className="text-xs text-gray-400 font-medium">Cost Efficiency</span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xl font-bold text-white">
+                            ${(analytics.totalMoneySaved / Math.max(analytics.totalDocuments, 1)).toFixed(0)}
+                          </span>
+                          <span className="text-xs text-gray-400">per doc</span>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Average value saved per document processed
+                        </p>
+                      </div>
+
+                      {/* Processing Consistency */}
+                      <div className="space-y-2 p-3 rounded-lg bg-gray-800/30 border border-gray-700/30">
+                        <div className="flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-orange-400" />
+                          <span className="text-xs text-gray-400 font-medium">Processing Consistency</span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xl font-bold text-white">
+                            {analytics.docsThisMonth > 0 && analytics.docsLastMonth > 0
+                              ? Math.abs(analytics.monthOverMonthGrowth) < 20 ? 'High' : 'Moderate'
+                              : analytics.totalDocuments > 5 ? 'Moderate' : 'Building'
+                            }
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {analytics.docsThisMonth > 0 && analytics.docsLastMonth > 0
+                            ? Math.abs(analytics.monthOverMonthGrowth) < 20 
+                              ? 'Stable processing volume'
+                              : 'Variable processing patterns'
+                            : 'Establishing processing patterns'
+                          }
+                        </p>
+                      </div>
+
+                      {/* Time Efficiency */}
+                      <div className="space-y-2 p-3 rounded-lg bg-gray-800/30 border border-gray-700/30">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-cyan-400" />
+                          <span className="text-xs text-gray-400 font-medium">Time Efficiency</span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xl font-bold text-white">
+                            {analytics.totalDocuments > 0
+                              ? `${((analytics.totalTimeSavedHours / analytics.totalDocuments) * 100).toFixed(0)}%`
+                              : '0%'
+                            }
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Time saved compared to manual processing
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Processing Statistics */}
+                    <div className="mt-4 p-4 rounded-lg bg-gradient-to-r from-gray-800/40 to-gray-800/20 border border-gray-700/40">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-purple-400 mb-1">
+                            {analytics.docsThisWeek > 0 ? analytics.docsThisWeek : analytics.docsThisMonth}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            {analytics.docsThisWeek > 0 ? 'This Week' : 'This Month'}
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-cyan-400 mb-1">
+                            {analytics.totalDocuments > 0 
+                              ? `${(analytics.totalWordsProcessed / analytics.totalDocuments / 1000).toFixed(1)}K`
+                              : '0K'
+                            }
+                          </div>
+                          <div className="text-xs text-gray-400">Avg Words/Doc</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-yellow-400 mb-1">
+                            {analytics.totalDocuments > 0
+                              ? `${(analytics.totalTimeSavedHours / analytics.totalDocuments * 60).toFixed(0)}`
+                              : '0'
+                            }
+                          </div>
+                          <div className="text-xs text-gray-400">Mins Saved/Doc</div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </Card>
           </motion.div>
 
           {/* Right Column - Key Stats */}
-          <motion.div variants={itemVariants} className="space-y-4">
+          <motion.div variants={itemVariants} className="space-y-4 flex flex-col">
             {/* Total Documents */}
-            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl">
-              <div className="p-6">
+            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl flex flex-col min-h-[180px]">
+              <div className="p-6 flex flex-col h-full">
                 <p className="text-sm text-gray-400 mb-2">
                   {timeFilter === 'weekly' ? 'Documents (Last 4 weeks)' : 'Total Documents'}
                 </p>
-                <div className="flex items-baseline gap-2 mb-2">
+                <div className="flex items-baseline gap-2 mb-3">
                   <p className="text-4xl font-bold text-white">
                     {filteredStats.totalDocuments.toLocaleString()}
                   </p>
@@ -571,16 +775,21 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                     </span>
                   )}
                 </div>
+                <p className="text-xs text-gray-500 leading-relaxed mt-auto">
+                  {timeFilter === 'weekly' 
+                    ? 'This shows the count from the last 4 weeks.' 
+                    : 'Total number of documents processed through the system. The percentage change shows growth or decline compared to the previous period.'}
+                </p>
               </div>
             </Card>
 
             {/* Total Time Saved */}
-            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl">
-              <div className="p-6">
+            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl flex flex-col min-h-[180px]">
+              <div className="p-6 flex flex-col h-full">
                 <p className="text-sm text-gray-400 mb-2">
                   {timeFilter === 'weekly' ? 'Time Saved (Last 4 weeks)' : 'Total Time Saved'}
                 </p>
-                <div className="flex items-baseline gap-2 mb-2">
+                <div className="flex items-baseline gap-2 mb-3">
                   <p className="text-4xl font-bold text-white">
                     {timeFilter === 'weekly' 
                       ? filteredStats.totalTimeSaved.toFixed(1)
@@ -596,20 +805,30 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                     </span>
                   </p>
                 </div>
+                <p className="text-xs text-gray-500 leading-relaxed mt-auto">
+                  {timeFilter === 'weekly' 
+                    ? 'Time saved in the last 4 weeks by using automated processing.' 
+                    : 'Calculated at 0.5 hours saved per document. This represents real time you can use for other important tasks.'}
+                </p>
               </div>
             </Card>
 
             {/* Net Value */}
-            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl">
-              <div className="p-6">
+            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl flex flex-col min-h-[180px]">
+              <div className="p-6 flex flex-col h-full">
                 <p className="text-sm text-gray-400 mb-2">
                   {timeFilter === 'weekly' ? 'Value (Last 4 weeks)' : 'Total Net Value'}
                 </p>
-                <div className="flex items-baseline gap-2 mb-2">
+                <div className="flex items-baseline gap-2 mb-3">
                   <p className="text-4xl font-bold text-white">
                     {formatCurrency(filteredStats.totalValue).replace('.00', '')}
                   </p>
                 </div>
+                <p className="text-xs text-gray-500 leading-relaxed mt-auto">
+                  {timeFilter === 'weekly' 
+                    ? 'Estimated value from the last 4 weeks of automation.' 
+                    : 'Calculated by multiplying time saved (hours) by $50/hour. A conservative estimate of value gained through automation.'}
+                </p>
               </div>
             </Card>
           </motion.div>
@@ -618,15 +837,15 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
         {/* Bottom Three Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
           {/* Recent Activity */}
-          <motion.div variants={itemVariants}>
-            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl">
-              <div className="p-6">
+          <motion.div variants={itemVariants} className="flex">
+            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl w-full flex flex-col">
+              <div className="p-6 flex flex-col flex-1">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-bold text-white">Recent Activity</h3>
                   <Clock className="w-5 h-5 text-gray-400" />
                 </div>
 
-                <div className="space-y-3 max-h-[280px] overflow-y-auto pr-2">
+                <div className="space-y-3 flex-1 overflow-y-auto pr-2 min-h-0">
                   {analytics.recentActivity && analytics.recentActivity.length > 0 ? (
                     analytics.recentActivity.slice(0, 5).map((activity, index) => {
                       const date = new Date(activity.timestamp);
@@ -669,9 +888,9 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
           </motion.div>
 
           {/* Processing Analysis with Pie Chart */}
-          <motion.div variants={itemVariants}>
-            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl">
-              <div className="p-6">
+          <motion.div variants={itemVariants} className="flex">
+            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl w-full flex flex-col">
+              <div className="p-6 flex flex-col flex-1">
                 <h3 className="text-lg font-bold text-white mb-6">Processing Analysis</h3>
 
                 <div className="flex items-center justify-center mb-4">
@@ -694,8 +913,8 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <p className="text-4xl font-bold text-white">{analytics.totalDocuments}</p>
-                      <p className="text-xs text-gray-400">Total</p>
+                      <p className="text-3xl font-bold text-white">{analytics.successRate}%</p>
+                      <p className="text-xs text-gray-400">Success</p>
                     </div>
                   </div>
                 </div>
@@ -729,9 +948,9 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
           </motion.div>
 
           {/* Performance Forecast */}
-          <motion.div variants={itemVariants}>
-            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl">
-              <div className="p-6">
+          <motion.div variants={itemVariants} className="flex">
+            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl w-full flex flex-col">
+              <div className="p-6 flex flex-col flex-1">
                 <h3 className="text-lg font-bold text-white mb-6">Performance Forecast</h3>
 
                 <div className="h-[200px] mb-4">
@@ -777,13 +996,16 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                   </ResponsiveContainer>
                 </div>
 
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-gray-800/50 border border-gray-700/50">
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-gray-800/50 border border-gray-700/50 mb-3">
                   <Sparkles className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
                   <p className="text-xs text-gray-300">
                     Expecting <span className="font-semibold text-blue-400">growth in {forecastData[forecastData.length - 1]?.month}</span>. 
                     Consider <span className="font-semibold text-pink-400">expanding capacity</span> or optimizing current workflows.
                   </p>
                 </div>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  The blue line shows your actual document processing data, while the pink dashed line shows the projected forecast based on your current growth patterns. Helps you anticipate future processing needs.
+                </p>
               </div>
             </Card>
           </motion.div>
@@ -791,17 +1013,57 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
       </div>
 
       {/* Modal Popup */}
-      {showModal && modalContent && (
+      {mounted && showModal && modalContent && typeof window !== 'undefined' && createPortal(
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => setShowModal(false)}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 overflow-y-auto"
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: 0,
+            padding: '1rem',
+            pointerEvents: 'auto',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowModal(false);
+              setInfoModalCard(null);
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setShowModal(false);
+              setInfoModalCard(null);
+            }
+          }}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-gray-900 border border-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className="bg-gray-900 border border-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl my-auto"
+            style={{ 
+              maxHeight: '90vh', 
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              pointerEvents: 'auto',
+              position: 'relative',
+              zIndex: 10000,
+              margin: 'auto',
+              WebkitOverflowScrolling: 'touch'
+            }}
             onClick={(e) => e.stopPropagation()}
+            onWheel={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-4 mb-6">
               <div className="p-3 rounded-xl bg-gray-800 border border-gray-700">
@@ -812,34 +1074,45 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
               </h2>
             </div>
             
-            <p className="text-gray-300 text-lg leading-relaxed mb-6">
+            <p className="text-gray-300 text-lg leading-relaxed mb-6 whitespace-pre-line">
               {modalContent.description}
             </p>
 
             <div className="flex gap-3">
               <button
-                onClick={() => setShowModal(false)}
-                className="flex-1 px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors"
-              >
-                Close
-              </button>
-              <button
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   setShowModal(false);
-                  // Force navigation to dashboard - this will reload and show summaries tab by default
-                  setTimeout(() => {
-                    window.location.href = '/dashboard';
-                  }, 100);
+                  setInfoModalCard(null);
                 }}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold rounded-lg transition-all cursor-pointer"
+                className="flex-1 px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors"
+                type="button"
               >
-                View Summary
+                Close
               </button>
+              {!infoModalCard && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowModal(false);
+                    setInfoModalCard(null);
+                    // Force navigation to dashboard - this will reload and show summaries tab by default
+                    setTimeout(() => {
+                      window.location.href = '/dashboard';
+                    }, 100);
+                  }}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold rounded-lg transition-all cursor-pointer"
+                  type="button"
+                >
+                  View Summary
+                </button>
+              )}
             </div>
           </motion.div>
-        </div>
+        </div>,
+        document.body
       )}
     </motion.div>
   );
