@@ -2,9 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useUser, useClerk } from "@clerk/nextjs";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Building2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function UserMenu() {
   const { user } = useUser();
@@ -86,6 +87,16 @@ export default function UserMenu() {
                 {userEmail}
               </p>
             </div>
+
+            {/* Workspaces Link */}
+            <Link
+              href="/workspaces"
+              onClick={() => setIsOpen(false)}
+              className="w-full px-4 py-3 flex items-center gap-3 text-left text-sm text-white hover:bg-gray-700 transition-colors"
+            >
+              <Building2 className="w-4 h-4 text-gray-400" />
+              <span>Workspaces</span>
+            </Link>
 
             {/* Logout Button */}
             <button
