@@ -6,7 +6,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { Spotlight } from "@/components/ui/spotlight-new";
 import ConditionalFooter from "@/components/common/conditional-footer";
-import KeyboardShortcuts from "@/components/common/keyboard-shortcuts";
 
 const fontSans = FontSans({
   variable: "--font-sans",
@@ -50,7 +49,6 @@ export default function RootLayout({
             <Header />
             <main className="flex-1 w-full relative z-10"> {children}</main>
             <ConditionalFooter />
-            <KeyboardShortcuts />
           </div>
           <Toaster />
         </body>

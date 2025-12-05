@@ -162,13 +162,21 @@ export default function KeyboardShortcuts() {
       {/* Help Button - Bottom Right (Only on home page, hidden on mobile when footer is visible) */}
       {shouldShowButton && (
         <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-40 w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full shadow-2xl shadow-orange-500/50 flex items-center justify-center transition-all hover:scale-110 active:scale-95 group pointer-events-auto"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsOpen(true);
+          }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+          }}
+          className="fixed bottom-6 right-6 z-[9999] w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full shadow-2xl shadow-orange-500/50 flex items-center justify-center transition-all hover:scale-110 active:scale-95 group cursor-pointer"
           aria-label="Keyboard shortcuts"
           type="button"
+          style={{ pointerEvents: 'auto', position: 'fixed' }}
         >
           <Command className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-          <span className="absolute -top-10 right-0 bg-black/90 text-white text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+          <span className="absolute -top-10 right-0 bg-black/90 text-white text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
             Press ? for shortcuts
           </span>
         </button>
