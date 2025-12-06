@@ -21,7 +21,6 @@ import {
   Trash2,
   AlertTriangle,
   Settings,
-  MoreVertical,
   ChevronRight,
   Mail,
   Bell,
@@ -30,7 +29,6 @@ import {
   Calendar,
   BarChart3,
   Share2,
-  Filter,
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -77,6 +75,7 @@ export default function WorkspacesClient() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [workspaceName, setWorkspaceName] = useState("");
   const [workspaceDescription, setWorkspaceDescription] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
@@ -130,11 +129,14 @@ export default function WorkspacesClient() {
   };
 
   const handleCreateWorkspace = async () => {
+    if (isCreating) return; // Prevent multiple submissions
+    
     if (!workspaceName.trim()) {
       toast.error("Workspace name is required");
       return;
     }
 
+    setIsCreating(true);
     try {
       const response = await fetch("/api/workspaces", {
         method: "POST",
@@ -160,6 +162,8 @@ export default function WorkspacesClient() {
     } catch (error) {
       console.error("Error creating workspace:", error);
       toast.error("Failed to create workspace");
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -352,37 +356,77 @@ export default function WorkspacesClient() {
                     New Workspace
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold">Create New Workspace</DialogTitle>
-                    <DialogDescription>
-                      Start collaborating with your team on documents and projects
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 mt-4">
+                <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 max-w-md p-0 gap-0 overflow-hidden">
+                  {/* Gradient Header */}
+                  <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 p-6 relative">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center flex-shrink-0">
+                        <Building2 className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h2 className="text-2xl font-bold text-white mb-1">Create New Workspace</h2>
+                        <p className="text-orange-100 text-sm">
+                          Start collaborating with your team
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6 space-y-5">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Workspace Name</Label>
+                      <Label htmlFor="name" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Workspace Name <span className="text-red-500">*</span>
+                      </Label>
                       <Input
                         id="name"
                         value={workspaceName}
                         onChange={(e) => setWorkspaceName(e.target.value)}
-                        placeholder="My Workspace"
-                        onKeyDown={(e) => e.key === 'Enter' && handleCreateWorkspace()}
+                        placeholder="e.g., Marketing Team, Engineering"
+                        onKeyDown={(e) => e.key === 'Enter' && !isCreating && handleCreateWorkspace()}
+                        className="h-11 border-gray-300 dark:border-gray-700 focus:border-orange-500 focus:ring-orange-500/20 dark:bg-gray-800 dark:text-white"
+                        autoFocus
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="description">Description (Optional)</Label>
+                      <Label htmlFor="description" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Description <span className="text-gray-400 text-xs font-normal">(Optional)</span>
+                      </Label>
                       <Textarea
                         id="description"
                         value={workspaceDescription}
                         onChange={(e) => setWorkspaceDescription(e.target.value)}
-                        placeholder="Describe your workspace..."
+                        placeholder="What is this workspace for?"
                         rows={3}
+                        className="border-gray-300 dark:border-gray-700 focus:border-orange-500 focus:ring-orange-500/20 dark:bg-gray-800 dark:text-white resize-none"
                       />
                     </div>
-                    <Button onClick={handleCreateWorkspace} className="w-full">
-                      Create Workspace
-                    </Button>
+                    <motion.div
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                    >
+                      <Button 
+                        onClick={handleCreateWorkspace} 
+                        className="w-full h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-300" 
+                        disabled={isCreating || !workspaceName.trim()}
+                      >
+                        {isCreating ? (
+                          <>
+                            <motion.div
+                              className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full mr-2"
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            />
+                            Creating...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create Workspace
+                          </>
+                        )}
+                      </Button>
+                    </motion.div>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -422,37 +466,77 @@ export default function WorkspacesClient() {
                     Create Workspace
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-white dark:bg-gray-900">
-                  <DialogHeader>
-                    <DialogTitle>Create New Workspace</DialogTitle>
-                    <DialogDescription>
-                      Start collaborating with your team on documents and projects
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 mt-4">
+                <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 max-w-md p-0 gap-0 overflow-hidden">
+                  {/* Gradient Header */}
+                  <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 p-6 relative">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center flex-shrink-0">
+                        <Building2 className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h2 className="text-2xl font-bold text-white mb-1">Create New Workspace</h2>
+                        <p className="text-orange-100 text-sm">
+                          Start collaborating with your team
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6 space-y-5">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Workspace Name</Label>
+                      <Label htmlFor="name-empty" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Workspace Name <span className="text-red-500">*</span>
+                      </Label>
                       <Input
-                        id="name"
+                        id="name-empty"
                         value={workspaceName}
                         onChange={(e) => setWorkspaceName(e.target.value)}
-                        placeholder="My Workspace"
-                        onKeyDown={(e) => e.key === 'Enter' && handleCreateWorkspace()}
+                        placeholder="e.g., Marketing Team, Engineering"
+                        onKeyDown={(e) => e.key === 'Enter' && !isCreating && handleCreateWorkspace()}
+                        className="h-11 border-gray-300 dark:border-gray-700 focus:border-orange-500 focus:ring-orange-500/20 dark:bg-gray-800 dark:text-white"
+                        autoFocus
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="description">Description (Optional)</Label>
+                      <Label htmlFor="description-empty" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Description <span className="text-gray-400 text-xs font-normal">(Optional)</span>
+                      </Label>
                       <Textarea
-                        id="description"
+                        id="description-empty"
                         value={workspaceDescription}
                         onChange={(e) => setWorkspaceDescription(e.target.value)}
-                        placeholder="Describe your workspace..."
+                        placeholder="What is this workspace for?"
                         rows={3}
+                        className="border-gray-300 dark:border-gray-700 focus:border-orange-500 focus:ring-orange-500/20 dark:bg-gray-800 dark:text-white resize-none"
                       />
                     </div>
-                    <Button onClick={handleCreateWorkspace} className="w-full">
-                      Create Workspace
-                    </Button>
+                    <motion.div
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                    >
+                      <Button 
+                        onClick={handleCreateWorkspace} 
+                        className="w-full h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-300" 
+                        disabled={isCreating || !workspaceName.trim()}
+                      >
+                        {isCreating ? (
+                          <>
+                            <motion.div
+                              className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full mr-2"
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            />
+                            Creating...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create Workspace
+                          </>
+                        )}
+                      </Button>
+                    </motion.div>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -475,16 +559,9 @@ export default function WorkspacesClient() {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="border-gray-300 dark:border-gray-700">
+                  <Button variant="outline" size="sm" className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
                     <Share2 className="w-4 h-4 mr-2" />
                     Share
-                  </Button>
-                  <Button variant="outline" size="sm" className="border-gray-300 dark:border-gray-700">
-                    <Filter className="w-4 h-4 mr-2" />
-                    Filters
-                  </Button>
-                  <Button variant="outline" size="sm" className="border-gray-300 dark:border-gray-700">
-                    <MoreVertical className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
@@ -544,7 +621,7 @@ export default function WorkspacesClient() {
                   <div className="flex items-center gap-2">
                     <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" className="border-gray-300 dark:border-gray-700">
+                        <Button variant="outline" className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
                           <UserPlus className="w-4 h-4 mr-2" />
                           Invite Member
                         </Button>
@@ -606,7 +683,7 @@ export default function WorkspacesClient() {
                                 variant="outline"
                                 onClick={() => setDeleteDialogOpen(false)}
                                 disabled={isDeleting}
-                                className="flex-1"
+                                className="flex-1 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                               >
                                 Cancel
                               </Button>
