@@ -364,3 +364,67 @@ export async function getWorkspaceActivities(workspaceId: string, limit = 50) {
   return activities;
 }
 
+export async function deleteWorkspace(workspaceId: string, userId: string) {
+  const sql = await getDbConnection();
+
+  // First, verify the user is the owner
+  const [workspace] = await sql`
+    SELECT w.*, wm.role
+    FROM workspaces w
+    INNER JOIN workspace_members wm ON w.id = wm.workspace_id
+    WHERE w.id = ${workspaceId} AND wm.user_id = ${userId}
+  `;
+
+  if (!workspace) {
+    throw new Error("Workspace not found");
+  }
+
+  if (workspace.role !== 'owner') {
+    throw new Error("Only the workspace owner can delete the workspace");
+  }
+
+  // Delete in order to respect foreign key constraints
+  // Delete collaboration sessions
+  await sql`
+    DELETE FROM collaboration_sessions
+    WHERE pdf_summary_id IN (
+      SELECT pdf_summary_id FROM document_shares WHERE workspace_id = ${workspaceId}
+    )
+  `;
+
+  // Delete document comments
+  await sql`
+    DELETE FROM document_comments
+    WHERE workspace_id = ${workspaceId}
+  `;
+
+  // Delete document shares
+  await sql`
+    DELETE FROM document_shares
+    WHERE workspace_id = ${workspaceId}
+  `;
+
+  // Delete workspace activities
+  await sql`
+    DELETE FROM workspace_activities
+    WHERE workspace_id = ${workspaceId}
+  `;
+
+  // Delete workspace members
+  await sql`
+    DELETE FROM workspace_members
+    WHERE workspace_id = ${workspaceId}
+  `;
+
+  // Finally, delete the workspace
+  await sql`
+    DELETE FROM workspaces
+    WHERE id = ${workspaceId}
+  `;
+
+  return { success: true };
+}
+
+
+
+

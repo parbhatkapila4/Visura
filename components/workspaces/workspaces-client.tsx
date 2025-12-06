@@ -2,9 +2,39 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Plus, Users, FileText, Activity, UserPlus, Share2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Building2, 
+  Plus, 
+  Users, 
+  FileText, 
+  UserPlus, 
+  Sparkles,
+  ArrowRight,
+  Clock,
+  Crown,
+  CheckCircle2,
+  Search,
+  TrendingUp,
+  Activity,
+  Zap,
+  Trash2,
+  AlertTriangle,
+  Settings,
+  MoreVertical,
+  ChevronRight,
+  Mail,
+  Bell,
+  LayoutGrid,
+  List,
+  Calendar,
+  BarChart3,
+  Share2,
+  Filter,
+  X
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -17,6 +47,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useUser } from "@clerk/nextjs";
 
 interface Workspace {
   id: string;
@@ -36,6 +67,7 @@ interface WorkspaceMember {
 }
 
 export default function WorkspacesClient() {
+  const { user } = useUser();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
   const [members, setMembers] = useState<WorkspaceMember[]>([]);
@@ -43,9 +75,13 @@ export default function WorkspacesClient() {
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [workspaceName, setWorkspaceName] = useState("");
   const [workspaceDescription, setWorkspaceDescription] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -77,14 +113,12 @@ export default function WorkspacesClient() {
 
   const fetchWorkspaceDetails = async (workspaceId: string) => {
     try {
-      // Fetch members
       const membersResponse = await fetch(`/api/workspaces/members?workspaceId=${workspaceId}`);
       if (membersResponse.ok) {
         const membersData = await membersResponse.json();
         setMembers(membersData);
       }
 
-      // Fetch documents
       const docsResponse = await fetch(`/api/workspaces/documents?workspaceId=${workspaceId}`);
       if (docsResponse.ok) {
         const docsData = await docsResponse.json();
@@ -161,230 +195,536 @@ export default function WorkspacesClient() {
     }
   };
 
+  const handleDeleteWorkspace = async () => {
+    if (!selectedWorkspace) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/workspaces?workspaceId=${selectedWorkspace.id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Workspace deleted successfully!");
+        setDeleteDialogOpen(false);
+        
+        const updatedWorkspaces = workspaces.filter(w => w.id !== selectedWorkspace.id);
+        setWorkspaces(updatedWorkspaces);
+        
+        if (updatedWorkspaces.length > 0) {
+          setSelectedWorkspace(updatedWorkspaces[0]);
+        } else {
+          setSelectedWorkspace(null);
+        }
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "Failed to delete workspace");
+      }
+    } catch (error) {
+      console.error("Error deleting workspace:", error);
+      toast.error("Failed to delete workspace");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const filteredWorkspaces = workspaces.filter(workspace =>
+    workspace.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    workspace.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    
+    if (diffInDays === 0) return "Today";
+    if (diffInDays === 1) return "Yesterday";
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
+    return `${Math.floor(diffInDays / 30)} months ago`;
+  };
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-400">Loading workspaces...</div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
+          <p className="text-gray-400">Loading workspaces...</p>
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Workspaces</h1>
-          <p className="text-gray-400">Collaborate with your team on documents</p>
-        </div>
-        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Create Workspace
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-gray-900 border-gray-800 text-white">
-            <DialogHeader>
-              <DialogTitle>Create New Workspace</DialogTitle>
-              <DialogDescription className="text-gray-400">
-                Create a workspace to collaborate with your team
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 mt-4">
-              <div>
-                <Label htmlFor="name">Workspace Name</Label>
-                <Input
-                  id="name"
-                  value={workspaceName}
-                  onChange={(e) => setWorkspaceName(e.target.value)}
-                  placeholder="My Workspace"
-                  className="bg-gray-800 border-gray-700 text-white"
-                />
-              </div>
-              <div>
-                <Label htmlFor="description">Description (Optional)</Label>
-                <Textarea
-                  id="description"
-                  value={workspaceDescription}
-                  onChange={(e) => setWorkspaceDescription(e.target.value)}
-                  placeholder="Describe your workspace..."
-                  className="bg-gray-800 border-gray-700 text-white"
-                />
-              </div>
-              <Button onClick={handleCreateWorkspace} className="w-full">
-                Create Workspace
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+  const totalMembers = members.length;
+  const totalDocuments = documents.length;
 
-      {/* Workspaces Grid */}
-      {workspaces.length === 0 ? (
-        <Card className="p-12 text-center bg-gray-900/50 border-gray-800">
-          <Building2 className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">No workspaces yet</h3>
-          <p className="text-gray-400 mb-6">Create your first workspace to start collaborating</p>
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create Workspace
-          </Button>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Workspace List */}
-          <div className="lg:col-span-1 space-y-3">
-            <h2 className="text-lg font-semibold text-white mb-4">Your Workspaces</h2>
-            {workspaces.map((workspace) => (
-              <Card
-                key={workspace.id}
-                className={`p-4 cursor-pointer transition-all ${
-                  selectedWorkspace?.id === workspace.id
-                    ? "bg-orange-500/10 border-orange-500/50"
-                    : "bg-gray-900/50 border-gray-800 hover:border-gray-700"
-                }`}
-                onClick={() => setSelectedWorkspace(workspace)}
+  return (
+    <div className="flex h-screen bg-white dark:bg-gray-950 overflow-hidden">
+      {/* Sidebar */}
+      <motion.aside
+        initial={false}
+        animate={{ width: sidebarCollapsed ? "80px" : "280px" }}
+        className="bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950 border-r border-gray-800 flex flex-col h-full relative"
+      >
+        {/* User Profile Section */}
+        <div className="p-4 border-b border-gray-800">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+              {user?.firstName?.[0] || user?.emailAddresses[0]?.emailAddress?.[0] || "U"}
+            </div>
+            {!sidebarCollapsed && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex-1 min-w-0"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Building2 className="w-4 h-4 text-orange-400" />
-                      <h3 className="font-semibold text-white">{workspace.name}</h3>
-                    </div>
-                    {workspace.description && (
-                      <p className="text-sm text-gray-400 line-clamp-2">{workspace.description}</p>
-                    )}
-                    {workspace.role !== 'owner' && (
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-gray-400 capitalize">
-                          {workspace.role}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Card>
+                <p className="text-white font-medium text-sm truncate">
+                  {user?.fullName || "User"}
+                </p>
+                <p className="text-gray-400 text-xs truncate">
+                  {user?.emailAddresses[0]?.emailAddress || ""}
+                </p>
+              </motion.div>
+            )}
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+          {!sidebarCollapsed && (
+            <div className="mb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                <Input
+                  placeholder="Search workspaces..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-9 bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 text-sm"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-1">
+            {filteredWorkspaces.map((workspace) => (
+              <motion.button
+                key={workspace.id}
+                onClick={() => setSelectedWorkspace(workspace)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  selectedWorkspace?.id === workspace.id
+                    ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+                    : "text-gray-400 hover:bg-gray-800/50 hover:text-white"
+                }`}
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Building2 className="w-4 h-4 flex-shrink-0" />
+                {!sidebarCollapsed && (
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex-1 text-left truncate"
+                  >
+                    {workspace.name}
+                  </motion.span>
+                )}
+                {selectedWorkspace?.id === workspace.id && !sidebarCollapsed && (
+                  <CheckCircle2 className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                )}
+              </motion.button>
             ))}
           </div>
 
-          {/* Workspace Details */}
-          {selectedWorkspace && (
-            <div className="lg:col-span-2 space-y-6">
-              <Card className="p-6 bg-gray-900/50 border-gray-800">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-2xl font-bold text-white mb-2">{selectedWorkspace.name}</h2>
-                    {selectedWorkspace.description && (
-                      <p className="text-gray-400">{selectedWorkspace.description}</p>
+          {!sidebarCollapsed && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-4 pt-4 border-t border-gray-800"
+            >
+              <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white h-9 text-sm font-semibold"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Workspace
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold">Create New Workspace</DialogTitle>
+                    <DialogDescription>
+                      Start collaborating with your team on documents and projects
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Workspace Name</Label>
+                      <Input
+                        id="name"
+                        value={workspaceName}
+                        onChange={(e) => setWorkspaceName(e.target.value)}
+                        placeholder="My Workspace"
+                        onKeyDown={(e) => e.key === 'Enter' && handleCreateWorkspace()}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Description (Optional)</Label>
+                      <Textarea
+                        id="description"
+                        value={workspaceDescription}
+                        onChange={(e) => setWorkspaceDescription(e.target.value)}
+                        placeholder="Describe your workspace..."
+                        rows={3}
+                      />
+                    </div>
+                    <Button onClick={handleCreateWorkspace} className="w-full">
+                      Create Workspace
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </motion.div>
+          )}
+        </nav>
+
+        {/* Collapse Button */}
+        <div className="p-3 border-t border-gray-800">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="w-full text-gray-400 hover:text-white hover:bg-gray-800/50"
+          >
+            {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <X className="w-4 h-4" />}
+          </Button>
+        </div>
+      </motion.aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950">
+        {workspaces.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="text-center max-w-md">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center mx-auto mb-6">
+                <Building2 className="w-10 h-10 text-orange-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No workspaces yet</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Create your first workspace to start collaborating with your team
+              </p>
+              <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Workspace
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-white dark:bg-gray-900">
+                  <DialogHeader>
+                    <DialogTitle>Create New Workspace</DialogTitle>
+                    <DialogDescription>
+                      Start collaborating with your team on documents and projects
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Workspace Name</Label>
+                      <Input
+                        id="name"
+                        value={workspaceName}
+                        onChange={(e) => setWorkspaceName(e.target.value)}
+                        placeholder="My Workspace"
+                        onKeyDown={(e) => e.key === 'Enter' && handleCreateWorkspace()}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Description (Optional)</Label>
+                      <Textarea
+                        id="description"
+                        value={workspaceDescription}
+                        onChange={(e) => setWorkspaceDescription(e.target.value)}
+                        placeholder="Describe your workspace..."
+                        rows={3}
+                      />
+                    </div>
+                    <Button onClick={handleCreateWorkspace} className="w-full">
+                      Create Workspace
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+        ) : selectedWorkspace ? (
+          <>
+            {/* Header */}
+            <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {selectedWorkspace.name}
+                  </h1>
+                  {selectedWorkspace.role === 'owner' && (
+                    <span className="px-2 py-1 rounded-full bg-orange-500/10 text-orange-400 text-xs font-medium flex items-center gap-1">
+                      <Crown className="w-3 h-3" />
+                      Owner
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="border-gray-300 dark:border-gray-700">
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Share
+                  </Button>
+                  <Button variant="outline" size="sm" className="border-gray-300 dark:border-gray-700">
+                    <Filter className="w-4 h-4 mr-2" />
+                    Filters
+                  </Button>
+                  <Button variant="outline" size="sm" className="border-gray-300 dark:border-gray-700">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="max-w-7xl mx-auto space-y-6">
+                {/* Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Team Members</p>
+                          <p className="text-3xl font-bold text-gray-900 dark:text-white">{totalMembers}</p>
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                          <Users className="w-6 h-6 text-blue-500" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Documents</p>
+                          <p className="text-3xl font-bold text-gray-900 dark:text-white">{totalDocuments}</p>
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                          <FileText className="w-6 h-6 text-purple-500" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Workspaces</p>
+                          <p className="text-3xl font-bold text-gray-900 dark:text-white">{workspaces.length}</p>
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center">
+                          <Building2 className="w-6 h-6 text-orange-500" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Quick Actions</h2>
+                  <div className="flex items-center gap-2">
+                    <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="border-gray-300 dark:border-gray-700">
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Invite Member
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-white dark:bg-gray-900">
+                        <DialogHeader>
+                          <DialogTitle>Invite Team Member</DialogTitle>
+                          <DialogDescription>
+                            Invite someone to join this workspace
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 mt-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="email">Email Address</Label>
+                            <Input
+                              id="email"
+                              type="email"
+                              value={inviteEmail}
+                              onChange={(e) => setInviteEmail(e.target.value)}
+                              placeholder="colleague@example.com"
+                              onKeyDown={(e) => e.key === 'Enter' && handleInviteMember()}
+                            />
+                          </div>
+                          <Button onClick={handleInviteMember} className="w-full">
+                            Send Invitation
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    {selectedWorkspace.role === 'owner' && (
+                      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="border-red-300 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950">
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="bg-white dark:bg-gray-900">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                              <AlertTriangle className="w-5 h-5" />
+                              Delete Workspace
+                            </DialogTitle>
+                            <DialogDescription>
+                              This action cannot be undone. This will permanently delete the workspace and all associated data.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4 mt-4">
+                            <div className="p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900">
+                              <p className="text-sm text-gray-900 dark:text-white font-medium mb-2">
+                                Are you absolutely sure?
+                              </p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                The workspace &quot;{selectedWorkspace.name}&quot; will be permanently deleted along with all members, documents, and activities.
+                              </p>
+                            </div>
+                            <div className="flex gap-3">
+                              <Button
+                                variant="outline"
+                                onClick={() => setDeleteDialogOpen(false)}
+                                disabled={isDeleting}
+                                className="flex-1"
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                onClick={handleDeleteWorkspace}
+                                disabled={isDeleting}
+                                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                              >
+                                {isDeleting ? "Deleting..." : "Delete Forever"}
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     )}
                   </div>
-                  <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="flex items-center gap-2 border-gray-700 text-white hover:bg-gray-800 hover:text-white hover:border-gray-600">
-                        <UserPlus className="w-4 h-4" />
-                        Invite Member
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-gray-900 border-gray-800 text-white">
-                      <DialogHeader>
-                        <DialogTitle>Invite Team Member</DialogTitle>
-                        <DialogDescription className="text-gray-400">
-                          Invite someone to join this workspace
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 mt-4">
-                        <div>
-                          <Label htmlFor="email">Email Address</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={inviteEmail}
-                            onChange={(e) => setInviteEmail(e.target.value)}
-                            placeholder="colleague@example.com"
-                            className="bg-gray-800 border-gray-700 text-white"
-                          />
-                        </div>
-                        <Button onClick={handleInviteMember} className="w-full">
-                          Send Invitation
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
                 </div>
 
                 {/* Members Section */}
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    <Users className="w-5 h-5 text-orange-400" />
-                    Members ({members.length})
-                  </h3>
-                  <div className="space-y-2">
-                    {members.map((member) => (
-                      <div
-                        key={member.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-gray-800/50 border border-gray-700/50"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-semibold text-sm">
-                            {member.user_name?.[0]?.toUpperCase() || member.user_email[0]?.toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="text-white font-medium">
-                              {member.user_name || member.user_email}
-                            </div>
-                            <div className="text-xs text-gray-400">{member.user_email}</div>
-                          </div>
-                        </div>
-                        <span className="text-xs px-2 py-1 rounded-full bg-gray-700 text-gray-300 capitalize">
-                          {member.role}
-                        </span>
+                <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <Users className="w-5 h-5 text-blue-500" />
+                        Team Members ({totalMembers})
+                      </h3>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {members.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Users className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                        <p className="text-gray-600 dark:text-gray-400 mb-2">No members yet</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-500">Invite team members to get started</p>
                       </div>
-                    ))}
-                  </div>
-                </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {members.map((member) => (
+                          <div
+                            key={member.id}
+                            className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-semibold text-sm">
+                                {member.user_name?.[0]?.toUpperCase() || member.user_email[0]?.toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900 dark:text-white">
+                                  {member.user_name || member.user_email}
+                                </p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{member.user_email}</p>
+                              </div>
+                            </div>
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              member.role === 'owner'
+                                ? "bg-orange-500/10 text-orange-600 dark:text-orange-400"
+                                : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                            }`}>
+                              {member.role}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
                 {/* Documents Section */}
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-orange-400" />
-                    Shared Documents ({documents.length})
-                  </h3>
-                  {documents.length === 0 ? (
-                    <div className="text-center py-8 text-gray-400">
-                      <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>No documents shared in this workspace yet</p>
-                      <p className="text-sm mt-2">Share documents from your dashboard</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {documents.map((doc) => (
-                        <div
-                          key={doc.id}
-                          className="flex items-center justify-between p-3 rounded-lg bg-gray-800/50 border border-gray-700/50 hover:border-orange-500/50 transition-colors cursor-pointer"
-                          onClick={() => router.push(`/summaries/${doc.summary_id}`)}
-                        >
-                          <div className="flex items-center gap-3">
-                            <FileText className="w-5 h-5 text-orange-400" />
-                            <div>
-                              <div className="text-white font-medium">{doc.title || "Untitled"}</div>
-                              <div className="text-xs text-gray-400">{doc.file_name}</div>
+                <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800">
+                  <CardHeader>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-purple-500" />
+                      Shared Documents ({totalDocuments})
+                    </h3>
+                  </CardHeader>
+                  <CardContent>
+                    {documents.length === 0 ? (
+                      <div className="text-center py-12">
+                        <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                        <p className="text-gray-600 dark:text-gray-400 mb-2">No documents shared yet</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-500">Share documents from your dashboard</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {documents.map((doc) => (
+                          <div
+                            key={doc.id}
+                            onClick={() => router.push(`/summaries/${doc.summary_id}`)}
+                            className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:border-orange-500/50 transition-colors cursor-pointer group"
+                          >
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                                <FileText className="w-5 h-5 text-purple-500" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-gray-900 dark:text-white truncate">
+                                  {doc.title || "Untitled Document"}
+                                </p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{doc.file_name}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 font-medium">
+                                {doc.permission}
+                              </span>
+                              <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-orange-500 transition-colors" />
                             </div>
                           </div>
-                          <span className="text-xs px-2 py-1 rounded-full bg-gray-700 text-gray-300 capitalize">
-                            {doc.permission}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </Card>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          )}
-        </div>
-      )}
+          </>
+        ) : null}
+      </div>
     </div>
   );
 }
-

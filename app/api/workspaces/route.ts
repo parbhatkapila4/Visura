@@ -4,6 +4,7 @@ import {
   createWorkspace,
   getWorkspacesByUserId,
   getWorkspaceById,
+  deleteWorkspace,
 } from "@/lib/workspaces";
 
 // GET - List all workspaces for the current user
@@ -82,4 +83,52 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// DELETE - Delete a workspace (only owner can delete)
+export async function DELETE(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const searchParams = request.nextUrl.searchParams;
+    const workspaceId = searchParams.get("workspaceId");
+
+    if (!workspaceId) {
+      return NextResponse.json(
+        { error: "Workspace ID is required" },
+        { status: 400 }
+      );
+    }
+
+    await deleteWorkspace(workspaceId, userId);
+
+    return NextResponse.json(
+      { message: "Workspace deleted successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting workspace:", error);
+    
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to delete workspace";
+
+    // Check if it's a permission error
+    if (errorMessage.includes("Only the workspace owner")) {
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 403 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: errorMessage },
+      { status: 500 }
+    );
+  }
+}
+
+
+
 

@@ -118,3 +118,6 @@ BEFORE UPDATE ON document_comments
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
+
+
+

@@ -136,3 +136,6 @@ EXECUTE FUNCTION update_updated_at_column();
 -- ============================================
 -- Workspace collaboration tables have been added to your database
 
+
+
+
