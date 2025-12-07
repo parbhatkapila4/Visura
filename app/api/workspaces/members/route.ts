@@ -3,6 +3,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import {
   getWorkspaceMembers,
   inviteWorkspaceMember,
+  removeWorkspaceMember,
 } from "@/lib/workspaces";
 
 // GET - Get workspace members
@@ -76,6 +77,45 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// DELETE - Remove a member from workspace
+export async function DELETE(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
+    const user = await currentUser();
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const searchParams = request.nextUrl.searchParams;
+    const workspaceId = searchParams.get("workspaceId");
+    const memberId = searchParams.get("memberId");
+
+    if (!workspaceId || !memberId) {
+      return NextResponse.json(
+        { error: "workspaceId and memberId are required" },
+        { status: 400 }
+      );
+    }
+
+    await removeWorkspaceMember({
+      workspaceId,
+      memberId,
+      removedBy: userId,
+      removedByName: user.fullName || undefined,
+    });
+
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error: any) {
+    console.error("Error removing workspace member:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to remove member" },
+      { status: 500 }
+    );
+  }
+}
 
 

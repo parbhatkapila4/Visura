@@ -194,13 +194,13 @@ const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                 >
-                  <Link href="/dashboard" onClick={onClose}>
+                  <Link href="/workspaces" onClick={onClose}>
                     <motion.button
                       className="w-full py-3 rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] text-white font-medium"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      Dashboard
+                      Workspace
                     </motion.button>
                   </Link>
                 </motion.div>
@@ -353,13 +353,13 @@ export default function Header() {
               </SignedOut>
               
               <SignedIn>
-                <Link href="/dashboard">
+                <Link href="/workspaces">
                   <motion.button
                     className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-all"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    Dashboard
+                    Workspace
                   </motion.button>
                 </Link>
                 <PlanBadge />

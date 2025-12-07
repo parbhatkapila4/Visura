@@ -196,6 +196,65 @@ export async function inviteWorkspaceMember({
   return member;
 }
 
+export async function removeWorkspaceMember({
+  workspaceId,
+  memberId,
+  removedBy,
+  removedByName,
+}: {
+  workspaceId: string;
+  memberId: string;
+  removedBy: string;
+  removedByName?: string;
+}) {
+  const sql = await getDbConnection();
+
+  // Verify the person removing is the owner
+  const [workspace] = await sql`
+    SELECT w.*, wm.role
+    FROM workspaces w
+    INNER JOIN workspace_members wm ON w.id = wm.workspace_id
+    WHERE w.id = ${workspaceId} AND wm.user_id = ${removedBy}
+  `;
+
+  if (!workspace) {
+    throw new Error("Workspace not found or access denied");
+  }
+
+  if (workspace.role !== 'owner') {
+    throw new Error("Only the workspace owner can remove members");
+  }
+
+  // Get member info before removing
+  const [member] = await sql`
+    SELECT * FROM workspace_members
+    WHERE id = ${memberId} AND workspace_id = ${workspaceId}
+  `;
+
+  if (!member) {
+    throw new Error("Member not found");
+  }
+
+  // Prevent removing the owner
+  if (member.role === 'owner') {
+    throw new Error("Cannot remove the workspace owner");
+  }
+
+  // Remove the member (set status to inactive or delete)
+  await sql`
+    DELETE FROM workspace_members
+    WHERE id = ${memberId} AND workspace_id = ${workspaceId}
+  `;
+
+  // Log activity
+  await sql`
+    INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description, metadata)
+    VALUES (${workspaceId}, ${removedBy}, ${removedByName || null}, ${removedByName || null}, 'member_removed', ${`${member.user_email} was removed from the workspace`}, ${JSON.stringify({ removed_user_email: member.user_email, removed_user_id: member.user_id })})
+  `;
+
+  return { success: true };
+}
+
 export async function shareDocumentWithWorkspace({
   pdfSummaryId,
   workspaceId,
