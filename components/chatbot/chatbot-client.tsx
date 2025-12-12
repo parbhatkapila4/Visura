@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import {
   Send,
@@ -59,6 +60,7 @@ export default function ChatbotClient({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isSendingRef = useRef(false);
   const lastSentMessageRef = useRef<{text: string, timestamp: number} | null>(null);
 
@@ -97,11 +99,26 @@ export default function ChatbotClient({
   }, [currentSessionId]);
 
   useEffect(() => {
-    scrollToBottom();
+    // Only scroll if there are messages
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
   }, [messages]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      // Scroll within the messages container, not the whole page
+      const container = messagesContainerRef.current;
+      // Use requestAnimationFrame to ensure DOM is updated before scrolling
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          container.scrollTo({
+            top: container.scrollHeight,
+            behavior: "smooth"
+          });
+        });
+      });
+    }
   };
 
   const loadSessions = async () => {
@@ -413,7 +430,10 @@ export default function ChatbotClient({
               </div>
 
               {/* Messages Area */}
-              <div className="relative z-10 flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-6 space-y-3 sm:space-y-4 md:space-y-5">
+              <div 
+                ref={messagesContainerRef}
+                className="relative z-10 flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-6 space-y-3 sm:space-y-4 md:space-y-5"
+              >
                 {messages.length === 0 ? (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center px-4">
@@ -584,15 +604,22 @@ export default function ChatbotClient({
                       <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
                         <button
                           type="button"
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (!isLoading && !isSendingRef.current) {
-                              sendMessage("Help me reason through this document");
+                            if (isLoading || isSendingRef.current) {
+                              return;
+                            }
+                            
+                            try {
+                              await sendMessage("Help me reason through this document");
+                            } catch (error) {
+                              console.error("Error sending quick action message:", error);
+                              toast.error("Failed to send message. Please try again.");
                             }
                           }}
-                          disabled={isLoading}
-                          className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border border-orange-500/30 bg-black/60 text-gray-300 hover:text-white hover:border-orange-500/50 text-xs sm:text-sm backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                          disabled={isLoading || isSendingRef.current}
+                          className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border border-orange-500/30 bg-black/60 text-gray-300 hover:text-white hover:border-orange-500/50 hover:bg-orange-500/10 text-xs sm:text-sm backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                         >
                           <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span>Reasoning</span>
@@ -600,15 +627,22 @@ export default function ChatbotClient({
                         
                         <button
                           type="button"
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (!isLoading && !isSendingRef.current) {
-                              sendMessage("Summarize the key points from this document");
+                            if (isLoading || isSendingRef.current) {
+                              return;
+                            }
+                            
+                            try {
+                              await sendMessage("Summarize the key points from this document");
+                            } catch (error) {
+                              console.error("Error sending quick action message:", error);
+                              toast.error("Failed to send message. Please try again.");
                             }
                           }}
-                          disabled={isLoading}
-                          className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border border-orange-500/30 bg-black/60 text-gray-300 hover:text-white hover:border-orange-500/50 text-xs sm:text-sm backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                          disabled={isLoading || isSendingRef.current}
+                          className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border border-orange-500/30 bg-black/60 text-gray-300 hover:text-white hover:border-orange-500/50 hover:bg-orange-500/10 text-xs sm:text-sm backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                         >
                           <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span>Summarize Key Points</span>
@@ -616,25 +650,26 @@ export default function ChatbotClient({
                         
                         <button
                           type="button"
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (!isLoading && !isSendingRef.current) {
-                              sendMessage("Do deep research on the key topics in this document");
+                            if (isLoading || isSendingRef.current) {
+                              return;
+                            }
+                            
+                            try {
+                              await sendMessage("Do deep research on the key topics in this document");
+                            } catch (error) {
+                              console.error("Error sending quick action message:", error);
+                              toast.error("Failed to send message. Please try again.");
                             }
                           }}
-                          disabled={isLoading}
-                          className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border border-orange-500/30 bg-black/60 text-gray-300 hover:text-white hover:border-orange-500/50 text-xs sm:text-sm backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                          disabled={isLoading || isSendingRef.current}
+                          className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border border-orange-500/30 bg-black/60 text-gray-300 hover:text-white hover:border-orange-500/50 hover:bg-orange-500/10 text-xs sm:text-sm backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                         >
                           <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span>Deep Research</span>
                         </button>
-                      </div>
-                      
-                      <div className="flex justify-end pt-1 sm:pt-2">
-                        <span className="text-[10px] sm:text-xs uppercase tracking-wide text-orange-300/70">
-                          Under Building
-                        </span>
                       </div>
                     </div>
                   </div>

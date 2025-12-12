@@ -268,22 +268,56 @@ export async function shareDocumentWithWorkspace({
 }) {
   const sql = await getDbConnection();
 
-  const [share] = await sql`
-    INSERT INTO document_shares (pdf_summary_id, workspace_id, shared_by, permission)
-    VALUES (${pdfSummaryId}, ${workspaceId}, ${sharedBy}, ${permission})
-    ON CONFLICT (pdf_summary_id, workspace_id) 
-    DO UPDATE SET permission = ${permission}, updated_at = CURRENT_TIMESTAMP
-    RETURNING *
-  `;
+  try {
+    const [share] = await sql`
+      INSERT INTO document_shares (pdf_summary_id, workspace_id, shared_by, permission)
+      VALUES (${pdfSummaryId}, ${workspaceId}, ${sharedBy}, ${permission})
+      ON CONFLICT (pdf_summary_id, workspace_id) 
+      DO UPDATE SET permission = ${permission}, updated_at = CURRENT_TIMESTAMP
+      RETURNING *
+    `;
 
-  // Log activity
-  const [summary] = await sql`SELECT title FROM pdf_summaries WHERE id = ${pdfSummaryId}`;
-  await sql`
-    INSERT INTO workspace_activities (workspace_id, user_id, action_type, action_description, metadata)
-    VALUES (${workspaceId}, ${sharedBy}, 'document_shared', ${`Document "${summary?.title || 'Untitled'}" was shared`}, ${JSON.stringify({ pdf_summary_id: pdfSummaryId })})
-  `;
+    // Log activity (optional - don't fail if this fails)
+    try {
+      const [summary] = await sql`SELECT title FROM pdf_summaries WHERE id = ${pdfSummaryId}`;
+      // Get user email from workspace_members table
+      const [member] = await sql`
+        SELECT user_email, user_name FROM workspace_members 
+        WHERE workspace_id = ${workspaceId} AND user_id = ${sharedBy}
+        LIMIT 1
+      `;
+      
+      if (member) {
+        await sql`
+          INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description, metadata)
+          VALUES (${workspaceId}, ${sharedBy}, ${member.user_email}, ${member.user_name || null}, 'document_shared', ${`Document "${summary?.title || 'Untitled'}" was shared`}, ${JSON.stringify({ pdf_summary_id: pdfSummaryId })})
+        `;
+      }
+    } catch (activityError) {
+      // Activity logging is optional, don't fail the whole operation if it errors
+      console.warn("Failed to log workspace activity:", activityError);
+    }
 
-  return share;
+    return share;
+  } catch (error: any) {
+    const errorMessage = error?.message || String(error);
+    
+    // Provide more specific error messages
+    if (errorMessage.includes('does not exist') || errorMessage.includes('relation')) {
+      throw new Error(`Database table not found: ${errorMessage}`);
+    }
+    
+    if (errorMessage.includes('foreign key') || errorMessage.includes('constraint')) {
+      throw new Error(`Invalid reference: ${errorMessage}`);
+    }
+    
+    if (errorMessage.includes('duplicate key') || errorMessage.includes('unique constraint')) {
+      // This shouldn't happen due to ON CONFLICT, but handle it just in case
+      throw new Error("Document is already shared with this workspace");
+    }
+    
+    throw error;
+  }
 }
 
 export async function getSharedDocuments(workspaceId: string) {

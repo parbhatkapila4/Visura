@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, MessageCircle, BookOpen, ArrowRight, Share2, X, Copy, ChevronDown } from "lucide-react";
+import { ChevronLeft, MessageCircle, BookOpen, ArrowRight, Share2, X, Copy, ChevronDown, Building2 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
 import { motion } from "framer-motion";
@@ -32,6 +32,12 @@ export default function SummaryHeader({
   const [hasActiveShare, setHasActiveShare] = useState(false);
   const [isCheckingShare, setIsCheckingShare] = useState(true);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [workspaceDialogOpen, setWorkspaceDialogOpen] = useState(false);
+  const [workspaces, setWorkspaces] = useState<any[]>([]);
+  const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(false);
+  const [isAddingToWorkspace, setIsAddingToWorkspace] = useState(false);
+  const [workspacesWithDocument, setWorkspacesWithDocument] = useState<Set<string>>(new Set());
+  const hasFetchedWorkspaces = useRef(false);
 
   // Check if summary has an active share token and get the URL
   useEffect(() => {
@@ -59,6 +65,120 @@ export default function SummaryHeader({
 
     checkShareStatus();
   }, [summaryId]);
+
+  // Note: Fetching is now handled in the DropdownMenu onOpenChange handler
+
+  const fetchWorkspaces = async () => {
+    if (isLoadingWorkspaces) return; // Prevent multiple simultaneous fetches
+    
+    setIsLoadingWorkspaces(true);
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+      
+      // Fetch workspaces and check which ones already have this document
+      const [workspacesResponse, sharedDocsResponse] = await Promise.all([
+        fetch("/api/workspaces", {
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }),
+        summaryId ? fetch(`/api/workspaces/documents?workspaceId=all&pdfSummaryId=${summaryId}`, {
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }).catch(() => null) : Promise.resolve(null)
+      ]);
+      
+      clearTimeout(timeoutId);
+      
+      if (workspacesResponse.ok) {
+        const workspacesData = await workspacesResponse.json();
+        setWorkspaces(Array.isArray(workspacesData) ? workspacesData : []);
+        
+        // If we got shared documents info, mark which workspaces already have this document
+        if (sharedDocsResponse?.ok && summaryId) {
+          try {
+            const sharedDocs = await sharedDocsResponse.json();
+            const workspaceIdsWithDoc = new Set(
+              Array.isArray(sharedDocs) 
+                ? sharedDocs.map((doc: any) => doc.workspace_id)
+                : []
+            );
+            setWorkspacesWithDocument(workspaceIdsWithDoc);
+          } catch (e) {
+            // If fetching shared docs fails, just continue without that info
+            console.warn("Could not fetch shared documents info:", e);
+          }
+        } else {
+          // Reset if no shared docs response
+          setWorkspacesWithDocument(new Set());
+        }
+      } else {
+        const errorData = await workspacesResponse.json().catch(() => ({ error: 'Unknown error' }));
+        toast.error(errorData.error || "Failed to load workspaces");
+        setWorkspaces([]);
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        toast.error("Request timed out. Please try again.");
+      } else {
+        console.error("Error fetching workspaces:", error);
+        toast.error("Failed to load workspaces. Please try again.");
+      }
+      setWorkspaces([]);
+    } finally {
+      setIsLoadingWorkspaces(false);
+    }
+  };
+
+  const handleAddToWorkspace = async (workspaceId: string) => {
+    if (!summaryId) {
+      toast.error("Summary ID is missing");
+      return;
+    }
+
+    // Check if already added
+    if (workspacesWithDocument.has(workspaceId)) {
+      const workspace = workspaces.find(w => w.id === workspaceId);
+      toast.error(`Document is already in ${workspace?.name || "this workspace"}`);
+      return;
+    }
+
+    // Get workspace name before making the request
+    const workspace = workspaces.find(w => w.id === workspaceId);
+    const workspaceName = workspace?.name || "workspace";
+
+    setIsAddingToWorkspace(true);
+    try {
+      const response = await fetch("/api/workspaces/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pdfSummaryId: summaryId,
+          workspaceId: workspaceId,
+          permission: "view",
+        }),
+      });
+
+      if (response.ok) {
+        toast.success(`Successfully added to ${workspaceName}!`);
+        // Mark this workspace as having the document
+        setWorkspacesWithDocument(prev => new Set(prev).add(workspaceId));
+        setWorkspaceDialogOpen(false);
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "Not uploaded. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error adding document to workspace:", error);
+      toast.error("Not uploaded. Please try again.");
+    } finally {
+      setIsAddingToWorkspace(false);
+    }
+  };
 
   return (
     <div className="relative" ref={ref}>
@@ -170,15 +290,16 @@ export default function SummaryHeader({
             </div>
           </motion.div>
 
-          {/* Replace badges with centered Chat and Share buttons */}
+          {/* Replace badges with centered Chat, Add to Workplace, and Share buttons */}
           {summaryId && (
-            <motion.div
-              className="flex justify-center gap-3 sm:gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              <Link href={`/chatbot/${summaryId}`}>
+            <div className="flex justify-center items-center w-full">
+              <motion.div
+                className="flex justify-center items-center gap-3 sm:gap-4 flex-wrap"
+                initial={{ opacity: 0, y: 20 }}
+                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+              <Link href={`/chatbot/${summaryId}`} className="inline-flex">
                 <Button className="group relative flex items-center gap-2 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 hover:from-orange-400 hover:via-amber-400 hover:to-orange-400 text-white rounded-xl transition-all duration-300 shadow-2xl shadow-orange-500/30 hover:shadow-orange-500/50 px-4 py-2 sm:px-6 sm:py-3 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                   <div className="relative z-10 flex items-center gap-2">
@@ -190,6 +311,116 @@ export default function SummaryHeader({
                   </div>
                 </Button>
               </Link>
+              
+              {/* Add to Workplace Button */}
+              <DropdownMenu 
+                open={workspaceDialogOpen} 
+                onOpenChange={(open) => {
+                  setWorkspaceDialogOpen(open);
+                  if (open && !hasFetchedWorkspaces.current) {
+                    hasFetchedWorkspaces.current = true;
+                    // Fetch workspaces when dropdown opens
+                    setTimeout(() => {
+                      fetchWorkspaces();
+                    }, 50);
+                  }
+                  if (!open) {
+                    hasFetchedWorkspaces.current = false;
+                    // Reset state when closing to ensure fresh data on next open
+                    setWorkspacesWithDocument(new Set());
+                  }
+                }}
+              >
+                <DropdownMenuTrigger asChild>
+                  <Button className="group relative flex items-center gap-2 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 hover:from-blue-500 hover:via-blue-400 hover:to-blue-500 text-white rounded-xl transition-all duration-300 shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/50 px-4 py-2 sm:px-6 sm:py-3 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    <div className="relative z-10 flex items-center gap-2">
+                      <div className="p-1.5 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30">
+                        <Building2 className="h-4 w-4" />
+                      </div>
+                      <span className="font-bold text-sm sm:text-base">Add to Workplace</span>
+                      <ChevronDown className="h-4 w-4 opacity-70" />
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  className="bg-gray-900 border-gray-700 w-80 max-h-96 overflow-y-auto"
+                  align="end"
+                >
+                  <div className="p-2">
+                    <div className="px-2 py-1.5 mb-2">
+                      <p className="text-sm font-semibold text-white flex items-center gap-2">
+                        <Building2 className="h-4 w-4" />
+                        Select Workspace
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">Add this document to a workspace</p>
+                    </div>
+                    
+                    {isLoadingWorkspaces ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                      </div>
+                    ) : workspaces.length === 0 ? (
+                      <div className="text-center py-6">
+                        <Building2 className="h-10 w-10 text-gray-600 mx-auto mb-3" />
+                        <p className="text-sm text-gray-400 mb-1">No workspaces found</p>
+                        <p className="text-xs text-gray-500 mb-4">Create a workspace first</p>
+                        <Link href="/workspaces" onClick={() => setWorkspaceDialogOpen(false)}>
+                          <Button size="sm" className="bg-white text-black hover:bg-white/90 text-xs">
+                            Go to Workspaces
+                          </Button>
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        {workspaces.map((workspace) => {
+                          const alreadyAdded = workspacesWithDocument.has(workspace.id);
+                          return (
+                            <DropdownMenuItem
+                              key={workspace.id}
+                              onClick={() => {
+                                if (!alreadyAdded && !isAddingToWorkspace) {
+                                  handleAddToWorkspace(workspace.id);
+                                }
+                              }}
+                              disabled={isAddingToWorkspace || alreadyAdded}
+                              className={`flex items-center gap-3 p-3 rounded-lg ${
+                                alreadyAdded 
+                                  ? 'cursor-not-allowed opacity-60' 
+                                  : 'cursor-pointer focus:bg-gray-800 focus:text-white'
+                              } disabled:opacity-50 disabled:cursor-not-allowed`}
+                            >
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                                alreadyAdded 
+                                  ? 'bg-green-500/20 border border-green-500/30' 
+                                  : 'bg-blue-500/20 border border-blue-500/30'
+                              }`}>
+                                {alreadyAdded ? (
+                                  <CheckCircle2 className="h-4 w-4 text-green-400" />
+                                ) : (
+                                  <Building2 className="h-4 w-4 text-blue-400" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-white truncate">{workspace.name}</p>
+                                {workspace.description && !alreadyAdded && (
+                                  <p className="text-xs text-gray-400 truncate">{workspace.description}</p>
+                                )}
+                                {alreadyAdded && (
+                                  <p className="text-xs text-green-400 truncate">Already added</p>
+                                )}
+                              </div>
+                              {isAddingToWorkspace && !alreadyAdded && (
+                                <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                              )}
+                            </DropdownMenuItem>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
               {!hasActiveShare ? (
                 <Button 
                   onClick={async () => {
@@ -345,6 +576,7 @@ export default function SummaryHeader({
                 </DropdownMenu>
               )}
             </motion.div>
+            </div>
           )}
 
           {/* Decorative separator */}

@@ -6,7 +6,7 @@ export default function ConditionalFooter() {
   const pathname = usePathname();
 
   // Don't show footer on home page (FooterSection is already there)
-  // Don't show on /dashboard, /analytics, /workspaces, /checkout, /sign-in, and /sign-up pages
+  // Don't show on /dashboard, /analytics, /workspaces, /checkout, /sign-in, /sign-up, /upload, /summaries, and /chatbot pages
   // Only show on other pages
   if (
     pathname === "/" || 
@@ -14,12 +14,16 @@ export default function ConditionalFooter() {
     pathname === "/analytics" || 
     pathname === "/workspaces" ||
     pathname === "/checkout" ||
+    pathname === "/upload" ||
     pathname?.startsWith("/dashboard/") || 
     pathname?.startsWith("/analytics/") ||
     pathname?.startsWith("/workspaces/") ||
     pathname?.startsWith("/checkout/") ||
     pathname?.startsWith("/sign-in") ||
-    pathname?.startsWith("/sign-up")
+    pathname?.startsWith("/sign-up") ||
+    pathname?.startsWith("/upload") ||
+    pathname?.startsWith("/summaries") ||
+    pathname?.startsWith("/chatbot")
   ) {
     return null;
   }
