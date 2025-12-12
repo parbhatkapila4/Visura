@@ -70,7 +70,13 @@ export default function DeleteButton({
           <Trash2 className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-white text-black border-gray-200 [&>button]:bg-transparent [&>button]:hover:bg-transparent">
+      <DialogContent 
+        className="bg-white text-black border-gray-200 [&>button]:bg-transparent [&>button]:hover:bg-transparent"
+        onOpenAutoFocus={(e) => {
+          // Prevent auto-focus from scrolling
+          e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-black">
             Are you absolutely sure?

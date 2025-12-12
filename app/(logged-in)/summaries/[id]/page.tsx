@@ -1,8 +1,6 @@
-import BgGradient from "@/components/common/bg-gradient";
-import SummaryHeader from "@/components/summaries/summary-header";
 import { findSummaryById } from "@/lib/summaries";
 import { notFound } from "next/navigation";
-import SummaryViewer from "@/components/summaries/summary-viewer";
+import PremiumSummaryView from "@/components/summaries/premium-summary-view";
 
 export default async function SummaryPage(props: {
   params: Promise<{ id: string }>;
@@ -16,38 +14,15 @@ export default async function SummaryPage(props: {
     notFound();
   }
 
-  const { title, summary_text, word_count } = summary;
-
-  const isErrorSummary = 
-    summary_text.toLowerCase().includes('extraction error') ||
-    summary_text.toLowerCase().includes('object.defineproperty') ||
-    summary_text.toLowerCase().includes('was unable to access') ||
-    summary_text.toLowerCase().includes('i apologize');
-
-  const reading_time = isErrorSummary ? 1 : Math.ceil((word_count || 0) / 200);
-
   return (
-    <div className="relative isolate min-h-screen bg-background">
-      <BgGradient className="bg-black" />
-
-      <div className="container mx-auto flex flex-col gap-4">
-        <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-12 lg:py-24">
-          <div className="flex flex-col">
-            <SummaryHeader
-              title={title}
-              createdAt={summary.created_at}
-              readingTime={reading_time}
-              summaryId={summary.id}
-            />
-          </div>
-
-          <div>
-            <div className="relative mt-4 sm:mt-8 lg:mt-16">
-              <SummaryViewer summary={summary_text} />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <PremiumSummaryView 
+      summary={{
+        id: summary.id,
+        title: summary.title || "Untitled Document",
+        summary_text: summary.summary_text,
+        created_at: summary.created_at,
+        word_count: summary.word_count,
+      }} 
+    />
   );
 }

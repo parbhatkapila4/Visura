@@ -11,8 +11,9 @@ export async function generateSummaryFromText(pdfText: string) {
       throw new Error("Text content too short to generate summary");
     }
 
-    const textToSummarize = pdfText.length > 100000 
-      ? pdfText.substring(0, 100000) + "\n\n[Content truncated for processing]"
+    // Increase limit for more detailed analysis - process more content
+    const textToSummarize = pdfText.length > 200000 
+      ? pdfText.substring(0, 200000) + "\n\n[Content truncated for processing - document is very long]"
       : pdfText;
 
     const summary = await openrouterChatCompletion({
@@ -20,57 +21,202 @@ export async function generateSummaryFromText(pdfText: string) {
       messages: [
         {
           role: "system",
-          content: `You are a professional document analyzer. You will receive the FULL TEXT of a document. Your job is to analyze the text provided and create a comprehensive summary. The text is already extracted and provided to you - you have full access to it.`,
+          content: `You are an expert document analyst and deep content researcher with exceptional analytical capabilities. You will receive the FULL TEXT of a document. Your job is to perform an exhaustive, meticulous analysis that goes far beyond surface-level reading. You must identify patterns, hidden connections, subtle implications, and insights that are difficult for humans to notice. The text is already extracted and provided to you - you have full access to it. Your analysis must be extremely detailed, comprehensive, and lengthy.`,
         },
         {
           role: "user",
-          content: `I have extracted the complete text from a PDF. Below is the FULL TEXT CONTENT. Please analyze it thoroughly and create a comprehensive summary following this exact structure:
+          content: `I have extracted the complete text from a PDF. Below is the FULL TEXT CONTENT. You must perform a DEEP, EXHAUSTIVE analysis that uncovers everything important - including subtle details, hidden patterns, implicit meanings, and insights that are difficult for humans to detect. Create an extremely detailed, comprehensive, and lengthy summary following this exact structure:
 
 # [Document Title]
 
 ## Core Thesis / Main Argument
 
-[Provide the document's central claim in 2-3 sentences. What is the main argument or thesis? What is the author trying to prove or convince you of? This is the foundation everything else builds on. Extract this directly from the PDF content.]
+[Provide an EXTENSIVE analysis of the document's central claim. Go beyond the obvious - identify the underlying philosophy, the deeper purpose, and what the author is really trying to prove. Include:
+- The explicit thesis statement
+- The implicit or hidden thesis
+- The philosophical foundation
+- The worldview or perspective being presented
+- How this argument connects to broader themes
+- What assumptions underlie this argument
+- Extract and quote specific passages that reveal the core argument]
 
 ## Key Problem Being Solved
 
-[What gap, pain point, or question does this document address? Why does this problem matter? Who is affected by it? Extract specific details from the PDF about the problem being addressed.]
+[Provide a COMPREHENSIVE analysis of the problem. Don't just state it - analyze it deeply:
+- The explicit problem stated in the document
+- Hidden or implicit problems that aren't directly mentioned
+- Why this problem exists (root causes)
+- Who is affected and how (detailed stakeholder analysis)
+- The consequences if this problem isn't solved
+- Historical context or background of the problem
+- How the problem has evolved or changed
+- Extract specific examples, case studies, or scenarios from the PDF]
 
 ## Fundamental Concepts / Mental Models
 
-[Identify the 3-5 core ideas or frameworks introduced in the document. These are the thinking tools that change how you understand the topic. List each concept with a brief explanation based on the PDF content.]
+[Identify and EXPLAIN IN DETAIL 5-10 core ideas, frameworks, or mental models. For each concept:
+- Provide a detailed explanation (not just a brief description)
+- Explain how it works and why it matters
+- Show how concepts interconnect and build on each other
+- Identify the underlying principles
+- Explain the theoretical foundation
+- Show practical applications
+- Include specific examples from the PDF
+- Identify any novel or innovative aspects
+- Explain how these concepts challenge or extend existing knowledge]
 
 ## Evidence & Research
 
-[What key studies, data points, statistics, or real-world examples does the document use to support its argument? What makes this credible? Extract specific evidence, numbers, and examples from the PDF.]
+[Provide a THOROUGH analysis of all evidence. Don't just list it - analyze it:
+- Every key study, research finding, or data point mentioned
+- The methodology behind the research (if mentioned)
+- Statistical significance and implications
+- Real-world examples and case studies in detail
+- Credibility assessment of sources
+- Contradictory evidence or limitations mentioned
+- Trends or patterns in the data
+- What the evidence actually proves vs. what it suggests
+- Extract specific numbers, percentages, dates, and statistics
+- Analyze the quality and reliability of evidence]
 
 ## Practical Framework / System
 
-[What step-by-step methodology, process, or system does the document propose? This is the 'how-to' distilled to its essence. Extract the practical framework from the PDF content.]
+[Provide a DETAILED breakdown of any methodology, process, or system:
+- Step-by-step explanation of every stage
+- Prerequisites and requirements for each step
+- Tools, resources, or conditions needed
+- Common pitfalls and how to avoid them
+- Variations or adaptations possible
+- Integration with other systems or processes
+- Success metrics or indicators
+- Timeline or sequence considerations
+- Extract all procedural details from the PDF]
+
+## Hidden Patterns & Subtle Insights
+
+[This is CRITICAL - identify things that are hard for humans to notice:
+- Recurring themes that appear in different sections
+- Contradictions or tensions within the document
+- Implicit assumptions that aren't stated
+- Patterns in language, structure, or presentation
+- What's emphasized vs. what's downplayed
+- Connections between seemingly unrelated sections
+- Subtext or implied meanings
+- Cultural, historical, or contextual implications
+- What the document reveals indirectly
+- Gaps or omissions that are significant
+- Subtle shifts in tone, perspective, or focus]
 
 ## Common Objections & Rebuttals
 
-[What counterarguments does the document address? What are the limitations or edge cases where the approach doesn't work? Extract any objections and rebuttals mentioned in the PDF.]
+[Provide a COMPREHENSIVE analysis:
+- All counterarguments addressed in the document
+- Objections that are implied but not directly stated
+- Limitations explicitly mentioned
+- Edge cases or exceptions
+- Situations where the approach doesn't apply
+- How the document handles criticism
+- Weaknesses in the argument (if any)
+- Areas where more evidence would strengthen the case
+- Extract all objections and rebuttals with context]
 
 ## Critical Success Factors
 
-[What makes the approach in the document work or fail? What are the non-negotiable elements, prerequisites, or conditions required? Extract these from the PDF content.]
+[Provide DETAILED analysis of what makes things work or fail:
+- Non-negotiable elements (explain why each is critical)
+- Prerequisites and dependencies
+- Environmental or contextual requirements
+- Skills, knowledge, or resources needed
+- Timing or sequence requirements
+- Common failure modes and their causes
+- Warning signs or red flags
+- Success indicators and metrics
+- Risk factors and mitigation strategies
+- Extract all success/failure criteria from the PDF]
 
 ## Actionable Takeaways
 
-[List 5-10 specific actions someone can implement immediately based on the document. These should be concrete, not abstract advice. Extract actionable items directly from the PDF.]
+[Provide 10-15 SPECIFIC, DETAILED actions:
+- For each action, explain:
+  * What exactly to do (step-by-step)
+  * Why it matters
+  * When to do it
+  * What resources are needed
+  * Potential challenges and solutions
+  * Expected outcomes
+- Prioritize actions by importance or sequence
+- Include both immediate and long-term actions
+- Extract concrete, implementable items from the PDF]
 
 ## Paradigm Shifts / Counterintuitive Insights
 
-[What did the document reveal that challenges conventional wisdom? What surprising insights or counterintuitive ideas does it present? Extract these from the PDF content.]
+[Identify and EXPLAIN IN DEPTH:
+- Every insight that challenges conventional wisdom
+- Why conventional approaches fail
+- What makes these insights surprising
+- The implications of these shifts
+- How they change understanding of the topic
+- Real-world examples of these paradigm shifts
+- Historical context or evolution of these ideas
+- Extract all counterintuitive elements from the PDF]
 
-## Relevance & Application to Your Context
+## Advanced Analysis & Deep Insights
 
-[How does the content apply to different contexts? What are the practical applications? Extract information about how the concepts can be applied from the PDF.]
+[This section is for sophisticated analysis that goes beyond the obvious:
+- Interdisciplinary connections (how this relates to other fields)
+- Long-term implications and second-order effects
+- Systemic impacts and ripple effects
+- Ethical considerations
+- Future trends or predictions implied
+- Meta-analysis of the document's structure and approach
+- What experts in the field would notice
+- Critical evaluation of the document's strengths and weaknesses
+- How this fits into broader knowledge or discourse]
 
-## Summary of Whole PDF
+## Relevance & Application to Different Contexts
 
-[Provide a comprehensive summary of the entire document. This should be a complete overview that captures all major points, themes, and conclusions from the PDF.]
+[Provide DETAILED analysis of applications:
+- How concepts apply in different industries/fields
+- Adaptations needed for different contexts
+- What works universally vs. what's context-specific
+- Case studies or examples from different domains
+- Implementation challenges in various settings
+- Scalability considerations
+- Cultural or regional adaptations
+- Extract all application examples from the PDF]
+
+## Comprehensive Summary of Whole PDF
+
+[Provide an EXTENSIVE, DETAILED summary that:
+- Covers every major section, chapter, or topic
+- Explains the flow and structure of the document
+- Captures all key themes and sub-themes
+- Includes important details, examples, and data points
+- Shows how different parts connect
+- Highlights the most important insights
+- Provides context and background
+- Is lengthy and thorough (aim for 500-1000 words minimum)
+- Leaves no important aspect unaddressed]
+
+## Key Quotes & Important Passages
+
+[Extract and analyze:
+- The most significant quotes from the document
+- Passages that capture core ideas
+- Memorable or impactful statements
+- Technical definitions or explanations
+- Important data or statistics in their original wording
+- For each quote, explain why it's significant]
+
+## Additional Observations & Nuances
+
+[Include any other important details:
+- Interesting asides or tangents that add value
+- Footnotes or references that are significant
+- Formatting or structural elements that convey meaning
+- Visual elements described in text
+- Appendices or supplementary material
+- Anything else that adds depth to understanding]
 
 ---
 
@@ -80,19 +226,26 @@ ${textToSummarize}
 
 ---
 
-IMPORTANT INSTRUCTIONS:
+CRITICAL INSTRUCTIONS FOR MAXIMUM DETAIL:
+- This MUST be an extremely detailed, comprehensive, and lengthy summary (aim for 3000-5000+ words total)
 - Extract information directly from the PDF text provided above
-- Each section must contain detailed explanations based on the actual PDF content
-- If a section doesn't directly apply, adapt it to what the document actually contains
-- Be thorough and comprehensive in your analysis
-- Use specific examples, quotes, and details from the PDF when available
-- Write in clear, professional language
+- Each section must be THOROUGHLY explained with extensive detail - not brief summaries
+- Identify patterns, connections, and insights that are difficult for humans to notice
+- Look for hidden meanings, implicit assumptions, and subtle implications
+- Include specific examples, quotes, numbers, dates, and data from the PDF
+- Analyze not just what is said, but how it's said and what it implies
+- Connect different parts of the document to reveal deeper understanding
+- If a section doesn't directly apply, adapt it creatively to what the document actually contains
+- Be exhaustive - leave no important detail unaddressed
+- Write in clear, professional language but be comprehensive
+- The summary should be so detailed that someone reading it feels they've read the entire document
+- Focus on insights that require deep analysis to uncover
 
-Now create the summary based on the text above, following the exact structure provided.`,
+Now create an extremely detailed, comprehensive, and lengthy summary based on the text above, following the exact structure provided. Make it thorough enough that it captures everything important, including subtle details that are hard for humans to notice.`,
         },
       ],
-      temperature: 0.7,
-      max_tokens: 6000,
+      temperature: 0.3,
+      max_tokens: 12000,
     });
 
     console.log("Summary generated successfully!");

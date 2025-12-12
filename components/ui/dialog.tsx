@@ -49,11 +49,15 @@ const DialogContent = React.forwardRef<
         left: 0,
         right: 0,
         bottom: 0,
+        width: '100vw',
+        height: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 9999,
         pointerEvents: 'none',
+        padding: '1rem',
+        overflow: 'auto',
       }}
     >
       <DialogPrimitive.Content
