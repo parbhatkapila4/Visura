@@ -34,7 +34,8 @@ import {
   Home,
   MoreVertical,
   Menu,
-  ChevronDown
+  ChevronDown,
+  MessageCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -51,6 +52,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useUser } from "@clerk/nextjs";
+import WorkspaceChat from "./workspace-chat";
 
 interface Workspace {
   id: string;
@@ -802,8 +804,8 @@ export default function WorkspacesClient() {
               </motion.div>
             </div>
 
-            {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Three Column Layout - Members, Documents, Chat */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {/* Members Card */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
@@ -883,8 +885,8 @@ export default function WorkspacesClient() {
 
               {/* Documents Card */}
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 className="bg-[#0f0f0f] border border-white/10 rounded-xl overflow-hidden"
               >
                 <div className="p-6 border-b border-white/5">
@@ -941,6 +943,18 @@ export default function WorkspacesClient() {
                     </div>
                   )}
                 </div>
+              </motion.div>
+
+              {/* Chat Card */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="bg-[#0f0f0f] border border-white/10 rounded-xl overflow-hidden lg:col-span-2 xl:col-span-1"
+                style={{ minHeight: "500px" }}
+              >
+                {selectedWorkspace && (
+                  <WorkspaceChat workspaceId={selectedWorkspace.id} />
+                )}
               </motion.div>
             </div>
           </div>

@@ -484,6 +484,134 @@ export async function deleteWorkspace(workspaceId: string, userId: string) {
   return { success: true };
 }
 
+export interface WorkspaceChatMessage {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  user_email: string;
+  user_name: string | null;
+  message_content: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+// Chat functions
+export async function sendWorkspaceChatMessage({
+  workspaceId,
+  userId,
+  userEmail,
+  userName,
+  messageContent,
+}: {
+  workspaceId: string;
+  userId: string;
+  userEmail: string;
+  userName?: string;
+  messageContent: string;
+}) {
+  const sql = await getDbConnection();
+
+  // Verify user is a member of the workspace
+  const [member] = await sql`
+    SELECT * FROM workspace_members
+    WHERE workspace_id = ${workspaceId} AND user_id = ${userId} AND status = 'active'
+  `;
+
+  if (!member) {
+    throw new Error("You are not a member of this workspace");
+  }
+
+  try {
+    const [message] = await sql`
+      INSERT INTO workspace_chat_messages (workspace_id, user_id, user_email, user_name, message_content)
+      VALUES (${workspaceId}, ${userId}, ${userEmail}, ${userName || null}, ${messageContent})
+      RETURNING *
+    `;
+
+    // Log activity (this might fail if table doesn't exist, but that's okay)
+    try {
+      await sql`
+        INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description)
+        VALUES (${workspaceId}, ${userId}, ${userEmail}, ${userName || null}, 'chat_message_sent', ${`Sent a chat message`})
+      `;
+    } catch (activityError) {
+      // Activity logging is optional, don't fail if it errors
+      console.warn("Failed to log chat activity:", activityError);
+    }
+
+    return message;
+  } catch (error: any) {
+    const errorMessage = error?.message || String(error);
+    if (errorMessage.includes('does not exist') || errorMessage.includes('relation') || errorMessage.includes('workspace_chat_messages')) {
+      throw new Error("Chat table not found. Please run workspace_chat_schema.sql migration.");
+    }
+    throw error;
+  }
+}
+
+export async function getWorkspaceChatMessages(
+  workspaceId: string,
+  limit: number = 100,
+  before?: Date
+) {
+  const sql = await getDbConnection();
+
+  try {
+    let query;
+    if (before) {
+      query = sql`
+        SELECT * FROM workspace_chat_messages
+        WHERE workspace_id = ${workspaceId}
+          AND created_at < ${before}
+        ORDER BY created_at DESC
+        LIMIT ${limit}
+      `;
+    } else {
+      query = sql`
+        SELECT * FROM workspace_chat_messages
+        WHERE workspace_id = ${workspaceId}
+        ORDER BY created_at DESC
+        LIMIT ${limit}
+      `;
+    }
+
+    const messages = await query;
+    
+    // Reverse to get chronological order (oldest first)
+    return messages.reverse();
+  } catch (error: any) {
+    const errorMessage = error?.message || String(error);
+    if (errorMessage.includes('does not exist') || errorMessage.includes('relation') || errorMessage.includes('workspace_chat_messages')) {
+      throw new Error("Chat table not found. Please run workspace_chat_schema.sql migration.");
+    }
+    throw error;
+  }
+}
+
+export async function getWorkspaceChatMessagesSince(
+  workspaceId: string,
+  since: Date
+) {
+  const sql = await getDbConnection();
+
+  try {
+    const messages = await sql`
+      SELECT * FROM workspace_chat_messages
+      WHERE workspace_id = ${workspaceId}
+        AND created_at > ${since}
+      ORDER BY created_at ASC
+    `;
+
+    return messages;
+  } catch (error: any) {
+    const errorMessage = error?.message || String(error);
+    if (errorMessage.includes('does not exist') || errorMessage.includes('relation') || errorMessage.includes('workspace_chat_messages')) {
+      throw new Error("Chat table not found. Please run workspace_chat_schema.sql migration.");
+    }
+    throw error;
+  }
+}
+
 
 
 
