@@ -60,7 +60,6 @@ export interface DocumentComment {
   updated_at: Date;
 }
 
-// Workspace functions
 export async function createWorkspace({
   name,
   description,
@@ -78,23 +77,22 @@ export async function createWorkspace({
 }) {
   const sql = await getDbConnection();
 
-  // Create workspace
   const [workspace] = await sql`
     INSERT INTO workspaces (name, description, owner_id, plan)
     VALUES (${name}, ${description || null}, ${ownerId}, ${plan})
     RETURNING *
   `;
 
-  // Add owner as workspace member
   await sql`
     INSERT INTO workspace_members (workspace_id, user_id, user_email, user_name, role, status)
     VALUES (${workspace.id}, ${ownerId}, ${ownerEmail}, ${ownerName || null}, 'owner', 'active')
   `;
 
-  // Log activity
   await sql`
     INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description)
-    VALUES (${workspace.id}, ${ownerId}, ${ownerEmail}, ${ownerName || null}, 'workspace_created', ${`Workspace "${name}" was created`})
+    VALUES (${workspace.id}, ${ownerId}, ${ownerEmail}, ${
+    ownerName || null
+  }, 'workspace_created', ${`Workspace "${name}" was created`})
   `;
 
   return workspace;
@@ -163,14 +161,12 @@ export async function inviteWorkspaceMember({
 }) {
   const sql = await getDbConnection();
 
-  // Check if user exists
   const [user] = await sql`SELECT * FROM users WHERE email = ${userEmail}`;
-  
+
   if (!user) {
     throw new Error("User not found. They need to sign up first.");
   }
 
-  // Check if already a member
   const [existing] = await sql`
     SELECT * FROM workspace_members
     WHERE workspace_id = ${workspaceId} AND user_id = ${user.id}::text
@@ -180,17 +176,22 @@ export async function inviteWorkspaceMember({
     throw new Error("User is already a member of this workspace");
   }
 
-  // Add member
   const [member] = await sql`
     INSERT INTO workspace_members (workspace_id, user_id, user_email, user_name, role, status, invited_by)
-    VALUES (${workspaceId}, ${user.id}::text, ${userEmail}, ${userName || user.full_name || null}, ${role}, 'active', ${invitedBy})
+    VALUES (${workspaceId}, ${user.id}::text, ${userEmail}, ${
+    userName || user.full_name || null
+  }, ${role}, 'active', ${invitedBy})
     RETURNING *
   `;
 
-  // Log activity
   await sql`
     INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description, metadata)
-    VALUES (${workspaceId}, ${invitedBy}, ${invitedByName || null}, ${invitedByName || null}, 'member_invited', ${`${userEmail} was invited as ${role}`}, ${JSON.stringify({ invited_user_email: userEmail, role })})
+    VALUES (${workspaceId}, ${invitedBy}, ${invitedByName || null}, ${
+    invitedByName || null
+  }, 'member_invited', ${`${userEmail} was invited as ${role}`}, ${JSON.stringify({
+    invited_user_email: userEmail,
+    role,
+  })})
   `;
 
   return member;
@@ -209,7 +210,6 @@ export async function removeWorkspaceMember({
 }) {
   const sql = await getDbConnection();
 
-  // Verify the person removing is the owner
   const [workspace] = await sql`
     SELECT w.*, wm.role
     FROM workspaces w
@@ -221,11 +221,10 @@ export async function removeWorkspaceMember({
     throw new Error("Workspace not found or access denied");
   }
 
-  if (workspace.role !== 'owner') {
+  if (workspace.role !== "owner") {
     throw new Error("Only the workspace owner can remove members");
   }
 
-  // Get member info before removing
   const [member] = await sql`
     SELECT * FROM workspace_members
     WHERE id = ${memberId} AND workspace_id = ${workspaceId}
@@ -235,21 +234,23 @@ export async function removeWorkspaceMember({
     throw new Error("Member not found");
   }
 
-  // Prevent removing the owner
-  if (member.role === 'owner') {
+  if (member.role === "owner") {
     throw new Error("Cannot remove the workspace owner");
   }
 
-  // Remove the member (set status to inactive or delete)
   await sql`
     DELETE FROM workspace_members
     WHERE id = ${memberId} AND workspace_id = ${workspaceId}
   `;
 
-  // Log activity
   await sql`
     INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description, metadata)
-    VALUES (${workspaceId}, ${removedBy}, ${removedByName || null}, ${removedByName || null}, 'member_removed', ${`${member.user_email} was removed from the workspace`}, ${JSON.stringify({ removed_user_email: member.user_email, removed_user_id: member.user_id })})
+    VALUES (${workspaceId}, ${removedBy}, ${removedByName || null}, ${
+    removedByName || null
+  }, 'member_removed', ${`${member.user_email} was removed from the workspace`}, ${JSON.stringify({
+    removed_user_email: member.user_email,
+    removed_user_id: member.user_id,
+  })})
   `;
 
   return { success: true };
@@ -277,7 +278,6 @@ export async function shareDocumentWithWorkspace({
       RETURNING *
     `;
 
-    // Log activity (optional - don't fail if this fails)
     try {
       const [summary] = await sql`SELECT title FROM pdf_summaries WHERE id = ${pdfSummaryId}`;
       // Get user email from workspace_members table
@@ -286,36 +286,37 @@ export async function shareDocumentWithWorkspace({
         WHERE workspace_id = ${workspaceId} AND user_id = ${sharedBy}
         LIMIT 1
       `;
-      
+
       if (member) {
         await sql`
           INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description, metadata)
-          VALUES (${workspaceId}, ${sharedBy}, ${member.user_email}, ${member.user_name || null}, 'document_shared', ${`Document "${summary?.title || 'Untitled'}" was shared`}, ${JSON.stringify({ pdf_summary_id: pdfSummaryId })})
+          VALUES (${workspaceId}, ${sharedBy}, ${member.user_email}, ${
+          member.user_name || null
+        }, 'document_shared', ${`Document "${
+          summary?.title || "Untitled"
+        }" was shared`}, ${JSON.stringify({ pdf_summary_id: pdfSummaryId })})
         `;
       }
     } catch (activityError) {
-      // Activity logging is optional, don't fail the whole operation if it errors
       console.warn("Failed to log workspace activity:", activityError);
     }
 
     return share;
   } catch (error: any) {
     const errorMessage = error?.message || String(error);
-    
-    // Provide more specific error messages
-    if (errorMessage.includes('does not exist') || errorMessage.includes('relation')) {
+
+    if (errorMessage.includes("does not exist") || errorMessage.includes("relation")) {
       throw new Error(`Database table not found: ${errorMessage}`);
     }
-    
-    if (errorMessage.includes('foreign key') || errorMessage.includes('constraint')) {
+
+    if (errorMessage.includes("foreign key") || errorMessage.includes("constraint")) {
       throw new Error(`Invalid reference: ${errorMessage}`);
     }
-    
-    if (errorMessage.includes('duplicate key') || errorMessage.includes('unique constraint')) {
-      // This shouldn't happen due to ON CONFLICT, but handle it just in case
+
+    if (errorMessage.includes("duplicate key") || errorMessage.includes("unique constraint")) {
       throw new Error("Document is already shared with this workspace");
     }
-    
+
     throw error;
   }
 }
@@ -358,7 +359,9 @@ export async function updateCollaborationSession({
 
   const [session] = await sql`
     INSERT INTO collaboration_sessions (pdf_summary_id, user_id, user_email, user_name, cursor_position, last_seen)
-    VALUES (${pdfSummaryId}, ${userId}, ${userEmail}, ${userName || null}, ${cursorPosition ? JSON.stringify(cursorPosition) : null}, CURRENT_TIMESTAMP)
+    VALUES (${pdfSummaryId}, ${userId}, ${userEmail}, ${userName || null}, ${
+    cursorPosition ? JSON.stringify(cursorPosition) : null
+  }, CURRENT_TIMESTAMP)
     ON CONFLICT (pdf_summary_id, user_id)
     DO UPDATE SET 
       cursor_position = ${cursorPosition ? JSON.stringify(cursorPosition) : null},
@@ -415,15 +418,21 @@ export async function addDocumentComment({
 
   const [comment] = await sql`
     INSERT INTO document_comments (pdf_summary_id, workspace_id, user_id, user_email, user_name, content, position, parent_comment_id)
-    VALUES (${pdfSummaryId}, ${workspaceId || null}, ${userId}, ${userEmail}, ${userName || null}, ${content}, ${position ? JSON.stringify(position) : null}, ${parentCommentId || null})
+    VALUES (${pdfSummaryId}, ${workspaceId || null}, ${userId}, ${userEmail}, ${
+    userName || null
+  }, ${content}, ${position ? JSON.stringify(position) : null}, ${parentCommentId || null})
     RETURNING *
   `;
 
-  // Log activity if in workspace
   if (workspaceId) {
     await sql`
       INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description, metadata)
-      VALUES (${workspaceId}, ${userId}, ${userEmail}, ${userName || null}, 'comment_added', ${`Comment added on document`}, ${JSON.stringify({ pdf_summary_id: pdfSummaryId, comment_id: comment.id })})
+      VALUES (${workspaceId}, ${userId}, ${userEmail}, ${
+      userName || null
+    }, 'comment_added', ${`Comment added on document`}, ${JSON.stringify({
+      pdf_summary_id: pdfSummaryId,
+      comment_id: comment.id,
+    })})
     `;
   }
 
@@ -436,7 +445,11 @@ export async function getDocumentComments(pdfSummaryId: string, workspaceId?: st
   const comments = await sql`
     SELECT * FROM document_comments
     WHERE pdf_summary_id = ${pdfSummaryId}
-      ${workspaceId ? sql`AND (workspace_id = ${workspaceId} OR workspace_id IS NULL)` : sql`AND workspace_id IS NULL`}
+      ${
+        workspaceId
+          ? sql`AND (workspace_id = ${workspaceId} OR workspace_id IS NULL)`
+          : sql`AND workspace_id IS NULL`
+      }
       AND resolved = false
     ORDER BY created_at ASC
   `;
@@ -460,7 +473,6 @@ export async function getWorkspaceActivities(workspaceId: string, limit = 50) {
 export async function deleteWorkspace(workspaceId: string, userId: string) {
   const sql = await getDbConnection();
 
-  // First, verify the user is the owner
   const [workspace] = await sql`
     SELECT w.*, wm.role
     FROM workspaces w
@@ -472,12 +484,10 @@ export async function deleteWorkspace(workspaceId: string, userId: string) {
     throw new Error("Workspace not found");
   }
 
-  if (workspace.role !== 'owner') {
+  if (workspace.role !== "owner") {
     throw new Error("Only the workspace owner can delete the workspace");
   }
 
-  // Delete in order to respect foreign key constraints
-  // Delete collaboration sessions
   await sql`
     DELETE FROM collaboration_sessions
     WHERE pdf_summary_id IN (
@@ -485,31 +495,26 @@ export async function deleteWorkspace(workspaceId: string, userId: string) {
     )
   `;
 
-  // Delete document comments
   await sql`
     DELETE FROM document_comments
     WHERE workspace_id = ${workspaceId}
   `;
 
-  // Delete document shares
   await sql`
     DELETE FROM document_shares
     WHERE workspace_id = ${workspaceId}
   `;
 
-  // Delete workspace activities
   await sql`
     DELETE FROM workspace_activities
     WHERE workspace_id = ${workspaceId}
   `;
 
-  // Delete workspace members
   await sql`
     DELETE FROM workspace_members
     WHERE workspace_id = ${workspaceId}
   `;
 
-  // Finally, delete the workspace
   await sql`
     DELETE FROM workspaces
     WHERE id = ${workspaceId}
@@ -529,7 +534,6 @@ export interface WorkspaceChatMessage {
   updated_at: Date;
 }
 
-// Chat functions
 export async function sendWorkspaceChatMessage({
   workspaceId,
   userId,
@@ -545,7 +549,6 @@ export async function sendWorkspaceChatMessage({
 }) {
   const sql = await getDbConnection();
 
-  // Verify user is a member of the workspace
   const [member] = await sql`
     SELECT * FROM workspace_members
     WHERE workspace_id = ${workspaceId} AND user_id = ${userId} AND status = 'active'
@@ -562,21 +565,25 @@ export async function sendWorkspaceChatMessage({
       RETURNING *
     `;
 
-    // Log activity (this might fail if table doesn't exist, but that's okay)
     try {
       await sql`
         INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description)
-        VALUES (${workspaceId}, ${userId}, ${userEmail}, ${userName || null}, 'chat_message_sent', ${`Sent a chat message`})
+        VALUES (${workspaceId}, ${userId}, ${userEmail}, ${
+        userName || null
+      }, 'chat_message_sent', ${`Sent a chat message`})
       `;
     } catch (activityError) {
-      // Activity logging is optional, don't fail if it errors
       console.warn("Failed to log chat activity:", activityError);
     }
 
     return message;
   } catch (error: any) {
     const errorMessage = error?.message || String(error);
-    if (errorMessage.includes('does not exist') || errorMessage.includes('relation') || errorMessage.includes('workspace_chat_messages')) {
+    if (
+      errorMessage.includes("does not exist") ||
+      errorMessage.includes("relation") ||
+      errorMessage.includes("workspace_chat_messages")
+    ) {
       throw new Error("Chat table not found. Please run workspace_chat_schema.sql migration.");
     }
     throw error;
@@ -610,22 +617,22 @@ export async function getWorkspaceChatMessages(
     }
 
     const messages = await query;
-    
-    // Reverse to get chronological order (oldest first)
+
     return messages.reverse();
   } catch (error: any) {
     const errorMessage = error?.message || String(error);
-    if (errorMessage.includes('does not exist') || errorMessage.includes('relation') || errorMessage.includes('workspace_chat_messages')) {
+    if (
+      errorMessage.includes("does not exist") ||
+      errorMessage.includes("relation") ||
+      errorMessage.includes("workspace_chat_messages")
+    ) {
       throw new Error("Chat table not found. Please run workspace_chat_schema.sql migration.");
     }
     throw error;
   }
 }
 
-export async function getWorkspaceChatMessagesSince(
-  workspaceId: string,
-  since: Date
-) {
+export async function getWorkspaceChatMessagesSince(workspaceId: string, since: Date) {
   const sql = await getDbConnection();
 
   try {
@@ -639,13 +646,13 @@ export async function getWorkspaceChatMessagesSince(
     return messages;
   } catch (error: any) {
     const errorMessage = error?.message || String(error);
-    if (errorMessage.includes('does not exist') || errorMessage.includes('relation') || errorMessage.includes('workspace_chat_messages')) {
+    if (
+      errorMessage.includes("does not exist") ||
+      errorMessage.includes("relation") ||
+      errorMessage.includes("workspace_chat_messages")
+    ) {
       throw new Error("Chat table not found. Please run workspace_chat_schema.sql migration.");
     }
     throw error;
   }
 }
-
-
-
-

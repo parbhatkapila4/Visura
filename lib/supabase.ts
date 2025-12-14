@@ -12,10 +12,7 @@ if (!supabaseAnonKey) {
 }
 
 console.log("Supabase URL:", supabaseUrl);
-console.log(
-  "Supabase Key (first 10 chars):",
-  supabaseAnonKey.substring(0, 10) + "..."
-);
+console.log("Supabase Key (first 10 chars):", supabaseAnonKey.substring(0, 10) + "...");
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -26,20 +23,16 @@ export async function uploadToSupabase(file: File, userId: string) {
 
     console.log("Uploading to Supabase:", fileName);
 
-    const { data, error } = await supabase.storage
-      .from("pdf")
-      .upload(fileName, file, {
-        cacheControl: "3600",
-        upsert: false,
-      });
+    const { data, error } = await supabase.storage.from("pdf").upload(fileName, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
 
     if (error) {
       throw error;
     }
 
-    const { data: urlData } = supabase.storage
-      .from("pdf")
-      .getPublicUrl(fileName);
+    const { data: urlData } = supabase.storage.from("pdf").getPublicUrl(fileName);
 
     return {
       success: true,
@@ -60,7 +53,6 @@ export async function uploadToSupabase(file: File, userId: string) {
   }
 }
 
-// Helper function to get file from Supabase Storage
 export async function getFileFromSupabase(path: string) {
   try {
     const { data, error } = await supabase.storage.from("pdf").download(path);

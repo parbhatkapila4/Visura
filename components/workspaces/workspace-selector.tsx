@@ -11,7 +11,6 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 interface Workspace {
   id: string;
@@ -23,9 +22,7 @@ interface Workspace {
 
 export default function WorkspaceSelector() {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(
-    null
-  );
+  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -41,7 +38,7 @@ export default function WorkspaceSelector() {
         setWorkspaces(data);
         if (data.length > 0 && !selectedWorkspace) {
           setSelectedWorkspace(data[0]);
-          // Store in localStorage
+
           localStorage.setItem("selectedWorkspaceId", data[0].id);
         }
       }
@@ -53,7 +50,6 @@ export default function WorkspaceSelector() {
   };
 
   useEffect(() => {
-    // Load selected workspace from localStorage
     const savedWorkspaceId = localStorage.getItem("selectedWorkspaceId");
     if (savedWorkspaceId && workspaces.length > 0) {
       const workspace = workspaces.find((w) => w.id === savedWorkspaceId);
@@ -84,11 +80,7 @@ export default function WorkspaceSelector() {
 
   if (workspaces.length === 0) {
     return (
-      <Button
-        onClick={handleCreateWorkspace}
-        variant="outline"
-        className="flex items-center gap-2"
-      >
+      <Button onClick={handleCreateWorkspace} variant="outline" className="flex items-center gap-2">
         <Plus className="w-4 h-4" />
         Create Workspace
       </Button>
@@ -98,15 +90,10 @@ export default function WorkspaceSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className="flex items-center gap-2 min-w-[200px] justify-between"
-        >
+        <Button variant="outline" className="flex items-center gap-2 min-w-[200px] justify-between">
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
-            <span className="truncate">
-              {selectedWorkspace?.name || "Select Workspace"}
-            </span>
+            <span className="truncate">{selectedWorkspace?.name || "Select Workspace"}</span>
           </div>
           <ChevronDown className="w-4 h-4 opacity-50" />
         </Button>
@@ -121,9 +108,7 @@ export default function WorkspaceSelector() {
             <Building2 className="w-4 h-4" />
             <div className="flex-1 min-w-0">
               <div className="font-medium truncate">{workspace.name}</div>
-              <div className="text-xs text-gray-400 capitalize">
-                {workspace.role}
-              </div>
+              <div className="text-xs text-gray-400 capitalize">{workspace.role}</div>
             </div>
             {selectedWorkspace?.id === workspace.id && (
               <span className="text-xs text-orange-500">✓</span>
@@ -149,14 +134,3 @@ export default function WorkspaceSelector() {
     </DropdownMenu>
   );
 }
-
-
-
-
-
-
-
-
-
-
-

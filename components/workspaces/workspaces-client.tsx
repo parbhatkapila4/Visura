@@ -4,12 +4,12 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Building2, 
-  Plus, 
-  Users, 
-  FileText, 
-  UserPlus, 
+import {
+  Building2,
+  Plus,
+  Users,
+  FileText,
+  UserPlus,
   Sparkles,
   ArrowRight,
   Clock,
@@ -35,7 +35,7 @@ import {
   MoreVertical,
   Menu,
   ChevronDown,
-  MessageCircle
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -105,7 +105,6 @@ export default function WorkspacesClient() {
     }
   }, [selectedWorkspace]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -159,7 +158,7 @@ export default function WorkspacesClient() {
 
   const handleCreateWorkspace = async () => {
     if (isCreating) return;
-    
+
     if (!workspaceName.trim()) {
       toast.error("Workspace name is required");
       return;
@@ -240,10 +239,10 @@ export default function WorkspacesClient() {
       if (response.ok) {
         toast.success("Workspace deleted successfully!");
         setDeleteDialogOpen(false);
-        
-        const updatedWorkspaces = workspaces.filter(w => w.id !== selectedWorkspace.id);
+
+        const updatedWorkspaces = workspaces.filter((w) => w.id !== selectedWorkspace.id);
         setWorkspaces(updatedWorkspaces);
-        
+
         if (updatedWorkspaces.length > 0) {
           setSelectedWorkspace(updatedWorkspaces[0]);
         } else {
@@ -290,9 +289,10 @@ export default function WorkspacesClient() {
     }
   };
 
-  const filteredWorkspaces = workspaces.filter(workspace =>
-    workspace.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    workspace.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredWorkspaces = workspaces.filter(
+    (workspace) =>
+      workspace.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      workspace.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   if (loading) {
@@ -315,11 +315,9 @@ export default function WorkspacesClient() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      {/* Top Navigation Bar */}
       <div className="sticky top-0 z-50 bg-[#0f0f0f] border-b border-white/5 backdrop-blur-xl">
         <div className="max-w-[1800px] mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            {/* Left: Logo & Navigation */}
             <div className="flex items-center gap-8">
               <Link href="/" className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center">
@@ -327,20 +325,22 @@ export default function WorkspacesClient() {
                 </div>
                 <span className="text-xl font-bold text-white">Workspaces</span>
               </Link>
-              
-              {/* Workspace Selector Dropdown */}
+
               {workspaces.length > 0 && (
                 <div className="relative" ref={dropdownRef}>
-                  <button 
+                  <button
                     onClick={() => setDropdownOpen(!dropdownOpen)}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-white text-sm font-medium"
                   >
                     <Building2 className="w-4 h-4" />
                     <span>Select Workspace</span>
-                    <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown
+                      className={`w-4 h-4 ml-1 transition-transform ${
+                        dropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
-                  
-                  {/* Dropdown Menu */}
+
                   {dropdownOpen && (
                     <div className="absolute top-full left-0 mt-2 w-64 bg-[#0f0f0f] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
                       {filteredWorkspaces.map((workspace) => (
@@ -351,17 +351,23 @@ export default function WorkspacesClient() {
                             setDropdownOpen(false);
                           }}
                           className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors ${
-                            selectedWorkspace?.id === workspace.id ? 'bg-white/10' : ''
+                            selectedWorkspace?.id === workspace.id ? "bg-white/10" : ""
                           }`}
                         >
                           <Building2 className="w-4 h-4 text-white/60" />
                           <div className="flex-1 min-w-0">
-                            <p className="text-white text-sm font-medium truncate">{workspace.name}</p>
+                            <p className="text-white text-sm font-medium truncate">
+                              {workspace.name}
+                            </p>
                             {workspace.description && (
-                              <p className="text-white/40 text-xs truncate">{workspace.description}</p>
+                              <p className="text-white/40 text-xs truncate">
+                                {workspace.description}
+                              </p>
                             )}
                           </div>
-                          {workspace.role === 'owner' && <Crown className="w-3.5 h-3.5 text-yellow-400" />}
+                          {workspace.role === "owner" && (
+                            <Crown className="w-3.5 h-3.5 text-yellow-400" />
+                          )}
                           {selectedWorkspace?.id === workspace.id && (
                             <CheckCircle2 className="w-4 h-4 text-white" />
                           )}
@@ -373,7 +379,6 @@ export default function WorkspacesClient() {
               )}
             </div>
 
-            {/* Center: Home Button */}
             <div className="flex items-center">
               <Link href="/">
                 <Button className="bg-white/10 hover:bg-white/15 text-white border border-white/10 rounded-xl h-9 px-4">
@@ -383,9 +388,7 @@ export default function WorkspacesClient() {
               </Link>
             </div>
 
-            {/* Right: Actions & User */}
             <div className="flex items-center gap-4">
-              {/* Search */}
               <div className="relative hidden md:block">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                 <Input
@@ -396,7 +399,6 @@ export default function WorkspacesClient() {
                 />
               </div>
 
-              {/* Create Button */}
               <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="bg-white text-black hover:bg-white/90 font-semibold h-9 px-4 rounded-lg">
@@ -406,11 +408,9 @@ export default function WorkspacesClient() {
                 </DialogTrigger>
                 <DialogContent className="bg-[#0f0f0f] border-0 max-w-md p-0 gap-0 overflow-hidden shadow-none [&>button]:hidden">
                   <div className="relative">
-                    {/* Decorative top accent */}
                     <div className="h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                    
+
                     <div className="p-8 space-y-6">
-                      {/* Inline title with icon */}
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/15 to-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
                           <Building2 className="w-6 h-6 text-white" />
@@ -426,11 +426,13 @@ export default function WorkspacesClient() {
                           <X className="w-4 h-4" />
                         </button>
                       </div>
-                      
-                      {/* Form fields with modern styling */}
+
                       <div className="space-y-4">
                         <div>
-                          <Label htmlFor="name" className="text-sm font-medium text-white/80 mb-2 block">
+                          <Label
+                            htmlFor="name"
+                            className="text-sm font-medium text-white/80 mb-2 block"
+                          >
                             Name <span className="text-red-400">*</span>
                           </Label>
                           <Input
@@ -438,13 +440,18 @@ export default function WorkspacesClient() {
                             value={workspaceName}
                             onChange={(e) => setWorkspaceName(e.target.value)}
                             placeholder="Enter workspace name"
-                            onKeyDown={(e) => e.key === 'Enter' && !isCreating && handleCreateWorkspace()}
+                            onKeyDown={(e) =>
+                              e.key === "Enter" && !isCreating && handleCreateWorkspace()
+                            }
                             className="h-11 border-0 bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-white/20 text-white placeholder:text-white/25 rounded-xl text-sm transition-all"
                             autoFocus
                           />
                         </div>
                         <div>
-                          <Label htmlFor="description" className="text-sm font-medium text-white/80 mb-2 block">
+                          <Label
+                            htmlFor="description"
+                            className="text-sm font-medium text-white/80 mb-2 block"
+                          >
                             Description
                           </Label>
                           <Textarea
@@ -457,8 +464,7 @@ export default function WorkspacesClient() {
                           />
                         </div>
                       </div>
-                      
-                      {/* Action buttons */}
+
                       <div className="flex items-center gap-3 pt-2">
                         <Button
                           variant="ghost"
@@ -467,9 +473,9 @@ export default function WorkspacesClient() {
                         >
                           Cancel
                         </Button>
-                        <Button 
-                          onClick={handleCreateWorkspace} 
-                          className="flex-1 h-10 bg-white text-black hover:bg-white/90 font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed" 
+                        <Button
+                          onClick={handleCreateWorkspace}
+                          className="flex-1 h-10 bg-white text-black hover:bg-white/90 font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                           disabled={isCreating || !workspaceName.trim()}
                         >
                           {isCreating ? (
@@ -494,7 +500,6 @@ export default function WorkspacesClient() {
                 </DialogContent>
               </Dialog>
 
-              {/* User Avatar */}
               <div className="w-9 h-9 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white font-bold text-sm">
                 {user?.firstName?.[0] || user?.emailAddresses[0]?.emailAddress?.[0] || "U"}
               </div>
@@ -503,7 +508,6 @@ export default function WorkspacesClient() {
         </div>
       </div>
 
-      {/* Main Content - Dashboard Style */}
       <div className="max-w-[1800px] mx-auto px-6 py-8">
         {workspaces.length === 0 ? (
           <div className="flex items-center justify-center min-h-[70vh]">
@@ -532,11 +536,9 @@ export default function WorkspacesClient() {
                 </DialogTrigger>
                 <DialogContent className="bg-[#0f0f0f] border-0 max-w-md p-0 gap-0 overflow-hidden shadow-none [&>button]:hidden">
                   <div className="relative">
-                    {/* Decorative top accent */}
                     <div className="h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                    
+
                     <div className="p-8 space-y-6">
-                      {/* Inline title with icon */}
                       <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/15 to-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
                           <Building2 className="w-6 h-6 text-white" />
@@ -552,11 +554,13 @@ export default function WorkspacesClient() {
                           <X className="w-4 h-4" />
                         </button>
                       </div>
-                      
-                      {/* Form fields with modern styling */}
+
                       <div className="space-y-4">
                         <div>
-                          <Label htmlFor="name-empty" className="text-sm font-medium text-white/80 mb-2 block">
+                          <Label
+                            htmlFor="name-empty"
+                            className="text-sm font-medium text-white/80 mb-2 block"
+                          >
                             Name <span className="text-red-400">*</span>
                           </Label>
                           <Input
@@ -564,13 +568,18 @@ export default function WorkspacesClient() {
                             value={workspaceName}
                             onChange={(e) => setWorkspaceName(e.target.value)}
                             placeholder="Enter workspace name"
-                            onKeyDown={(e) => e.key === 'Enter' && !isCreating && handleCreateWorkspace()}
+                            onKeyDown={(e) =>
+                              e.key === "Enter" && !isCreating && handleCreateWorkspace()
+                            }
                             className="h-11 border-0 bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-white/20 text-white placeholder:text-white/25 rounded-xl text-sm transition-all"
                             autoFocus
                           />
                         </div>
                         <div>
-                          <Label htmlFor="description-empty" className="text-sm font-medium text-white/80 mb-2 block">
+                          <Label
+                            htmlFor="description-empty"
+                            className="text-sm font-medium text-white/80 mb-2 block"
+                          >
                             Description
                           </Label>
                           <Textarea
@@ -583,8 +592,7 @@ export default function WorkspacesClient() {
                           />
                         </div>
                       </div>
-                      
-                      {/* Action buttons */}
+
                       <div className="flex items-center gap-3 pt-2">
                         <Button
                           variant="ghost"
@@ -593,9 +601,9 @@ export default function WorkspacesClient() {
                         >
                           Cancel
                         </Button>
-                        <Button 
-                          onClick={handleCreateWorkspace} 
-                          className="flex-1 h-10 bg-white text-black hover:bg-white/90 font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed" 
+                        <Button
+                          onClick={handleCreateWorkspace}
+                          className="flex-1 h-10 bg-white text-black hover:bg-white/90 font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                           disabled={isCreating || !workspaceName.trim()}
                         >
                           {isCreating ? (
@@ -623,7 +631,6 @@ export default function WorkspacesClient() {
           </div>
         ) : selectedWorkspace ? (
           <div className="space-y-8">
-            {/* Workspace Header Card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -636,10 +643,8 @@ export default function WorkspacesClient() {
                   </div>
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <h1 className="text-3xl font-bold text-white">
-                        {selectedWorkspace.name}
-                      </h1>
-                      {selectedWorkspace.role === 'owner' && (
+                      <h1 className="text-3xl font-bold text-white">{selectedWorkspace.name}</h1>
+                      {selectedWorkspace.role === "owner" && (
                         <span className="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-semibold flex items-center gap-1.5 border border-white/10">
                           <Crown className="w-3.5 h-3.5 text-yellow-400" />
                           Owner
@@ -692,13 +697,13 @@ export default function WorkspacesClient() {
                             value={inviteEmail}
                             onChange={(e) => setInviteEmail(e.target.value)}
                             placeholder="colleague@example.com"
-                            onKeyDown={(e) => e.key === 'Enter' && handleInviteMember()}
+                            onKeyDown={(e) => e.key === "Enter" && handleInviteMember()}
                             className="h-12 border-white/10 bg-white/5 focus:border-white/20 text-white placeholder:text-white/30 rounded-xl"
                             autoFocus
                           />
                         </div>
-                        <Button 
-                          onClick={handleInviteMember} 
+                        <Button
+                          onClick={handleInviteMember}
                           className="w-full h-12 bg-white text-black hover:bg-white/90 font-bold rounded-xl"
                         >
                           <UserPlus className="w-5 h-5 mr-2" />
@@ -707,10 +712,13 @@ export default function WorkspacesClient() {
                       </div>
                     </DialogContent>
                   </Dialog>
-                  {selectedWorkspace.role === 'owner' && (
+                  {selectedWorkspace.role === "owner" && (
                     <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button variant="outline" className="border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-400 rounded-xl h-10 px-4">
+                        <Button
+                          variant="outline"
+                          className="border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-400 rounded-xl h-10 px-4"
+                        >
                           <Trash2 className="w-4 h-4 mr-2" />
                           Delete
                         </Button>
@@ -722,14 +730,18 @@ export default function WorkspacesClient() {
                             Delete Workspace
                           </DialogTitle>
                           <DialogDescription className="text-white/50 mt-2">
-                            This action cannot be undone. This will permanently delete the workspace and all associated data.
+                            This action cannot be undone. This will permanently delete the workspace
+                            and all associated data.
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 mt-6">
                           <div className="p-5 rounded-xl bg-red-500/5 border border-red-500/20">
-                            <p className="text-sm text-white font-semibold mb-2">Are you absolutely sure?</p>
+                            <p className="text-sm text-white font-semibold mb-2">
+                              Are you absolutely sure?
+                            </p>
                             <p className="text-sm text-white/50">
-                              The workspace &quot;{selectedWorkspace.name}&quot; will be permanently deleted.
+                              The workspace &quot;{selectedWorkspace.name}&quot; will be permanently
+                              deleted.
                             </p>
                           </div>
                           <div className="flex gap-3">
@@ -757,7 +769,6 @@ export default function WorkspacesClient() {
               </div>
             </motion.div>
 
-            {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -769,7 +780,9 @@ export default function WorkspacesClient() {
                     <Users className="w-6 h-6 text-white/70" />
                   </div>
                 </div>
-                <p className="text-white/40 text-xs font-medium mb-1 uppercase tracking-wider">Team Members</p>
+                <p className="text-white/40 text-xs font-medium mb-1 uppercase tracking-wider">
+                  Team Members
+                </p>
                 <p className="text-4xl font-bold text-white">{totalMembers}</p>
               </motion.div>
 
@@ -784,7 +797,9 @@ export default function WorkspacesClient() {
                     <FileText className="w-6 h-6 text-white/70" />
                   </div>
                 </div>
-                <p className="text-white/40 text-xs font-medium mb-1 uppercase tracking-wider">Documents</p>
+                <p className="text-white/40 text-xs font-medium mb-1 uppercase tracking-wider">
+                  Documents
+                </p>
                 <p className="text-4xl font-bold text-white">{totalDocuments}</p>
               </motion.div>
 
@@ -799,14 +814,14 @@ export default function WorkspacesClient() {
                     <Building2 className="w-6 h-6 text-white/70" />
                   </div>
                 </div>
-                <p className="text-white/40 text-xs font-medium mb-1 uppercase tracking-wider">Workspaces</p>
+                <p className="text-white/40 text-xs font-medium mb-1 uppercase tracking-wider">
+                  Workspaces
+                </p>
                 <p className="text-4xl font-bold text-white">{workspaces.length}</p>
               </motion.div>
             </div>
 
-            {/* Three Column Layout - Members, Documents, Chat */}
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {/* Members Card */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -845,7 +860,8 @@ export default function WorkspacesClient() {
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div className="w-10 h-10 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                              {member.user_name?.[0]?.toUpperCase() || member.user_email[0]?.toUpperCase()}
+                              {member.user_name?.[0]?.toUpperCase() ||
+                                member.user_email[0]?.toUpperCase()}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="font-semibold text-white text-sm truncate">
@@ -855,14 +871,16 @@ export default function WorkspacesClient() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
-                              member.role === 'owner'
-                                ? "bg-white/10 text-white border border-white/20"
-                                : "bg-white/5 text-white/60 border border-white/10"
-                            }`}>
+                            <span
+                              className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
+                                member.role === "owner"
+                                  ? "bg-white/10 text-white border border-white/20"
+                                  : "bg-white/5 text-white/60 border border-white/10"
+                              }`}
+                            >
                               {member.role}
                             </span>
-                            {selectedWorkspace?.role === 'owner' && member.role !== 'owner' && (
+                            {selectedWorkspace?.role === "owner" && member.role !== "owner" && (
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -883,7 +901,6 @@ export default function WorkspacesClient() {
                 </div>
               </motion.div>
 
-              {/* Documents Card */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -945,16 +962,13 @@ export default function WorkspacesClient() {
                 </div>
               </motion.div>
 
-              {/* Chat Card */}
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="bg-[#0f0f0f] border border-white/10 rounded-xl overflow-hidden lg:col-span-2 xl:col-span-1"
                 style={{ minHeight: "500px" }}
               >
-                {selectedWorkspace && (
-                  <WorkspaceChat workspaceId={selectedWorkspace.id} />
-                )}
+                {selectedWorkspace && <WorkspaceChat workspaceId={selectedWorkspace.id} />}
               </motion.div>
             </div>
           </div>
@@ -966,7 +980,6 @@ export default function WorkspacesClient() {
           </div>
         )}
 
-        {/* Remove Member Dialog */}
         <Dialog open={removeMemberDialogOpen} onOpenChange={setRemoveMemberDialogOpen}>
           <DialogContent className="bg-[#0f0f0f] border-white/10">
             <DialogHeader>
@@ -983,7 +996,8 @@ export default function WorkspacesClient() {
                 <div className="p-5 rounded-xl bg-white/5 border border-white/10">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-lg">
-                      {memberToRemove.user_name?.[0]?.toUpperCase() || memberToRemove.user_email[0]?.toUpperCase()}
+                      {memberToRemove.user_name?.[0]?.toUpperCase() ||
+                        memberToRemove.user_email[0]?.toUpperCase()}
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-white">

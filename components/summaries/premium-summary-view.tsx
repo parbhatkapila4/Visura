@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useInView, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { toast } from "sonner";
-import { parseSection } from "@/utils/summary-helpers";
+import { parseSection, extractSummaryPreview } from "@/utils/summary-helpers";
 import {
   ChevronLeft,
   MessageSquare,
@@ -381,6 +381,9 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
     .map((section) => section.trim())
     .filter(Boolean)
     .map(parseSection);
+
+  // Extract preview data for document overview
+  const preview = extractSummaryPreview(summary.summary_text, summary.title, null);
 
   // Track active section based on scroll position
   useEffect(() => {
@@ -819,6 +822,140 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
               </Link>
             </motion.div>
           </div>
+        </div>
+      </section>
+
+      {/* Document Overview Section */}
+      <section className="py-8 lg:py-12 border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Document Type Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+            >
+              <GlowCard className="bg-[#0a0a0a] rounded-2xl p-6 h-full" glowColor="orange">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-6 h-6 text-orange-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-white/40 mb-1">Document Type</p>
+                    <p className="text-sm font-semibold text-white truncate">
+                      {preview.documentType || "Document"}
+                    </p>
+                  </div>
+                </div>
+              </GlowCard>
+            </motion.div>
+
+            {/* Sections Count Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              <GlowCard className="bg-[#0a0a0a] rounded-2xl p-6 h-full" glowColor="purple">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
+                    <ListChecks className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-white/40 mb-1">Total Sections</p>
+                    <p className="text-sm font-semibold text-white">
+                      {sections.length} {sections.length === 1 ? 'section' : 'sections'}
+                    </p>
+                  </div>
+                </div>
+              </GlowCard>
+            </motion.div>
+
+            {/* Insights Count Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+            >
+              <GlowCard className="bg-[#0a0a0a] rounded-2xl p-6 h-full" glowColor="blue">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <Lightbulb className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-white/40 mb-1">Key Insights</p>
+                    <p className="text-sm font-semibold text-white">
+                      {totalInsights} {totalInsights === 1 ? 'insight' : 'insights'}
+                    </p>
+                  </div>
+                </div>
+              </GlowCard>
+            </motion.div>
+
+            {/* Reading Time Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+            >
+              <GlowCard className="bg-[#0a0a0a] rounded-2xl p-6 h-full" glowColor="green">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-6 h-6 text-green-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-white/40 mb-1">Reading Time</p>
+                    <p className="text-sm font-semibold text-white">
+                      ~{estimatedReadTime} {estimatedReadTime === 1 ? 'minute' : 'minutes'}
+                    </p>
+                  </div>
+                </div>
+              </GlowCard>
+            </motion.div>
+          </div>
+
+          {/* Document Highlights */}
+          {preview.keyPoints.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+              className="mt-8"
+            >
+              <GlowCard className="bg-[#0a0a0a] rounded-2xl p-6 lg:p-8" glowColor="orange">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+                    <Target className="w-5 h-5 text-orange-400" />
+                  </div>
+                  <h3 className="text-lg font-bold text-white">Document Highlights</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {preview.keyPoints.slice(0, 4).map((point, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.6 + idx * 0.1 }}
+                      className="flex items-start gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5"
+                    >
+                      <div className="w-6 h-6 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Hash className="w-3.5 h-3.5 text-orange-400" />
+                      </div>
+                      <p className="text-sm text-white/70 leading-relaxed flex-1">
+                        {point.length > 120 ? `${point.substring(0, 120)}...` : point}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+              </GlowCard>
+            </motion.div>
+          )}
         </div>
       </section>
 

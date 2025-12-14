@@ -57,7 +57,7 @@ export async function fetchAndExtractPdfText(fileUrl: string, maxRetries = 3) {
         console.error(`Attempt ${attempt} error details:`, {
           name: error.name,
           message: error.message,
-          stack: error.stack
+          stack: error.stack,
         });
       }
 
@@ -73,9 +73,7 @@ export async function fetchAndExtractPdfText(fileUrl: string, maxRetries = 3) {
   throw lastError;
 }
 
-export async function extractPdfTextFromBuffer(
-  arrayBuffer: ArrayBuffer
-): Promise<string> {
+export async function extractPdfTextFromBuffer(arrayBuffer: ArrayBuffer): Promise<string> {
   try {
     console.log("Processing PDF from buffer, size:", arrayBuffer.byteLength);
 

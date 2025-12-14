@@ -20,15 +20,8 @@ interface EmbeddingOptions {
   input: string;
 }
 
-export async function openrouterChatCompletion(
-  options: ChatCompletionOptions
-): Promise<string> {
-  const {
-    model = "openai/gpt-4o-mini",
-    messages,
-    temperature = 0.7,
-    max_tokens,
-  } = options;
+export async function openrouterChatCompletion(options: ChatCompletionOptions): Promise<string> {
+  const { model = "openai/gpt-4o-mini", messages, temperature = 0.7, max_tokens } = options;
 
   if (!OPENROUTER_API_KEY) {
     throw new Error("OPENROUTER_API_KEY is not configured");
@@ -41,17 +34,13 @@ export async function openrouterChatCompletion(
     "X-Title": APP_TITLE,
   };
 
-  const tryModels = [
-    model,
-    "google/gemini-flash-1.5",
-    "meta-llama/llama-3.1-8b-instruct:free"
-  ]; // fallbacks adjusted to valid, widely-available routes
+  const tryModels = [model, "google/gemini-flash-1.5", "meta-llama/llama-3.1-8b-instruct:free"];
 
   for (let i = 0; i < tryModels.length; i++) {
     const m = tryModels[i];
     try {
       console.log(`Trying model: ${m} (attempt ${i + 1}/${tryModels.length})`);
-      
+
       const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
         method: "POST",
         headers,
@@ -63,7 +52,7 @@ export async function openrouterChatCompletion(
       if (response.ok) {
         const data = await response.json();
         const content = data.choices?.[0]?.message?.content ?? "";
-        
+
         if (!content || content.trim().length === 0) {
           console.warn(`Model ${m} returned empty content, trying next...`);
           if (i < tryModels.length - 1) {
@@ -71,7 +60,7 @@ export async function openrouterChatCompletion(
             continue;
           }
         }
-        
+
         console.log(`✅ Success with model ${m}`);
         return content;
       }
@@ -85,16 +74,18 @@ export async function openrouterChatCompletion(
         continue;
       }
 
-      throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+      throw new Error(
+        `API request failed: ${response.status} ${response.statusText} - ${errorText}`
+      );
     } catch (err) {
       console.error(`Error with model ${m}:`, err);
-      
+
       if (i < tryModels.length - 1) {
         console.log(`Trying next fallback model...`);
         await new Promise((r) => setTimeout(r, 1000));
         continue;
       }
-      
+
       throw err;
     }
   }
@@ -102,10 +93,7 @@ export async function openrouterChatCompletion(
   throw new Error("All model attempts failed");
 }
 
-export async function openrouterSingleMessage(
-  prompt: string,
-  model?: string
-): Promise<string> {
+export async function openrouterSingleMessage(prompt: string, model?: string): Promise<string> {
   return openrouterChatCompletion({
     model,
     messages: [

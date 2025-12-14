@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { extractSummaryPreview } from '@/utils/summary-helpers';
+import { describe, it, expect } from "vitest";
+import { extractSummaryPreview } from "@/utils/summary-helpers";
 
-describe('Summary Helpers', () => {
-  describe('extractSummaryPreview', () => {
-    it('should extract executive summary from markdown', () => {
+describe("Summary Helpers", () => {
+  describe("extractSummaryPreview", () => {
+    it("should extract executive summary from markdown", () => {
       const summaryText = `
 # Document Analysis
 
@@ -15,11 +15,11 @@ describe('Summary Helpers', () => {
       `;
 
       const result = extractSummaryPreview(summaryText);
-      expect(result.executiveSummary).toContain('executive summary');
+      expect(result.executiveSummary).toContain("executive summary");
       expect(result.keyPoints).toHaveLength(2);
     });
 
-    it('should extract document type', () => {
+    it("should extract document type", () => {
       const summaryText = `
 **Document Type:** Financial Report
 
@@ -27,10 +27,10 @@ Content here...
       `;
 
       const result = extractSummaryPreview(summaryText);
-      expect(result.documentType).toBe('Financial Report');
+      expect(result.documentType).toBe("Financial Report");
     });
 
-    it('should handle missing executive summary', () => {
+    it("should handle missing executive summary", () => {
       const summaryText = `
 ## Key Points
 - Point 1
@@ -42,7 +42,7 @@ Content here...
       expect(result.keyPoints).toHaveLength(2);
     });
 
-    it('should extract key points with different bullet formats', () => {
+    it("should extract key points with different bullet formats", () => {
       const summaryText = `
 **Key Points:**
 • Point with bullet
@@ -54,17 +54,17 @@ Content here...
       expect(result.keyPoints.length).toBeGreaterThan(0);
     });
 
-    it('should handle empty summary text', () => {
-      const result = extractSummaryPreview('');
+    it("should handle empty summary text", () => {
+      const result = extractSummaryPreview("");
       expect(result.executiveSummary).toBeTruthy();
       expect(result.keyPoints).toEqual([]);
       expect(result.documentType).toBeTruthy();
     });
 
-    it('should limit key points to reasonable number', () => {
+    it("should limit key points to reasonable number", () => {
       const longSummary = `
 **Key Points:**
-${Array.from({ length: 50 }, (_, i) => `- Point ${i + 1}`).join('\n')}
+${Array.from({ length: 50 }, (_, i) => `- Point ${i + 1}`).join("\n")}
       `;
 
       const result = extractSummaryPreview(longSummary);
@@ -72,4 +72,3 @@ ${Array.from({ length: 50 }, (_, i) => `- Point ${i + 1}`).join('\n')}
     });
   });
 });
-

@@ -3,8 +3,7 @@ import { getDbConnection } from "./db";
 export async function checkChatbotTables() {
   try {
     const sql = await getDbConnection();
-    
-    // Check if pdf_stores table exists
+
     const storesTable = await sql`
       SELECT EXISTS (
         SELECT FROM information_schema.tables 
@@ -12,8 +11,7 @@ export async function checkChatbotTables() {
         AND table_name = 'pdf_stores'
       );
     `;
-    
-    // Check if pdf_qa_sessions table exists
+
     const sessionsTable = await sql`
       SELECT EXISTS (
         SELECT FROM information_schema.tables 
@@ -21,8 +19,7 @@ export async function checkChatbotTables() {
         AND table_name = 'pdf_qa_sessions'
       );
     `;
-    
-    // Check if pdf_qa_messages table exists
+
     const messagesTable = await sql`
       SELECT EXISTS (
         SELECT FROM information_schema.tables 
@@ -30,7 +27,7 @@ export async function checkChatbotTables() {
         AND table_name = 'pdf_qa_messages'
       );
     `;
-    
+
     return {
       pdf_stores: storesTable[0]?.exists || false,
       pdf_qa_sessions: sessionsTable[0]?.exists || false,
@@ -49,8 +46,7 @@ export async function checkChatbotTables() {
 export async function runChatbotSchema() {
   try {
     const sql = await getDbConnection();
-    
-    // Create pdf_stores table
+
     await sql`
       CREATE TABLE IF NOT EXISTS pdf_stores (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -61,8 +57,7 @@ export async function runChatbotSchema() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
-    
-    // Create pdf_qa_sessions table
+
     await sql`
       CREATE TABLE IF NOT EXISTS pdf_qa_sessions (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -73,8 +68,7 @@ export async function runChatbotSchema() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
-    
-    // Create pdf_qa_messages table
+
     await sql`
       CREATE TABLE IF NOT EXISTS pdf_qa_messages (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -84,21 +78,20 @@ export async function runChatbotSchema() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
-    
-    // Create indexes
+
     await sql`CREATE INDEX IF NOT EXISTS idx_pdf_stores_pdf_summary_id ON pdf_stores(pdf_summary_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_pdf_stores_user_id ON pdf_stores(user_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_pdf_qa_sessions_pdf_store_id ON pdf_qa_sessions(pdf_store_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_pdf_qa_sessions_user_id ON pdf_qa_sessions(user_id);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_pdf_qa_messages_session_id ON pdf_qa_messages(session_id);`;
-    
+
     console.log("Chatbot tables created successfully");
     return { success: true, message: "Chatbot tables created successfully" };
   } catch (error) {
     console.error("Error creating chatbot tables:", error);
-    return { 
-      success: false, 
-      message: error instanceof Error ? error.message : "Unknown error" 
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }

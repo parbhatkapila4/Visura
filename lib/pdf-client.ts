@@ -1,5 +1,4 @@
 "use client";
-
 declare global {
   interface Window {
     pdfjsLib: any;
@@ -16,7 +15,7 @@ export async function extractTextFromPDF(file: File): Promise<string> {
       throw new Error("Invalid file provided");
     }
 
-    if (!file.type.includes('pdf')) {
+    if (!file.type.includes("pdf")) {
       throw new Error("File is not a PDF");
     }
 
@@ -25,25 +24,25 @@ export async function extractTextFromPDF(file: File): Promise<string> {
     if (!window.pdfjsLib) {
       console.log("Loading PDF.js from CDN...");
       await new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
         script.onload = resolve;
         script.onerror = reject;
         document.head.appendChild(script);
       });
-      
+
       if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 
-          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
       }
-      
+
       console.log("PDF.js loaded successfully");
     }
 
     const pdfjsLib = window.pdfjsLib;
     const arrayBuffer = await file.arrayBuffer();
-    
-    const loadingTask = pdfjsLib.getDocument({ 
+
+    const loadingTask = pdfjsLib.getDocument({
       data: arrayBuffer,
     });
     const pdf = await loadingTask.promise;
@@ -60,14 +59,14 @@ export async function extractTextFromPDF(file: File): Promise<string> {
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
       try {
         const page = await pdf.getPage(pageNum);
-        
+
         if (!page) {
           console.warn(`Page ${pageNum} could not be loaded`);
           continue;
         }
 
         const textContent = await page.getTextContent();
-        
+
         if (!textContent || !textContent.items || !Array.isArray(textContent.items)) {
           console.warn(`Page ${pageNum} has invalid text content`);
           continue;
@@ -75,14 +74,11 @@ export async function extractTextFromPDF(file: File): Promise<string> {
 
         const pageText = textContent.items
           .filter((item: any) => {
-            return item && 
-                   typeof item === 'object' && 
-                   item.str !== undefined && 
-                   item.str !== null;
+            return item && typeof item === "object" && item.str !== undefined && item.str !== null;
           })
           .map((item: any) => {
             const str = item.str;
-            return typeof str === 'string' ? str : String(str);
+            return typeof str === "string" ? str : String(str);
           })
           .join(" ")
           .trim();
@@ -99,7 +95,9 @@ export async function extractTextFromPDF(file: File): Promise<string> {
       }
     }
 
-    console.log(`Extracted ${fullText.length} characters from ${pagesWithText}/${pdf.numPages} pages`);
+    console.log(
+      `Extracted ${fullText.length} characters from ${pagesWithText}/${pdf.numPages} pages`
+    );
 
     if (fullText.trim().length === 0) {
       throw new Error("No text found in PDF - this may be a scanned/image-based document");
@@ -114,13 +112,13 @@ export async function extractTextFromPDF(file: File): Promise<string> {
     console.error("PDF text extraction failed:", error);
 
     let errorMessage = "Text extraction failed";
-    
+
     if (error.message) {
-      if (error.message.includes('password') || error.message.includes('encrypted')) {
+      if (error.message.includes("password") || error.message.includes("encrypted")) {
         errorMessage = "PDF is password-protected";
-      } else if (error.message.includes('No text found')) {
+      } else if (error.message.includes("No text found")) {
         errorMessage = "Scanned document detected - no text layer";
-      } else if (error.message.includes('Invalid PDF')) {
+      } else if (error.message.includes("Invalid PDF")) {
         errorMessage = "PDF file appears to be corrupted";
       } else {
         errorMessage = error.message;

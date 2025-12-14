@@ -14,12 +14,13 @@ export async function generateChatbotResponse(
       throw new Error("Session not found");
     }
 
-    const fullText = session.full_text_content || '';
-    const hasValidContent = fullText && 
-                           fullText.trim().length > 100 &&
-                           !fullText.toLowerCase().includes('extraction error') &&
-                           !fullText.toLowerCase().includes('object.defineproperty') &&
-                           !fullText.toLowerCase().includes('was unable to access');
+    const fullText = session.full_text_content || "";
+    const hasValidContent =
+      fullText &&
+      fullText.trim().length > 100 &&
+      !fullText.toLowerCase().includes("extraction error") &&
+      !fullText.toLowerCase().includes("object.defineproperty") &&
+      !fullText.toLowerCase().includes("was unable to access");
 
     if (!hasValidContent) {
       return `I apologize, but this document doesn't have accessible text content. This usually happens with:
@@ -39,14 +40,13 @@ The file was uploaded successfully, but without text content, I can't answer que
     const messages = await getQAMessagesBySession(sessionId, userId);
 
     const conversationHistory = messages.map((msg) => ({
-      role:
-        msg.message_type === "user"
-          ? ("user" as const)
-          : ("assistant" as const),
+      role: msg.message_type === "user" ? ("user" as const) : ("assistant" as const),
       content: msg.message_content,
     }));
 
-    const pdfContext = `Here is the COMPLETE TEXT CONTENT from the PDF titled "${session.title || session.file_name}". This text was extracted and is provided to you directly:
+    const pdfContext = `Here is the COMPLETE TEXT CONTENT from the PDF titled "${
+      session.title || session.file_name
+    }". This text was extracted and is provided to you directly:
 
 ---START OF DOCUMENT TEXT---
 ${fullText}
@@ -88,8 +88,6 @@ Answer their question based on the text content provided above.`;
   }
 }
 
-export async function generateInitialChatbotGreeting(
-  pdfTitle: string
-): Promise<string> {
+export async function generateInitialChatbotGreeting(pdfTitle: string): Promise<string> {
   return `Hi! I can help you understand "${pdfTitle}". Ask me about key points, specific sections, or anything else in the document.`;
 }

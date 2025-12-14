@@ -36,8 +36,10 @@ import {
   X,
 } from "lucide-react";
 import DeleteButton from "@/components/summaries/delete-button";
+import DownloadSummaryButtonDashboard from "@/components/summaries/download-summary-button-dashboard";
 import AnalyticsDashboard from "@/components/dashboard/analytics-dashboard";
 import { extractSummaryPreview } from "@/utils/summary-helpers";
+import { formatFileName } from "@/lib/utils";
 
 interface Summary {
   id: string;
@@ -165,14 +167,17 @@ const PremiumSummaryCard = ({
   summary, 
   index, 
   onDelete,
-  isLarge = false 
+  isLarge = false,
+  userPlan = "basic"
 }: { 
   summary: Summary; 
   index: number;
   onDelete: () => void;
   isLarge?: boolean;
+  userPlan?: string;
 }) => {
-  const preview = extractSummaryPreview(summary.summary_text);
+  const fileName = summary.original_file_url ? formatFileName(summary.original_file_url) : null;
+  const preview = extractSummaryPreview(summary.summary_text, summary.title, fileName);
   const [isHovered, setIsHovered] = useState(false);
 
   const getStatusColor = () => {
@@ -232,14 +237,12 @@ const PremiumSummaryCard = ({
               className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={(e) => e.stopPropagation()}
             >
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-white transition-colors"
-                onClick={() => window.location.href = `/chatbot/${summary.id}`}
-              >
-                <MessageSquare className="w-4 h-4" />
-              </motion.button>
+              <DownloadSummaryButtonDashboard
+                summaryId={summary.id}
+                title={summary.title}
+                summaryText={summary.summary_text}
+                userPlan={userPlan}
+              />
               <DeleteButton summaryId={summary.id} onDelete={onDelete} />
             </div>
           </div>
@@ -255,7 +258,7 @@ const PremiumSummaryCard = ({
           </p>
 
           {/* Tags */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-2 mb-3">
             <span className="px-2.5 py-1 rounded-lg bg-white/5 text-white/50 text-xs font-medium">
               {preview.documentType || "Document"}
             </span>
@@ -265,6 +268,38 @@ const PremiumSummaryCard = ({
               </span>
             )}
           </div>
+
+          {/* Small Card: Show 1-2 Key Insights */}
+          {!isLarge && preview.keyPoints.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {preview.keyPoints.slice(0, 2).map((insight, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start gap-2 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                  <div className="w-1 h-1 rounded-full bg-gradient-to-r from-orange-400 to-amber-400 mt-1.5 flex-shrink-0" />
+                  <p className="text-xs text-white/60 leading-relaxed line-clamp-2 flex-1">
+                    {insight.length > 80 ? `${insight.substring(0, 80)}...` : insight}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Small Card: Compact Stats */}
+          {!isLarge && (
+            <div className="flex items-center gap-3 mb-3 text-xs">
+              <div className="flex items-center gap-1.5 text-white/40">
+                <FileText className="w-3 h-3" />
+                <span>{wordCount.toLocaleString()} words</span>
+              </div>
+              <div className="w-1 h-1 rounded-full bg-white/20" />
+              <div className="flex items-center gap-1.5 text-white/40">
+                <Zap className="w-3 h-3" />
+                <span>{(charCount / 1000).toFixed(1)}k chars</span>
+              </div>
+            </div>
+          )}
 
           {/* Expanded Content for Large Card */}
           {isLarge && (
@@ -827,6 +862,7 @@ export default function DashboardClient({
                       index={index}
                       onDelete={() => handleDelete(summary.id)}
                       isLarge={activeView === "grid" && index === 0}
+                      userPlan={userPlan}
                     />
                   ))}
                 </div>

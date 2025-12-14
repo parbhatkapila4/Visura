@@ -94,7 +94,6 @@ export async function hasSummaryBeenDownloaded(userId: string, summaryId: string
 export async function recordSummaryDownload(userId: string, summaryId: string) {
   const sql = await getDbConnection();
   try {
-    // Use INSERT ... ON CONFLICT DO NOTHING to handle unique constraint
     await sql`
       INSERT INTO summary_downloads (user_id, summary_id)
       VALUES (${userId}, ${summaryId})
@@ -107,11 +106,9 @@ export async function recordSummaryDownload(userId: string, summaryId: string) {
   }
 }
 
-// Generate a unique share token for a summary
 export async function generateShareToken(summaryId: string, userId: string): Promise<string> {
   const sql = await getDbConnection();
   try {
-    // Verify the summary belongs to the user
     const [summary] = await sql`
       SELECT id FROM pdf_summaries WHERE id = ${summaryId} AND user_id = ${userId}
     `;
@@ -120,18 +117,16 @@ export async function generateShareToken(summaryId: string, userId: string): Pro
       throw new Error("Summary not found or access denied");
     }
 
-    // Check if share token already exists
-    // Note: If this fails, it likely means the share_token column doesn't exist yet
-    // Run the migration: ALTER TABLE pdf_summaries ADD COLUMN share_token VARCHAR(255) UNIQUE;
     let existing;
     try {
       [existing] = await sql`
         SELECT share_token FROM pdf_summaries WHERE id = ${summaryId}
       `;
     } catch (error: any) {
-      // Check if it's a column doesn't exist error
-      if (error?.message?.includes('column') && error?.message?.includes('share_token')) {
-        throw new Error("share_token column does not exist. Please run the database migration first. See share_token_migration.sql");
+      if (error?.message?.includes("column") && error?.message?.includes("share_token")) {
+        throw new Error(
+          "share_token column does not exist. Please run the database migration first. See share_token_migration.sql"
+        );
       }
       throw error;
     }
@@ -140,16 +135,14 @@ export async function generateShareToken(summaryId: string, userId: string): Pro
       return existing.share_token;
     }
 
-    // Generate a unique token (32 character hex string)
-    let shareToken: string;
+    let shareToken: string = "";
     let isUnique = false;
     let attempts = 0;
     const maxAttempts = 10;
 
     while (!isUnique && attempts < maxAttempts) {
       shareToken = randomBytes(16).toString("hex");
-      
-      // Check if token already exists
+
       const [duplicate] = await sql`
         SELECT id FROM pdf_summaries WHERE share_token = ${shareToken}
       `;
@@ -160,29 +153,29 @@ export async function generateShareToken(summaryId: string, userId: string): Pro
       attempts++;
     }
 
-    if (!isUnique) {
+    if (!isUnique || !shareToken) {
       throw new Error("Failed to generate unique share token");
     }
 
-    // Update the summary with the share token
     await sql`
       UPDATE pdf_summaries 
       SET share_token = ${shareToken}
       WHERE id = ${summaryId}
     `;
 
-    return shareToken!;
+    return shareToken;
   } catch (error) {
     console.error("Error generating share token", error);
     throw error;
   }
 }
 
-// Revoke share token for a summary (sets share_token to NULL)
-export async function revokeShareToken(summaryId: string, userId: string): Promise<{ success: boolean }> {
+export async function revokeShareToken(
+  summaryId: string,
+  userId: string
+): Promise<{ success: boolean }> {
   const sql = await getDbConnection();
   try {
-    // Verify the summary belongs to the user
     const [summary] = await sql`
       SELECT id FROM pdf_summaries WHERE id = ${summaryId} AND user_id = ${userId}
     `;
@@ -191,7 +184,6 @@ export async function revokeShareToken(summaryId: string, userId: string): Promi
       throw new Error("Summary not found or access denied");
     }
 
-    // Revoke the share token by setting it to NULL
     await sql`
       UPDATE pdf_summaries 
       SET share_token = NULL
@@ -205,7 +197,6 @@ export async function revokeShareToken(summaryId: string, userId: string): Promi
   }
 }
 
-// Check if summary has an active share token
 export async function hasActiveShareToken(summaryId: string): Promise<boolean> {
   const sql = await getDbConnection();
   try {
@@ -219,20 +210,17 @@ export async function hasActiveShareToken(summaryId: string): Promise<boolean> {
   }
 }
 
-// Get share URL for a summary (if share token exists)
 export async function getShareUrl(summaryId: string, userId: string): Promise<string | null> {
   const sql = await getDbConnection();
   try {
-    // Verify the summary belongs to the user
     const [summary] = await sql`
       SELECT share_token FROM pdf_summaries WHERE id = ${summaryId} AND user_id = ${userId} AND share_token IS NOT NULL
     `;
-    
+
     if (!summary?.share_token) {
       return null;
     }
 
-    // Return the full share URL
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     return `${baseUrl}/share/${summary.share_token}`;
   } catch (error) {
@@ -241,7 +229,6 @@ export async function getShareUrl(summaryId: string, userId: string): Promise<st
   }
 }
 
-// Find summary by share token (for public access)
 export async function findSummaryByShareToken(shareToken: string) {
   try {
     const sql = await getDbConnection();
@@ -257,7 +244,7 @@ export async function findSummaryByShareToken(shareToken: string) {
     file_name,
     LENGTH(summary_text) - LENGTH(REPLACE(summary_text, ' ', '')) + 1 as word_count
     FROM pdf_summaries WHERE share_token = ${shareToken}`;
-    
+
     return summary;
   } catch (error) {
     console.error("Error finding summary by share token", error);

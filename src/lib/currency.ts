@@ -4,7 +4,6 @@ export function currencyFromCountry(country: string | null | undefined) {
   if (c === "IN") return "INR";
   if (c === "US") return "USD";
 
-  // Eurozone
   const EUR = new Set([
     "AT",
     "BE",
@@ -28,7 +27,6 @@ export function currencyFromCountry(country: string | null | undefined) {
   ]);
   if (EUR.has(c)) return "EUR";
 
-  // Fallbacks
   if (c === "GB") return "GBP";
   if (c === "CA") return "CAD";
   if (c === "AU") return "AUD";

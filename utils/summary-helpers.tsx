@@ -1,3 +1,81 @@
+// Generate a descriptive phrase based on document type, title, or content
+const generateDocumentTypeDescription = (title: string, summaryText: string): string => {
+  const titleLower = title.toLowerCase();
+  const textLower = summaryText?.toLowerCase() || "";
+
+  // Check for invoice/billing documents
+  if (titleLower.includes("invoice") || titleLower.includes("bill") || titleLower.includes("receipt")) {
+    return "Financial invoice or billing document with transaction details";
+  }
+
+  // Check for profile/resume documents
+  if (titleLower.includes("profile") || titleLower.includes("resume") || titleLower.includes("cv")) {
+    return "Personal or professional profile document";
+  }
+
+  // Check for contract/agreement documents
+  if (titleLower.includes("contract") || titleLower.includes("agreement") || titleLower.includes("terms")) {
+    return "Legal contract or agreement document";
+  }
+
+  // Check for report documents
+  if (titleLower.includes("report") || titleLower.includes("analysis")) {
+    return "Analytical report or research document";
+  }
+
+  // Check for statement documents
+  if (titleLower.includes("statement") || titleLower.includes("account")) {
+    return "Financial statement or account summary";
+  }
+
+  // Check for book/document titles
+  if (titleLower.includes("book") || textLower.includes("chapter") || textLower.includes("author")) {
+    return "Book or literary document";
+  }
+
+  // Check for manual/guide documents
+  if (titleLower.includes("manual") || titleLower.includes("guide") || titleLower.includes("instruction")) {
+    return "Instructional manual or guide document";
+  }
+
+  // Check for letter/email documents
+  if (titleLower.includes("letter") || titleLower.includes("email") || titleLower.includes("mail")) {
+    return "Correspondence letter or email document";
+  }
+
+  // Check for presentation documents
+  if (titleLower.includes("presentation") || titleLower.includes("slides") || titleLower.includes("ppt")) {
+    return "Presentation or slideshow document";
+  }
+
+  // Check for certificate documents
+  if (titleLower.includes("certificate") || titleLower.includes("diploma") || titleLower.includes("degree")) {
+    return "Certificate or academic document";
+  }
+
+  // Check for medical documents
+  if (titleLower.includes("medical") || titleLower.includes("health") || titleLower.includes("prescription")) {
+    return "Medical or healthcare document";
+  }
+
+  // Check for legal documents
+  if (titleLower.includes("legal") || titleLower.includes("court") || titleLower.includes("case")) {
+    return "Legal or court document";
+  }
+
+  // Check for business documents
+  if (titleLower.includes("business") || titleLower.includes("company") || titleLower.includes("corporate")) {
+    return "Business or corporate document";
+  }
+
+  // Default based on title length or content
+  if (title.length > 30) {
+    return "Comprehensive document with detailed content";
+  }
+
+  return "Document ready for review and analysis";
+};
+
 export const parseSection = (section: string): { title: string; points: string[] } => {
   const [title, ...content] = section.split("\n");
 
@@ -69,7 +147,9 @@ export const parseSection = (section: string): { title: string; points: string[]
 };
 
 export const extractSummaryPreview = (
-  summaryText: string
+  summaryText: string,
+  title?: string | null,
+  fileName?: string | null
 ): {
   title: string;
   executiveSummary: string;
@@ -92,7 +172,9 @@ export const extractSummaryPreview = (
 
   const titleSection = sections[0] || "";
   const titleMatch = titleSection.match(/^#\s*(.+)/);
-  const title = titleMatch ? titleMatch[1].trim() : "Document Summary";
+  const extractedTitle = titleMatch ? titleMatch[1].trim() : (title || "Document Summary");
+  const docTitle = title || extractedTitle;
+  const docFileName = fileName || "";
 
   let executiveSummary = "Summary not available";
 
@@ -119,6 +201,12 @@ export const extractSummaryPreview = (
         executiveSummary = firstLine;
       }
     }
+  }
+
+  // Generate document type description if summary is still not available
+  if (executiveSummary === "Summary not available") {
+    const searchText = `${docTitle} ${docFileName} ${summaryText}`;
+    executiveSummary = generateDocumentTypeDescription(docTitle, searchText);
   }
 
   let documentType = "Document";
@@ -181,7 +269,7 @@ export const extractSummaryPreview = (
   }
 
   return {
-    title,
+    title: docTitle,
     executiveSummary,
     keyPoints,
     documentType,

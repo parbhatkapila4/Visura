@@ -1,5 +1,4 @@
 import { openrouterChatCompletion } from "@/lib/openrouter";
-import { SUMMARY_SYSTEM_PROMPT } from "@/utils/prompts";
 
 export async function generateSummaryFromText(pdfText: string) {
   try {
@@ -11,10 +10,11 @@ export async function generateSummaryFromText(pdfText: string) {
       throw new Error("Text content too short to generate summary");
     }
 
-    // Increase limit for more detailed analysis - process more content
-    const textToSummarize = pdfText.length > 200000 
-      ? pdfText.substring(0, 200000) + "\n\n[Content truncated for processing - document is very long]"
-      : pdfText;
+    const textToSummarize =
+      pdfText.length > 200000
+        ? pdfText.substring(0, 200000) +
+          "\n\n[Content truncated for processing - document is very long]"
+        : pdfText;
 
     const summary = await openrouterChatCompletion({
       model: "google/gemini-2.5-flash",
@@ -250,14 +250,16 @@ Now create an extremely detailed, comprehensive, and lengthy summary based on th
 
     console.log("Summary generated successfully!");
     console.log("Summary length:", summary?.length || 0);
-    
+
     if (!summary || summary.trim().length < 100) {
       throw new Error("AI returned empty or very short summary");
     }
 
-    if (summary.toLowerCase().includes("i cannot access") || 
-        summary.toLowerCase().includes("i apologize") ||
-        summary.toLowerCase().includes("unable to access")) {
+    if (
+      summary.toLowerCase().includes("i cannot access") ||
+      summary.toLowerCase().includes("i apologize") ||
+      summary.toLowerCase().includes("unable to access")
+    ) {
       console.error("AI is confused - returning confused response");
       throw new Error("AI model is confused about having access to content");
     }
@@ -267,7 +269,7 @@ Now create an extremely detailed, comprehensive, and lengthy summary based on th
     console.error("Summary generation error:", error);
     console.error("Error details:", {
       message: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
     throw error;
   }
