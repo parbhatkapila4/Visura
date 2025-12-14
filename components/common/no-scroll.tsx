@@ -11,5 +11,3 @@ export default function NoScroll() {
   }, []);
   return null;
 }
-
-

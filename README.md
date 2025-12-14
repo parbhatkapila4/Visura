@@ -1,340 +1,468 @@
-# 🚀 Visura - AI-Powered Document Analysis Platform
+<p align="center">
+  <img src="public/Logo.png" alt="Visura Logo" width="120" height="120" />
+</p>
 
-<div align="center">
+<h1 align="center">Visura</h1>
 
-![Visura Logo](public/demo.png)
+<p align="center">
+  <strong>AI-Powered Document Intelligence Platform</strong>
+</p>
 
-**Transform complex documents into actionable insights with AI**
+<p align="center">
+  Transform complex documents into actionable insights in seconds, not hours.
+</p>
 
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?logo=tailwind-css)](https://tailwindcss.com/)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+<p align="center">
+  <a href="https://visura.parbhat.dev/">Live Demo</a> •
+  <a href="#features">Features</a> •
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#architecture">Architecture</a> •
+  <a href="#pricing">Pricing</a>
+</p>
 
-[Demo](https://visura.parbhat.dev/) • [Documentation](ARCHITECTURE.md) • [Contributing](CONTRIBUTING.md)
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-15.5-black?logo=next.js&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/React-19.1-61DAFB?logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/Tailwind-4.1-38BDF8?logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License" />
+</p>
 
-</div>
+<br />
 
----
-
-## ✨ Features
-
-### 🤖 **AI-Powered Analysis**
-- **Smart Summaries**: Extract key insights from PDFs in seconds
-- **Intelligent Chat**: Ask questions about your documents with context-aware AI
-- **Document Understanding**: Automatically categorize and analyze document types
-
-### 💬 **Advanced Chatbot**
-- **Multi-session Support**: Organize conversations by topic
-- **Session Naming**: Auto-generate meaningful names from your first message
-- **Context Retention**: AI remembers previous messages for coherent conversations
-- **Rate Limited**: Protected API to prevent abuse
-
-### 🎨 **Beautiful UX**
-- **Responsive Design**: Flawless experience on all devices (mobile, tablet, desktop)
-- **Dark Mode**: Modern dark theme with orange accents
-- **Keyboard Shortcuts**: Navigate faster with `Cmd+U` (upload), `Cmd+D` (dashboard), `?` (help)
-- **Loading States**: Smooth skeletons and animations
-
-### 🔐 **Enterprise-Grade Security**
-- **Authentication**: Clerk for secure user management
-- **Authorization**: Protected routes with middleware
-- **Input Validation**: Zod schemas for runtime type safety
-- **Rate Limiting**: Prevent API abuse
-- **Security Headers**: HTTPS, CSP, CORS configured
-
-### 📊 **Production Ready**
-- **Error Tracking**: Sentry integration ready
-- **Analytics**: Vercel Analytics & PostHog support
-- **Monitoring**: Custom metrics dashboard
-- **Testing**: Vitest with >75% coverage target
-- **CI/CD**: Pre-commit hooks with Husky
+<p align="center">
+  <img src="public/demo.png" alt="Visura Dashboard" width="100%" />
+</p>
 
 ---
 
-## 🏗️ Tech Stack
+## The Problem
+
+Professionals spend **2.5 hours daily** reading documents. Researchers wade through hundreds of papers. Legal teams analyze thousands of contract pages. The information overload is real.
+
+**Visura changes that.**
+
+---
+
+## The Solution
+
+Visura is an AI-powered document intelligence platform that:
+
+- **Summarizes** complex PDFs into digestible insights in under 30 seconds
+- **Enables conversations** with your documents through an intelligent chatbot
+- **Facilitates collaboration** with team workspaces and real-time chat
+- **Scales** from individual users to enterprise teams
+
+<br />
+
+## Features
+
+### 🧠 AI-Powered Document Analysis
+
+| Feature | Description |
+|---------|-------------|
+| **Smart Summaries** | Extract key insights from any PDF instantly with Gemini 2.5 Flash |
+| **Document Chat** | Ask questions and get context-aware answers from your documents |
+| **Multi-Session Support** | Organize conversations by topic with auto-generated session names |
+| **Context Retention** | AI remembers previous messages for coherent, flowing conversations |
+
+### 👥 Team Collaboration
+
+| Feature | Description |
+|---------|-------------|
+| **Workspaces** | Create shared spaces for teams to collaborate on documents |
+| **Real-time Chat** | Communicate with team members within workspaces |
+| **Document Sharing** | Share summaries across workspace members with permission controls |
+| **Member Management** | Invite members, assign roles (Owner, Admin, Member, Viewer) |
+| **Collaboration Presence** | See who's viewing documents in real-time |
+
+### 📊 Analytics Dashboard
+
+| Feature | Description |
+|---------|-------------|
+| **Processing Metrics** | Track documents processed, success rates, and efficiency scores |
+| **Time Saved Calculations** | Quantify productivity gains with automated time tracking |
+| **Value Analytics** | Estimate monetary value saved through automation |
+| **Performance Forecasting** | Visualize trends and predict future processing needs |
+| **Recent Activity Feed** | Monitor document activity across your account |
+
+### 🎨 Premium User Experience
+
+| Feature | Description |
+|---------|-------------|
+| **Responsive Design** | Flawless experience across mobile, tablet, and desktop |
+| **Dark Mode** | Modern dark theme with vibrant orange accents |
+| **Keyboard Shortcuts** | `Cmd+U` (upload), `Cmd+D` (dashboard), `?` (help panel) |
+| **Loading States** | Smooth skeleton animations and transitions |
+| **Framer Motion** | Fluid animations throughout the interface |
+
+### 🔐 Enterprise-Grade Security
+
+| Feature | Description |
+|---------|-------------|
+| **Authentication** | Clerk-powered user management with SSO support |
+| **Authorization** | Protected routes with middleware enforcement |
+| **Input Validation** | Zod schemas for compile-time and runtime type safety |
+| **Rate Limiting** | API protection against abuse (configurable per endpoint) |
+| **Security Headers** | HTTPS, CSP, CORS, X-Frame-Options configured |
+
+### 💳 Global Payments
+
+| Feature | Description |
+|---------|-------------|
+| **Multi-Currency** | Automatic currency detection (INR, USD, EUR, GBP, CAD, AUD, SGD, JPY) |
+| **Geo-Detection** | Price localization based on visitor location |
+| **Razorpay Integration** | Secure payment processing with local payment methods |
+| **Plan Management** | Starter, Pro, and Enterprise tiers |
+
+---
+
+## Tech Stack
 
 | Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Frontend** | Next.js 15 App Router | React framework with SSR |
-| **UI** | Tailwind CSS + shadcn/ui | Styling & components |
-| **Backend** | Next.js API Routes | Serverless functions |
-| **Database** | Supabase (PostgreSQL) | Relational data & storage |
-| **Auth** | Clerk | User management & sessions |
-| **AI** | OpenRouter (Gemini 2.5 Flash) | LLM for summaries & chat |
-| **File Storage** | UploadThing | PDF uploads to S3 |
-| **Payments** | Razorpay | Orders & payment capture |
-| **PDF Processing** | pdf.js | Client-side text extraction |
-| **Type Safety** | TypeScript + Zod | Compile & runtime validation |
-| **Testing** | Vitest + Testing Library | Unit & integration tests |
+|-------|------------|---------|
+| **Framework** | Next.js 15 (App Router) | Full-stack React with SSR/SSG |
+| **Language** | TypeScript 5 | Type-safe development |
+| **Styling** | Tailwind CSS 4 + shadcn/ui | Utility-first styling with accessible components |
+| **Database** | Neon (PostgreSQL) | Serverless Postgres with connection pooling |
+| **Auth** | Clerk | User management, sessions, and SSO |
+| **AI** | OpenRouter (Gemini 2.5 Flash) | Document summarization and chat |
+| **Storage** | Supabase + UploadThing | File uploads and blob storage |
+| **Payments** | Razorpay | Multi-currency payment processing |
+| **PDF Processing** | pdf.js + pdf-parse | Client and server-side text extraction |
+| **Animations** | Framer Motion | Fluid UI animations |
+| **Charts** | Recharts | Analytics visualizations |
+| **Validation** | Zod | Runtime type validation |
+| **Testing** | Vitest + Testing Library | Unit and integration testing |
 | **Deployment** | Vercel | Edge network hosting |
 
 ---
 
-## 🚀 Quick Start
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         CLIENT LAYER                            │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │   Next.js   │  │   React 19  │  │   Framer Motion         │  │
+│  │  App Router │  │  Components │  │   Animations            │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                         API LAYER                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │  API Routes │  │  Middleware │  │   Rate Limiting         │  │
+│  │  /api/*     │  │  Auth Check │  │   Abuse Prevention      │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                       SERVICE LAYER                             │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │   Clerk     │  │  OpenRouter │  │   Razorpay              │  │
+│  │   Auth      │  │   AI/LLM    │  │   Payments              │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        DATA LAYER                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │    Neon     │  │  Supabase   │  │   UploadThing           │  │
+│  │  PostgreSQL │  │   Storage   │  │   File Uploads          │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Quick Start
 
 ### Prerequisites
+
 - Node.js 20+
-- npm or yarn
-- Accounts: Supabase, Clerk, OpenRouter, UploadThing
+- npm, yarn, or pnpm
+- Accounts: [Clerk](https://clerk.com), [Neon](https://neon.tech), [OpenRouter](https://openrouter.ai), [UploadThing](https://uploadthing.com), [Supabase](https://supabase.com), [Razorpay](https://razorpay.com)
 
 ### Installation
 
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/visura.git
+# Clone the repository
+git clone https://github.com/parbhatkapila4/Visura.git
 cd visura
 
 # Install dependencies
 npm install
 
-# Setup environment variables
+# Copy environment template
 cp ENV_TEMPLATE.md .env.local
-# Edit .env.local with your API keys
 
-# Run development server
+# Start development server
 npm run dev
 ```
 
-Visit `http://localhost:3000` 🎉
+Visit `http://localhost:3000`
 
-### Environment Setup
+### Environment Variables
 
-See [ENV_TEMPLATE.md](ENV_TEMPLATE.md) for required environment variables.
-
-**Critical variables:**
 ```bash
+# Database
 DATABASE_URL=postgresql://...
+
+# Authentication (Clerk)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
 CLERK_SECRET_KEY=sk_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+
+# AI (OpenRouter)
 OPENROUTER_API_KEY=sk-or-...
+
+# File Storage
 UPLOADTHING_SECRET=sk_live_...
+UPLOADTHING_APP_ID=...
+NEXT_PUBLIC_SUPABASE_URL=https://...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+
+# Payments (Razorpay)
+RAZORPAY_KEY_ID=rzp_...
+RAZORPAY_KEY_SECRET=...
 ```
 
-### Pricing & Checkout (Founders' Overview)
-- The checkout page automatically detects a visitor's country (using Vercel's geo headers) and shows the right currency—no manual toggles needed.
-- Current price points: `₹1770` for India, `$20` for the United States, `€17` for the Eurozone. Starter tier maps to `₹880` / `$10` / `€9`.
-- The same currency is sent to Razorpay when an order is created, so local payment methods appear automatically (e.g. UPI in India, PayPal/cards in the US & EU).
-- If you need to adjust price points later, update `AMOUNT_BY_CURRENCY` in `app/components/CheckoutButton.tsx` (and the starter overrides on the `/checkout/starter` page).
-
 ---
 
-## 📖 Documentation
+## Project Structure
 
-- [Architecture Overview](ARCHITECTURE.md) - System design & data flow
-- [Testing Guide](TESTING_GUIDE.md) - How to write tests
-- [Monitoring Setup](MONITORING_SETUP.md) - Production monitoring
-- [Contributing](CONTRIBUTING.md) - Development guidelines
-
----
-
-## 🎯 Use Cases
-
-### For Businesses
-- 📄 **Contract Analysis**: Extract key terms from legal documents
-- 📊 **Report Summarization**: Digest lengthy research reports
-- 📋 **Invoice Processing**: Automate data extraction
-
-### For Students
-- 📚 **Study Notes**: Generate summaries from textbooks
-- 📝 **Research Papers**: Quick understanding of academic papers
-- 🎓 **Lecture Slides**: Extract key concepts
-
-### For Professionals
-- 💼 **Meeting Minutes**: Summarize discussion points
-- 📈 **Financial Reports**: Extract critical metrics
-- 🔬 **Technical Docs**: Understand complex documentation
-
----
-
-## 🏆 Why Visura Stands Out
-
-### 1. **Production Quality Code**
-```typescript
-// Type-safe API with runtime validation
-const validatedData = SendMessageSchema.parse(body);
-
-// Rate limiting out of the box
-const rateLimitCheck = await checkRateLimit(chatbotRateLimit, userId);
-
-// Comprehensive error handling
-try {
-  await riskyOperation();
-} catch (error) {
-  logError(error, { context: 'operation' });
-  return gracefulFallback();
-}
+```
+visura/
+├── app/                          # Next.js App Router
+│   ├── (logged-in)/              # Protected routes
+│   │   ├── dashboard/            # Main dashboard
+│   │   ├── upload/               # Document upload
+│   │   ├── summaries/[id]/       # Summary viewer
+│   │   ├── chatbot/[id]/         # Document chat
+│   │   └── workspaces/           # Team workspaces
+│   ├── api/                      # API endpoints
+│   │   ├── analytics/            # Analytics data
+│   │   ├── chatbot/              # Chat functionality
+│   │   ├── downloads/            # Download management
+│   │   ├── payments/             # Payment processing
+│   │   ├── summaries/            # Summary CRUD + sharing
+│   │   └── workspaces/           # Workspace management
+│   ├── checkout/                 # Payment pages
+│   └── share/[token]/            # Public share pages
+├── components/
+│   ├── chatbot/                  # Chat interface
+│   ├── common/                   # Shared components
+│   ├── dashboard/                # Dashboard components
+│   ├── home/                     # Landing page sections
+│   ├── summaries/                # Summary display
+│   ├── ui/                       # shadcn/ui primitives
+│   ├── upload/                   # Upload components
+│   └── workspaces/               # Workspace components
+├── lib/                          # Backend logic
+│   ├── chatbot.ts                # Chat session management
+│   ├── chatbot-ai.ts             # AI response generation
+│   ├── db.ts                     # Database connection
+│   ├── openrouter.ts             # LLM integration
+│   ├── rate-limit.ts             # Rate limiting
+│   ├── summaries.ts              # Summary operations
+│   ├── validators.ts             # Zod schemas
+│   └── workspaces.ts             # Workspace operations
+├── actions/                      # Server actions
+├── utils/                        # Utility functions
+└── tests/                        # Test files
 ```
 
-### 2. **Mobile-First Design**
-- ✅ Responsive breakpoints: `sm:`, `md:`, `lg:`, `xl:`, `2xl:`
-- ✅ Touch-optimized UI with proper tap targets
-- ✅ No horizontal scroll, perfect rendering on all devices
-- ✅ Optimized images with Next.js Image
+---
 
-### 3. **Developer Experience**
-- ✅ TypeScript everywhere - catch bugs at compile time
-- ✅ Zod schemas - runtime validation with type inference
-- ✅ Pre-commit hooks - maintain code quality
-- ✅ Comprehensive tests - confidence in changes
-- ✅ Clear documentation - easy onboarding
+## Pricing
 
-### 4. **Scalability**
-- ✅ Serverless architecture - auto-scales with demand
-- ✅ Edge runtime - fast globally
-- ✅ Database pooling - handles concurrent connections
-- ✅ CDN-backed file storage - fast uploads/downloads
+| Plan | Price | Features |
+|------|-------|----------|
+| **Starter** | $10/mo | 5 documents/month, Basic AI summaries, Document chat, Email support |
+| **Pro** | $20/mo | Unlimited documents, Advanced AI, Priority support, API access, Team sharing |
+| **Enterprise** | $99/mo | Everything in Pro, Unlimited team members, Custom AI training, SSO/SAML, SLA |
+
+*Localized pricing available: ₹880/₹1770/₹8200 (India), €9/€17/€85 (Europe)*
 
 ---
 
-## 📊 Performance
-
-### Benchmarks
-
-| Metric | Value | Status |
-|--------|-------|--------|
-| **LCP** (Largest Contentful Paint) | 1.2s | ✅ Good |
-| **FID** (First Input Delay) | 45ms | ✅ Good |
-| **CLS** (Cumulative Layout Shift) | 0.02 | ✅ Good |
-| **TTFB** (Time to First Byte) | 180ms | ✅ Good |
-| **Bundle Size** (First Load JS) | 87 kB | ✅ Optimized |
-
-### Processing Speed
-
-- PDF Upload (10MB): **~1.2s**
-- Text Extraction: **~450ms**
-- Summary Generation: **~2.5s**
-- Chat Response: **~1.1s**
-
----
-
-## 🛠️ Development
+## Development
 
 ### Available Scripts
 
 ```bash
 # Development
-npm run dev          # Start dev server
-npm run build        # Production build
-npm run start        # Start production server
+npm run dev              # Start development server
+npm run build            # Production build
+npm run start            # Start production server
 
 # Code Quality
-npm run lint         # Check for errors
-npm run lint:fix     # Fix auto-fixable errors
-npm run format       # Format code with Prettier
-npm run type-check   # TypeScript compilation check
+npm run lint             # ESLint check
+npm run lint:fix         # Auto-fix linting issues
+npm run format           # Prettier formatting
+npm run type-check       # TypeScript validation
 
 # Testing
-npm test             # Run tests in watch mode
-npm run test:run     # Run tests once (CI)
-npm run test:coverage # Generate coverage report
-npm run test:ui      # Visual test runner
+npm test                 # Run tests (watch mode)
+npm run test:run         # Run tests once
+npm run test:coverage    # Generate coverage report
+npm run test:ui          # Visual test runner
 ```
 
-### Project Structure
+### Database Migrations
 
-```
-visura/
-├── app/                  # Next.js App Router
-│   ├── (logged-in)/     # Protected routes
-│   ├── api/             # API endpoints
-│   └── [public]/        # Public pages
-├── components/          # React components
-│   ├── ui/             # Primitives (shadcn)
-│   ├── common/         # Shared components
-│   └── [feature]/      # Feature-specific
-├── lib/                # Backend logic
-│   ├── db.ts          # Database client
-│   ├── validators.ts  # Zod schemas
-│   └── [service].ts   # Integrations
-├── tests/              # Test files
-└── public/             # Static assets
+```bash
+# Workspace tables
+psql $DATABASE_URL -f migrations/workspace_migration.sql
 ```
 
 ---
 
-## 🔒 Security
+## API Reference
 
-- **Authentication**: Clerk with JWT verification
-- **Authorization**: Middleware protects logged-in routes
-- **Input Validation**: Zod schemas validate all API inputs
-- **Rate Limiting**: Prevent abuse (10 msg/min, 5 uploads/hour)
-- **Security Headers**: HSTS, CSP, X-Frame-Options, etc.
-- **SQL Injection**: Parameterized queries via Supabase client
-- **XSS Protection**: React auto-escapes, CSP blocks inline scripts
+### Authentication
+All API routes require Clerk authentication. Include the session token in requests.
+
+### Rate Limits
+| Endpoint | Limit |
+|----------|-------|
+| Chatbot messages | 10/minute |
+| Document uploads | 5/hour (Basic), Unlimited (Pro) |
+| Summary downloads | 2/day (Basic), Unlimited (Pro) |
+
+### Key Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/analytics` | Fetch user analytics |
+| `POST` | `/api/chatbot/messages` | Send chat message |
+| `GET` | `/api/summaries/[id]` | Get summary details |
+| `POST` | `/api/summaries/[id]/share` | Generate share link |
+| `GET` | `/api/workspaces` | List user workspaces |
+| `POST` | `/api/workspaces/members` | Invite workspace member |
+| `POST` | `/api/payments/create-order` | Create Razorpay order |
 
 ---
 
-## 📈 Roadmap
+## Keyboard Shortcuts
 
-### Phase 1: Core Features ✅
-- [x] PDF upload & text extraction
-- [x] AI-powered summarization
-- [x] Interactive chatbot
-- [x] Mobile responsive UI
-- [x] User authentication
+| Shortcut | Action |
+|----------|--------|
+| `Cmd/Ctrl + U` | Upload new document |
+| `Cmd/Ctrl + D` | Go to dashboard |
+| `Cmd/Ctrl + K` | Open search |
+| `?` | Open keyboard shortcuts panel |
+| `Esc` | Close modals |
 
-### Phase 2: Production Hardening ✅
-- [x] Error boundaries
-- [x] Loading skeletons
-- [x] Rate limiting
-- [x] Input validation
-- [x] Testing framework
+---
+
+## Security
+
+| Measure | Implementation |
+|---------|----------------|
+| **Authentication** | Clerk with JWT verification |
+| **Authorization** | Middleware-protected routes |
+| **Input Validation** | Zod schemas on all API inputs |
+| **SQL Injection** | Parameterized queries via Neon client |
+| **XSS Protection** | React auto-escaping + CSP headers |
+| **Rate Limiting** | Configurable per-endpoint limits |
+| **HTTPS** | Enforced in production |
+
+---
+
+## Performance
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| **LCP** (Largest Contentful Paint) | < 2.5s | ✅ |
+| **FID** (First Input Delay) | < 100ms | ✅ |
+| **CLS** (Cumulative Layout Shift) | < 0.1 | ✅ |
+| **PDF Processing** | < 2s (10MB) | ✅ |
+| **AI Summary Generation** | < 3s | ✅ |
+| **Chat Response** | < 1.5s | ✅ |
+
+---
+
+## Roadmap
+
+### Completed ✅
+- [x] PDF upload and text extraction
+- [x] AI-powered summarization (Gemini 2.5 Flash)
+- [x] Interactive document chatbot
+- [x] Team workspaces with real-time chat
+- [x] Document sharing with permissions
+- [x] Analytics dashboard
+- [x] Multi-currency payments
+- [x] Mobile-responsive design
 - [x] Keyboard shortcuts
 
-### Phase 3: Advanced Features (In Progress)
+### In Progress 🚧
 - [ ] Streaming AI responses
-- [ ] Vector search for better chat
 - [ ] Batch document upload
-- [ ] Export to Word/PDF
-- [ ] Document comparison
+- [ ] Export to Word/Markdown
 - [ ] OCR for scanned PDFs
 
-### Phase 4: Enterprise
-- [ ] Team collaboration
-- [ ] Role-based access control
-- [ ] Custom AI model training
-- [ ] On-premise deployment
-- [ ] SSO integration
+### Planned 📋
+- [ ] Vector search for improved chat
+- [ ] Document comparison
+- [ ] Custom AI model fine-tuning
 - [ ] API for third-party integrations
+- [ ] On-premise deployment option
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-### Ways to Contribute
-- 🐛 Report bugs
-- 💡 Suggest features
-- 📝 Improve documentation
-- 🧪 Write tests
-- 💻 Submit PRs
+```bash
+# Fork the repository
+# Create a feature branch
+git checkout -b feature/amazing-feature
 
----
+# Make your changes
+# Run tests
+npm run test:run
 
-## 🙏 Acknowledgments
+# Commit with conventional commits
+git commit -m "feat: add amazing feature"
 
-- [Next.js](https://nextjs.org/) - Amazing React framework
-- [Vercel](https://vercel.com/) - Hosting & deployment
-- [Supabase](https://supabase.com/) - Database & backend
-- [Clerk](https://clerk.com/) - Authentication
-- [OpenRouter](https://openrouter.ai/) - AI infrastructure
-- [shadcn/ui](https://ui.shadcn.com/) - Beautiful components
-- [Lucide](https://lucide.dev/) - Icon library
+# Push and create PR
+git push origin feature/amazing-feature
+```
 
 ---
 
-## 📞 Support
+## Support
 
 - **Email**: help@productsolution.net
+- **GitHub Issues**: Bug reports and feature requests
+- **Documentation**: [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ---
 
-<div align="center">
+## License
 
-**Made by Parbhat for developers and document enthusiasts**
+MIT License - see [LICENSE](LICENSE) for details.
 
-⭐ Star us on GitHub if you find this useful!
+---
 
-</div>
+<p align="center">
+  <strong>Built by <a href="https://parbhat.dev">Parbhat Kapila</a></strong>
+</p>
+
+<p align="center">
+  <a href="https://x.com/Devcodies">Twitter</a> •
+  <a href="https://www.linkedin.com/in/parbhat-kapila/">LinkedIn</a> •
+  <a href="https://github.com/parbhatkapila4/Visura">GitHub</a>
+</p>
+
+<p align="center">
+  <sub>If Visura saves you time, consider giving it a ⭐ on GitHub!</sub>
+</p>

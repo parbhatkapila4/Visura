@@ -17,9 +17,7 @@ export const ourFileRouter = {
       console.log("upload completed for user id", metadata.userId);
       console.log("file url", file.ufsUrl);
 
-      console.log(
-        "Skipping server-side PDF processing due to network constraints"
-      );
+      console.log("Skipping server-side PDF processing due to network constraints");
       console.log("PDF will be processed client-side with fallback mechanisms");
 
       return {
@@ -30,8 +28,7 @@ export const ourFileRouter = {
         ufsUrl: file.ufsUrl,
         processed: false,
         skipServerProcessing: true,
-        message:
-          "File uploaded successfully. Processing will be handled client-side.",
+        message: "File uploaded successfully. Processing will be handled client-side.",
       };
     }),
 } satisfies FileRouter;

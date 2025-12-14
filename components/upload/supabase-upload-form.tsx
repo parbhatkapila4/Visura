@@ -351,7 +351,7 @@ export default function SupabaseUploadForm({
         duration: 8000,
       });
 
-      // Redirect the user to dashboard so they aren't stuck on the upload screen
+      
       try {
         router.push("/dashboard");
       } catch {}
@@ -360,7 +360,7 @@ export default function SupabaseUploadForm({
         const fallbackResult = await generateFallbackSummary(
           file.name,
           "",
-          errorMessage
+          friendlyMessage
         );
         if (fallbackResult.success) {
           setResult(fallbackResult);

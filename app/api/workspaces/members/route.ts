@@ -6,7 +6,6 @@ import {
   removeWorkspaceMember,
 } from "@/lib/workspaces";
 
-// GET - Get workspace members
 export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -18,24 +17,17 @@ export async function GET(request: NextRequest) {
     const workspaceId = searchParams.get("workspaceId");
 
     if (!workspaceId) {
-      return NextResponse.json(
-        { error: "workspaceId is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "workspaceId is required" }, { status: 400 });
     }
 
     const members = await getWorkspaceMembers(workspaceId);
     return NextResponse.json(members);
   } catch (error) {
     console.error("Error fetching workspace members:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch workspace members" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch workspace members" }, { status: 500 });
   }
 }
 
-// POST - Invite a member to workspace
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -77,7 +69,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// DELETE - Remove a member from workspace
 export async function DELETE(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -95,10 +86,7 @@ export async function DELETE(request: NextRequest) {
     const memberId = searchParams.get("memberId");
 
     if (!workspaceId || !memberId) {
-      return NextResponse.json(
-        { error: "workspaceId and memberId are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "workspaceId and memberId are required" }, { status: 400 });
     }
 
     await removeWorkspaceMember({
@@ -117,5 +105,3 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
-
-

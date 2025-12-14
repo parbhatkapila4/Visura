@@ -4,7 +4,6 @@ export default function SummaryLoading() {
       <div className="container mx-auto flex flex-col gap-4">
         <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-12 lg:py-24">
           <div className="flex flex-col">
-            {/* Header Skeleton */}
             <div className="mb-8 space-y-4 animate-pulse">
               <div className="h-10 bg-gray-800 rounded-lg w-3/4" />
               <div className="flex gap-4">
@@ -13,9 +12,7 @@ export default function SummaryLoading() {
               </div>
             </div>
 
-            {/* Content Skeleton */}
             <div className="relative mt-8 space-y-6 animate-pulse">
-              {/* Executive Summary */}
               <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6 space-y-3">
                 <div className="h-6 bg-gray-800 rounded w-1/3" />
                 <div className="h-4 bg-gray-800/60 rounded w-full" />
@@ -23,7 +20,6 @@ export default function SummaryLoading() {
                 <div className="h-4 bg-gray-800/60 rounded w-4/6" />
               </div>
 
-              {/* Key Points */}
               <div className="space-y-3">
                 <div className="h-6 bg-gray-800 rounded w-1/4" />
                 {[1, 2, 3, 4, 5].map((i) => (
@@ -34,7 +30,6 @@ export default function SummaryLoading() {
                 ))}
               </div>
 
-              {/* Sections */}
               {[1, 2, 3].map((section) => (
                 <div key={section} className="space-y-3">
                   <div className="h-6 bg-gray-800 rounded w-2/5" />
@@ -52,4 +47,3 @@ export default function SummaryLoading() {
     </div>
   );
 }
-

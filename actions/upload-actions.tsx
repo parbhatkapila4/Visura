@@ -47,12 +47,7 @@ async function savePdfSummary({
   }
 }
 
-export async function storePdfSummaryAction({
-  fileUrl,
-  summary,
-  title,
-  fileName,
-}: PdfSummaryType) {
+export async function storePdfSummaryAction({ fileUrl, summary, title, fileName }: PdfSummaryType) {
   let savedSummary: any;
   try {
     const { userId } = await auth();
@@ -82,7 +77,7 @@ export async function storePdfSummaryAction({
       console.log("PDF Summary ID:", savedSummary.id);
       console.log("User ID:", userId);
       console.log("File URL:", fileUrl);
-      
+
       const fullTextContent = await fetchAndExtractPdfText(fileUrl);
       console.log("Extracted text length:", fullTextContent?.length || 0);
 
@@ -102,14 +97,13 @@ export async function storePdfSummaryAction({
       console.error("Error initializing document chat functionality:", chatbotError);
       console.error("Error details:", {
         message: chatbotError instanceof Error ? chatbotError.message : "Unknown error",
-        stack: chatbotError instanceof Error ? chatbotError.stack : undefined
+        stack: chatbotError instanceof Error ? chatbotError.stack : undefined,
       });
     }
   } catch (error) {
     return {
       success: false,
-      message:
-        error instanceof Error ? error.message : "Error saving Pdf's summary",
+      message: error instanceof Error ? error.message : "Error saving Pdf's summary",
     };
   }
 

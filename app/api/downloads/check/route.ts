@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { currentUser } from "@clerk/nextjs/server";
-import { getUserDownloadCount, hasSummaryBeenDownloaded, recordSummaryDownload } from "@/lib/summaries";
+import {
+  getUserDownloadCount,
+  hasSummaryBeenDownloaded,
+  recordSummaryDownload,
+} from "@/lib/summaries";
 import { getUserByEmail } from "@/lib/user";
 
 export async function GET(request: NextRequest) {
@@ -15,10 +19,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const summaryId = searchParams.get("summaryId");
 
-    // Get user plan
     const user = await currentUser();
     const email = user?.emailAddresses[0]?.emailAddress;
-    
+
     if (!email) {
       return NextResponse.json({ error: "User email not found" }, { status: 400 });
     }
@@ -29,9 +32,8 @@ export async function GET(request: NextRequest) {
     const downloadCount = await getUserDownloadCount(userId);
     const hasDownloaded = summaryId ? await hasSummaryBeenDownloaded(userId, summaryId) : false;
 
-    // Basic users can download 2 summaries, pro users have unlimited
     const downloadLimit = userPlan === "pro" ? null : 2;
-    const canDownload = userPlan === "pro" || downloadCount < downloadLimit || hasDownloaded;
+    const canDownload = userPlan === "pro" || (downloadLimit !== null && downloadCount < downloadLimit) || hasDownloaded;
 
     return NextResponse.json({
       downloadCount,
@@ -42,10 +44,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error checking download status:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -61,16 +60,12 @@ export async function POST(request: NextRequest) {
     const { summaryId } = body;
 
     if (!summaryId) {
-      return NextResponse.json(
-        { error: "Summary ID is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Summary ID is required" }, { status: 400 });
     }
 
-    // Get user plan to enforce limits
     const user = await currentUser();
     const email = user?.emailAddresses[0]?.emailAddress;
-    
+
     if (!email) {
       return NextResponse.json({ error: "User email not found" }, { status: 400 });
     }
@@ -78,10 +73,8 @@ export async function POST(request: NextRequest) {
     const userData = await getUserByEmail(email);
     const userPlan = userData?.price_id ? "pro" : "basic";
 
-    // Check if user has already downloaded this specific summary
     const hasDownloaded = await hasSummaryBeenDownloaded(userId, summaryId);
 
-    // If they've already downloaded this summary, allow re-download
     if (hasDownloaded) {
       return NextResponse.json({
         success: true,
@@ -90,12 +83,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // For basic users, check download count BEFORE recording
     if (userPlan === "basic") {
       const downloadCount = await getUserDownloadCount(userId);
       const downloadLimit = 2;
 
-      // Block if they've reached the limit
       if (downloadCount >= downloadLimit) {
         return NextResponse.json(
           {
@@ -110,10 +101,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Now record the download (atomic operation - check passed, now record)
     await recordSummaryDownload(userId, summaryId);
 
-    // Get updated count for response
     const downloadCount = await getUserDownloadCount(userId);
 
     return NextResponse.json({
@@ -125,13 +114,12 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error recording download:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: "Internal server error",
-        message: "Failed to record download. Please try again."
+        message: "Failed to record download. Please try again.",
       },
       { status: 500 }
     );
   }
 }
-

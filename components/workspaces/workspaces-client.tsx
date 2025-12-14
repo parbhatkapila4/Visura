@@ -36,9 +36,10 @@ import {
   Menu,
   ChevronDown,
   MessageCircle,
+  FolderOpen,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -90,9 +91,7 @@ export default function WorkspacesClient() {
   const [workspaceDescription, setWorkspaceDescription] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -104,22 +103,6 @@ export default function WorkspacesClient() {
       fetchWorkspaceDetails(selectedWorkspace.id);
     }
   }, [selectedWorkspace]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-
-    if (dropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [dropdownOpen]);
 
   const fetchWorkspaces = async () => {
     try {
@@ -295,743 +278,520 @@ export default function WorkspacesClient() {
       workspace.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const totalMembers = members.length;
+  const totalDocuments = documents.length;
+
+  // Loading State
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">
-        <div className="flex flex-col items-center gap-4">
-          <motion.div
-            className="w-16 h-16 border-4 border-white/10 border-t-white rounded-full"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          />
-          <p className="text-white/60 text-sm font-medium">Loading workspaces...</p>
+      <div className="flex items-center justify-center min-h-screen bg-[#030303]">
+        <div className="text-center">
+          <div className="w-12 h-12 border-2 border-white/10 border-t-white/60 rounded-full mx-auto mb-4 animate-spin" />
+          <p className="text-white/40 text-sm">Loading workspaces...</p>
         </div>
       </div>
     );
   }
 
-  const totalMembers = members.length;
-  const totalDocuments = documents.length;
-
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
-      <div className="sticky top-0 z-50 bg-[#0f0f0f] border-b border-white/5 backdrop-blur-xl">
-        <div className="max-w-[1800px] mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <Link href="/" className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-bold text-white">Workspaces</span>
-              </Link>
-
-              {workspaces.length > 0 && (
-                <div className="relative" ref={dropdownRef}>
-                  <button
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-white text-sm font-medium"
-                  >
-                    <Building2 className="w-4 h-4" />
-                    <span>Select Workspace</span>
-                    <ChevronDown
-                      className={`w-4 h-4 ml-1 transition-transform ${
-                        dropdownOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-
-                  {dropdownOpen && (
-                    <div className="absolute top-full left-0 mt-2 w-64 bg-[#0f0f0f] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
-                      {filteredWorkspaces.map((workspace) => (
-                        <button
-                          key={workspace.id}
-                          onClick={() => {
-                            setSelectedWorkspace(workspace);
-                            setDropdownOpen(false);
-                          }}
-                          className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors ${
-                            selectedWorkspace?.id === workspace.id ? "bg-white/10" : ""
-                          }`}
-                        >
-                          <Building2 className="w-4 h-4 text-white/60" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-white text-sm font-medium truncate">
-                              {workspace.name}
-                            </p>
-                            {workspace.description && (
-                              <p className="text-white/40 text-xs truncate">
-                                {workspace.description}
-                              </p>
-                            )}
-                          </div>
-                          {workspace.role === "owner" && (
-                            <Crown className="w-3.5 h-3.5 text-yellow-400" />
-                          )}
-                          {selectedWorkspace?.id === workspace.id && (
-                            <CheckCircle2 className="w-4 h-4 text-white" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+    <div className="min-h-screen bg-[#030303] flex">
+      {/* ==================== SIDEBAR ==================== */}
+      <aside className={`${sidebarOpen ? 'w-72' : 'w-0'} flex-shrink-0 border-r border-white/[0.06] bg-[#0a0a0a] transition-all duration-300 overflow-hidden`}>
+        <div className="h-full flex flex-col p-4">
+          {/* Logo */}
+          <div className="flex items-center gap-3 px-2 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+              <Building2 className="w-5 h-5 text-white" />
             </div>
-
-            <div className="flex items-center">
-              <Link href="/">
-                <Button className="bg-white/10 hover:bg-white/15 text-white border border-white/10 rounded-xl h-9 px-4">
-                  <Home className="w-4 h-4 mr-2" />
-                  Home
-                </Button>
-              </Link>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="relative hidden md:block">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                <Input
-                  placeholder="Search workspaces..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-9 w-64 bg-white/5 border-white/10 text-white placeholder:text-white/20 text-sm rounded-lg"
-                />
-              </div>
-
-              <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-white text-black hover:bg-white/90 font-semibold h-9 px-4 rounded-lg">
-                    <Plus className="w-4 h-4 mr-2" />
-                    New Workspace
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-[#0f0f0f] border-0 max-w-md p-0 gap-0 overflow-hidden shadow-none [&>button]:hidden">
-                  <div className="relative">
-                    <div className="h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-
-                    <div className="p-8 space-y-6">
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/15 to-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
-                          <Building2 className="w-6 h-6 text-white" />
-                        </div>
-                        <div className="flex-1 pt-1">
-                          <h2 className="text-xl font-bold text-white mb-1">New Workspace</h2>
-                          <p className="text-sm text-white/50">Create a space for your team</p>
-                        </div>
-                        <button
-                          onClick={() => setCreateDialogOpen(false)}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 text-white/40 hover:text-white transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div>
-                          <Label
-                            htmlFor="name"
-                            className="text-sm font-medium text-white/80 mb-2 block"
-                          >
-                            Name <span className="text-red-400">*</span>
-                          </Label>
-                          <Input
-                            id="name"
-                            value={workspaceName}
-                            onChange={(e) => setWorkspaceName(e.target.value)}
-                            placeholder="Enter workspace name"
-                            onKeyDown={(e) =>
-                              e.key === "Enter" && !isCreating && handleCreateWorkspace()
-                            }
-                            className="h-11 border-0 bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-white/20 text-white placeholder:text-white/25 rounded-xl text-sm transition-all"
-                            autoFocus
-                          />
-                        </div>
-                        <div>
-                          <Label
-                            htmlFor="description"
-                            className="text-sm font-medium text-white/80 mb-2 block"
-                          >
-                            Description
-                          </Label>
-                          <Textarea
-                            id="description"
-                            value={workspaceDescription}
-                            onChange={(e) => setWorkspaceDescription(e.target.value)}
-                            placeholder="Add a description (optional)"
-                            rows={3}
-                            className="border-0 bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-white/20 text-white placeholder:text-white/25 rounded-xl resize-none text-sm transition-all"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3 pt-2">
-                        <Button
-                          variant="ghost"
-                          onClick={() => setCreateDialogOpen(false)}
-                          className="flex-1 h-10 text-white/60 hover:text-white hover:bg-white/5 rounded-xl"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={handleCreateWorkspace}
-                          className="flex-1 h-10 bg-white text-black hover:bg-white/90 font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={isCreating || !workspaceName.trim()}
-                        >
-                          {isCreating ? (
-                            <>
-                              <motion.div
-                                className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full mr-2"
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                              />
-                              Creating...
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="w-4 h-4 mr-2" />
-                              Create
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <div className="w-9 h-9 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white font-bold text-sm">
-                {user?.firstName?.[0] || user?.emailAddresses[0]?.emailAddress?.[0] || "U"}
-              </div>
-            </div>
+            <span className="text-lg font-bold text-white">Workspaces</span>
           </div>
-        </div>
-      </div>
 
-      <div className="max-w-[1800px] mx-auto px-6 py-8">
-        {workspaces.length === 0 ? (
-          <div className="flex items-center justify-center min-h-[70vh]">
-            <div className="text-center max-w-md">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-8"
-              >
-                <Building2 className="w-12 h-12 text-white/40" />
-              </motion.div>
-              <h3 className="text-3xl font-bold text-white mb-3">No workspaces yet</h3>
-              <p className="text-white/50 text-base mb-8">
-                Create your first workspace to start collaborating
-              </p>
-              <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <motion.button
-                    className="bg-white text-black hover:bg-white/90 font-bold px-8 py-4 rounded-xl"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Plus className="w-5 h-5 mr-2 inline" />
-                    Create Workspace
-                  </motion.button>
-                </DialogTrigger>
-                <DialogContent className="bg-[#0f0f0f] border-0 max-w-md p-0 gap-0 overflow-hidden shadow-none [&>button]:hidden">
-                  <div className="relative">
-                    <div className="h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-
-                    <div className="p-8 space-y-6">
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-white/15 to-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
-                          <Building2 className="w-6 h-6 text-white" />
-                        </div>
-                        <div className="flex-1 pt-1">
-                          <h2 className="text-xl font-bold text-white mb-1">New Workspace</h2>
-                          <p className="text-sm text-white/50">Create a space for your team</p>
-                        </div>
-                        <button
-                          onClick={() => setCreateDialogOpen(false)}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 text-white/40 hover:text-white transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div>
-                          <Label
-                            htmlFor="name-empty"
-                            className="text-sm font-medium text-white/80 mb-2 block"
-                          >
-                            Name <span className="text-red-400">*</span>
-                          </Label>
-                          <Input
-                            id="name-empty"
-                            value={workspaceName}
-                            onChange={(e) => setWorkspaceName(e.target.value)}
-                            placeholder="Enter workspace name"
-                            onKeyDown={(e) =>
-                              e.key === "Enter" && !isCreating && handleCreateWorkspace()
-                            }
-                            className="h-11 border-0 bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-white/20 text-white placeholder:text-white/25 rounded-xl text-sm transition-all"
-                            autoFocus
-                          />
-                        </div>
-                        <div>
-                          <Label
-                            htmlFor="description-empty"
-                            className="text-sm font-medium text-white/80 mb-2 block"
-                          >
-                            Description
-                          </Label>
-                          <Textarea
-                            id="description-empty"
-                            value={workspaceDescription}
-                            onChange={(e) => setWorkspaceDescription(e.target.value)}
-                            placeholder="Add a description (optional)"
-                            rows={3}
-                            className="border-0 bg-white/5 focus:bg-white/10 focus:ring-2 focus:ring-white/20 text-white placeholder:text-white/25 rounded-xl resize-none text-sm transition-all"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3 pt-2">
-                        <Button
-                          variant="ghost"
-                          onClick={() => setCreateDialogOpen(false)}
-                          className="flex-1 h-10 text-white/60 hover:text-white hover:bg-white/5 rounded-xl"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={handleCreateWorkspace}
-                          className="flex-1 h-10 bg-white text-black hover:bg-white/90 font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={isCreating || !workspaceName.trim()}
-                        >
-                          {isCreating ? (
-                            <>
-                              <motion.div
-                                className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full mr-2"
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                              />
-                              Creating...
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="w-4 h-4 mr-2" />
-                              Create
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
+          {/* Search */}
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-10 pl-9 pr-3 rounded-xl bg-white/5 border border-white/[0.06] text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-white/20"
+            />
           </div>
-        ) : selectedWorkspace ? (
-          <div className="space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-[#0f0f0f] border border-white/10 rounded-2xl p-8"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-6">
-                  <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center">
-                    <Building2 className="w-8 h-8 text-white/80" />
+
+          {/* Create Button */}
+          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <button className="w-full flex items-center justify-center gap-2 h-10 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 transition-colors mb-4">
+                <Plus className="w-4 h-4" />
+                New Workspace
+              </button>
+            </DialogTrigger>
+            <DialogContent className="bg-[#0a0a0a] border border-white/10 max-w-md p-0 overflow-hidden">
+              <div className="p-6 border-b border-white/[0.06]">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                    <Building2 className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <h1 className="text-3xl font-bold text-white">{selectedWorkspace.name}</h1>
-                      {selectedWorkspace.role === "owner" && (
-                        <span className="px-3 py-1 rounded-full bg-white/10 text-white text-xs font-semibold flex items-center gap-1.5 border border-white/10">
-                          <Crown className="w-3.5 h-3.5 text-yellow-400" />
-                          Owner
-                        </span>
-                      )}
-                    </div>
-                    {selectedWorkspace.description && (
-                      <p className="text-white/50 text-sm mb-4">{selectedWorkspace.description}</p>
-                    )}
-                    <div className="flex items-center gap-6">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-white/40" />
-                        <span className="text-sm text-white/60">{totalMembers} members</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-white/40" />
-                        <span className="text-sm text-white/60">{totalDocuments} documents</span>
-                      </div>
-                    </div>
+                    <h2 className="text-xl font-bold text-white">Create Workspace</h2>
+                    <p className="text-sm text-white/40">Set up a new team space</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="bg-white/10 hover:bg-white/15 text-white border border-white/10 rounded-xl h-10 px-4">
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        Invite
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-[#0f0f0f] border-white/10 max-w-md p-0 gap-0 overflow-hidden [&>button]:text-white/60 [&>button]:hover:text-white [&>button]:right-4 [&>button]:top-4">
-                      <div className="bg-gradient-to-br from-white/10 via-white/5 to-transparent p-8 border-b border-white/10">
-                        <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center">
-                            <UserPlus className="w-7 h-7 text-white" />
-                          </div>
-                          <div>
-                            <h2 className="text-2xl font-bold text-white mb-2">Invite Member</h2>
-                            <p className="text-white/50 text-sm">Add someone to this workspace</p>
-                          </div>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-white/60 mb-2 block">Name *</Label>
+                  <Input
+                    value={workspaceName}
+                    onChange={(e) => setWorkspaceName(e.target.value)}
+                    placeholder="e.g. Marketing Team"
+                    onKeyDown={(e) => e.key === "Enter" && !isCreating && handleCreateWorkspace()}
+                    className="h-11 bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-white/60 mb-2 block">Description</Label>
+                  <Textarea
+                    value={workspaceDescription}
+                    onChange={(e) => setWorkspaceDescription(e.target.value)}
+                    placeholder="What's this workspace for?"
+                    rows={3}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl resize-none"
+                  />
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <Button variant="ghost" onClick={() => setCreateDialogOpen(false)} className="flex-1 h-11 text-white/60 hover:text-white hover:bg-white/5 rounded-xl">
+                    Cancel
+                  </Button>
+                  <Button onClick={handleCreateWorkspace} disabled={isCreating || !workspaceName.trim()} className="flex-1 h-11 bg-white text-black hover:bg-white/90 font-semibold rounded-xl">
+                    {isCreating ? "Creating..." : "Create"}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Workspaces List */}
+          <div className="flex-1 overflow-y-auto space-y-1">
+            <p className="text-[10px] font-semibold text-white/30 uppercase tracking-wider px-2 mb-2">Your Workspaces</p>
+            {filteredWorkspaces.length === 0 ? (
+              <p className="text-sm text-white/30 px-2">No workspaces found</p>
+            ) : (
+              filteredWorkspaces.map((workspace) => (
+                <button
+                  key={workspace.id}
+                  onClick={() => setSelectedWorkspace(workspace)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${
+                    selectedWorkspace?.id === workspace.id
+                      ? "bg-white/10 border border-white/10"
+                      : "hover:bg-white/5 border border-transparent"
+                  }`}
+                >
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    selectedWorkspace?.id === workspace.id
+                      ? "bg-gradient-to-br from-violet-500 to-purple-600"
+                      : "bg-white/10"
+                  }`}>
+                    <Building2 className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{workspace.name}</p>
+                    <p className="text-xs text-white/40 truncate">{workspace.description || "No description"}</p>
+                  </div>
+                  {workspace.role === "owner" && (
+                    <Crown className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+
+          {/* Bottom Nav */}
+          <div className="pt-4 border-t border-white/[0.06] space-y-1">
+            <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all">
+              <Home className="w-4 h-4" />
+              <span className="text-sm font-medium">Back to Home</span>
+            </Link>
+          </div>
+        </div>
+      </aside>
+
+      {/* ==================== MAIN CONTENT ==================== */}
+      <main className="flex-1 overflow-hidden">
+        {/* Top Bar */}
+        <header className="h-16 border-b border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-xl flex items-center justify-between px-6">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all">
+              <Menu className="w-4 h-4" />
+            </button>
+            {selectedWorkspace && (
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-bold text-white">{selectedWorkspace.name}</h1>
+                {selectedWorkspace.role === "owner" && (
+                  <span className="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400 uppercase">Owner</span>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            {selectedWorkspace && (
+              <>
+                <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+                  <DialogTrigger asChild>
+                    <button className="flex items-center gap-2 h-9 px-4 rounded-lg bg-white/5 hover:bg-white/10 border border-white/[0.06] text-white text-sm font-medium transition-all">
+                      <UserPlus className="w-4 h-4" />
+                      Invite
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-[#0a0a0a] border border-white/10 max-w-md p-0 overflow-hidden">
+                    <div className="p-6 border-b border-white/[0.06]">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                          <UserPlus className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h2 className="text-xl font-bold text-white">Invite Member</h2>
+                          <p className="text-sm text-white/40">Add someone to {selectedWorkspace.name}</p>
                         </div>
                       </div>
-                      <div className="p-8 space-y-6">
-                        <div className="space-y-3">
-                          <Label htmlFor="email" className="text-sm font-semibold text-white/90">
-                            Email Address <span className="text-red-400">*</span>
-                          </Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={inviteEmail}
-                            onChange={(e) => setInviteEmail(e.target.value)}
-                            placeholder="colleague@example.com"
-                            onKeyDown={(e) => e.key === "Enter" && handleInviteMember()}
-                            className="h-12 border-white/10 bg-white/5 focus:border-white/20 text-white placeholder:text-white/30 rounded-xl"
-                            autoFocus
-                          />
+                    </div>
+                    <div className="p-6 space-y-4">
+                      <div>
+                        <Label className="text-sm font-medium text-white/60 mb-2 block">Email Address *</Label>
+                        <Input
+                          type="email"
+                          value={inviteEmail}
+                          onChange={(e) => setInviteEmail(e.target.value)}
+                          placeholder="colleague@company.com"
+                          onKeyDown={(e) => e.key === "Enter" && handleInviteMember()}
+                          className="h-11 bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl"
+                        />
+                      </div>
+                      <Button onClick={handleInviteMember} className="w-full h-11 bg-white text-black hover:bg-white/90 font-semibold rounded-xl">
+                        <Mail className="w-4 h-4 mr-2" />
+                        Send Invitation
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                
+                {selectedWorkspace.role === "owner" && (
+                  <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <DialogTrigger asChild>
+                      <button className="w-9 h-9 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 flex items-center justify-center text-red-400 transition-all">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-[#0a0a0a] border border-white/10 max-w-md">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-3 text-red-400 text-xl font-bold">
+                          <AlertTriangle className="w-6 h-6" />
+                          Delete Workspace
+                        </DialogTitle>
+                        <DialogDescription className="text-white/50 mt-2">
+                          This action cannot be undone. All data will be permanently deleted.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 mt-4">
+                        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                          <p className="text-sm text-white font-medium">Workspace: {selectedWorkspace.name}</p>
                         </div>
-                        <Button
-                          onClick={handleInviteMember}
-                          className="w-full h-12 bg-white text-black hover:bg-white/90 font-bold rounded-xl"
-                        >
-                          <UserPlus className="w-5 h-5 mr-2" />
-                          Send Invitation
-                        </Button>
+                        <div className="flex gap-3">
+                          <Button variant="ghost" onClick={() => setDeleteDialogOpen(false)} disabled={isDeleting} className="flex-1 h-11 text-white/60 hover:text-white hover:bg-white/5 rounded-xl">
+                            Cancel
+                          </Button>
+                          <Button onClick={handleDeleteWorkspace} disabled={isDeleting} className="flex-1 h-11 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl">
+                            {isDeleting ? "Deleting..." : "Delete Forever"}
+                          </Button>
+                        </div>
                       </div>
                     </DialogContent>
                   </Dialog>
-                  {selectedWorkspace.role === "owner" && (
-                    <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-400 rounded-xl h-10 px-4"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="bg-[#0f0f0f] border-white/10">
-                        <DialogHeader>
-                          <DialogTitle className="flex items-center gap-3 text-red-400 text-xl font-bold">
-                            <AlertTriangle className="w-6 h-6" />
-                            Delete Workspace
-                          </DialogTitle>
-                          <DialogDescription className="text-white/50 mt-2">
-                            This action cannot be undone. This will permanently delete the workspace
-                            and all associated data.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4 mt-6">
-                          <div className="p-5 rounded-xl bg-red-500/5 border border-red-500/20">
-                            <p className="text-sm text-white font-semibold mb-2">
-                              Are you absolutely sure?
-                            </p>
-                            <p className="text-sm text-white/50">
-                              The workspace &quot;{selectedWorkspace.name}&quot; will be permanently
-                              deleted.
-                            </p>
+                )}
+              </>
+            )}
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+              {user?.firstName?.[0] || user?.emailAddresses[0]?.emailAddress?.[0] || "U"}
+            </div>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <div className="h-[calc(100vh-64px)] overflow-y-auto p-6">
+          {workspaces.length === 0 ? (
+            // ==================== EMPTY STATE ====================
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center max-w-md">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-600/20 border border-violet-500/20 flex items-center justify-center mx-auto mb-6">
+                  <Building2 className="w-10 h-10 text-violet-400" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">No workspaces yet</h2>
+                <p className="text-white/40 mb-6">Create your first workspace to start collaborating with your team.</p>
+                <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <button className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black font-semibold hover:bg-white/90 transition-colors">
+                      <Plus className="w-5 h-5" />
+                      Create Workspace
+                    </button>
+                  </DialogTrigger>
+                </Dialog>
+              </div>
+            </div>
+          ) : selectedWorkspace ? (
+            // ==================== WORKSPACE VIEW ====================
+            <div className="max-w-[1400px] mx-auto space-y-6">
+              
+              {/* Workspace Header Card */}
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-950/50 via-[#0a0a0a] to-purple-950/30 border border-violet-500/10">
+                <div className="absolute -top-32 -right-32 w-64 h-64 bg-violet-500/20 rounded-full blur-3xl" />
+                <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-purple-500/15 rounded-full blur-3xl" />
+                
+                <div className="relative p-6 lg:p-8">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    <div className="flex items-start gap-5">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-xl shadow-violet-500/25 flex-shrink-0">
+                        <Building2 className="w-8 h-8 text-white" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <h1 className="text-2xl lg:text-3xl font-bold text-white">{selectedWorkspace.name}</h1>
+                          {selectedWorkspace.role === "owner" && (
+                            <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                              <Crown className="w-3 h-3" />
+                              Owner
+                            </span>
+                          )}
+                        </div>
+                        {selectedWorkspace.description && (
+                          <p className="text-white/50 text-sm mb-3">{selectedWorkspace.description}</p>
+                        )}
+                        <div className="flex items-center gap-4 text-sm">
+                          <div className="flex items-center gap-1.5 text-white/40">
+                            <Users className="w-4 h-4" />
+                            <span>{totalMembers} members</span>
                           </div>
-                          <div className="flex gap-3">
-                            <Button
-                              variant="outline"
-                              onClick={() => setDeleteDialogOpen(false)}
-                              disabled={isDeleting}
-                              className="flex-1 border-white/10 bg-white/5 text-white hover:bg-white/10 rounded-xl h-11"
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              onClick={handleDeleteWorkspace}
-                              disabled={isDeleting}
-                              className="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-xl h-11 font-semibold"
-                            >
-                              {isDeleting ? "Deleting..." : "Delete Forever"}
-                            </Button>
+                          <div className="flex items-center gap-1.5 text-white/40">
+                            <FileText className="w-4 h-4" />
+                            <span>{totalDocuments} documents</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-white/40">
+                            <Clock className="w-4 h-4" />
+                            <span>Created {new Date(selectedWorkspace.created_at).toLocaleDateString()}</span>
                           </div>
                         </div>
-                      </DialogContent>
-                    </Dialog>
-                  )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-[#0f0f0f] border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                    <Users className="w-6 h-6 text-white/70" />
+              {/* Stats Row */}
+              <div className="grid grid-cols-3 gap-4">
+                {/* Members Stat */}
+                <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-950/40 via-[#0a0a0a] to-[#080808] border border-blue-500/10 p-5">
+                  <div className="absolute -top-10 -right-10 w-24 h-24 bg-blue-500/20 rounded-full blur-2xl" />
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-4">
+                      <Users className="w-5 h-5 text-white" />
+                    </div>
+                    <p className="text-xs text-white/40 font-medium uppercase tracking-wide mb-1">Team Members</p>
+                    <p className="text-3xl font-bold text-white">{totalMembers}</p>
                   </div>
                 </div>
-                <p className="text-white/40 text-xs font-medium mb-1 uppercase tracking-wider">
-                  Team Members
-                </p>
-                <p className="text-4xl font-bold text-white">{totalMembers}</p>
-              </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-[#0f0f0f] border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                    <FileText className="w-6 h-6 text-white/70" />
+                {/* Documents Stat */}
+                <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-950/40 via-[#0a0a0a] to-[#080808] border border-emerald-500/10 p-5">
+                  <div className="absolute -top-10 -right-10 w-24 h-24 bg-emerald-500/20 rounded-full blur-2xl" />
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-4">
+                      <FileText className="w-5 h-5 text-white" />
+                    </div>
+                    <p className="text-xs text-white/40 font-medium uppercase tracking-wide mb-1">Documents</p>
+                    <p className="text-3xl font-bold text-white">{totalDocuments}</p>
                   </div>
                 </div>
-                <p className="text-white/40 text-xs font-medium mb-1 uppercase tracking-wider">
-                  Documents
-                </p>
-                <p className="text-4xl font-bold text-white">{totalDocuments}</p>
-              </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-[#0f0f0f] border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                    <Building2 className="w-6 h-6 text-white/70" />
+                {/* Workspaces Stat */}
+                <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-orange-950/40 via-[#0a0a0a] to-[#080808] border border-orange-500/10 p-5">
+                  <div className="absolute -top-10 -right-10 w-24 h-24 bg-orange-500/20 rounded-full blur-2xl" />
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center mb-4">
+                      <Building2 className="w-5 h-5 text-white" />
+                    </div>
+                    <p className="text-xs text-white/40 font-medium uppercase tracking-wide mb-1">Workspaces</p>
+                    <p className="text-3xl font-bold text-white">{workspaces.length}</p>
                   </div>
                 </div>
-                <p className="text-white/40 text-xs font-medium mb-1 uppercase tracking-wider">
-                  Workspaces
-                </p>
-                <p className="text-4xl font-bold text-white">{workspaces.length}</p>
-              </motion.div>
-            </div>
+              </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="bg-[#0f0f0f] border border-white/10 rounded-xl overflow-hidden"
-              >
-                <div className="p-6 border-b border-white/5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                        <Users className="w-5 h-5 text-white/70" />
+              {/* Main Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                {/* Team Members Panel */}
+                <div className="bg-[#0a0a0a] rounded-xl border border-white/[0.06] overflow-hidden">
+                  <div className="p-5 border-b border-white/[0.06]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                          <Users className="w-4 h-4 text-blue-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-semibold text-white">Team Members</h3>
+                          <p className="text-xs text-white/40">{totalMembers} people</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-white">Team Members</h3>
-                        <p className="text-xs text-white/40">{totalMembers} total</p>
-                      </div>
+                      <button onClick={() => setInviteDialogOpen(true)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all">
+                        <Plus className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                </div>
-                <div className="p-6">
-                  {members.length === 0 ? (
-                    <div className="text-center py-12">
-                      <div className="w-16 h-16 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4">
-                        <Users className="w-8 h-8 text-white/30" />
+                  <div className="p-4 max-h-[400px] overflow-y-auto">
+                    {members.length === 0 ? (
+                      <div className="text-center py-8">
+                        <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mx-auto mb-3">
+                          <Users className="w-6 h-6 text-white/20" />
+                        </div>
+                        <p className="text-sm text-white/40">No members yet</p>
+                        <p className="text-xs text-white/20">Invite your team to get started</p>
                       </div>
-                      <p className="text-white/50 text-sm mb-1">No members yet</p>
-                      <p className="text-xs text-white/30">Invite team members to get started</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {members.map((member) => (
-                        <motion.div
-                          key={member.id}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="flex items-center justify-between p-4 rounded-lg border border-white/5 hover:border-white/10 hover:bg-white/5 transition-all group"
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="w-10 h-10 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                              {member.user_name?.[0]?.toUpperCase() ||
-                                member.user_email[0]?.toUpperCase()}
+                    ) : (
+                      <div className="space-y-2">
+                        {members.map((member) => (
+                          <div key={member.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-all group">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20 border border-violet-500/20 flex items-center justify-center text-white font-semibold text-sm">
+                                {member.user_name?.[0]?.toUpperCase() || member.user_email[0]?.toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-white">{member.user_name || member.user_email.split('@')[0]}</p>
+                                <p className="text-xs text-white/40">{member.user_email}</p>
+                              </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-white text-sm truncate">
-                                {member.user_name || member.user_email}
-                              </p>
-                              <p className="text-xs text-white/40 truncate">{member.user_email}</p>
+                            <div className="flex items-center gap-2">
+                              {member.role === "owner" ? (
+                                <Crown className="w-4 h-4 text-amber-400" />
+                              ) : (
+                                <span className="text-xs text-white/40 capitalize">{member.role}</span>
+                              )}
+                              {selectedWorkspace?.role === "owner" && member.role !== "owner" && (
+                                <button
+                                  onClick={() => { setMemberToRemove(member); setRemoveMemberDialogOpen(true); }}
+                                  className="w-7 h-7 rounded-lg bg-transparent hover:bg-red-500/10 flex items-center justify-center text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
-                                member.role === "owner"
-                                  ? "bg-white/10 text-white border border-white/20"
-                                  : "bg-white/5 text-white/60 border border-white/10"
-                              }`}
-                            >
-                              {member.role}
-                            </span>
-                            {selectedWorkspace?.role === "owner" && member.role !== "owner" && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setMemberToRemove(member);
-                                  setRemoveMemberDialogOpen(true);
-                                }}
-                                className="h-8 w-8 p-0 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <X className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-[#0f0f0f] border border-white/10 rounded-xl overflow-hidden"
-              >
-                <div className="p-6 border-b border-white/5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                        <FileText className="w-5 h-5 text-white/70" />
+                        ))}
                       </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-white">Shared Documents</h3>
-                        <p className="text-xs text-white/40">{totalDocuments} total</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Documents Panel */}
+                <div className="bg-[#0a0a0a] rounded-xl border border-white/[0.06] overflow-hidden">
+                  <div className="p-5 border-b border-white/[0.06]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                          <FileText className="w-4 h-4 text-emerald-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-semibold text-white">Shared Documents</h3>
+                          <p className="text-xs text-white/40">{totalDocuments} files</p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="p-6">
-                  {documents.length === 0 ? (
-                    <div className="text-center py-12">
-                      <div className="w-16 h-16 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4">
-                        <FileText className="w-8 h-8 text-white/30" />
+                  <div className="p-4 max-h-[400px] overflow-y-auto">
+                    {documents.length === 0 ? (
+                      <div className="text-center py-8">
+                        <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mx-auto mb-3">
+                          <FolderOpen className="w-6 h-6 text-white/20" />
+                        </div>
+                        <p className="text-sm text-white/40">No documents shared</p>
+                        <p className="text-xs text-white/20">Share from your dashboard</p>
                       </div>
-                      <p className="text-white/50 text-sm mb-1">No documents shared yet</p>
-                      <p className="text-xs text-white/30">Share documents from your dashboard</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {documents.map((doc) => (
-                        <motion.div
-                          key={doc.id}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          onClick={() => router.push(`/summaries/${doc.summary_id}`)}
-                          className="flex items-center justify-between p-4 rounded-lg border border-white/5 hover:border-white/10 hover:bg-white/5 transition-all cursor-pointer group"
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:bg-white/10 transition-colors">
-                              <FileText className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
+                    ) : (
+                      <div className="space-y-2">
+                        {documents.map((doc) => (
+                          <button
+                            key={doc.id}
+                            onClick={() => router.push(`/summaries/${doc.summary_id}`)}
+                            className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-all group text-left"
+                          >
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                                <FileText className="w-4 h-4 text-emerald-400" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-white truncate">{doc.title || "Untitled"}</p>
+                                <p className="text-xs text-white/40 truncate">{doc.file_name}</p>
+                              </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-white text-sm truncate">
-                                {doc.title || "Untitled Document"}
-                              </p>
-                              <p className="text-xs text-white/40 truncate">{doc.file_name}</p>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/5 text-white/40 font-medium capitalize">{doc.permission}</span>
+                              <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs px-2.5 py-1 rounded-full bg-white/5 text-white/60 border border-white/10 font-semibold">
-                              {doc.permission}
-                            </span>
-                            <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-white transition-colors" />
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="bg-[#0f0f0f] border border-white/10 rounded-xl overflow-hidden lg:col-span-2 xl:col-span-1"
-                style={{ minHeight: "500px" }}
-              >
-                {selectedWorkspace && <WorkspaceChat workspaceId={selectedWorkspace.id} />}
-              </motion.div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="text-center">
-              <p className="text-white/50 text-lg">Select a workspace to view details</p>
-            </div>
-          </div>
-        )}
-
-        <Dialog open={removeMemberDialogOpen} onOpenChange={setRemoveMemberDialogOpen}>
-          <DialogContent className="bg-[#0f0f0f] border-white/10">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-3 text-red-400 text-xl font-bold">
-                <AlertTriangle className="w-6 h-6" />
-                Remove Member
-              </DialogTitle>
-              <DialogDescription className="text-white/50 mt-2">
-                Are you sure you want to remove this member? This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 mt-6">
-              {memberToRemove && (
-                <div className="p-5 rounded-xl bg-white/5 border border-white/10">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-lg">
-                      {memberToRemove.user_name?.[0]?.toUpperCase() ||
-                        memberToRemove.user_email[0]?.toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-white">
-                        {memberToRemove.user_name || memberToRemove.user_email}
-                      </p>
-                      <p className="text-sm text-white/50">{memberToRemove.user_email}</p>
-                    </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setRemoveMemberDialogOpen(false);
-                    setMemberToRemove(null);
-                  }}
-                  disabled={isRemovingMember}
-                  className="flex-1 border-white/10 bg-white/5 text-white hover:bg-white/10 rounded-xl h-11"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleRemoveMember}
-                  disabled={isRemovingMember}
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-xl h-11 font-semibold"
-                >
-                  {isRemovingMember ? "Removing..." : "Remove Member"}
-                </Button>
+
+                {/* Chat Panel */}
+                <div className="bg-[#0a0a0a] rounded-xl border border-white/[0.06] overflow-hidden min-h-[500px]">
+                  {selectedWorkspace && <WorkspaceChat workspaceId={selectedWorkspace.id} />}
+                </div>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <p className="text-white/40">Select a workspace to view details</p>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Remove Member Dialog */}
+      <Dialog open={removeMemberDialogOpen} onOpenChange={setRemoveMemberDialogOpen}>
+        <DialogContent className="bg-[#0a0a0a] border border-white/10 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3 text-red-400 text-xl font-bold">
+              <AlertTriangle className="w-6 h-6" />
+              Remove Member
+            </DialogTitle>
+            <DialogDescription className="text-white/50 mt-2">
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            {memberToRemove && (
+              <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white font-bold">
+                    {memberToRemove.user_name?.[0]?.toUpperCase() || memberToRemove.user_email[0]?.toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">{memberToRemove.user_name || memberToRemove.user_email}</p>
+                    <p className="text-xs text-white/40">{memberToRemove.user_email}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <Button variant="ghost" onClick={() => { setRemoveMemberDialogOpen(false); setMemberToRemove(null); }} disabled={isRemovingMember} className="flex-1 h-11 text-white/60 hover:text-white hover:bg-white/5 rounded-xl">
+                Cancel
+              </Button>
+              <Button onClick={handleRemoveMember} disabled={isRemovingMember} className="flex-1 h-11 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl">
+                {isRemovingMember ? "Removing..." : "Remove"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

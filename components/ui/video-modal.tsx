@@ -51,9 +51,7 @@ export function VideoModal({ videoSrc, isOpen, onClose, children }: VideoModalPr
   if (children) {
     return (
       <>
-        <div onClick={() => onClose()}>
-          {children}
-        </div>
+        <div onClick={() => onClose()}>{children}</div>
 
         <AnimatePresence>
           {isOpen && (
@@ -78,7 +76,7 @@ export function VideoModal({ videoSrc, isOpen, onClose, children }: VideoModalPr
                   >
                     <X className="w-5 h-5" />
                   </button>
-                  
+
                   {!isVideoLoaded && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20">
                       <button
@@ -145,7 +143,7 @@ export function VideoModal({ videoSrc, isOpen, onClose, children }: VideoModalPr
               >
                 <X className="w-5 h-5" />
               </button>
-              
+
               {!isVideoLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20">
                   <button

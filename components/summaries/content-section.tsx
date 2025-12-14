@@ -6,8 +6,7 @@ function parsePoint(point: string) {
   const isEmpty = point.trim() === "";
 
   const isDefinition = point.includes(":") && hasEmoji;
-  const isActionItem =
-    point.includes("✅") || point.includes("🎯") || point.includes("💡");
+  const isActionItem = point.includes("✅") || point.includes("🎯") || point.includes("💡");
   const isWarning = point.includes("⚠️") || point.includes("🔒");
   const isData = point.includes("📊") || point.includes("📈");
 
@@ -23,13 +22,7 @@ function parsePoint(point: string) {
   };
 }
 
-export default function ContentSection({
-  title,
-  points,
-}: {
-  title: string;
-  points: string[];
-}) {
+export default function ContentSection({ title, points }: { title: string; points: string[] }) {
   return (
     <div className="space-y-4">
       {points.map((point, index) => {
@@ -45,9 +38,7 @@ export default function ContentSection({
         } = parsePoint(point);
 
         if (hasEmoji || isMainPoint) {
-          const emojiMatch = point.match(
-            /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/u
-          );
+          const emojiMatch = point.match(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/u);
           const emoji = emojiMatch ? emojiMatch[0] : "📝";
           const text = point
             .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/u, "")
@@ -58,8 +49,7 @@ export default function ContentSection({
           let cardClasses =
             "group relative bg-linear-to-br from-gray-200/[0.08] to-gray-400/[0.03] p-4 rounded-2xl border border-gray-500/10 hover:shadow-lg transition-all";
           let emojiClasses = "text-lg lg:text-xl shrink-0 pt-1";
-          let textClasses =
-            "text-lg lg:text-xl text-muted-foreground/90 leading-relaxed";
+          let textClasses = "text-lg lg:text-xl text-muted-foreground/90 leading-relaxed";
 
           if (isActionItem) {
             cardClasses =

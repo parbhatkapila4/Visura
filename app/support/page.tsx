@@ -52,7 +52,6 @@ export default function SupportPage() {
   ];
 
   const handlePageClick = (e: React.MouseEvent) => {
-    // Don't trigger if clicking on the modal or its children
     if ((e.target as HTMLElement).closest('.modal-content')) {
       return;
     }
@@ -61,7 +60,6 @@ export default function SupportPage() {
 
   return (
     <div className="min-h-screen bg-white" onClick={handlePageClick}>
-      {/* Header */}
       <div className="bg-black text-white py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-start mb-8">
@@ -83,7 +81,6 @@ export default function SupportPage() {
         </div>
       </div>
 
-      {/* Hero Section with Search */}
       <div className="bg-gray-50 py-16 relative overflow-hidden">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <h2 className="text-4xl font-bold text-black mb-4">How can we help you today?</h2>
@@ -107,12 +104,10 @@ export default function SupportPage() {
           </div>
         </div>
         
-        {/* Background Elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-gray-200 rounded-full opacity-20 transform translate-x-32 -translate-y-32"></div>
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-gray-200 rounded-full opacity-20 transform -translate-x-24 translate-y-24"></div>
       </div>
 
-      {/* Support Categories Grid */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {supportCategories.map((category, index) => (
@@ -132,7 +127,6 @@ export default function SupportPage() {
         </div>
       </div>
 
-      {/* Ongoing Discussions Section */}
       <div className="bg-gray-50 py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h3 className="text-2xl font-bold text-black mb-6">Popular Topics</h3>
@@ -153,7 +147,6 @@ export default function SupportPage() {
         </div>
       </div>
 
-      {/* Contact Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full relative modal-content">
@@ -195,7 +188,6 @@ export default function SupportPage() {
         </div>
       )}
 
-      {/* Under Building Modal */}
       {isUnderBuildingModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full relative modal-content">

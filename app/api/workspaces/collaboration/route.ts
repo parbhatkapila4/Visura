@@ -6,7 +6,6 @@ import {
   removeCollaborationSession,
 } from "@/lib/workspaces";
 
-// GET - Get active collaborators for a document
 export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -18,27 +17,17 @@ export async function GET(request: NextRequest) {
     const pdfSummaryId = searchParams.get("pdfSummaryId");
 
     if (!pdfSummaryId) {
-      return NextResponse.json(
-        { error: "pdfSummaryId is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "pdfSummaryId is required" }, { status: 400 });
     }
 
-    const collaborators = await getActiveCollaborators(
-      pdfSummaryId,
-      userId
-    );
+    const collaborators = await getActiveCollaborators(pdfSummaryId, userId);
     return NextResponse.json(collaborators);
   } catch (error) {
     console.error("Error fetching collaborators:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch collaborators" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch collaborators" }, { status: 500 });
   }
 }
 
-// POST - Update collaboration session (cursor position, presence)
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -55,10 +44,7 @@ export async function POST(request: NextRequest) {
     const { pdfSummaryId, cursorPosition } = body;
 
     if (!pdfSummaryId) {
-      return NextResponse.json(
-        { error: "pdfSummaryId is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "pdfSummaryId is required" }, { status: 400 });
     }
 
     const session = await updateCollaborationSession({
@@ -72,14 +58,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(session);
   } catch (error) {
     console.error("Error updating collaboration session:", error);
-    return NextResponse.json(
-      { error: "Failed to update collaboration session" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update collaboration session" }, { status: 500 });
   }
 }
 
-// DELETE - Remove collaboration session (user left)
 export async function DELETE(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -91,30 +73,13 @@ export async function DELETE(request: NextRequest) {
     const pdfSummaryId = searchParams.get("pdfSummaryId");
 
     if (!pdfSummaryId) {
-      return NextResponse.json(
-        { error: "pdfSummaryId is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "pdfSummaryId is required" }, { status: 400 });
     }
 
     await removeCollaborationSession(pdfSummaryId, userId);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error removing collaboration session:", error);
-    return NextResponse.json(
-      { error: "Failed to remove collaboration session" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to remove collaboration session" }, { status: 500 });
   }
 }
-
-
-
-
-
-
-
-
-
-
-

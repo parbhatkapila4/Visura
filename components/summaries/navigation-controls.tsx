@@ -63,9 +63,7 @@ export function NavigationControls({
             "duration-200 bg-gradient-to-br from-green-900",
             "to-green-800 backdrop-blur-xs border",
             "border-green-900/10",
-            currentSection === totalSections - 1
-              ? "opacity-50"
-              : "hover:bg-green-900/20"
+            currentSection === totalSections - 1 ? "opacity-50" : "hover:bg-green-900/20"
           )}
         >
           <ChevronRight className="h-6 w-6" />

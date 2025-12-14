@@ -31,10 +31,8 @@ export async function GET(request: NextRequest) {
       const tables = ["pdf_stores", "pdf_qa_sessions", "pdf_qa_messages"];
       for (const table of tables) {
         try {
-          await sql`SELECT 1 FROM ${sql(table)} LIMIT 1`;
-          diagnostics.database.tables[
-            table as keyof typeof diagnostics.database.tables
-          ] = true;
+          await sql.unsafe(`SELECT 1 FROM "${table}" LIMIT 1`);
+          diagnostics.database.tables[table as keyof typeof diagnostics.database.tables] = true;
         } catch (error) {
           console.error(`Table ${table} not found:`, error);
         }

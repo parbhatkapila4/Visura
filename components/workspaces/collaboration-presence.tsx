@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User } from "lucide-react";
 
 interface Collaborator {
   id: string;
@@ -14,24 +13,19 @@ interface Collaborator {
 
 interface CollaborationPresenceProps {
   pdfSummaryId: string;
-  currentUserId: string;
 }
 
 export default function CollaborationPresence({
   pdfSummaryId,
-  currentUserId,
 }: CollaborationPresenceProps) {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
 
   useEffect(() => {
     if (!pdfSummaryId) return;
 
-    // Poll for active collaborators every 2 seconds
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(
-          `/api/workspaces/collaboration?pdfSummaryId=${pdfSummaryId}`
-        );
+        const response = await fetch(`/api/workspaces/collaboration?pdfSummaryId=${pdfSummaryId}`);
         if (response.ok) {
           const data = await response.json();
           setCollaborators(data);
@@ -75,14 +69,3 @@ export default function CollaborationPresence({
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-

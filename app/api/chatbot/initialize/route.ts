@@ -14,10 +14,7 @@ export async function POST(request: NextRequest) {
     const { pdfSummaryId } = await request.json();
 
     if (!pdfSummaryId) {
-      return NextResponse.json(
-        { error: "PDF Summary ID is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "PDF Summary ID is required" }, { status: 400 });
     }
 
     const existingStore = await getPdfStoreBySummaryId(pdfSummaryId, userId);
@@ -35,22 +32,14 @@ export async function POST(request: NextRequest) {
     `;
 
     if (!summary) {
-      return NextResponse.json(
-        { error: "PDF summary not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "PDF summary not found" }, { status: 404 });
     }
 
     console.log("Extracting full text for chatbot initialization...");
-    const fullTextContent = await fetchAndExtractPdfText(
-      summary.original_file_url
-    );
+    const fullTextContent = await fetchAndExtractPdfText(summary.original_file_url);
 
     if (!fullTextContent || fullTextContent.trim().length === 0) {
-      return NextResponse.json(
-        { error: "Could not extract text from PDF" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Could not extract text from PDF" }, { status: 400 });
     }
 
     const pdfStore = await savePdfStore({
@@ -66,9 +55,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error initializing chatbot:", error);
-    return NextResponse.json(
-      { error: "Failed to initialize chatbot" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to initialize chatbot" }, { status: 500 });
   }
 }

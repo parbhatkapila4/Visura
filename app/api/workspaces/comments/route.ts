@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import {
-  addDocumentComment,
-  getDocumentComments,
-} from "@/lib/workspaces";
+import { addDocumentComment, getDocumentComments } from "@/lib/workspaces";
 
-// GET - Get comments for a document
 export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -18,27 +14,17 @@ export async function GET(request: NextRequest) {
     const workspaceId = searchParams.get("workspaceId");
 
     if (!pdfSummaryId) {
-      return NextResponse.json(
-        { error: "pdfSummaryId is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "pdfSummaryId is required" }, { status: 400 });
     }
 
-    const comments = await getDocumentComments(
-      pdfSummaryId,
-      workspaceId || undefined
-    );
+    const comments = await getDocumentComments(pdfSummaryId, workspaceId || undefined);
     return NextResponse.json(comments);
   } catch (error) {
     console.error("Error fetching comments:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch comments" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch comments" }, { status: 500 });
   }
 }
 
-// POST - Add a comment to a document
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
@@ -52,14 +38,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { pdfSummaryId, workspaceId, content, position, parentCommentId } =
-      body;
+    const { pdfSummaryId, workspaceId, content, position, parentCommentId } = body;
 
     if (!pdfSummaryId || !content) {
-      return NextResponse.json(
-        { error: "pdfSummaryId and content are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "pdfSummaryId and content are required" }, { status: 400 });
     }
 
     const comment = await addDocumentComment({
@@ -76,20 +58,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(comment, { status: 201 });
   } catch (error) {
     console.error("Error adding comment:", error);
-    return NextResponse.json(
-      { error: "Failed to add comment" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to add comment" }, { status: 500 });
   }
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 
 export default function DashboardError({
   error,
@@ -12,7 +12,7 @@ export default function DashboardError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Dashboard Error:', error);
+    console.error("Dashboard Error:", error);
   }, [error]);
 
   return (
@@ -22,14 +22,12 @@ export default function DashboardError({
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center">
             <AlertTriangle className="w-8 h-8 text-red-400" />
           </div>
-          
-          <h2 className="text-xl font-bold text-white mb-2">
-            Dashboard Error
-          </h2>
+
+          <h2 className="text-xl font-bold text-white mb-2">Dashboard Error</h2>
           <p className="text-gray-400 text-sm mb-6">
             We couldn't load your dashboard. Please try refreshing.
           </p>
-          
+
           <Button
             onClick={reset}
             className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl px-6 h-11"
@@ -42,4 +40,3 @@ export default function DashboardError({
     </div>
   );
 }
-

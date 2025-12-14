@@ -19,10 +19,7 @@ interface DeleteButtonProps {
   onDelete?: (deletedSummaryId: string) => void;
 }
 
-export default function DeleteButton({
-  summaryId,
-  onDelete,
-}: DeleteButtonProps) {
+export default function DeleteButton({ summaryId, onDelete }: DeleteButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -30,7 +27,7 @@ export default function DeleteButton({
     setIsDeleting(true);
     try {
       console.log("Deleting summary:", summaryId);
-      
+
       const response = await fetch(`/api/summaries/${summaryId}`, {
         method: "DELETE",
       });
@@ -40,16 +37,18 @@ export default function DeleteButton({
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error("Delete failed:", errorData);
-        throw new Error(errorData.error || errorData.message || `Failed to delete (${response.status})`);
+        throw new Error(
+          errorData.error || errorData.message || `Failed to delete (${response.status})`
+        );
       }
 
       toast.success("Summary deleted successfully");
       setIsOpen(false);
-      
+
       if (onDelete) {
         onDelete(summaryId);
       }
-      
+
       window.location.reload();
     } catch (error) {
       console.error("Delete error:", error);
@@ -70,20 +69,17 @@ export default function DeleteButton({
           <Trash2 className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent 
+      <DialogContent
         className="bg-white text-black border-gray-200 [&>button]:bg-transparent [&>button]:hover:bg-transparent"
         onOpenAutoFocus={(e) => {
-          // Prevent auto-focus from scrolling
           e.preventDefault();
         }}
       >
         <DialogHeader>
-          <DialogTitle className="text-black">
-            Are you absolutely sure?
-          </DialogTitle>
+          <DialogTitle className="text-black">Are you absolutely sure?</DialogTitle>
           <DialogDescription className="text-gray-700">
-            This action cannot be undone. This will permanently delete your
-            summary and remove it from our servers.
+            This action cannot be undone. This will permanently delete your summary and remove it
+            from our servers.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

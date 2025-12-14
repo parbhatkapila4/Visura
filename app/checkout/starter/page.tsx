@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  SYMBOL,
-  useResolvedCurrency,
-} from "@/app/components/CheckoutButton";
+import { SYMBOL, useResolvedCurrency } from "@/app/components/CheckoutButton";
 import BgGradient from "@/components/common/bg-gradient";
 import { ArrowLeft, Layers, ShieldCheck, Timer, Sparkles, Check, Clock, Zap } from "lucide-react";
 import Link from "next/link";
@@ -47,17 +44,14 @@ export default function StarterCheckoutPage() {
 
   return (
     <div className="relative min-h-screen bg-[#050810] text-white overflow-hidden">
-      {/* Enhanced Background Effects */}
       <BgGradient className="bg-gradient-to-br from-[#38bdf8]/60 via-transparent to-transparent" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,_rgba(56,189,248,0.25),_transparent_50%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,_rgba(59,130,246,0.2),_transparent_60%)]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#050810] via-[#050810]/80 to-transparent" />
-      
-      {/* Animated Grid Pattern */}
+
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(56,189,248,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
 
       <div className="relative mx-auto flex h-full w-full max-w-6xl flex-col gap-8 px-4 sm:px-6 pb-20 pt-6 md:pt-12">
-        {/* Back Button with Animation */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -72,16 +66,13 @@ export default function StarterCheckoutPage() {
           </Link>
         </motion.div>
 
-        {/* Main Content Grid */}
         <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:gap-12">
-          {/* Left Column - Description */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="space-y-8"
           >
-            {/* Badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -93,7 +84,6 @@ export default function StarterCheckoutPage() {
               </span>
             </motion.div>
 
-            {/* Main Heading */}
             <div className="space-y-4">
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
@@ -109,12 +99,12 @@ export default function StarterCheckoutPage() {
                 transition={{ duration: 0.6, delay: 0.4 }}
                 className="text-lg text-white/70 leading-relaxed max-w-2xl"
               >
-                Starter keeps founders and early hires organised with instant summaries, searchable insights,
-                and export-ready briefs. Scale without spreadsheets—or the enterprise price tag.
+                Starter keeps founders and early hires organised with instant summaries, searchable
+                insights, and export-ready briefs. Scale without spreadsheets—or the enterprise
+                price tag.
               </motion.p>
             </div>
 
-            {/* Feature Highlights Grid */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -143,7 +133,6 @@ export default function StarterCheckoutPage() {
             </motion.div>
           </motion.div>
 
-          {/* Right Column - Pricing Card */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -151,12 +140,9 @@ export default function StarterCheckoutPage() {
             className="lg:sticky lg:top-8 h-fit"
           >
             <div className="relative">
-              {/* Glow Effect */}
               <div className="absolute -inset-1 bg-gradient-to-r from-[#38bdf8] via-[#22d3ee] to-[#38bdf8] rounded-3xl opacity-20 blur-xl animate-pulse" />
-              
-              {/* Main Card */}
+
               <div className="relative flex flex-col rounded-3xl border border-[#38bdf8]/40 bg-gradient-to-br from-[#0f1720] via-[#0a0f16] to-[#0f1720] p-8 shadow-[0_25px_70px_-40px_rgba(56,189,248,0.6)] backdrop-blur-sm">
-                {/* Coming Soon Badge */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -169,13 +155,11 @@ export default function StarterCheckoutPage() {
                   </span>
                 </motion.div>
 
-                {/* Plan Name */}
                 <div className="text-center mb-6">
                   <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#38bdf8]/80 mb-2">
                     Starter Plan
                   </p>
-                  
-                  {/* Price Display */}
+
                   <div className="flex items-end justify-center gap-2 mb-2">
                     <span className="text-6xl font-bold text-white">
                       {loading ? "—" : `${symbol}${displayAmount}`}
@@ -184,8 +168,7 @@ export default function StarterCheckoutPage() {
                       / month
                     </span>
                   </div>
-                  
-                  {/* Demo Price Badge */}
+
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -194,13 +177,12 @@ export default function StarterCheckoutPage() {
                   >
                     <span className="text-xs text-white/50 italic">demo price</span>
                   </motion.div>
-                  
+
                   <p className="mt-3 text-xs text-white/50">
                     Currency finalised automatically by your location.
                   </p>
                 </div>
 
-                {/* Features List */}
                 <div className="space-y-3 mb-8">
                   {starterFeatures.map((item, index) => (
                     <motion.div
@@ -218,7 +200,6 @@ export default function StarterCheckoutPage() {
                   ))}
                 </div>
 
-                {/* Coming Soon Button */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -229,21 +210,19 @@ export default function StarterCheckoutPage() {
                     disabled
                     className="group relative flex w-full items-center justify-center overflow-hidden rounded-2xl border border-[#38bdf8]/40 bg-gradient-to-r from-[#38bdf8]/10 via-[#22d3ee]/10 to-[#38bdf8]/10 px-6 py-4 text-sm font-semibold text-[#38bdf8] shadow-[0_8px_32px_rgba(56,189,248,0.3)] transition-all duration-300 cursor-not-allowed"
                   >
-                    {/* Animated Background */}
                     <div className="absolute inset-0 bg-gradient-to-r from-[#38bdf8]/20 via-[#22d3ee]/20 to-[#38bdf8]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    
-                    {/* Shimmer Effect */}
+
                     <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                    
-                    {/* Button Content */}
+
                     <span className="relative flex items-center gap-2">
                       <Zap className="h-4 w-4" />
                       Coming Soon
                     </span>
                   </button>
-                  
+
                   <p className="text-[11px] text-center text-white/50 leading-relaxed">
-                    14-day satisfaction guarantee. Upgrade to Professional whenever you need more power—your data stays in place.
+                    14-day satisfaction guarantee. Upgrade to Professional whenever you need more
+                    power - your data stays in place.
                   </p>
                 </motion.div>
               </div>
@@ -251,7 +230,6 @@ export default function StarterCheckoutPage() {
           </motion.div>
         </div>
 
-        {/* Bottom CTA Section */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -260,12 +238,15 @@ export default function StarterCheckoutPage() {
         >
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="space-y-3">
-              <p className="text-sm uppercase tracking-[0.3em] text-white/55">Need advanced workflows?</p>
+              <p className="text-sm uppercase tracking-[0.3em] text-white/55">
+                Need advanced workflows?
+              </p>
               <h3 className="text-2xl md:text-3xl font-semibold text-white">
                 Hop into Visura Professional when you&apos;re ready
               </h3>
               <p className="max-w-xl text-sm text-white/60 leading-relaxed">
-                Unlock unlimited documents, collaboration spaces, API access, and priority onboarding. Upgrades are instant—no migration required.
+                Unlock unlimited documents, collaboration spaces, API access, and priority
+                onboarding. Upgrades are instant—no migration required.
               </p>
             </div>
             <Link

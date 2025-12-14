@@ -13,7 +13,6 @@ import {
 export default function ShippingPolicyPage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
       <div className="bg-black text-white py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link
@@ -31,11 +30,9 @@ export default function ShippingPolicyPage() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-12">
-            {/* Digital Delivery */}
             <div>
               <h2 className="text-3xl font-bold text-black mb-6">Digital Delivery</h2>
               <div className="flex items-start gap-4">
@@ -50,7 +47,6 @@ export default function ShippingPolicyPage() {
               </div>
             </div>
 
-            {/* Availability */}
             <div>
               <h2 className="text-3xl font-bold text-black mb-6">Global Availability</h2>
               <div className="flex items-start gap-4">
@@ -65,7 +61,6 @@ export default function ShippingPolicyPage() {
               </div>
             </div>
 
-            {/* Provisioning Timeline */}
             <div>
               <h2 className="text-3xl font-bold text-black mb-6">Provisioning Timeline</h2>
               <div className="flex items-start gap-4">
@@ -80,7 +75,6 @@ export default function ShippingPolicyPage() {
               </div>
             </div>
 
-            {/* Security */}
             <div>
               <h2 className="text-3xl font-bold text-black mb-6">Secure Access</h2>
               <div className="flex items-start gap-4">
@@ -95,7 +89,6 @@ export default function ShippingPolicyPage() {
               </div>
             </div>
 
-            {/* Support */}
             <div>
               <h2 className="text-3xl font-bold text-black mb-6">Need Assistance?</h2>
               <div className="flex items-start gap-4">

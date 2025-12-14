@@ -27,9 +27,7 @@ export default function PlanBadge() {
         .then((data) => {
           if (data.priceId) {
             setPriceId(data.priceId);
-            const plan = pricingPlans.find(
-              (plan) => plan.priceId === data.priceId
-            );
+            const plan = pricingPlans.find((plan) => plan.priceId === data.priceId);
             if (plan) {
               setPlanName(plan.name);
             }

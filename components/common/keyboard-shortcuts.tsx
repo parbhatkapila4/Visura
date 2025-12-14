@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { Command, Upload, Home, FileText } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { Command, Upload, Home, FileText } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 
 interface Shortcut {
   key: string;
@@ -21,30 +21,30 @@ interface Shortcut {
 
 const shortcuts: Shortcut[] = [
   {
-    key: 'u',
-    label: 'Upload',
-    action: 'Go to upload page',
+    key: "u",
+    label: "Upload",
+    action: "Go to upload page",
     icon: Upload,
     modifier: true,
   },
   {
-    key: 'd',
-    label: 'Dashboard',
-    action: 'Go to dashboard',
+    key: "d",
+    label: "Dashboard",
+    action: "Go to dashboard",
     icon: FileText,
     modifier: true,
   },
   {
-    key: 'h',
-    label: 'Home',
-    action: 'Go to homepage',
+    key: "h",
+    label: "Home",
+    action: "Go to homepage",
     icon: Home,
     modifier: false,
   },
   {
-    key: '?',
-    label: 'Help',
-    action: 'Show this dialog',
+    key: "?",
+    label: "Help",
+    action: "Show this dialog",
     icon: Command,
     modifier: false,
   },
@@ -57,38 +57,33 @@ export default function KeyboardShortcuts() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Only show on home page ("/")
-  const isHomePage = pathname === '/';
+  const isHomePage = pathname === "/";
 
-  // Detect mobile screen size
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768); // md breakpoint
+      setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Detect footer visibility using Intersection Observer
   useEffect(() => {
     if (!isHomePage) return;
 
-    const footer = document.querySelector('footer');
+    const footer = document.querySelector("footer");
     if (!footer) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // Footer is visible when it intersects with the viewport
           setIsFooterVisible(entry.isIntersecting);
         });
       },
       {
-        // Trigger when footer enters viewport
         threshold: 0.1,
-        rootMargin: '0px',
+        rootMargin: "0px",
       }
     );
 
@@ -99,7 +94,6 @@ export default function KeyboardShortcuts() {
     };
   }, [isHomePage]);
 
-  // Close dialog when navigating away from home page
   useEffect(() => {
     if (!isHomePage && isOpen) {
       setIsOpen(false);
@@ -107,59 +101,53 @@ export default function KeyboardShortcuts() {
   }, [isHomePage, isOpen]);
 
   useEffect(() => {
-    // Only attach keyboard listeners on home page
     if (!isHomePage) {
       return;
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Check if user is typing in an input/textarea
       const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") {
         return;
       }
 
-      // Cmd/Ctrl key shortcuts
       if (e.metaKey || e.ctrlKey) {
         switch (e.key.toLowerCase()) {
-          case 'u':
+          case "u":
             e.preventDefault();
-            router.push('/upload');
+            router.push("/upload");
             break;
-          case 'd':
+          case "d":
             e.preventDefault();
-            router.push('/dashboard');
+            router.push("/dashboard");
             break;
         }
         return;
       }
 
-      // Single key shortcuts (no modifier)
       switch (e.key) {
-        case '?':
+        case "?":
           e.preventDefault();
           setIsOpen(true);
           break;
-        case 'Escape':
+        case "Escape":
           setIsOpen(false);
           break;
-        case 'h':
+        case "h":
           e.preventDefault();
-          router.push('/');
+          router.push("/");
           break;
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [router, isHomePage]);
 
-  // Hide button on mobile when footer is visible
   const shouldShowButton = isHomePage && (!isMobile || !isFooterVisible);
 
   return (
     <>
-      {/* Help Button - Bottom Right (Only on home page, hidden on mobile when footer is visible) */}
       {shouldShowButton && (
         <button
           onClick={(e) => {
@@ -173,7 +161,7 @@ export default function KeyboardShortcuts() {
           className="fixed bottom-6 right-6 z-[9999] w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full shadow-2xl shadow-orange-500/50 flex items-center justify-center transition-all hover:scale-110 active:scale-95 group cursor-pointer"
           aria-label="Keyboard shortcuts"
           type="button"
-          style={{ pointerEvents: 'auto', position: 'fixed' }}
+          style={{ pointerEvents: "auto", position: "fixed" }}
         >
           <Command className="w-5 h-5 group-hover:rotate-12 transition-transform" />
           <span className="absolute -top-10 right-0 bg-black/90 text-white text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
@@ -182,7 +170,6 @@ export default function KeyboardShortcuts() {
         </button>
       )}
 
-      {/* Shortcuts Modal */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="bg-gradient-to-br from-gray-900 via-black to-gray-900 border-2 border-orange-500/30 text-white max-w-2xl">
           <DialogHeader>
@@ -231,8 +218,10 @@ export default function KeyboardShortcuts() {
 
           <div className="mt-6 pt-6 border-t border-gray-800">
             <p className="text-xs text-gray-500 text-center">
-              <kbd className="px-2 py-0.5 bg-gray-800 border border-gray-700 rounded text-gray-400">ESC</kbd>
-              {' '}to close this dialog
+              <kbd className="px-2 py-0.5 bg-gray-800 border border-gray-700 rounded text-gray-400">
+                ESC
+              </kbd>{" "}
+              to close this dialog
             </p>
           </div>
         </DialogContent>
@@ -240,4 +229,3 @@ export default function KeyboardShortcuts() {
     </>
   );
 }
-

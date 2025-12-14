@@ -24,7 +24,11 @@ const footerLinks = {
 const socialLinks = [
   { icon: Twitter, href: "https://x.com/Parbhat03", label: "Twitter" },
   { icon: Github, href: "https://github.com/parbhatkapila4", label: "GitHub" },
-  { icon: Linkedin, href: "", label: "LinkedIn" },
+  {
+    icon: Linkedin,
+    href: "https://www.linkedin.com/in/parbhat-kapila-a14264202/",
+    label: "LinkedIn",
+  },
 ];
 
 export default function FooterSection() {
@@ -33,25 +37,21 @@ export default function FooterSection() {
 
   return (
     <footer ref={ref} className="relative bg-black pt-20 pb-8 overflow-hidden -mt-[1px]">
-      {/* Background Effects */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#ff6b00]/5 rounded-full blur-[150px]" />
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#ff00ff]/5 rounded-full blur-[150px]" />
       </div>
 
-      {/* Grid Pattern */}
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.02]"
         style={{
           backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-          backgroundSize: '40px 40px',
+          backgroundSize: "40px 40px",
         }}
       />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Main Footer Content */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 pb-12 border-b border-white/10">
-          {/* Brand Column */}
           <motion.div
             className="col-span-2"
             initial={{ opacity: 0, y: 20 }}
@@ -65,11 +65,10 @@ export default function FooterSection() {
               <span className="text-2xl font-bold text-white">Visura</span>
             </Link>
             <p className="text-white/40 text-sm leading-relaxed mb-6 max-w-xs">
-              Transform how you understand documents with AI-powered intelligence. 
-              Built for the future of work.
+              Transform how you understand documents with AI-powered intelligence. Built for the
+              future of work.
             </p>
-            
-            {/* Social Links */}
+
             <div className="flex items-center gap-3">
               {socialLinks.map((social, i) => (
                 <motion.a
@@ -88,7 +87,6 @@ export default function FooterSection() {
             </div>
           </motion.div>
 
-          {/* Product Links */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -98,7 +96,7 @@ export default function FooterSection() {
             <ul className="space-y-3">
               {footerLinks.product.map((link, i) => (
                 <li key={i}>
-                  <Link 
+                  <Link
                     href={link.href}
                     className="text-white/40 hover:text-white text-sm transition-colors"
                   >
@@ -109,7 +107,6 @@ export default function FooterSection() {
             </ul>
           </motion.div>
 
-          {/* Company Links */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -119,7 +116,7 @@ export default function FooterSection() {
             <ul className="space-y-3">
               {footerLinks.company.map((link, i) => (
                 <li key={i}>
-                  <Link 
+                  <Link
                     href={link.href}
                     className="text-white/40 hover:text-white text-sm transition-colors"
                   >
@@ -130,7 +127,6 @@ export default function FooterSection() {
             </ul>
           </motion.div>
 
-          {/* Resources Links */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -140,7 +136,7 @@ export default function FooterSection() {
             <ul className="space-y-3">
               {footerLinks.resources.map((link, i) => (
                 <li key={i}>
-                  <Link 
+                  <Link
                     href={link.href}
                     className="text-white/40 hover:text-white text-sm transition-colors"
                   >
@@ -150,10 +146,8 @@ export default function FooterSection() {
               ))}
             </ul>
           </motion.div>
-
         </div>
 
-        {/* Bottom Bar */}
         <motion.div
           className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4"
           initial={{ opacity: 0 }}

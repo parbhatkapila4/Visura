@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { hasActiveShareToken, getShareUrl } from "@/lib/summaries";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await auth();
 
@@ -17,10 +14,7 @@ export async function GET(
     const summaryId = resolvedParams.id;
 
     if (!summaryId) {
-      return NextResponse.json(
-        { error: "Summary ID is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Summary ID is required" }, { status: 400 });
     }
 
     const hasActiveShare = await hasActiveShareToken(summaryId);
@@ -45,4 +39,3 @@ export async function GET(
     );
   }
 }
-

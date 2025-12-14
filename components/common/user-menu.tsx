@@ -14,7 +14,6 @@ export default function UserMenu() {
   const [imageError, setImageError] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -47,7 +46,6 @@ export default function UserMenu() {
 
   return (
     <div className="relative" ref={menuRef}>
-      {/* User Profile Picture Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-gray-600 hover:border-orange-500 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-black"
@@ -71,7 +69,6 @@ export default function UserMenu() {
         )}
       </button>
 
-      {/* Dropdown Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -81,14 +78,10 @@ export default function UserMenu() {
             transition={{ duration: 0.2 }}
             className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden"
           >
-            {/* User Info */}
             <div className="px-4 py-3 border-b border-gray-700">
-              <p className="text-sm font-medium text-white truncate">
-                {userEmail}
-              </p>
+              <p className="text-sm font-medium text-white truncate">{userEmail}</p>
             </div>
 
-            {/* Workspaces Link */}
             <Link
               href="/workspaces"
               onClick={() => setIsOpen(false)}
@@ -98,7 +91,6 @@ export default function UserMenu() {
               <span>Workspaces</span>
             </Link>
 
-            {/* Logout Button */}
             <button
               onClick={handleLogout}
               className="w-full px-4 py-3 flex items-center gap-3 text-left text-sm text-white hover:bg-gray-700 transition-colors"
@@ -113,4 +105,3 @@ export default function UserMenu() {
     </div>
   );
 }
-

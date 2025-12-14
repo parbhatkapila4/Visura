@@ -26,20 +26,12 @@ export default function SourceInfo({
       </div>
       <div className="flex gap-2">
         <Link href={`/chatbot/${summaryId}`}>
-          <Button
-            size="sm"
-            className="h-8 px-3 bg-[#4C4899] hover:bg-[#4C4899]/80 text-white"
-          >
+          <Button size="sm" className="h-8 px-3 bg-[#4C4899] hover:bg-[#4C4899]/80 text-white">
             <MessageCircle className="h-4 w-4 mr-1" />
             Chat with Document
           </Button>
         </Link>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 px-3 text-white hover:bg-rose-50"
-          asChild
-        >
+        <Button variant="ghost" size="sm" className="h-8 px-3 text-white hover:bg-rose-50" asChild>
           <a href={originalFileUrl} target="_blank" rel="noopener noreferrer">
             <ExternalLink className="h-4 w-4 mr-1" />
             View Original

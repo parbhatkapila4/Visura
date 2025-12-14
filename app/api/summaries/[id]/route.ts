@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { removeSummary } from "@/lib/summaries";
 
-export async function DELETE(
-  request: NextRequest,
-  props: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await auth();
 
@@ -17,23 +14,16 @@ export async function DELETE(
     const { id } = params;
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Summary ID is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Summary ID is required" }, { status: 400 });
     }
 
     await removeSummary(id, userId);
 
-    return NextResponse.json(
-      { message: "Summary deleted successfully" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Summary deleted successfully" }, { status: 200 });
   } catch (error) {
     console.error("Delete summary error:", error);
 
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to delete summary";
+    const errorMessage = error instanceof Error ? error.message : "Failed to delete summary";
 
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }

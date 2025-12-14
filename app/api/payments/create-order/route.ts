@@ -19,7 +19,8 @@ const DECIMALS: Record<string, number> = {
 export async function POST(req: Request) {
   const { amount, receiptId, notes } = await req.json();
 
-  const country = headers().get("x-vercel-ip-country") || null;
+  const headersList = await headers();
+  const country = headersList.get("x-vercel-ip-country") || null;
   const currency = currencyFromCountry(country);
   const subunits = Math.round(Number(amount) * 10 ** (DECIMALS[currency] ?? 2));
 
@@ -37,4 +38,3 @@ export async function POST(req: Request) {
     country,
   });
 }
-

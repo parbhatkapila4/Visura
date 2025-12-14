@@ -91,10 +91,7 @@ Typical receipt elements that would be analyzed:
 • Tax information
 
 `;
-  } else if (
-    fileExtension.includes("statement") ||
-    fileExtension.includes("stmt")
-  ) {
+  } else if (fileExtension.includes("statement") || fileExtension.includes("stmt")) {
     documentType = "statement";
     possibleContent = `This appears to be a financial statement based on the filename "${fileName}".
 
@@ -107,10 +104,7 @@ Typical statement elements that would be analyzed:
 • Summary information
 
 `;
-  } else if (
-    fileExtension.includes("notes") ||
-    fileExtension.includes("class")
-  ) {
+  } else if (fileExtension.includes("notes") || fileExtension.includes("class")) {
     documentType = "notes";
     possibleContent = `This appears to be class notes or educational content based on the filename "${fileName}".
 
@@ -142,7 +136,7 @@ The PDF file was uploaded successfully, but we couldn't extract readable text co
 - 🖼️ **Scanned documents** - PDFs created from scanned images
 - 🔒 **Password-protected files** - Encrypted PDFs
 - 📸 **Image-based PDFs** - Screenshots or photos saved as PDF
-${errorMessage ? `\n**Error:** ${errorMessage}` : ''}
+${errorMessage ? `\n**Error:** ${errorMessage}` : ""}
 
 ## Recommendations
 

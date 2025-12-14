@@ -1,7 +1,6 @@
 import BgGradient from "@/components/common/bg-gradient";
 import SummaryViewer from "@/components/summaries/summary-viewer";
 import { findSummaryByShareToken } from "@/lib/summaries";
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 export async function generateMetadata(props: {
@@ -23,15 +22,12 @@ export async function generateMetadata(props: {
   };
 }
 
-export default async function SharePage(props: {
-  params: Promise<{ token: string }>;
-}) {
+export default async function SharePage(props: { params: Promise<{ token: string }> }) {
   const params = await props.params;
   const token = params.token;
 
   const summary = await findSummaryByShareToken(token);
 
-  // If summary not found, it means the link was revoked or doesn't exist
   if (!summary) {
     return (
       <div className="relative isolate min-h-screen bg-background">
@@ -64,7 +60,8 @@ export default async function SharePage(props: {
                     This share link is no longer accessible.
                   </p>
                   <p className="text-sm sm:text-base text-gray-500">
-                    The administrator has revoked access to this shared summary. The link will no longer work.
+                    The administrator has revoked access to this shared summary. The link will no
+                    longer work.
                   </p>
                 </div>
                 <div className="mt-8">
@@ -97,11 +94,11 @@ export default async function SharePage(props: {
 
   const { title, summary_text, word_count } = summary;
 
-  const isErrorSummary = 
-    summary_text.toLowerCase().includes('extraction error') ||
-    summary_text.toLowerCase().includes('object.defineproperty') ||
-    summary_text.toLowerCase().includes('was unable to access') ||
-    summary_text.toLowerCase().includes('i apologize');
+  const isErrorSummary =
+    summary_text.toLowerCase().includes("extraction error") ||
+    summary_text.toLowerCase().includes("object.defineproperty") ||
+    summary_text.toLowerCase().includes("was unable to access") ||
+    summary_text.toLowerCase().includes("i apologize");
 
   const reading_time = isErrorSummary ? 1 : Math.ceil((word_count || 0) / 200);
 
@@ -117,9 +114,7 @@ export default async function SharePage(props: {
                 {title || "Shared Summary"}
               </h1>
               <div className="flex items-center gap-4 text-sm text-gray-400">
-                <span>
-                  Created: {new Date(summary.created_at).toLocaleDateString()}
-                </span>
+                <span>Created: {new Date(summary.created_at).toLocaleDateString()}</span>
                 <span>•</span>
                 <span>{reading_time} min read</span>
               </div>
@@ -139,4 +134,3 @@ export default async function SharePage(props: {
     </div>
   );
 }
-

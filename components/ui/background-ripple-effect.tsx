@@ -15,16 +15,15 @@ export function BackgroundRippleEffect() {
   useEffect(() => {
     const updateGridSize = () => {
       if (!containerRef.current) return;
-      
+
       const container = containerRef.current;
       const rect = container.getBoundingClientRect();
-      const boxSize = 40; // Size of each grid box
+      const boxSize = 40;
       const cols = Math.floor(rect.width / boxSize);
       const rows = Math.floor(rect.height / boxSize);
-      
+
       setGridSize({ rows, cols });
-      
-      // Create grid boxes
+
       const newBoxes: GridBox[] = [];
       for (let i = 0; i < rows * cols; i++) {
         newBoxes.push({
@@ -37,44 +36,27 @@ export function BackgroundRippleEffect() {
     };
 
     updateGridSize();
-    window.addEventListener('resize', updateGridSize);
+    window.addEventListener("resize", updateGridSize);
 
     return () => {
-      window.removeEventListener('resize', updateGridSize);
+      window.removeEventListener("resize", updateGridSize);
     };
   }, []);
 
   const handleBoxClick = (boxId: number) => {
-    setBoxes(prev => prev.map(box => 
-      box.id === boxId 
-        ? { ...box, isActive: true }
-        : box
-    ));
+    setBoxes((prev) => prev.map((box) => (box.id === boxId ? { ...box, isActive: true } : box)));
 
-    // Reset after animation
     setTimeout(() => {
-      setBoxes(prev => prev.map(box => 
-        box.id === boxId 
-          ? { ...box, isActive: false }
-          : box
-      ));
+      setBoxes((prev) => prev.map((box) => (box.id === boxId ? { ...box, isActive: false } : box)));
     }, 1000);
   };
 
   const handleMouseEnter = (boxId: number) => {
-    setBoxes(prev => prev.map(box => 
-      box.id === boxId 
-        ? { ...box, isActive: true }
-        : box
-    ));
+    setBoxes((prev) => prev.map((box) => (box.id === boxId ? { ...box, isActive: true } : box)));
   };
 
   const handleMouseLeave = (boxId: number) => {
-    setBoxes(prev => prev.map(box => 
-      box.id === boxId 
-        ? { ...box, isActive: false }
-        : box
-    ));
+    setBoxes((prev) => prev.map((box) => (box.id === boxId ? { ...box, isActive: false } : box)));
   };
 
   return (
@@ -83,24 +65,25 @@ export function BackgroundRippleEffect() {
       className="absolute inset-0 overflow-hidden bg-white"
       style={{ zIndex: 1 }}
     >
-      {/* Grid Pattern */}
-      <div 
+      <div
         className="absolute inset-0 opacity-5"
         style={{
           backgroundImage: `
             linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
             linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px)
           `,
-          backgroundSize: '40px 40px'
+          backgroundSize: "40px 40px",
         }}
       />
-      
-      {/* Interactive Grid Boxes */}
-      <div className="absolute inset-0 grid" style={{
-        gridTemplateColumns: `repeat(${gridSize.cols}, 40px)`,
-        gridTemplateRows: `repeat(${gridSize.rows}, 40px)`,
-        gap: '0px'
-      }}>
+
+      <div
+        className="absolute inset-0 grid"
+        style={{
+          gridTemplateColumns: `repeat(${gridSize.cols}, 40px)`,
+          gridTemplateRows: `repeat(${gridSize.rows}, 40px)`,
+          gap: "0px",
+        }}
+      >
         {boxes.map((box) => (
           <div
             key={box.id}
@@ -109,15 +92,15 @@ export function BackgroundRippleEffect() {
             onMouseLeave={() => handleMouseLeave(box.id)}
             onClick={() => handleBoxClick(box.id)}
             style={{
-              animationDelay: `${box.animationDelay}s`
+              animationDelay: `${box.animationDelay}s`,
             }}
           >
             {box.isActive && (
               <div
                 className="w-full h-full bg-orange-500/5 animate-cell-ripple border border-black/8"
                 style={{
-                  animationDuration: '1s',
-                  animationTimingFunction: 'ease-out'
+                  animationDuration: "1s",
+                  animationTimingFunction: "ease-out",
                 }}
               />
             )}

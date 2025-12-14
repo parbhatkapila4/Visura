@@ -58,11 +58,12 @@ interface PremiumSummaryViewProps {
   };
 }
 
-// ============================================
-// GLOW CARD COMPONENT
-// ============================================
-const GlowCard = ({ children, className = "", color = "orange" }: { 
-  children: React.ReactNode; 
+const GlowCard = ({
+  children,
+  className = "",
+  color = "orange",
+}: {
+  children: React.ReactNode;
   className?: string;
   color?: "orange" | "purple" | "blue" | "green" | "red" | "cyan" | "amber";
 }) => {
@@ -94,11 +95,11 @@ const GlowCard = ({ children, className = "", color = "orange" }: {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
-        willChange: 'transform',
-        transform: 'translateZ(0)',
-        WebkitTransform: 'translateZ(0)',
-        backfaceVisibility: 'hidden',
-        WebkitBackfaceVisibility: 'hidden'
+        willChange: "transform",
+        transform: "translateZ(0)",
+        WebkitTransform: "translateZ(0)",
+        backfaceVisibility: "hidden",
+        WebkitBackfaceVisibility: "hidden",
       }}
     >
       <motion.div
@@ -106,9 +107,9 @@ const GlowCard = ({ children, className = "", color = "orange" }: {
         style={{
           background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, ${colors[color]}, transparent 40%)`,
           opacity: isHovered ? 1 : 0,
-          willChange: 'opacity',
-          transform: 'translateZ(0)',
-          WebkitTransform: 'translateZ(0)'
+          willChange: "opacity",
+          transform: "translateZ(0)",
+          WebkitTransform: "translateZ(0)",
         }}
       />
       <div className="absolute inset-0 rounded-[inherit] border border-white/[0.08]" />
@@ -122,9 +123,6 @@ const GlowCard = ({ children, className = "", color = "orange" }: {
   );
 };
 
-// ============================================
-// SECTION ICON HELPER
-// ============================================
 const getSectionIcon = (title: string) => {
   const lowerTitle = title.toLowerCase();
   if (lowerTitle.includes("thesis") || lowerTitle.includes("argument")) return Brain;
@@ -142,19 +140,25 @@ const getSectionIcon = (title: string) => {
   return Hash;
 };
 
-const getSectionColor = (index: number): "orange" | "purple" | "blue" | "green" | "cyan" | "amber" => {
-  const colors: ("orange" | "purple" | "blue" | "green" | "cyan" | "amber")[] = ["orange", "purple", "blue", "green", "cyan", "amber"];
+const getSectionColor = (
+  index: number
+): "orange" | "purple" | "blue" | "green" | "cyan" | "amber" => {
+  const colors: ("orange" | "purple" | "blue" | "green" | "cyan" | "amber")[] = [
+    "orange",
+    "purple",
+    "blue",
+    "green",
+    "cyan",
+    "amber",
+  ];
   return colors[index % colors.length];
 };
 
-// ============================================
-// SECTION CARD COMPONENT
-// ============================================
-const SectionCard = ({ 
-  section, 
-  index 
-}: { 
-  section: { title: string; points: string[] }; 
+const SectionCard = ({
+  section,
+  index,
+}: {
+  section: { title: string; points: string[] };
   index: number;
 }) => {
   const ref = useRef(null);
@@ -163,18 +167,47 @@ const SectionCard = ({
   const Icon = getSectionIcon(section.title);
 
   const colorClasses: Record<string, { bg: string; border: string; text: string; glow: string }> = {
-    orange: { bg: "from-orange-500/10 to-amber-500/5", border: "border-orange-500/20", text: "text-orange-400", glow: "shadow-orange-500/10" },
-    purple: { bg: "from-purple-500/10 to-pink-500/5", border: "border-purple-500/20", text: "text-purple-400", glow: "shadow-purple-500/10" },
-    blue: { bg: "from-blue-500/10 to-cyan-500/5", border: "border-blue-500/20", text: "text-blue-400", glow: "shadow-blue-500/10" },
-    green: { bg: "from-emerald-500/10 to-teal-500/5", border: "border-emerald-500/20", text: "text-emerald-400", glow: "shadow-emerald-500/10" },
-    cyan: { bg: "from-cyan-500/10 to-blue-500/5", border: "border-cyan-500/20", text: "text-cyan-400", glow: "shadow-cyan-500/10" },
-    amber: { bg: "from-amber-500/10 to-yellow-500/5", border: "border-amber-500/20", text: "text-amber-400", glow: "shadow-amber-500/10" },
+    orange: {
+      bg: "from-orange-500/10 to-amber-500/5",
+      border: "border-orange-500/20",
+      text: "text-orange-400",
+      glow: "shadow-orange-500/10",
+    },
+    purple: {
+      bg: "from-purple-500/10 to-pink-500/5",
+      border: "border-purple-500/20",
+      text: "text-purple-400",
+      glow: "shadow-purple-500/10",
+    },
+    blue: {
+      bg: "from-blue-500/10 to-cyan-500/5",
+      border: "border-blue-500/20",
+      text: "text-blue-400",
+      glow: "shadow-blue-500/10",
+    },
+    green: {
+      bg: "from-emerald-500/10 to-teal-500/5",
+      border: "border-emerald-500/20",
+      text: "text-emerald-400",
+      glow: "shadow-emerald-500/10",
+    },
+    cyan: {
+      bg: "from-cyan-500/10 to-blue-500/5",
+      border: "border-cyan-500/20",
+      text: "text-cyan-400",
+      glow: "shadow-cyan-500/10",
+    },
+    amber: {
+      bg: "from-amber-500/10 to-yellow-500/5",
+      border: "border-amber-500/20",
+      text: "text-amber-400",
+      glow: "shadow-amber-500/10",
+    },
   };
 
   const styles = colorClasses[color];
 
-  // Clean the title
-  const cleanTitle = section.title.replace(/^\d+\.\s*/, '').replace(/^#+\s*/, '');
+  const cleanTitle = section.title.replace(/^\d+\.\s*/, "").replace(/^#+\s*/, "");
 
   return (
     <motion.div
@@ -185,30 +218,27 @@ const SectionCard = ({
       transition={{ duration: 0.5, delay: index * 0.05 }}
       className="scroll-mt-24"
       style={{
-        willChange: isInView ? 'auto' : 'transform, opacity',
-        contentVisibility: 'auto',
-        containIntrinsicSize: 'auto 500px'
+        willChange: isInView ? "auto" : "transform, opacity",
+        contentVisibility: "auto",
+        containIntrinsicSize: "auto 500px",
       }}
     >
       <GlowCard className="bg-[#0a0a0a] rounded-2xl" color={color}>
         <div className="p-6 sm:p-8">
-          {/* Header */}
           <div className="w-full flex items-start gap-4 text-left">
-            {/* Icon */}
-            <div className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${styles.bg} ${styles.border} border flex items-center justify-center shadow-lg ${styles.glow}`}>
+            <div
+              className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${styles.bg} ${styles.border} border flex items-center justify-center shadow-lg ${styles.glow}`}
+            >
               <Icon className={`w-6 h-6 ${styles.text}`} />
             </div>
 
-            {/* Title */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className={`text-xs font-bold ${styles.text} uppercase tracking-wider`}>
                   Section {index + 1}
                 </span>
                 <span className="text-white/20">•</span>
-                <span className="text-xs text-white/40">
-                  {section.points.length} insights
-                </span>
+                <span className="text-xs text-white/40">{section.points.length} insights</span>
               </div>
               <h3 className="text-xl sm:text-2xl font-bold text-white transition-colors leading-tight">
                 {cleanTitle}
@@ -216,40 +246,45 @@ const SectionCard = ({
             </div>
           </div>
 
-          {/* Content */}
           <div className="pt-6 space-y-4">
-            {section.points.map((point, pointIndex) => {
-              const cleanText = point
-                .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/gu, "")
-                .replace(/\*\*(.*?)\*\*/g, "$1")
-                .replace(/\*(.*?)\*/g, "$1")
-                .replace(/^•\s*/, "")
-                .replace(/^-\s*/, "")
-                .trim();
+            {section.points
+              .map((point, pointIndex) => {
+                const cleanText = point
+                  .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/gu, "")
+                  .replace(/\*\*(.*?)\*\*/g, "$1")
+                  .replace(/\*(.*?)\*/g, "$1")
+                  .replace(/^•\s*/, "")
+                  .replace(/^-\s*/, "")
+                  .trim();
 
-              if (!cleanText || cleanText.length < 3) return null;
+                if (!cleanText || cleanText.length < 3) return null;
 
-              return (
-                <motion.div
-                  key={pointIndex}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
-                  transition={{ delay: pointIndex * 0.03 }}
-                  className="group/point flex gap-4 p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-transparent hover:border-white/10 transition-all duration-300"
-                  style={{
-                    willChange: isInView ? 'auto' : 'transform, opacity',
-                    transform: 'translateZ(0)',
-                    WebkitTransform: 'translateZ(0)',
-                    backfaceVisibility: 'hidden'
-                  }}
-                >
-                  <div className={`flex-shrink-0 w-1.5 h-1.5 rounded-full bg-gradient-to-r ${styles.bg.replace('/10', '/60').replace('/5', '/40')} mt-2.5`} />
-                  <p className="text-white/70 group-hover/point:text-white/90 leading-relaxed transition-colors text-sm sm:text-base">
-                    {cleanText}
-                  </p>
-                </motion.div>
-              );
-            }).filter(Boolean)}
+                return (
+                  <motion.div
+                    key={pointIndex}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
+                    transition={{ delay: pointIndex * 0.03 }}
+                    className="group/point flex gap-4 p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-transparent hover:border-white/10 transition-all duration-300"
+                    style={{
+                      willChange: isInView ? "auto" : "transform, opacity",
+                      transform: "translateZ(0)",
+                      WebkitTransform: "translateZ(0)",
+                      backfaceVisibility: "hidden",
+                    }}
+                  >
+                    <div
+                      className={`flex-shrink-0 w-1.5 h-1.5 rounded-full bg-gradient-to-r ${styles.bg
+                        .replace("/10", "/60")
+                        .replace("/5", "/40")} mt-2.5`}
+                    />
+                    <p className="text-white/70 group-hover/point:text-white/90 leading-relaxed transition-colors text-sm sm:text-base">
+                      {cleanText}
+                    </p>
+                  </motion.div>
+                );
+              })
+              .filter(Boolean)}
           </div>
         </div>
       </GlowCard>
@@ -257,15 +292,12 @@ const SectionCard = ({
   );
 };
 
-// ============================================
-// TABLE OF CONTENTS
-// ============================================
-const TableOfContents = ({ 
-  sections, 
+const TableOfContents = ({
+  sections,
   activeSection,
   onSectionClick,
-  isScrollingRef
-}: { 
+  isScrollingRef,
+}: {
   sections: { title: string; points: string[] }[];
   activeSection: number;
   onSectionClick?: (index: number) => void;
@@ -273,40 +305,34 @@ const TableOfContents = ({
 }) => {
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, index: number) => {
     e.preventDefault();
-    
-    // Use requestAnimationFrame to ensure DOM is ready
+
     requestAnimationFrame(() => {
       const element = document.getElementById(`section-${index}`);
       if (!element) {
-        console.warn(`Section element with id "section-${index}" not found. Available sections:`, 
-          Array.from(document.querySelectorAll('[id^="section-"]')).map(el => el.id));
+        console.warn(
+          `Section element with id "section-${index}" not found. Available sections:`,
+          Array.from(document.querySelectorAll('[id^="section-"]')).map((el) => el.id)
+        );
         return;
       }
 
-      // Set flag to prevent scroll tracking from interfering
       if (isScrollingRef) {
         isScrollingRef.current = true;
       }
 
-      // Update active section immediately
       if (onSectionClick) {
         onSectionClick(index);
       }
 
-      // Calculate scroll position
-      // scroll-mt-24 (96px) is already applied to the element
-      // We need to account for the sticky header (approximately 64-80px)
       const headerOffset = 80;
-      const elementTop = element.offsetTop; // This already accounts for scroll-margin
+      const elementTop = element.offsetTop;
       const offsetPosition = elementTop - headerOffset;
 
-      // Scroll to the element
       window.scrollTo({
         top: Math.max(0, offsetPosition),
-        behavior: 'smooth'
+        behavior: "smooth",
       });
 
-      // Reset flag after scroll completes (smooth scroll takes ~500ms)
       if (isScrollingRef) {
         setTimeout(() => {
           isScrollingRef.current = false;
@@ -323,18 +349,18 @@ const TableOfContents = ({
       </div>
       <nav className="space-y-1">
         {sections.map((section, index) => {
-          const cleanTitle = section.title.replace(/^\d+\.\s*/, '').replace(/^#+\s*/, '');
+          const cleanTitle = section.title.replace(/^\d+\.\s*/, "").replace(/^#+\s*/, "");
           const isActive = activeSection === index;
-          
+
           return (
             <a
               key={index}
               href={`#section-${index}`}
               onClick={(e) => handleClick(e, index)}
               className={`block px-3 py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer ${
-                isActive 
-                  ? 'bg-orange-500/10 text-orange-400 border-l-2 border-orange-500' 
-                  : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                isActive
+                  ? "bg-orange-500/10 text-orange-400 border-l-2 border-orange-500"
+                  : "text-white/50 hover:text-white/80 hover:bg-white/5"
               }`}
             >
               <span className="line-clamp-1">{cleanTitle}</span>
@@ -346,9 +372,6 @@ const TableOfContents = ({
   );
 };
 
-// ============================================
-// MAIN COMPONENT
-// ============================================
 export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps) {
   const [activeSection, setActiveSection] = useState(0);
   const [hasActiveShare, setHasActiveShare] = useState(false);
@@ -368,44 +391,36 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
     offset: ["start start", "end end"],
   });
 
-  // Check for error summary
-  const isErrorSummary = 
-    summary.summary_text.toLowerCase().includes('extraction error') ||
-    summary.summary_text.toLowerCase().includes('object.defineproperty') ||
-    summary.summary_text.toLowerCase().includes('was unable to access') ||
-    summary.summary_text.toLowerCase().includes('i apologize');
+  const isErrorSummary =
+    summary.summary_text.toLowerCase().includes("extraction error") ||
+    summary.summary_text.toLowerCase().includes("object.defineproperty") ||
+    summary.summary_text.toLowerCase().includes("was unable to access") ||
+    summary.summary_text.toLowerCase().includes("i apologize");
 
-  // Parse sections
   const sections = summary.summary_text
     .split("\n#")
     .map((section) => section.trim())
     .filter(Boolean)
     .map(parseSection);
 
-  // Extract preview data for document overview
   const preview = extractSummaryPreview(summary.summary_text, summary.title, null);
 
-  // Track active section based on scroll position
   useEffect(() => {
-    // Cache section elements for better performance
-    const sectionElements = sections.map((_, i) => 
-      document.getElementById(`section-${i}`)
-    ).filter(Boolean) as HTMLElement[];
+    const sectionElements = sections
+      .map((_, i) => document.getElementById(`section-${i}`))
+      .filter(Boolean) as HTMLElement[];
 
     const handleScroll = () => {
-      // Don't update if we're programmatically scrolling
       if (isScrollingRef.current) return;
 
       const headerOffset = 100;
       const scrollPosition = window.scrollY + headerOffset;
 
-      // Use cached elements for better performance
       for (let i = sectionElements.length - 1; i >= 0; i--) {
         const element = sectionElements[i];
         if (element) {
           const elementTop = element.offsetTop;
           if (scrollPosition >= elementTop) {
-            // Only update if section changed
             if (activeSection !== i) {
               setActiveSection(i);
             }
@@ -415,18 +430,17 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
       }
     };
 
-    // Use Intersection Observer for better performance
     const observerOptions = {
       root: null,
-      rootMargin: '-100px 0px -50% 0px',
-      threshold: 0
+      rootMargin: "-100px 0px -50% 0px",
+      threshold: 0,
     };
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const sectionId = entry.target.id;
-          const sectionIndex = parseInt(sectionId.split('-')[1]);
+          const sectionIndex = parseInt(sectionId.split("-")[1]);
           if (!isNaN(sectionIndex) && activeSection !== sectionIndex) {
             setActiveSection(sectionIndex);
           }
@@ -434,12 +448,10 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
       });
     }, observerOptions);
 
-    // Observe all sections
     sectionElements.forEach((el) => {
       if (el) observer.observe(el);
     });
 
-    // Fallback scroll handler (throttled)
     let ticking = false;
     const throttledHandleScroll = () => {
       if (!ticking) {
@@ -451,11 +463,11 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
       }
     };
 
-    window.addEventListener('scroll', throttledHandleScroll, { passive: true });
-    handleScroll(); // Check initial position
+    window.addEventListener("scroll", throttledHandleScroll, { passive: true });
+    handleScroll();
 
     return () => {
-      window.removeEventListener('scroll', throttledHandleScroll);
+      window.removeEventListener("scroll", throttledHandleScroll);
       observer.disconnect();
     };
   }, [sections.length, activeSection]);
@@ -464,25 +476,26 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
   const estimatedReadTime = Math.ceil(totalInsights * 0.5);
   const wordCount = summary.word_count || summary.summary_text.split(/\s+/).length;
 
-  // Fetch workspaces
   const fetchWorkspaces = async () => {
     if (isLoadingWorkspaces) return;
     setIsLoadingWorkspaces(true);
     try {
       const [workspacesRes, sharedDocsRes] = await Promise.all([
         fetch("/api/workspaces"),
-        fetch(`/api/workspaces/documents?workspaceId=all&pdfSummaryId=${summary.id}`).catch(() => null)
+        fetch(`/api/workspaces/documents?workspaceId=all&pdfSummaryId=${summary.id}`).catch(
+          () => null
+        ),
       ]);
-      
+
       if (workspacesRes.ok) {
         const data = await workspacesRes.json();
         setWorkspaces(Array.isArray(data) ? data : []);
-        
+
         if (sharedDocsRes?.ok) {
           const sharedDocs = await sharedDocsRes.json();
-          setWorkspacesWithDocument(new Set(
-            Array.isArray(sharedDocs) ? sharedDocs.map((d: any) => d.workspace_id) : []
-          ));
+          setWorkspacesWithDocument(
+            new Set(Array.isArray(sharedDocs) ? sharedDocs.map((d: any) => d.workspace_id) : [])
+          );
         }
       }
     } catch (error) {
@@ -494,11 +507,11 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
 
   const handleAddToWorkspace = async (workspaceId: string) => {
     if (workspacesWithDocument.has(workspaceId)) return;
-    
-    const workspace = workspaces.find(w => w.id === workspaceId);
+
+    const workspace = workspaces.find((w) => w.id === workspaceId);
     const workspaceName = workspace?.name || "workspace";
     setIsAddingToWorkspace(true);
-    
+
     try {
       const response = await fetch("/api/workspaces/documents", {
         method: "POST",
@@ -511,13 +524,12 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
       });
 
       if (response.ok) {
-        // Show success toast with workspace name
         toast.success(`Added to ${workspaceName}`, {
           description: "The document is now available in the workspace",
           duration: 3000,
         });
-        // Update state to mark document as added
-        setWorkspacesWithDocument(prev => new Set(prev).add(workspaceId));
+
+        setWorkspacesWithDocument((prev) => new Set(prev).add(workspaceId));
       } else {
         const error = await response.json();
         toast.error(error.error || "Failed to add to workspace");
@@ -530,7 +542,6 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
     }
   };
 
-  // Error state
   if (isErrorSummary) {
     return (
       <div className="min-h-screen bg-black">
@@ -544,8 +555,8 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold text-white mb-3">Processing Failed</h2>
                   <p className="text-white/60 mb-6 leading-relaxed">
-                    We couldn't extract text from this document. This usually happens with scanned PDFs, 
-                    password-protected files, or corrupted documents.
+                    We couldn't extract text from this document. This usually happens with scanned
+                    PDFs, password-protected files, or corrupted documents.
                   </p>
                   <div className="flex gap-3">
                     <Link href="/upload">
@@ -555,7 +566,10 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                       </Button>
                     </Link>
                     <Link href="/dashboard">
-                      <Button variant="outline" className="border-white/10 text-white hover:bg-white/5">
+                      <Button
+                        variant="outline"
+                        className="border-white/10 text-white hover:bg-white/5"
+                      >
                         Back to Dashboard
                       </Button>
                     </Link>
@@ -570,50 +584,47 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
   }
 
   return (
-    <div 
-      ref={containerRef} 
+    <div
+      ref={containerRef}
       className="min-h-screen bg-black"
-      style={{ 
-        scrollBehavior: 'smooth',
-        WebkitOverflowScrolling: 'touch',
-        overscrollBehavior: 'contain'
+      style={{
+        scrollBehavior: "smooth",
+        WebkitOverflowScrolling: "touch",
+        overscrollBehavior: "contain",
       }}
     >
-      {/* Progress bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 origin-left z-50"
-        style={{ 
+        style={{
           scaleX: scrollYProgress,
-          willChange: 'transform',
-          transform: 'translateZ(0)',
-          WebkitTransform: 'translateZ(0)',
-          backfaceVisibility: 'hidden',
-          WebkitBackfaceVisibility: 'hidden'
+          willChange: "transform",
+          transform: "translateZ(0)",
+          WebkitTransform: "translateZ(0)",
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
         }}
       />
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-black/80 border-b border-white/5" style={{
-        willChange: 'transform',
-        transform: 'translateZ(0)',
-        WebkitTransform: 'translateZ(0)',
-        backfaceVisibility: 'hidden'
-      }}>
+      <header
+        className="sticky top-0 z-40 backdrop-blur-xl bg-black/80 border-b border-white/5"
+        style={{
+          willChange: "transform",
+          transform: "translateZ(0)",
+          WebkitTransform: "translateZ(0)",
+          backfaceVisibility: "hidden",
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Left */}
-            <Link 
-              href="/dashboard" 
+            <Link
+              href="/dashboard"
               className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
               <span className="text-sm font-medium hidden sm:block">Dashboard</span>
             </Link>
 
-
-            {/* Right - Actions */}
             <div className="flex items-center gap-2">
-              {/* Workspace Dropdown */}
               <DropdownMenu
                 onOpenChange={(open) => {
                   if (open && !hasFetchedWorkspaces.current) {
@@ -624,7 +635,11 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 }}
               >
                 <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/5 hover:!text-white">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-white/10 text-white hover:bg-white/5 hover:!text-white"
+                  >
                     <Building2 className="w-4 h-4 sm:mr-2" />
                     <span className="hidden sm:block">Workspace</span>
                   </Button>
@@ -650,9 +665,11 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                             disabled={added || isAddingToWorkspace}
                             className="flex items-center gap-3 p-2 rounded-lg cursor-pointer text-white hover:!text-white focus:!text-white focus:bg-white/10 hover:bg-white/10"
                           >
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                              added ? 'bg-green-500/10' : 'bg-blue-500/10'
-                            }`}>
+                            <div
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                added ? "bg-green-500/10" : "bg-blue-500/10"
+                              }`}
+                            >
                               {added ? (
                                 <Check className="w-4 h-4 text-green-400" />
                               ) : (
@@ -671,47 +688,44 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Share */}
-              <Button 
+              <Button
                 type="button"
-                size="sm" 
-                variant="outline" 
+                size="sm"
+                variant="outline"
                 className="border-white/10 text-white hover:bg-white/5 hover:!text-white relative z-10"
                 onClick={async (e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  
-                  // Show dialog immediately for instant feedback
+
                   setShowShareDialog(true);
                   setIsGeneratingShareLink(true);
                   setShareUrl(null);
-                  
+
                   try {
-                    const res = await fetch(`/api/summaries/${summary.id}/share`, { 
+                    const res = await fetch(`/api/summaries/${summary.id}/share`, {
                       method: "POST",
                       headers: {
                         "Content-Type": "application/json",
-                      }
+                      },
                     });
-                    
+
                     if (!res.ok) {
                       const errorData = await res.json().catch(() => ({}));
-                      const errorMessage = errorData.error || errorData.message || `HTTP error! status: ${res.status}`;
+                      const errorMessage =
+                        errorData.error || errorData.message || `HTTP error! status: ${res.status}`;
                       throw new Error(errorMessage);
                     }
-                    
+
                     const data = await res.json();
-                    
+
                     if (!data.shareUrl) {
                       throw new Error("Share URL not found in response");
                     }
-                    
-                    // Copy to clipboard
+
                     try {
                       if (navigator.clipboard && navigator.clipboard.writeText) {
                         await navigator.clipboard.writeText(data.shareUrl);
                       } else {
-                        // Fallback for browsers that don't support clipboard API
                         const textArea = document.createElement("textarea");
                         textArea.value = data.shareUrl;
                         textArea.style.position = "fixed";
@@ -719,14 +733,13 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                         document.body.appendChild(textArea);
                         textArea.focus();
                         textArea.select();
-                        document.execCommand('copy');
+                        document.execCommand("copy");
                         document.body.removeChild(textArea);
                       }
                     } catch (clipboardError) {
                       console.error("Clipboard error:", clipboardError);
                     }
-                    
-                    // Update dialog with share URL
+
                     setShareUrl(data.shareUrl);
                     setIsGeneratingShareLink(false);
                     setHasActiveShare(true);
@@ -750,10 +763,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
         </div>
       </header>
 
-
-      {/* Hero Section */}
       <section className="relative py-12 sm:py-16 lg:py-24 overflow-hidden">
-        {/* Background effects */}
         <div className="absolute inset-0">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
@@ -761,7 +771,6 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
-            {/* Icon */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -771,7 +780,6 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
               <BookOpen className="w-10 h-10 text-white" />
             </motion.div>
 
-            {/* Title */}
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -781,7 +789,6 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
               {summary.title}
             </motion.h1>
 
-            {/* Stats */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -806,7 +813,6 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
               </div>
             </motion.div>
 
-            {/* CTA */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -814,7 +820,10 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
               className="mt-10"
             >
               <Link href={`/chatbot/${summary.id}`}>
-                <Button size="lg" className="bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:opacity-90 text-lg px-8 py-6 rounded-2xl shadow-2xl shadow-orange-500/25">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:opacity-90 text-lg px-8 py-6 rounded-2xl shadow-2xl shadow-orange-500/25"
+                >
                   <MessageSquare className="w-5 h-5 mr-3" />
                   Chat with this Document
                   <ArrowUpRight className="w-5 h-5 ml-3" />
@@ -825,11 +834,9 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
         </div>
       </section>
 
-      {/* Document Overview Section */}
       <section className="py-8 lg:py-12 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Document Type Card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -851,7 +858,6 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
               </GlowCard>
             </motion.div>
 
-            {/* Sections Count Card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -866,14 +872,13 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-white/40 mb-1">Total Sections</p>
                     <p className="text-sm font-semibold text-white">
-                      {sections.length} {sections.length === 1 ? 'section' : 'sections'}
+                      {sections.length} {sections.length === 1 ? "section" : "sections"}
                     </p>
                   </div>
                 </div>
               </GlowCard>
             </motion.div>
 
-            {/* Insights Count Card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -888,14 +893,13 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-white/40 mb-1">Key Insights</p>
                     <p className="text-sm font-semibold text-white">
-                      {totalInsights} {totalInsights === 1 ? 'insight' : 'insights'}
+                      {totalInsights} {totalInsights === 1 ? "insight" : "insights"}
                     </p>
                   </div>
                 </div>
               </GlowCard>
             </motion.div>
 
-            {/* Reading Time Card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -910,7 +914,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-white/40 mb-1">Reading Time</p>
                     <p className="text-sm font-semibold text-white">
-                      ~{estimatedReadTime} {estimatedReadTime === 1 ? 'minute' : 'minutes'}
+                      ~{estimatedReadTime} {estimatedReadTime === 1 ? "minute" : "minutes"}
                     </p>
                   </div>
                 </div>
@@ -918,7 +922,6 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
             </motion.div>
           </div>
 
-          {/* Document Highlights */}
           {preview.keyPoints.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -959,53 +962,55 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
         </div>
       </section>
 
-      {/* Main Content */}
-      <section 
+      <section
         className="py-12 lg:py-16"
         style={{
-          transform: 'translateZ(0)',
-          WebkitTransform: 'translateZ(0)',
-          backfaceVisibility: 'hidden'
+          transform: "translateZ(0)",
+          WebkitTransform: "translateZ(0)",
+          backfaceVisibility: "hidden",
         }}
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Content */}
           <main className="space-y-6">
-              {sections.map((section, index) => (
-                <SectionCard key={index} section={section} index={index} />
-              ))}
+            {sections.map((section, index) => (
+              <SectionCard key={index} section={section} index={index} />
+            ))}
 
-              {/* Bottom CTA */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="pt-8"
-              >
-                <GlowCard className="bg-gradient-to-br from-[#0a0a0a] to-[#111] rounded-3xl">
-                  <div className="p-8 sm:p-12 text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 border border-orange-500/20 flex items-center justify-center mx-auto mb-6">
-                      <Sparkles className="w-8 h-8 text-orange-400" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-3">Have questions about this document?</h3>
-                    <p className="text-white/50 mb-8 max-w-md mx-auto">
-                      Start a conversation with our AI to explore deeper insights and get instant answers.
-                    </p>
-                    <Link href={`/chatbot/${summary.id}`}>
-                      <Button size="lg" className="bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:opacity-90 px-8 py-6 rounded-2xl">
-                        <MessageSquare className="w-5 h-5 mr-3" />
-                        Start Chatting
-                        <ChevronRight className="w-5 h-5 ml-2" />
-                      </Button>
-                    </Link>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="pt-8"
+            >
+              <GlowCard className="bg-gradient-to-br from-[#0a0a0a] to-[#111] rounded-3xl">
+                <div className="p-8 sm:p-12 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 border border-orange-500/20 flex items-center justify-center mx-auto mb-6">
+                    <Sparkles className="w-8 h-8 text-orange-400" />
                   </div>
-                </GlowCard>
-              </motion.div>
-            </main>
+                  <h3 className="text-2xl font-bold text-white mb-3">
+                    Have questions about this document?
+                  </h3>
+                  <p className="text-white/50 mb-8 max-w-md mx-auto">
+                    Start a conversation with our AI to explore deeper insights and get instant
+                    answers.
+                  </p>
+                  <Link href={`/chatbot/${summary.id}`}>
+                    <Button
+                      size="lg"
+                      className="bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:opacity-90 px-8 py-6 rounded-2xl"
+                    >
+                      <MessageSquare className="w-5 h-5 mr-3" />
+                      Start Chatting
+                      <ChevronRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
+              </GlowCard>
+            </motion.div>
+          </main>
         </div>
       </section>
 
-      {/* Share Success Dialog */}
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
         <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-md [&>button]:hidden">
           {isGeneratingShareLink ? (
@@ -1044,7 +1049,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                   Your share link has been copied. You can now share it with others.
                 </DialogDescription>
               </DialogHeader>
-              
+
               <div className="mt-4 space-y-3">
                 <div className="p-3 rounded-lg bg-white/5 border border-white/10">
                   <p className="text-xs text-white/40 mb-1.5">Share Link:</p>
@@ -1072,7 +1077,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                             textArea.style.left = "-999999px";
                             document.body.appendChild(textArea);
                             textArea.select();
-                            document.execCommand('copy');
+                            document.execCommand("copy");
                             document.body.removeChild(textArea);
                             toast.success("Copied again!", { duration: 2000 });
                           }
@@ -1101,4 +1106,3 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
     </div>
   );
 }
-

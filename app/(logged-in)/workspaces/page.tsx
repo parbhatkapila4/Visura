@@ -11,7 +11,3 @@ export default async function WorkspacesPage() {
 
   return <WorkspacesClient />;
 }
-
-
-
-

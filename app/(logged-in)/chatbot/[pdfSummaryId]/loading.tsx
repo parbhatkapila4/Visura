@@ -1,7 +1,6 @@
 export default function ChatbotLoading() {
   return (
     <div className="fixed inset-0 flex flex-col bg-black">
-      {/* Header Skeleton */}
       <div className="w-full px-4 sm:px-6 lg:px-8 py-4 border-b border-gray-800 flex-shrink-0">
         <div className="max-w-[1600px] mx-auto flex items-center justify-between">
           <div className="h-7 w-24 bg-orange-600/30 rounded-lg animate-pulse" />
@@ -10,10 +9,8 @@ export default function ChatbotLoading() {
         </div>
       </div>
 
-      {/* Main Content Skeleton */}
       <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-4">
         <div className="max-w-[1600px] mx-auto h-full flex gap-6">
-          {/* Sidebar Skeleton */}
           <div className="w-80 hidden lg:block">
             <div className="h-full bg-gray-900 border border-gray-800 rounded-3xl p-5 space-y-3 animate-pulse">
               <div className="flex items-center justify-between mb-4">
@@ -29,17 +26,13 @@ export default function ChatbotLoading() {
             </div>
           </div>
 
-          {/* Chat Area Skeleton */}
           <div className="flex-1">
             <div className="h-full bg-gray-900 border border-gray-800 rounded-3xl flex flex-col animate-pulse">
-              {/* Chat Header */}
               <div className="p-5 border-b border-gray-800">
                 <div className="h-6 w-40 bg-gray-800 rounded" />
               </div>
 
-              {/* Messages Area */}
               <div className="flex-1 p-6 space-y-5">
-                {/* AI Message */}
                 <div className="flex gap-3">
                   <div className="w-9 h-9 bg-gray-800 rounded-xl" />
                   <div className="flex-1 space-y-2">
@@ -49,7 +42,6 @@ export default function ChatbotLoading() {
                   </div>
                 </div>
 
-                {/* User Message */}
                 <div className="flex gap-3 justify-end">
                   <div className="w-2/3 space-y-2">
                     <div className="h-4 bg-orange-800/30 rounded w-full ml-auto" />
@@ -59,7 +51,6 @@ export default function ChatbotLoading() {
                 </div>
               </div>
 
-              {/* Input Area */}
               <div className="p-5 border-t border-gray-800">
                 <div className="flex gap-3">
                   <div className="flex-1 h-12 bg-gray-800/60 rounded-xl" />
@@ -73,4 +64,3 @@ export default function ChatbotLoading() {
     </div>
   );
 }
-

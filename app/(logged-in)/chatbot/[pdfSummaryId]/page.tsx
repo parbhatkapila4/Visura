@@ -36,11 +36,10 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
     <div className="fixed inset-0 flex flex-col bg-background">
       <BgGradient className="from-black via-gray-900 to-black" />
 
-      {/* Fixed Header - Always Visible */}
       <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4 bg-black/50 backdrop-blur-sm border-b border-gray-800 z-30 flex-shrink-0">
         <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-2">
-          <Link 
-            href="/dashboard" 
+          <Link
+            href="/dashboard"
             className="group flex items-center px-2 py-1 sm:px-3 sm:py-1.5 lg:px-4 lg:py-2 bg-orange-500 border border-orange-500 text-white hover:bg-orange-600 hover:border-orange-600 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300 hover:scale-105 active:scale-95 rounded-md sm:rounded-lg lg:rounded-xl font-medium text-xs sm:text-sm lg:text-base h-6 sm:h-7 lg:h-10 flex-shrink-0"
           >
             <ArrowLeft className="h-2.5 w-2.5 sm:h-3 sm:w-3 lg:h-4 lg:w-4 transition-transform duration-200 group-hover:-translate-x-1" />
@@ -56,7 +55,6 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
         </div>
       </div>
 
-      {/* Main Content Area */}
       <div className="flex-1 w-full px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4 overflow-hidden">
         <div className="max-w-[1600px] mx-auto h-full">
           {pdfStore ? (
@@ -85,8 +83,8 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
                       Chatbot Not Available
                     </h3>
                     <p className="text-gray-600 text-center mb-4 text-sm lg:text-base px-4">
-                      The chatbot functionality is not yet initialized for this
-                      document. This usually happens when PDF text extraction failed during upload.
+                      The chatbot functionality is not yet initialized for this document. This
+                      usually happens when PDF text extraction failed during upload.
                     </p>
                     <div className="text-xs text-gray-500 space-y-1 mb-4">
                       <p>Document ID: {pdfSummaryId}</p>

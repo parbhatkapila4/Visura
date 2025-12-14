@@ -1,7 +1,18 @@
 "use client";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { Upload, FileText, Sparkles, CheckCircle2, MessageCircle, Play, Pause, Zap, ArrowRight, Loader2 } from "lucide-react";
+import {
+  Upload,
+  FileText,
+  Sparkles,
+  CheckCircle2,
+  MessageCircle,
+  Play,
+  Pause,
+  Zap,
+  ArrowRight,
+  Loader2,
+} from "lucide-react";
 
 const MockPDFViewer = () => (
   <div className="w-full h-full bg-white rounded-xl overflow-hidden shadow-2xl border border-gray-200">
@@ -11,7 +22,9 @@ const MockPDFViewer = () => (
         <div className="w-3 h-3 rounded-full bg-yellow-400 shadow-sm" />
         <div className="w-3 h-3 rounded-full bg-green-400 shadow-sm" />
       </div>
-      <div className="flex-1 text-center text-sm text-gray-600 font-semibold">quarterly_report.pdf</div>
+      <div className="flex-1 text-center text-sm text-gray-600 font-semibold">
+        quarterly_report.pdf
+      </div>
     </div>
     <div className="p-6 space-y-4 bg-gradient-to-br from-white via-gray-50 to-white">
       <div className="space-y-2">
@@ -42,15 +55,19 @@ const AIChatInterface = ({ isActive }: { isActive: boolean }) => {
 
   const demoMessages = [
     { role: "user", content: "What are the key findings?" },
-    { role: "ai", content: "Key findings:\n\n1. Revenue up 23% YoY\n2. CAC reduced by 15%\n3. 3 new market regions\n4. NPS score: 72" },
+    {
+      role: "ai",
+      content:
+        "Key findings:\n\n1. Revenue up 23% YoY\n2. CAC reduced by 15%\n3. 3 new market regions\n4. NPS score: 72",
+    },
   ];
 
   useEffect(() => {
     if (!isActive) return;
     const showNext = () => {
       if (currentMessage < demoMessages.length) {
-        setMessages(prev => [...prev, demoMessages[currentMessage]]);
-        setCurrentMessage(prev => prev + 1);
+        setMessages((prev) => [...prev, demoMessages[currentMessage]]);
+        setCurrentMessage((prev) => prev + 1);
       }
     };
     const timeout = setTimeout(showNext, currentMessage === 0 ? 800 : 2000);
@@ -60,14 +77,14 @@ const AIChatInterface = ({ isActive }: { isActive: boolean }) => {
   return (
     <div className="w-full h-full bg-gradient-to-br from-gray-950 via-black to-gray-950 rounded-xl overflow-hidden flex flex-col border border-white/10 shadow-2xl">
       <div className="px-5 py-4 border-b border-white/10 flex items-center gap-3 bg-black/60 backdrop-blur-sm">
-        <motion.div 
+        <motion.div
           className="w-10 h-10 rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] flex items-center justify-center shadow-lg"
-          animate={{ 
+          animate={{
             boxShadow: [
               "0 0 20px rgba(255,107,0,0.3)",
               "0 0 30px rgba(255,0,255,0.4)",
-              "0 0 20px rgba(255,107,0,0.3)"
-            ]
+              "0 0 20px rgba(255,107,0,0.3)",
+            ],
           }}
           transition={{ duration: 2, repeat: Infinity }}
         >
@@ -89,13 +106,15 @@ const AIChatInterface = ({ isActive }: { isActive: boolean }) => {
               initial={{ opacity: 0, y: 15, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.4, type: "spring", stiffness: 200 }}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
-              <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-                msg.role === 'user' 
-                  ? 'bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] text-white rounded-br-md shadow-xl' 
-                  : 'bg-white/10 text-white/95 rounded-bl-md backdrop-blur-sm border border-white/5'
-              }`}>
+              <div
+                className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                  msg.role === "user"
+                    ? "bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] text-white rounded-br-md shadow-xl"
+                    : "bg-white/10 text-white/95 rounded-bl-md backdrop-blur-sm border border-white/5"
+                }`}
+              >
                 <div className="whitespace-pre-line">{msg.content}</div>
               </div>
             </motion.div>
@@ -107,49 +126,56 @@ const AIChatInterface = ({ isActive }: { isActive: boolean }) => {
 };
 
 const ProcessingStage = ({ icon: Icon, label, isActive, isComplete, index }: any) => {
-  const stageIndex = ['uploading', 'processing', 'analyzing', 'complete'].indexOf(label.toLowerCase().replace('...', '').replace('!', ''));
-  
+  const stageIndex = ["uploading", "processing", "analyzing", "complete"].indexOf(
+    label.toLowerCase().replace("...", "").replace("!", "")
+  );
+
   return (
     <motion.div
       className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all overflow-hidden ${
-        isActive 
-          ? 'bg-gradient-to-r from-[#ff6b00]/20 to-[#ff00ff]/20 border-2 border-[#ff6b00]/40 shadow-lg' 
-          : isComplete 
-            ? 'bg-emerald-500/10 border-2 border-emerald-500/30' 
-            : 'bg-white/5 border border-white/10'
+        isActive
+          ? "bg-gradient-to-r from-[#ff6b00]/20 to-[#ff00ff]/20 border-2 border-[#ff6b00]/40 shadow-lg"
+          : isComplete
+          ? "bg-emerald-500/10 border-2 border-emerald-500/30"
+          : "bg-white/5 border border-white/10"
       }`}
-      animate={isActive ? { 
-        scale: [1, 1.02, 1],
-        boxShadow: [
-          "0 0 0px rgba(255,107,0,0)",
-          "0 0 20px rgba(255,107,0,0.3)",
-          "0 0 0px rgba(255,107,0,0)"
-        ]
-      } : {}}
+      animate={
+        isActive
+          ? {
+              scale: [1, 1.02, 1],
+              boxShadow: [
+                "0 0 0px rgba(255,107,0,0)",
+                "0 0 20px rgba(255,107,0,0.3)",
+                "0 0 0px rgba(255,107,0,0)",
+              ],
+            }
+          : {}
+      }
       transition={{ duration: 2, repeat: isActive ? Infinity : 0 }}
     >
-      {/* Animated background gradient */}
       {isActive && (
         <motion.div
           className="absolute inset-0 bg-gradient-to-r from-[#ff6b00]/10 via-[#ff00ff]/10 to-[#ff6b00]/10"
           animate={{
-            x: ['-100%', '100%'],
+            x: ["-100%", "100%"],
           }}
           transition={{
             duration: 2,
             repeat: Infinity,
-            ease: "linear"
+            ease: "linear",
           }}
         />
       )}
-      
-      <div className={`relative z-10 w-10 h-10 rounded-lg flex items-center justify-center ${
-        isComplete 
-          ? 'bg-emerald-500/20 border-2 border-emerald-400/50' 
-          : isActive 
-            ? 'bg-gradient-to-br from-[#ff6b00]/30 to-[#ff00ff]/30 border-2 border-[#ff6b00]/50' 
-            : 'bg-white/5 border border-white/10'
-      }`}>
+
+      <div
+        className={`relative z-10 w-10 h-10 rounded-lg flex items-center justify-center ${
+          isComplete
+            ? "bg-emerald-500/20 border-2 border-emerald-400/50"
+            : isActive
+            ? "bg-gradient-to-br from-[#ff6b00]/30 to-[#ff00ff]/30 border-2 border-[#ff6b00]/50"
+            : "bg-white/5 border border-white/10"
+        }`}
+      >
         {isComplete ? (
           <CheckCircle2 className="w-5 h-5 text-emerald-400" />
         ) : isActive ? (
@@ -164,7 +190,11 @@ const ProcessingStage = ({ icon: Icon, label, isActive, isComplete, index }: any
         )}
       </div>
       <div className="relative z-10 flex-1 min-w-0">
-        <div className={`text-sm font-semibold ${isComplete || isActive ? 'text-white' : 'text-white/40'}`}>
+        <div
+          className={`text-sm font-semibold ${
+            isComplete || isActive ? "text-white" : "text-white/40"
+          }`}
+        >
           {label}
         </div>
         {isActive && (
@@ -186,20 +216,22 @@ export default function DemoSection() {
   const ref = useRef(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [demoStage, setDemoStage] = useState<'idle' | 'uploading' | 'processing' | 'analyzing' | 'complete'>('idle');
+  const [demoStage, setDemoStage] = useState<
+    "idle" | "uploading" | "processing" | "analyzing" | "complete"
+  >("idle");
   const [showChat, setShowChat] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
   const stages = [
-    { id: 'uploading', icon: Upload, label: 'Uploading...' },
-    { id: 'processing', icon: FileText, label: 'Processing...' },
-    { id: 'analyzing', icon: Sparkles, label: 'AI analyzing...' },
-    { id: 'complete', icon: CheckCircle2, label: 'Ready!' },
+    { id: "uploading", icon: Upload, label: "Uploading..." },
+    { id: "processing", icon: FileText, label: "Processing..." },
+    { id: "analyzing", icon: Sparkles, label: "AI analyzing..." },
+    { id: "complete", icon: CheckCircle2, label: "Ready!" },
   ];
 
   const startDemo = () => {
     if (videoRef.current) {
-      videoRef.current.style.display = 'block';
+      videoRef.current.style.display = "block";
       setIsPlaying(true);
       videoRef.current.play().catch((error) => {
         console.error("Error playing video:", error);
@@ -212,23 +244,21 @@ export default function DemoSection() {
       setIsPlaying(false);
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
-      videoRef.current.style.display = 'none';
-      setDemoStage('idle');
+      videoRef.current.style.display = "none";
+      setDemoStage("idle");
       setShowChat(false);
     }
   };
 
   const handleVideoEnd = () => {
     setIsPlaying(false);
-    setDemoStage('idle');
+    setDemoStage("idle");
     setShowChat(false);
   };
 
   useEffect(() => {
-    // Ensure video is loaded and optimize performance
     if (videoRef.current) {
       videoRef.current.load();
-      // Optimize video playback
       videoRef.current.defaultPlaybackRate = 1.0;
       videoRef.current.playbackRate = 1.0;
     }
@@ -236,48 +266,52 @@ export default function DemoSection() {
 
   return (
     <section ref={ref} id="demo" className="relative py-24 overflow-hidden bg-black">
-      {/* Enhanced background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,107,0,0.12)_0%,transparent_70%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,0,255,0.08)_0%,transparent_50%)]" />
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <motion.div 
+          <motion.div
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#ff6b00]/40 bg-gradient-to-r from-[#ff6b00]/10 to-[#ff00ff]/10 mb-6 backdrop-blur-sm"
-            whileHover={{ scale: 1.05, borderColor: "rgba(255,107,0,0.6)", boxShadow: "0 0 20px rgba(255,107,0,0.2)" }}
+            whileHover={{
+              scale: 1.05,
+              borderColor: "rgba(255,107,0,0.6)",
+              boxShadow: "0 0 20px rgba(255,107,0,0.2)",
+            }}
           >
             <Zap className="w-4 h-4 text-[#ff6b00]" />
             <span className="text-sm font-semibold text-white/90">Live Demo</span>
           </motion.div>
 
           <h2 className="text-4xl md:text-6xl font-black text-white mb-5 tracking-tight">
-            See the<span className="bg-gradient-to-r from-[#ff6b00] via-[#ff00ff] to-[#00ff88] bg-clip-text text-transparent"> magic </span>happen
+            See the
+            <span className="bg-gradient-to-r from-[#ff6b00] via-[#ff00ff] to-[#00ff88] bg-clip-text text-transparent">
+              {" "}
+              magic{" "}
+            </span>
+            happen
           </h2>
           <p className="text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
             Watch as we transform a 50-page document into actionable insights in real-time.
           </p>
         </motion.div>
 
-        {/* Demo Container */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 0.2 }}
           className="relative"
         >
-          {/* Glow effect */}
           <div className="absolute -inset-1 bg-gradient-to-r from-[#ff6b00] via-[#ff00ff] to-[#00ff88] rounded-2xl opacity-20 blur-xl" />
-          
+
           <div className="relative rounded-2xl overflow-hidden border-2 border-white/10 bg-gradient-to-br from-white/[0.05] via-black/50 to-black backdrop-blur-2xl shadow-2xl">
-            {/* Browser Bar */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-gradient-to-r from-black/80 via-black/60 to-black/80 backdrop-blur-xl">
               <div className="flex items-center gap-4">
                 <div className="flex gap-2">
@@ -303,9 +337,7 @@ export default function DemoSection() {
                 whileTap={{ scale: 0.95 }}
                 type="button"
               >
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-[#ff00ff] to-[#ff6b00] opacity-0 group-hover:opacity-100 transition-opacity"
-                />
+                <motion.div className="absolute inset-0 bg-gradient-to-r from-[#ff00ff] to-[#ff6b00] opacity-0 group-hover:opacity-100 transition-opacity" />
                 {isPlaying ? (
                   <>
                     <Pause className="w-4 h-4 relative z-10" />
@@ -320,30 +352,27 @@ export default function DemoSection() {
               </motion.button>
             </div>
 
-            {/* Main Content */}
             <div className="grid md:grid-cols-2 gap-6 p-6">
-              {/* Left: Video Player */}
               <div className="space-y-4">
-                <div 
+                <div
                   className="relative h-[320px] rounded-xl overflow-hidden group bg-black"
                   style={{
-                    transform: 'translateZ(0)',
-                    willChange: 'contents',
-                    backfaceVisibility: 'hidden'
+                    transform: "translateZ(0)",
+                    willChange: "contents",
+                    backfaceVisibility: "hidden",
                   }}
                 >
-                  {/* Video element - always in DOM */}
                   <video
                     ref={videoRef}
                     src="/visura-demo.mp4"
                     className="w-full h-full object-contain"
-                    style={{ 
-                      display: isPlaying ? 'block' : 'none',
-                      transform: 'translateZ(0)',
-                      willChange: 'auto',
-                      backfaceVisibility: 'hidden',
-                      WebkitTransform: 'translateZ(0)',
-                      WebkitBackfaceVisibility: 'hidden'
+                    style={{
+                      display: isPlaying ? "block" : "none",
+                      transform: "translateZ(0)",
+                      willChange: "auto",
+                      backfaceVisibility: "hidden",
+                      WebkitTransform: "translateZ(0)",
+                      WebkitBackfaceVisibility: "hidden",
                     }}
                     controls={true}
                     onEnded={handleVideoEnd}
@@ -356,7 +385,6 @@ export default function DemoSection() {
                     onError={(e) => {
                       console.error("Video error:", e, videoRef.current?.error);
                       setIsPlaying(false);
-                      setIsLoading(false);
                     }}
                     playsInline
                     preload="none"
@@ -364,8 +392,7 @@ export default function DemoSection() {
                     disablePictureInPicture
                     disableRemotePlayback
                   />
-                  
-                  {/* Overlay when not playing */}
+
                   {!isPlaying && (
                     <div className="absolute inset-0">
                       <MockPDFViewer />
@@ -390,8 +417,7 @@ export default function DemoSection() {
                     </div>
                   )}
                 </div>
-                
-                {/* Processing Stages */}
+
                 <div className="space-y-2">
                   {stages.map((stage, index) => (
                     <ProcessingStage
@@ -399,13 +425,15 @@ export default function DemoSection() {
                       {...stage}
                       index={index}
                       isActive={demoStage === stage.id}
-                      isComplete={stages.findIndex(s => s.id === demoStage) > stages.findIndex(s => s.id === stage.id)}
+                      isComplete={
+                        stages.findIndex((s) => s.id === demoStage) >
+                        stages.findIndex((s) => s.id === stage.id)
+                      }
                     />
                   ))}
                 </div>
               </div>
 
-              {/* Right: AI Chat */}
               <div className="relative">
                 <div className="h-[320px] rounded-xl overflow-hidden">
                   {showChat ? (
@@ -413,15 +441,17 @@ export default function DemoSection() {
                   ) : (
                     <div className="h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-950 via-black to-gray-950 text-center p-8 border-2 border-dashed border-white/10 rounded-xl">
                       <motion.div
-                        animate={{ 
+                        animate={{
                           scale: [1, 1.1, 1],
-                          opacity: [0.3, 0.5, 0.3]
+                          opacity: [0.3, 0.5, 0.3],
                         }}
                         transition={{ duration: 2, repeat: Infinity }}
                       >
                         <MessageCircle className="w-16 h-16 text-white/20 mb-4" />
                       </motion.div>
-                      <div className="text-white/50 text-sm font-medium">AI chat will appear here after processing</div>
+                      <div className="text-white/50 text-sm font-medium">
+                        AI chat will appear here after processing
+                      </div>
                     </div>
                   )}
                 </div>
@@ -430,14 +460,15 @@ export default function DemoSection() {
           </div>
         </motion.div>
 
-        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-center mt-12"
         >
-          <p className="text-white/50 text-base mb-6">Ready to experience this with your own documents?</p>
+          <p className="text-white/50 text-base mb-6">
+            Ready to experience this with your own documents?
+          </p>
           <motion.a
             href="/sign-up"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black font-bold text-base shadow-2xl group"
@@ -445,8 +476,8 @@ export default function DemoSection() {
             whileTap={{ scale: 0.95 }}
           >
             Try it free
-            <motion.span 
-              animate={{ x: [0, 5, 0] }} 
+            <motion.span
+              animate={{ x: [0, 5, 0] }}
               transition={{ duration: 1.5, repeat: Infinity }}
               className="group-hover:translate-x-1 transition-transform"
             >

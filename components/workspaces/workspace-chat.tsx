@@ -309,33 +309,36 @@ export default function WorkspaceChat({ workspaceId }: WorkspaceChatProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#0f0f0f] border border-white/10 rounded-xl overflow-hidden">
-      <div className="p-4 border-b border-white/5 bg-[#0a0a0a]">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center">
-            <MessageCircle className="w-5 h-5 text-white/70" />
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Header */}
+      <div className="p-5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center">
+              <MessageCircle className="w-4 h-4 text-violet-400" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-white">Team Chat</h3>
+              <p className="text-xs text-white/40">{messages.length} messages</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-bold text-white">Team Chat</h3>
-            <p className="text-xs text-white/40">
-              {messages.length} {messages.length === 1 ? "message" : "messages"}
-            </p>
-          </div>
+          <div className="w-2 h-2 rounded-full bg-emerald-500" title="Live" />
         </div>
       </div>
 
+      {/* Messages */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
-        style={{ maxHeight: "calc(100vh - 300px)" }}
+        className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide"
+        style={{ maxHeight: "calc(100vh - 350px)" }}
       >
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center py-12">
-            <div className="w-16 h-16 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
-              <MessageCircle className="w-8 h-8 text-white/30" />
+          <div className="flex flex-col items-center justify-center h-full text-center py-8">
+            <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-3">
+              <MessageCircle className="w-6 h-6 text-white/20" />
             </div>
-            <p className="text-white/50 text-sm mb-1">No messages found</p>
-            <p className="text-xs text-white/30">Start the conversation with your team</p>
+            <p className="text-sm text-white/40">No messages yet</p>
+            <p className="text-xs text-white/20">Start the conversation</p>
           </div>
         ) : (
           <>
@@ -361,7 +364,8 @@ export default function WorkspaceChat({ workspaceId }: WorkspaceChatProps) {
         </div>
       )}
 
-      <div className="p-4 border-t border-white/5 bg-[#0a0a0a]">
+      {/* Input */}
+      <div className="p-4 border-t border-white/[0.06]">
         <div className="flex items-center gap-2">
           <Input
             value={inputMessage}
@@ -369,19 +373,19 @@ export default function WorkspaceChat({ workspaceId }: WorkspaceChatProps) {
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
             disabled={isSending}
-            className="flex-1 h-11 bg-white/5 border-white/10 text-white placeholder:text-white/25 rounded-xl focus:bg-white/10 focus:ring-2 focus:ring-white/20"
+            className="flex-1 h-10 bg-white/5 border-white/[0.06] text-white text-sm placeholder:text-white/30 rounded-lg focus:border-white/20"
           />
-          <Button
+          <button
             onClick={handleSendMessage}
             disabled={!inputMessage.trim() || isSending}
-            className="h-11 px-4 bg-white text-black hover:bg-white/90 font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-violet-500/25 transition-all"
           >
             {isSending ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <Send className="w-4 h-4" />
             )}
-          </Button>
+          </button>
         </div>
       </div>
     </div>
@@ -417,31 +421,33 @@ const MessageItem = React.memo(
     );
 
     return (
-      <div className={`flex gap-3 ${isOwn ? "flex-row-reverse" : ""}`}>
+      <div className={`flex gap-2.5 ${isOwn ? "flex-row-reverse" : ""}`}>
         <div className="flex-shrink-0">
           <div
-            className={`w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm ${
-              isOwn ? "bg-white text-black" : "bg-white/10 border border-white/10"
+            className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold ${
+              isOwn 
+                ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white" 
+                : "bg-white/10 text-white/80"
             }`}
           >
             {initials}
           </div>
         </div>
 
-        <div className={`flex flex-col gap-1 max-w-[70%] ${isOwn ? "items-end" : "items-start"}`}>
+        <div className={`flex flex-col gap-0.5 max-w-[75%] ${isOwn ? "items-end" : "items-start"}`}>
           <div className={`flex items-center gap-2 ${isOwn ? "flex-row-reverse" : ""}`}>
-            <span className="text-xs font-semibold text-white/80">{displayName}</span>
-            <span className="text-xs text-white/30">{formattedTime}</span>
+            <span className="text-[11px] font-medium text-white/60">{displayName}</span>
+            <span className="text-[10px] text-white/30">{formattedTime}</span>
           </div>
 
           <div
-            className={`px-4 py-2.5 rounded-xl ${
+            className={`px-3 py-2 rounded-xl text-sm ${
               isOwn
-                ? "bg-white text-black rounded-br-sm"
-                : "bg-white/5 border border-white/10 text-white rounded-bl-sm"
+                ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white rounded-tr-sm"
+                : "bg-white/5 text-white/90 rounded-tl-sm"
             }`}
           >
-            <p className="text-sm whitespace-pre-wrap break-words">{message.message_content}</p>
+            <p className="whitespace-pre-wrap break-words leading-relaxed">{message.message_content}</p>
           </div>
         </div>
       </div>

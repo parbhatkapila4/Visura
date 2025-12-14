@@ -1,18 +1,20 @@
 "use client";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { Sparkles, MessageSquare, Shield, Zap, FileText, Brain, Lock, Download, Eye, Cpu } from "lucide-react";
+import {
+  Sparkles,
+  MessageSquare,
+  Shield,
+  Zap,
+  FileText,
+  Brain,
+  Lock,
+  Download,
+  Eye,
+  Cpu,
+} from "lucide-react";
 
-// ============================================
-// FEATURE CARD WITH 3D HOVER
-// ============================================
-const FeatureCard = ({ 
-  feature, 
-  index 
-}: { 
-  feature: typeof features[0]; 
-  index: number;
-}) => {
+const FeatureCard = ({ feature, index }: { feature: (typeof features)[0]; index: number }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [rotateX, setRotateX] = useState(0);
@@ -24,7 +26,7 @@ const FeatureCard = ({
     const centerY = rect.top + rect.height / 2;
     const mouseX = e.clientX - centerX;
     const mouseY = e.clientY - centerY;
-    
+
     setRotateY(mouseX / 10);
     setRotateX(-mouseY / 10);
   };
@@ -58,36 +60,31 @@ const FeatureCard = ({
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        {/* Animated gradient background */}
         <motion.div
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
           style={{
             background: `radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), ${feature.glowColor}20, transparent 40%)`,
           }}
         />
-        
-        {/* Icon */}
+
         <motion.div
           className={`relative w-16 h-16 rounded-2xl ${feature.bgColor} flex items-center justify-center mb-6`}
           style={{ transform: "translateZ(20px)" }}
           whileHover={{ scale: 1.1, rotate: 5 }}
         >
           <Icon className={`w-8 h-8 ${feature.iconColor}`} />
-          
-          {/* Glow effect */}
+
           <motion.div
             className={`absolute inset-0 rounded-2xl ${feature.bgColor} blur-xl opacity-0 group-hover:opacity-50`}
             transition={{ duration: 0.3 }}
           />
         </motion.div>
 
-        {/* Content */}
         <div style={{ transform: "translateZ(10px)" }}>
           <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
           <p className="text-white/50 leading-relaxed text-sm">{feature.description}</p>
         </div>
 
-        {/* Hover line */}
         <motion.div
           className={`absolute bottom-0 left-0 h-1 bg-gradient-to-r ${feature.gradient}`}
           initial={{ width: 0 }}
@@ -103,7 +100,8 @@ const features = [
   {
     icon: Brain,
     title: "AI That Understands",
-    description: "Not just reading - comprehending. Our AI grasps context, nuance, and meaning like a human expert.",
+    description:
+      "Not just reading - comprehending. Our AI grasps context, nuance, and meaning like a human expert.",
     glowColor: "#ff6b00",
     bgColor: "bg-orange-500/20",
     iconColor: "text-orange-400",
@@ -112,7 +110,8 @@ const features = [
   {
     icon: MessageSquare,
     title: "Chat With Your Docs",
-    description: "Ask anything. Get instant, accurate answers drawn directly from your document content.",
+    description:
+      "Ask anything. Get instant, accurate answers drawn directly from your document content.",
     glowColor: "#ff00ff",
     bgColor: "bg-fuchsia-500/20",
     iconColor: "text-fuchsia-400",
@@ -130,7 +129,8 @@ const features = [
   {
     icon: Shield,
     title: "Fort Knox Security",
-    description: "256-bit encryption. SOC 2 certified. GDPR compliant. Your data never leaves our secure vault.",
+    description:
+      "256-bit encryption. SOC 2 certified. GDPR compliant. Your data never leaves our secure vault.",
     glowColor: "#00ff88",
     bgColor: "bg-emerald-500/20",
     iconColor: "text-emerald-400",
@@ -148,7 +148,8 @@ const features = [
   {
     icon: Download,
     title: "Export Everywhere",
-    description: "Download as PDF, Word, or Markdown. Share via link. Integrate with your tools via API.",
+    description:
+      "Download as PDF, Word, or Markdown. Share via link. Integrate with your tools via API.",
     glowColor: "#8800ff",
     bgColor: "bg-violet-500/20",
     iconColor: "text-violet-400",
@@ -156,10 +157,15 @@ const features = [
   },
 ];
 
-// ============================================
-// ANIMATED COUNTER - FIXED VERSION
-// ============================================
-const AnimatedNumber = ({ value, suffix = "", decimals = 0 }: { value: number; suffix?: string; decimals?: number }) => {
+const AnimatedNumber = ({
+  value,
+  suffix = "",
+  decimals = 0,
+}: {
+  value: number;
+  suffix?: string;
+  decimals?: number;
+}) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
   const [displayValue, setDisplayValue] = useState(0);
@@ -170,38 +176,35 @@ const AnimatedNumber = ({ value, suffix = "", decimals = 0 }: { value: number; s
       setHasAnimated(true);
       const duration = 2000;
       const startTime = Date.now();
-      
+
       const animate = () => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        
-        // Easing function for smooth animation
+
         const easeOutQuart = 1 - Math.pow(1 - progress, 4);
         const current = value * easeOutQuart;
-        
+
         setDisplayValue(decimals > 0 ? parseFloat(current.toFixed(decimals)) : Math.floor(current));
-        
+
         if (progress < 1) {
           requestAnimationFrame(animate);
         } else {
           setDisplayValue(value);
         }
       };
-      
+
       requestAnimationFrame(animate);
     }
   }, [isInView, value, hasAnimated, decimals]);
 
   return (
     <span ref={ref}>
-      {decimals > 0 ? displayValue.toFixed(decimals) : displayValue.toLocaleString()}{suffix}
+      {decimals > 0 ? displayValue.toFixed(decimals) : displayValue.toLocaleString()}
+      {suffix}
     </span>
   );
 };
 
-// ============================================
-// MAIN FEATURES SECTION
-// ============================================
 export default function FeaturesSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -214,13 +217,12 @@ export default function FeaturesSection() {
 
   return (
     <section ref={ref} className="relative py-32 overflow-hidden bg-black scroll-optimized">
-      {/* Background Elements */}
       <motion.div
         className="absolute inset-0 pointer-events-none"
-        style={{ 
+        style={{
           y: backgroundY,
-          willChange: 'transform',
-          backfaceVisibility: 'hidden'
+          willChange: "transform",
+          backfaceVisibility: "hidden",
         }}
       >
         <div className="absolute top-1/4 -left-32 w-96 h-96 bg-[#ff6b00]/10 rounded-full blur-[128px]" />
@@ -228,17 +230,15 @@ export default function FeaturesSection() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#ff00ff]/5 rounded-full blur-[128px]" />
       </motion.div>
 
-      {/* Grid Pattern */}
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.02]"
         style={{
           backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-          backgroundSize: '60px 60px',
+          backgroundSize: "60px 60px",
         }}
       />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -263,19 +263,17 @@ export default function FeaturesSection() {
           </h2>
 
           <p className="text-lg text-white/40 max-w-2xl mx-auto">
-            Every feature obsessively crafted. Every detail intentional. 
-            This is document intelligence reimagined.
+            Every feature obsessively crafted. Every detail intentional. This is document
+            intelligence reimagined.
           </p>
         </motion.div>
 
-        {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <FeatureCard key={index} feature={feature} index={index} />
           ))}
         </div>
 
-        {/* Stats Row */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}

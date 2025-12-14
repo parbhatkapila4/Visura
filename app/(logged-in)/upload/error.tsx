@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, Upload } from 'lucide-react';
-import Link from 'next/link';
+import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, Upload } from "lucide-react";
+import Link from "next/link";
 
 export default function UploadError({
   error,
@@ -13,7 +13,7 @@ export default function UploadError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Upload Error:', error);
+    console.error("Upload Error:", error);
   }, [error]);
 
   return (
@@ -23,14 +23,12 @@ export default function UploadError({
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center">
             <AlertTriangle className="w-8 h-8 text-red-400" />
           </div>
-          
-          <h2 className="text-xl font-bold text-white mb-2">
-            Upload Error
-          </h2>
+
+          <h2 className="text-xl font-bold text-white mb-2">Upload Error</h2>
           <p className="text-gray-400 text-sm mb-6">
             Something went wrong with the upload. Your file might be too large or corrupted.
           </p>
-          
+
           <div className="flex gap-3 justify-center">
             <Button
               onClick={reset}
@@ -39,7 +37,7 @@ export default function UploadError({
               <Upload className="w-4 h-4 mr-2" />
               Try Again
             </Button>
-            
+
             <Link href="/dashboard">
               <Button
                 variant="outline"
@@ -54,4 +52,3 @@ export default function UploadError({
     </div>
   );
 }
-

@@ -12,7 +12,7 @@ export default function ContactPage() {
     message: ''
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -21,13 +21,11 @@ export default function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
     console.log('Form submitted:', formData);
   };
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
       <div className="bg-black text-white py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link 
@@ -44,12 +42,10 @@ export default function ContactPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-2xl p-12 shadow-lg">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-              {/* Left Column - Contact Information */}
               <div className="space-y-8">
                 <div>
                   <h2 className="text-4xl font-bold text-black mb-6">Let's collaborate</h2>
@@ -102,13 +98,11 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Right Column - Contact Form */}
               <div>
                 <h3 className="text-2xl font-bold text-black mb-8">Say hello</h3>
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Left Column */}
                     <div className="space-y-6">
                       <div>
                         <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
@@ -153,7 +147,6 @@ export default function ContactPage() {
                       </div>
                     </div>
 
-                    {/* Right Column */}
                     <div className="space-y-6">
                       <div>
                         <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
@@ -189,7 +182,6 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  {/* Submit Button */}
                   <div className="pt-6">
                     <button
                       type="submit"

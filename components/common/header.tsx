@@ -8,10 +8,15 @@ import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-
 import { usePathname } from "next/navigation";
 import { Menu, X, Sparkles, ArrowRight } from "lucide-react";
 
-// ============================================
-// ANIMATED NAV LINK
-// ============================================
-const AnimatedNavLink = ({ href, children, onClick }: { href: string; children: React.ReactNode; onClick?: () => void }) => {
+const AnimatedNavLink = ({
+  href,
+  children,
+  onClick,
+}: {
+  href: string;
+  children: React.ReactNode;
+  onClick?: () => void;
+}) => {
   const pathname = usePathname();
   const isActive = pathname === href || (href !== "/" && pathname?.startsWith(href));
 
@@ -23,25 +28,20 @@ const AnimatedNavLink = ({ href, children, onClick }: { href: string; children: 
         whileTap={{ scale: 0.95 }}
       >
         {children}
-        {/* Animated underline */}
         <motion.span
-          className={`absolute bottom-0 left-1/2 h-[2px] bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] rounded-full ${isActive ? 'w-1/2' : 'w-0'}`}
-          style={{ x: '-50%' }}
-          whileHover={{ width: '50%' }}
+          className={`absolute bottom-0 left-1/2 h-[2px] bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] rounded-full ${
+            isActive ? "w-1/2" : "w-0"
+          }`}
+          style={{ x: "-50%" }}
+          whileHover={{ width: "50%" }}
           transition={{ duration: 0.2 }}
         />
-        {/* Glow effect on hover */}
-        <motion.span
-          className="absolute inset-0 rounded-lg bg-white/0 group-hover:bg-white/5 transition-colors"
-        />
+        <motion.span className="absolute inset-0 rounded-lg bg-white/0 group-hover:bg-white/5 transition-colors" />
       </motion.span>
     </Link>
   );
 };
 
-// ============================================
-// ANIMATED LOGO
-// ============================================
 const AnimatedLogo = () => {
   return (
     <Link href="/">
@@ -50,9 +50,7 @@ const AnimatedLogo = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        {/* Logo Icon */}
         <motion.div className="relative">
-          {/* Outer ring with gradient */}
           <motion.div
             className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#ff6b00] via-[#ff00ff] to-[#ff6b00] p-[2px]"
             animate={{
@@ -71,8 +69,7 @@ const AnimatedLogo = () => {
               </motion.span>
             </div>
           </motion.div>
-          
-          {/* Glow effect */}
+
           <motion.div
             className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] opacity-0 blur-lg"
             animate={{ opacity: [0, 0.4, 0] }}
@@ -80,7 +77,6 @@ const AnimatedLogo = () => {
           />
         </motion.div>
 
-        {/* Logo Text */}
         <motion.span
           className="text-xl font-bold text-white hidden sm:block"
           initial={{ opacity: 0, x: -10 }}
@@ -93,15 +89,11 @@ const AnimatedLogo = () => {
   );
 };
 
-// ============================================
-// MOBILE MENU
-// ============================================
 const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
             initial={{ opacity: 0 }}
@@ -109,8 +101,7 @@ const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
             exit={{ opacity: 0 }}
             onClick={onClose}
           />
-          
-          {/* Menu Panel */}
+
           <motion.div
             className="fixed top-0 right-0 h-full w-[300px] bg-black/90 backdrop-blur-xl border-l border-white/10 z-50 p-6"
             initial={{ x: "100%" }}
@@ -118,7 +109,6 @@ const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
-            {/* Close Button */}
             <motion.button
               onClick={onClose}
               className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white"
@@ -128,7 +118,6 @@ const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
               <X className="w-5 h-5" />
             </motion.button>
 
-            {/* Menu Links */}
             <nav className="mt-16 space-y-2">
               {[
                 { href: "/features", label: "Features" },
@@ -154,7 +143,6 @@ const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
               ))}
             </nav>
 
-            {/* Auth Buttons */}
             <div className="mt-8 space-y-3">
               <SignedOut>
                 <motion.div
@@ -213,9 +201,6 @@ const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
   );
 };
 
-// ============================================
-// MAIN HEADER COMPONENT
-// ============================================
 export default function Header() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -223,67 +208,59 @@ export default function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const { scrollY } = useScroll();
-  
-  const isChatbotPage = pathname?.includes('/chatbot');
-  const isHomePage = pathname === '/';
-  
+
+  const isChatbotPage = pathname?.includes("/chatbot");
+  const isHomePage = pathname === "/";
+
   useMotionValueEvent(scrollY, "change", (latest) => {
     setIsScrolled(latest > 50);
-    
-    // Hide navbar when scrolling up, show when scrolling down
+
     if (latest < lastScrollY && latest > 100) {
-      // Scrolling up and past 100px
       setIsVisible(false);
     } else if (latest > lastScrollY) {
-      // Scrolling down
       setIsVisible(true);
     } else if (latest <= 100) {
-      // Always show at top
       setIsVisible(true);
     }
-    
+
     setLastScrollY(latest);
-    
-    // Close mobile menu on scroll
+
     if (isMobileMenuOpen && Math.abs(latest - lastScrollY) > 10) {
       setIsMobileMenuOpen(false);
     }
   });
-  
-  // Close mobile menu on route change
+
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
-  
-  // Only show header on landing page
+
   if (!isHomePage || isChatbotPage) {
     return null;
   }
-  
+
   return (
     <>
       <motion.nav
         className={`fixed top-0 left-0 right-0 z-50 px-4 transition-all duration-300 ${
-          isScrolled ? 'py-2' : 'py-4'
+          isScrolled ? "py-2" : "py-4"
         }`}
         initial={{ y: -100 }}
-        animate={{ 
+        animate={{
           y: isVisible ? 0 : -100,
-          opacity: isVisible ? 1 : 0
+          opacity: isVisible ? 1 : 0,
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         <motion.div
           className={`max-w-6xl mx-auto rounded-2xl transition-all duration-300 ${
-            isScrolled 
-              ? 'bg-black/80 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/50' 
-              : isHomePage 
-                ? 'bg-black/40 backdrop-blur-md border border-white/5' 
-                : 'bg-black/80 backdrop-blur-xl border border-white/10'
+            isScrolled
+              ? "bg-black/80 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/50"
+              : isHomePage
+              ? "bg-black/40 backdrop-blur-md border border-white/5"
+              : "bg-black/80 backdrop-blur-xl border border-white/10"
           }`}
           layout
         >
-          {/* Animated gradient border on scroll */}
           {isScrolled && (
             <motion.div
               className="absolute inset-0 rounded-2xl p-[1px] -z-10 overflow-hidden"
@@ -302,19 +279,16 @@ export default function Header() {
           )}
 
           <div className="px-4 sm:px-6 py-3 grid grid-cols-3 items-center">
-            {/* Logo */}
             <div className="flex justify-start">
               <AnimatedLogo />
             </div>
 
-            {/* Center Navigation - Desktop */}
             <div className="hidden md:flex items-center justify-center gap-1">
               <AnimatedNavLink href="/features">Features</AnimatedNavLink>
               <AnimatedNavLink href="/about">About</AnimatedNavLink>
               <AnimatedNavLink href="/changelog">Changelog</AnimatedNavLink>
             </div>
 
-            {/* Right Section - Desktop */}
             <div className="hidden md:flex items-center justify-end gap-3">
               <SignedOut>
                 <Link href="/sign-in">
@@ -332,7 +306,6 @@ export default function Header() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    {/* Gradient background */}
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-r from-[#ff6b00] to-[#ff00ff]"
                       whileHover={{
@@ -340,7 +313,6 @@ export default function Header() {
                       }}
                       transition={{ duration: 0.5 }}
                     />
-                    {/* Shine effect */}
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
                       initial={{ x: "-100%" }}
@@ -351,7 +323,7 @@ export default function Header() {
                   </motion.button>
                 </Link>
               </SignedOut>
-              
+
               <SignedIn>
                 <Link href="/workspaces">
                   <motion.button
@@ -367,7 +339,6 @@ export default function Header() {
               </SignedIn>
             </div>
 
-            {/* Mobile Menu Button */}
             <div className="md:hidden flex justify-end col-start-3">
               <motion.button
                 className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white"
@@ -382,11 +353,9 @@ export default function Header() {
         </motion.div>
       </motion.nav>
 
-      {/* Mobile Menu */}
       <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
-      
-      {/* Spacer to prevent content from going under fixed nav */}
-      <div className={`${isScrolled ? 'h-16' : 'h-20'} transition-all duration-300`} />
+
+      <div className={`${isScrolled ? "h-16" : "h-20"} transition-all duration-300`} />
     </>
   );
 }

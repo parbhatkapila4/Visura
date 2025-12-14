@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 
 export const WobbleCard = ({
@@ -19,8 +18,7 @@ export const WobbleCard = ({
   const [isHovering, setIsHovering] = useState(false);
 
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    const { left, top, width, height } =
-      event.currentTarget.getBoundingClientRect();
+    const { left, top, width, height } = event.currentTarget.getBoundingClientRect();
     const x = (event.clientX - left - width / 2) / 25;
     const y = (event.clientY - top - height / 2) / 25;
     setMousePosition({ x, y });
@@ -36,22 +34,9 @@ export const WobbleCard = ({
   };
 
   return (
-    <div
-      className={cn(
-        "relative w-full",
-        containerClassName
-      )}
-      onClick={onClick}
-    >
-      <div
-        className={cn(
-          "relative w-full h-full",
-          className
-        )}
-      >
-        <div className="relative z-10 h-full w-full">
-          {children}
-        </div>
+    <div className={cn("relative w-full", containerClassName)} onClick={onClick}>
+      <div className={cn("relative w-full h-full", className)}>
+        <div className="relative z-10 h-full w-full">{children}</div>
       </div>
     </div>
   );

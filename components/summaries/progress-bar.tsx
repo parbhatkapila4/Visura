@@ -18,10 +18,7 @@ export default function ProgressBar({
     >
       <div className="px-4 flex gap-1.5">
         {sections.map((_, index) => (
-          <div
-            key={index}
-            className="h-1.5 flex-1 rounded-full bg-green-900/10 overflow-hidden"
-          >
+          <div key={index} className="h-1.5 flex-1 rounded-full bg-green-900/10 overflow-hidden">
             <div
               className={cn(
                 "h-full bg-gradient-to-r from-gray-500 to-orange-500 transition-all duration-500",

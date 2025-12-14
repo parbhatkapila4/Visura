@@ -11,16 +11,14 @@ export default function ROICalculatorSection() {
   const [documentsPerWeek, setDocumentsPerWeek] = useState(10);
   const [hourlyRate, setHourlyRate] = useState(150);
 
-  // Calculate ROI
-  const hoursSavedPerWeek = documentsPerWeek * 2; // 2 hours per document on average
+  const hoursSavedPerWeek = documentsPerWeek * 2;
   const monthlySavings = (hoursSavedPerWeek * hourlyRate * 4.33).toFixed(0);
   const annualSavings = (hoursSavedPerWeek * hourlyRate * 52).toFixed(0);
-  const monthlyROI = ((parseInt(monthlySavings) - 20) / 20 * 100).toFixed(0);
+  const monthlyROI = (((parseInt(monthlySavings) - 20) / 20) * 100).toFixed(0);
 
   return (
     <section className="py-20 bg-gradient-to-b from-black to-gray-900" ref={ref}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -34,13 +32,12 @@ export default function ROICalculatorSection() {
             </span>
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            See exactly how much time and money you'll save with Visura. 
-            Most founders save 15+ hours per week and $2,400+ monthly.
+            See exactly how much time and money you'll save with Visura. Most founders save 15+
+            hours per week and $2,400+ monthly.
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Calculator */}
           <motion.div
             className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8"
             initial={{ opacity: 0, x: -30 }}
@@ -54,7 +51,6 @@ export default function ROICalculatorSection() {
               <h3 className="text-2xl font-bold text-white">ROI Calculator</h3>
             </div>
 
-            {/* Input Controls */}
             <div className="space-y-6">
               <div>
                 <label className="block text-white font-semibold mb-3">
@@ -76,9 +72,7 @@ export default function ROICalculatorSection() {
               </div>
 
               <div>
-                <label className="block text-white font-semibold mb-3">
-                  Your hourly rate ($)
-                </label>
+                <label className="block text-white font-semibold mb-3">Your hourly rate ($)</label>
                 <div className="flex items-center gap-4">
                   <input
                     type="range"
@@ -96,47 +90,36 @@ export default function ROICalculatorSection() {
               </div>
             </div>
 
-            {/* Results */}
             <div className="mt-8 p-6 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-2xl border border-blue-500/20">
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div>
-                  <div className="text-3xl font-bold text-blue-400 mb-1">
-                    {hoursSavedPerWeek}+
-                  </div>
+                  <div className="text-3xl font-bold text-blue-400 mb-1">{hoursSavedPerWeek}+</div>
                   <div className="text-sm text-gray-400">Hours saved/week</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-indigo-400 mb-1">
-                    ${monthlySavings}
-                  </div>
+                  <div className="text-3xl font-bold text-indigo-400 mb-1">${monthlySavings}</div>
                   <div className="text-sm text-gray-400">Monthly savings</div>
                 </div>
               </div>
             </div>
           </motion.div>
 
-          {/* Results Display */}
           <motion.div
             className="space-y-8"
             initial={{ opacity: 0, x: 30 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 30 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            {/* Main ROI Card */}
             <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/20 backdrop-blur-sm border border-blue-500/30 rounded-3xl p-8">
               <div className="text-center mb-6">
-                <div className="text-6xl font-bold text-blue-400 mb-2">
-                  {monthlyROI}%
-                </div>
+                <div className="text-6xl font-bold text-blue-400 mb-2">{monthlyROI}%</div>
                 <div className="text-xl text-white font-semibold">Monthly ROI</div>
                 <div className="text-gray-300">On your $20/month investment</div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-6 text-center">
                 <div>
-                  <div className="text-3xl font-bold text-white mb-1">
-                    ${annualSavings}
-                  </div>
+                  <div className="text-3xl font-bold text-white mb-1">${annualSavings}</div>
                   <div className="text-sm text-gray-400">Annual savings</div>
                 </div>
                 <div>
@@ -148,24 +131,23 @@ export default function ROICalculatorSection() {
               </div>
             </div>
 
-            {/* Benefits List */}
             <div className="space-y-4">
               {[
                 {
                   icon: Clock,
                   title: "Instant Processing",
-                  description: "30 seconds vs 2+ hours per document"
+                  description: "30 seconds vs 2+ hours per document",
                 },
                 {
                   icon: TrendingUp,
                   title: "Better Decisions",
-                  description: "Focus on insights, not reading"
+                  description: "Focus on insights, not reading",
                 },
                 {
                   icon: DollarSign,
                   title: "Massive ROI",
-                  description: "Pays for itself in the first week"
-                }
+                  description: "Pays for itself in the first week",
+                },
               ].map((benefit, index) => {
                 const Icon = benefit.icon;
                 return (
@@ -188,7 +170,6 @@ export default function ROICalculatorSection() {
               })}
             </div>
 
-            {/* CTA */}
             <motion.div
               className="text-center"
               initial={{ opacity: 0, y: 20 }}
@@ -202,9 +183,7 @@ export default function ROICalculatorSection() {
                 Start Saving Time Today
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
-              <p className="text-gray-400 text-sm mt-4">
-                Join 2,500+ founders already saving time
-              </p>
+              <p className="text-gray-400 text-sm mt-4">Join founders already saving time</p>
             </motion.div>
           </motion.div>
         </div>

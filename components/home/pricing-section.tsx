@@ -21,10 +21,7 @@ const plans = [
       "PDF & Word support",
       "Email support",
     ],
-    limitations: [
-      "Max 10 pages per doc",
-      "Standard processing",
-    ],
+    limitations: ["Max 10 pages per doc", "Standard processing"],
     cta: "Get Started",
     ctaLink: "/checkout/starter",
   },
@@ -77,11 +74,13 @@ const plans = [
   },
 ];
 
-const PricingCard = ({ plan, index }: { plan: typeof plans[0]; index: number }) => {
+const PricingCard = ({ plan, index }: { plan: (typeof plans)[0]; index: number }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
-  
-  const discountPercent = Math.round(((plan.originalPrice - plan.discountedPrice) / plan.originalPrice) * 100);
+
+  const discountPercent = Math.round(
+    ((plan.originalPrice - plan.discountedPrice) / plan.originalPrice) * 100
+  );
   const Icon = plan.icon;
 
   return (
@@ -90,10 +89,9 @@ const PricingCard = ({ plan, index }: { plan: typeof plans[0]; index: number }) 
       initial={{ opacity: 0, y: 50 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.1 }}
-      className={`relative group ${plan.popular ? 'md:-mt-4' : ''}`}
+      className={`relative group ${plan.popular ? "md:-mt-4" : ""}`}
       style={{ perspective: 1000 }}
     >
-      {/* Popular Badge */}
       {plan.popular && (
         <motion.div
           className="absolute -top-4 left-1/2 -translate-x-1/2 z-20"
@@ -107,56 +105,48 @@ const PricingCard = ({ plan, index }: { plan: typeof plans[0]; index: number }) 
         </motion.div>
       )}
 
-      {/* Glow Effect for Popular */}
       {plan.popular && (
         <div className="absolute -inset-[1px] bg-gradient-to-r from-[#ff6b00] via-[#ff00ff] to-[#ff6b00] rounded-3xl opacity-75 blur-sm group-hover:opacity-100 transition-opacity" />
       )}
 
-      {/* Card */}
       <motion.div
         className={`relative h-full rounded-3xl overflow-hidden ${
-          plan.popular 
-            ? 'bg-black border-0' 
-            : 'bg-gradient-to-br from-white/[0.08] to-transparent border border-white/10'
+          plan.popular
+            ? "bg-black border-0"
+            : "bg-gradient-to-br from-white/[0.08] to-transparent border border-white/10"
         } backdrop-blur-xl`}
         whileHover={{ y: -5 }}
         transition={{ duration: 0.3 }}
       >
         <div className="p-8">
-          {/* Icon */}
-          <div className={`w-14 h-14 rounded-2xl bg-gradient-to-r ${plan.gradient} flex items-center justify-center mb-6`}>
+          <div
+            className={`w-14 h-14 rounded-2xl bg-gradient-to-r ${plan.gradient} flex items-center justify-center mb-6`}
+          >
             <Icon className="w-7 h-7 text-white" />
           </div>
 
-          {/* Name & Description */}
           <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
           <p className="text-white/50 text-sm mb-6">{plan.description}</p>
 
-          {/* Price */}
           <div className="mb-8">
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-5xl font-black text-white">
-                ${plan.discountedPrice}
-              </span>
+              <span className="text-5xl font-black text-white">${plan.discountedPrice}</span>
               <span className="text-white/40">/month</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-lg text-white/40 line-through">
-                ${plan.originalPrice}
-              </span>
+              <span className="text-lg text-white/40 line-through">${plan.originalPrice}</span>
               <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold">
                 {discountPercent}% OFF
               </span>
             </div>
           </div>
 
-          {/* CTA Button */}
           <Link href={plan.ctaLink}>
             <motion.button
               className={`w-full py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 ${
                 plan.popular
-                  ? 'bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] text-white'
-                  : 'bg-white/10 text-white hover:bg-white/20'
+                  ? "bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] text-white"
+                  : "bg-white/10 text-white hover:bg-white/20"
               } transition-colors`}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -166,7 +156,6 @@ const PricingCard = ({ plan, index }: { plan: typeof plans[0]; index: number }) 
             </motion.button>
           </Link>
 
-          {/* Features */}
           <div className="mt-8 space-y-4">
             {plan.features.map((feature, i) => (
               <motion.div
@@ -176,7 +165,9 @@ const PricingCard = ({ plan, index }: { plan: typeof plans[0]; index: number }) 
                 animate={isInView ? { opacity: 1, x: 0 } : {}}
                 transition={{ delay: 0.3 + i * 0.05 }}
               >
-                <div className={`w-5 h-5 rounded-full bg-gradient-to-r ${plan.gradient} flex items-center justify-center flex-shrink-0`}>
+                <div
+                  className={`w-5 h-5 rounded-full bg-gradient-to-r ${plan.gradient} flex items-center justify-center flex-shrink-0`}
+                >
                   <Check className="w-3 h-3 text-white" />
                 </div>
                 <span className="text-white/70 text-sm">{feature}</span>
@@ -203,32 +194,27 @@ export default function PricingSection() {
 
   return (
     <section ref={ref} id="pricing" className="relative py-32 overflow-hidden bg-black">
-      {/* Background */}
       <div className="absolute inset-0">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[#ff6b00]/10 rounded-full blur-[150px]" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#ff00ff]/10 rounded-full blur-[150px]" />
       </div>
 
-      {/* Grid Pattern */}
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.02]"
         style={{
           backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-          backgroundSize: '60px 60px',
+          backgroundSize: "60px 60px",
         }}
       />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 mb-6"
-          >
+          <motion.div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 mb-6">
             <Shield className="w-4 h-4 text-emerald-400" />
             <span className="text-sm text-white/70">30-day money-back guarantee</span>
           </motion.div>
@@ -246,14 +232,12 @@ export default function PricingSection() {
           </p>
         </motion.div>
 
-        {/* Pricing Cards */}
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {plans.map((plan, index) => (
             <PricingCard key={plan.id} plan={plan} index={index} />
           ))}
         </div>
 
-        {/* Bottom Trust Badges */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}

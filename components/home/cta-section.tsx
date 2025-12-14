@@ -17,51 +17,54 @@ export default function CtaSection() {
 
   return (
     <section ref={ref} className="relative py-32 overflow-hidden scroll-optimized">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#ff6b00] via-[#ff00ff] to-[#ff6b00] bg-[length:400%_400%] animate-gradient" style={{
-        willChange: 'background-position',
-        transform: 'translateZ(0)'
-      }} />
-      
-      {/* Mesh Gradient Overlay */}
-      <div className="absolute inset-0 opacity-50" style={{
-        transform: 'translateZ(0)',
-        backfaceVisibility: 'hidden'
-      }}>
+      <div
+        className="absolute inset-0 bg-gradient-to-br from-[#ff6b00] via-[#ff00ff] to-[#ff6b00] bg-[length:400%_400%] animate-gradient"
+        style={{
+          willChange: "background-position",
+          transform: "translateZ(0)",
+        }}
+      />
+
+      <div
+        className="absolute inset-0 opacity-50"
+        style={{
+          transform: "translateZ(0)",
+          backfaceVisibility: "hidden",
+        }}
+      >
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.3)_0%,transparent_50%)]" />
         <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_right,rgba(0,0,0,0.3)_0%,transparent_50%)]" />
       </div>
 
-      {/* Floating Elements */}
       <motion.div
         className="absolute top-10 left-10 w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-lg flex items-center justify-center"
-        style={{ 
-          y, 
+        style={{
+          y,
           rotate,
-          willChange: 'transform',
-          backfaceVisibility: 'hidden'
+          willChange: "transform",
+          backfaceVisibility: "hidden",
         }}
       >
         <FileText className="w-10 h-10 text-white/80" />
       </motion.div>
-      
+
       <motion.div
         className="absolute top-1/4 right-20 w-16 h-16 rounded-full bg-white/10 backdrop-blur-lg flex items-center justify-center"
-        style={{ 
+        style={{
           y: useTransform(scrollYProgress, [0, 1], [-50, 50]),
-          willChange: 'transform',
-          backfaceVisibility: 'hidden'
+          willChange: "transform",
+          backfaceVisibility: "hidden",
         }}
       >
         <Zap className="w-8 h-8 text-white/80" />
       </motion.div>
-      
+
       <motion.div
         className="absolute bottom-20 left-1/4 w-14 h-14 rounded-xl bg-white/10 backdrop-blur-lg flex items-center justify-center"
-        style={{ 
+        style={{
           y: useTransform(scrollYProgress, [0, 1], [50, -50]),
-          willChange: 'transform',
-          backfaceVisibility: 'hidden'
+          willChange: "transform",
+          backfaceVisibility: "hidden",
         }}
       >
         <Shield className="w-7 h-7 text-white/80" />
@@ -69,32 +72,30 @@ export default function CtaSection() {
 
       <motion.div
         className="absolute bottom-1/4 right-1/4 w-12 h-12 rounded-lg bg-white/10 backdrop-blur-lg flex items-center justify-center"
-        style={{ 
-          y: useTransform(scrollYProgress, [0, 1], [-30, 30]), 
+        style={{
+          y: useTransform(scrollYProgress, [0, 1], [-30, 30]),
           rotate: useTransform(scrollYProgress, [0, 1], [0, -10]),
-          willChange: 'transform',
-          backfaceVisibility: 'hidden'
+          willChange: "transform",
+          backfaceVisibility: "hidden",
         }}
       >
         <Clock className="w-6 h-6 text-white/80" />
       </motion.div>
 
-      {/* Content */}
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={isInView ? { opacity: 1, scale: 1 } : {}}
           transition={{ duration: 0.8 }}
         >
-          {/* Badge */}
           <motion.div
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-lg mb-8"
             animate={{
               boxShadow: [
-                '0 0 20px rgba(255,255,255,0.2)',
-                '0 0 40px rgba(255,255,255,0.3)',
-                '0 0 20px rgba(255,255,255,0.2)',
-              ]
+                "0 0 20px rgba(255,255,255,0.2)",
+                "0 0 40px rgba(255,255,255,0.3)",
+                "0 0 20px rgba(255,255,255,0.2)",
+              ],
             }}
             transition={{ duration: 3, repeat: Infinity }}
           >
@@ -102,20 +103,17 @@ export default function CtaSection() {
             <span className="text-sm font-medium text-white">Join 100+ happy users</span>
           </motion.div>
 
-          {/* Headline */}
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tight leading-tight">
             Ready to transform
             <br />
             how you work?
           </h2>
 
-          {/* Subtitle */}
           <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto">
-            Join professionals who&apos;ve already revolutionized their document workflow. 
-            Start free, no credit card required.
+            Join professionals who&apos;ve already revolutionized their document workflow. Start
+            free, no credit card required.
           </p>
 
-          {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
             <Link href="/checkout">
               <motion.button
@@ -134,13 +132,8 @@ export default function CtaSection() {
             </Link>
           </div>
 
-          {/* Trust Points */}
           <div className="flex flex-wrap items-center justify-center gap-6 text-white/80">
-            {[
-              "Free forever plan",
-              "No credit card",
-              "Setup in 30 seconds",
-            ].map((point, i) => (
+            {["Free forever plan", "No credit card", "Setup in 30 seconds"].map((point, i) => (
               <motion.div
                 key={i}
                 className="flex items-center gap-2"
@@ -158,13 +151,9 @@ export default function CtaSection() {
         </motion.div>
       </div>
 
-      {/* Bottom Wave */}
       <div className="absolute bottom-0 left-0 right-0 -mb-px">
         <svg viewBox="0 0 1440 120" fill="none" className="w-full" preserveAspectRatio="none">
-          <path
-            d="M0 120V60C240 20 480 0 720 0C960 0 1200 20 1440 60V120H0Z"
-            fill="black"
-          />
+          <path d="M0 120V60C240 20 480 0 720 0C960 0 1200 20 1440 60V120H0Z" fill="black" />
         </svg>
       </div>
     </section>
