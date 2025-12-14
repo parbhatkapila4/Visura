@@ -40,6 +40,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface PremiumSummaryViewProps {
   summary: {
@@ -86,12 +93,22 @@ const GlowCard = ({ children, className = "", color = "orange" }: {
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      style={{
+        willChange: 'transform',
+        transform: 'translateZ(0)',
+        WebkitTransform: 'translateZ(0)',
+        backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden'
+      }}
     >
       <motion.div
         className="pointer-events-none absolute -inset-px rounded-[inherit] opacity-0 transition-opacity duration-500"
         style={{
           background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, ${colors[color]}, transparent 40%)`,
           opacity: isHovered ? 1 : 0,
+          willChange: 'opacity',
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)'
         }}
       />
       <div className="absolute inset-0 rounded-[inherit] border border-white/[0.08]" />
@@ -167,6 +184,11 @@ const SectionCard = ({
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.05 }}
       className="scroll-mt-24"
+      style={{
+        willChange: isInView ? 'auto' : 'transform, opacity',
+        contentVisibility: 'auto',
+        containIntrinsicSize: 'auto 500px'
+      }}
     >
       <GlowCard className="bg-[#0a0a0a] rounded-2xl" color={color}>
         <div className="p-6 sm:p-8">
@@ -211,9 +233,15 @@ const SectionCard = ({
                 <motion.div
                   key={pointIndex}
                   initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
                   transition={{ delay: pointIndex * 0.03 }}
                   className="group/point flex gap-4 p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-transparent hover:border-white/10 transition-all duration-300"
+                  style={{
+                    willChange: isInView ? 'auto' : 'transform, opacity',
+                    transform: 'translateZ(0)',
+                    WebkitTransform: 'translateZ(0)',
+                    backfaceVisibility: 'hidden'
+                  }}
                 >
                   <div className={`flex-shrink-0 w-1.5 h-1.5 rounded-full bg-gradient-to-r ${styles.bg.replace('/10', '/60').replace('/5', '/40')} mt-2.5`} />
                   <p className="text-white/70 group-hover/point:text-white/90 leading-relaxed transition-colors text-sm sm:text-base">
@@ -325,6 +353,8 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
   const [activeSection, setActiveSection] = useState(0);
   const [hasActiveShare, setHasActiveShare] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [isGeneratingShareLink, setIsGeneratingShareLink] = useState(false);
   const [workspaces, setWorkspaces] = useState<any[]>([]);
   const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(false);
   const [isAddingToWorkspace, setIsAddingToWorkspace] = useState(false);
@@ -354,6 +384,11 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
 
   // Track active section based on scroll position
   useEffect(() => {
+    // Cache section elements for better performance
+    const sectionElements = sections.map((_, i) => 
+      document.getElementById(`section-${i}`)
+    ).filter(Boolean) as HTMLElement[];
+
     const handleScroll = () => {
       // Don't update if we're programmatically scrolling
       if (isScrollingRef.current) return;
@@ -361,23 +396,51 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
       const headerOffset = 100;
       const scrollPosition = window.scrollY + headerOffset;
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const element = document.getElementById(`section-${i}`);
+      // Use cached elements for better performance
+      for (let i = sectionElements.length - 1; i >= 0; i--) {
+        const element = sectionElements[i];
         if (element) {
           const elementTop = element.offsetTop;
           if (scrollPosition >= elementTop) {
-            setActiveSection(i);
+            // Only update if section changed
+            if (activeSection !== i) {
+              setActiveSection(i);
+            }
             break;
           }
         }
       }
     };
 
-    // Throttle scroll events
+    // Use Intersection Observer for better performance
+    const observerOptions = {
+      root: null,
+      rootMargin: '-100px 0px -50% 0px',
+      threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const sectionId = entry.target.id;
+          const sectionIndex = parseInt(sectionId.split('-')[1]);
+          if (!isNaN(sectionIndex) && activeSection !== sectionIndex) {
+            setActiveSection(sectionIndex);
+          }
+        }
+      });
+    }, observerOptions);
+
+    // Observe all sections
+    sectionElements.forEach((el) => {
+      if (el) observer.observe(el);
+    });
+
+    // Fallback scroll handler (throttled)
     let ticking = false;
     const throttledHandleScroll = () => {
       if (!ticking) {
-        window.requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
           handleScroll();
           ticking = false;
         });
@@ -388,8 +451,11 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
     window.addEventListener('scroll', throttledHandleScroll, { passive: true });
     handleScroll(); // Check initial position
 
-    return () => window.removeEventListener('scroll', throttledHandleScroll);
-  }, [sections.length]);
+    return () => {
+      window.removeEventListener('scroll', throttledHandleScroll);
+      observer.disconnect();
+    };
+  }, [sections.length, activeSection]);
 
   const totalInsights = sections.reduce((total, section) => total + section.points.length, 0);
   const estimatedReadTime = Math.ceil(totalInsights * 0.5);
@@ -427,6 +493,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
     if (workspacesWithDocument.has(workspaceId)) return;
     
     const workspace = workspaces.find(w => w.id === workspaceId);
+    const workspaceName = workspace?.name || "workspace";
     setIsAddingToWorkspace(true);
     
     try {
@@ -441,13 +508,19 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
       });
 
       if (response.ok) {
-        toast.success(`Added to ${workspace?.name || "workspace"}`);
+        // Show success toast with workspace name
+        toast.success(`Added to ${workspaceName}`, {
+          description: "The document is now available in the workspace",
+          duration: 3000,
+        });
+        // Update state to mark document as added
         setWorkspacesWithDocument(prev => new Set(prev).add(workspaceId));
       } else {
         const error = await response.json();
         toast.error(error.error || "Failed to add to workspace");
       }
     } catch (error) {
+      console.error("Error adding to workspace:", error);
       toast.error("Failed to add to workspace");
     } finally {
       setIsAddingToWorkspace(false);
@@ -494,15 +567,35 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
   }
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-black">
+    <div 
+      ref={containerRef} 
+      className="min-h-screen bg-black"
+      style={{ 
+        scrollBehavior: 'smooth',
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain'
+      }}
+    >
       {/* Progress bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 origin-left z-50"
-        style={{ scaleX: scrollYProgress }}
+        style={{ 
+          scaleX: scrollYProgress,
+          willChange: 'transform',
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden'
+        }}
       />
 
       {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-black/80 border-b border-white/5">
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-black/80 border-b border-white/5" style={{
+        willChange: 'transform',
+        transform: 'translateZ(0)',
+        WebkitTransform: 'translateZ(0)',
+        backfaceVisibility: 'hidden'
+      }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left */}
@@ -517,13 +610,6 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
 
             {/* Right - Actions */}
             <div className="flex items-center gap-2">
-              <Link href={`/chatbot/${summary.id}`}>
-                <Button size="sm" className="bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:opacity-90 hidden sm:flex">
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Chat
-                </Button>
-              </Link>
-              
               {/* Workspace Dropdown */}
               <DropdownMenu
                 onOpenChange={(open) => {
@@ -535,7 +621,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 }}
               >
                 <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/5">
+                  <Button size="sm" variant="outline" className="border-white/10 text-white hover:bg-white/5 hover:!text-white">
                     <Building2 className="w-4 h-4 sm:mr-2" />
                     <span className="hidden sm:block">Workspace</span>
                   </Button>
@@ -559,7 +645,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                             key={ws.id}
                             onClick={() => !added && handleAddToWorkspace(ws.id)}
                             disabled={added || isAddingToWorkspace}
-                            className="flex items-center gap-3 p-2 rounded-lg cursor-pointer"
+                            className="flex items-center gap-3 p-2 rounded-lg cursor-pointer text-white hover:!text-white focus:!text-white focus:bg-white/10 hover:bg-white/10"
                           >
                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                               added ? 'bg-green-500/10' : 'bg-blue-500/10'
@@ -584,10 +670,19 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
 
               {/* Share */}
               <Button 
+                type="button"
                 size="sm" 
                 variant="outline" 
-                className="border-white/10 text-white hover:bg-white/5"
-                onClick={async () => {
+                className="border-white/10 text-white hover:bg-white/5 hover:!text-white relative z-10"
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  
+                  // Show dialog immediately for instant feedback
+                  setShowShareDialog(true);
+                  setIsGeneratingShareLink(true);
+                  setShareUrl(null);
+                  
                   try {
                     const res = await fetch(`/api/summaries/${summary.id}/share`, { 
                       method: "POST",
@@ -598,7 +693,8 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                     
                     if (!res.ok) {
                       const errorData = await res.json().catch(() => ({}));
-                      throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+                      const errorMessage = errorData.error || errorData.message || `HTTP error! status: ${res.status}`;
+                      throw new Error(errorMessage);
                     }
                     
                     const data = await res.json();
@@ -608,32 +704,38 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                     }
                     
                     // Copy to clipboard
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                      await navigator.clipboard.writeText(data.shareUrl);
-                      toast.success("Share link copied to clipboard!");
-                    } else {
-                      // Fallback for browsers that don't support clipboard API
-                      const textArea = document.createElement("textarea");
-                      textArea.value = data.shareUrl;
-                      textArea.style.position = "fixed";
-                      textArea.style.left = "-999999px";
-                      document.body.appendChild(textArea);
-                      textArea.focus();
-                      textArea.select();
-                      try {
+                    try {
+                      if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(data.shareUrl);
+                      } else {
+                        // Fallback for browsers that don't support clipboard API
+                        const textArea = document.createElement("textarea");
+                        textArea.value = data.shareUrl;
+                        textArea.style.position = "fixed";
+                        textArea.style.left = "-999999px";
+                        document.body.appendChild(textArea);
+                        textArea.focus();
+                        textArea.select();
                         document.execCommand('copy');
-                        toast.success("Share link copied to clipboard!");
-                      } catch (err) {
-                        toast.error("Failed to copy. Please copy manually: " + data.shareUrl);
+                        document.body.removeChild(textArea);
                       }
-                      document.body.removeChild(textArea);
+                    } catch (clipboardError) {
+                      console.error("Clipboard error:", clipboardError);
                     }
                     
+                    // Update dialog with share URL
                     setShareUrl(data.shareUrl);
+                    setIsGeneratingShareLink(false);
                     setHasActiveShare(true);
                   } catch (e: any) {
                     console.error("Share error:", e);
-                    toast.error(e.message || "Failed to share. Please try again.");
+                    setIsGeneratingShareLink(false);
+                    setShowShareDialog(false);
+                    toast.error("Share Failed", {
+                      description: e.message || "Failed to share. Please try again.",
+                      duration: 5000,
+                      position: "top-center",
+                    });
                   }
                 }}
               >
@@ -721,7 +823,14 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
       </section>
 
       {/* Main Content */}
-      <section className="py-12 lg:py-16">
+      <section 
+        className="py-12 lg:py-16"
+        style={{
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)',
+          backfaceVisibility: 'hidden'
+        }}
+      >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Content */}
           <main className="space-y-6">
@@ -758,6 +867,100 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
             </main>
         </div>
       </section>
+
+      {/* Share Success Dialog */}
+      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-md [&>button]:hidden">
+          {isGeneratingShareLink ? (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    >
+                      <RefreshCw className="w-6 h-6 text-orange-400" />
+                    </motion.div>
+                  </div>
+                  <DialogTitle className="text-xl font-bold text-white">
+                    Generating Share Link...
+                  </DialogTitle>
+                </div>
+                <DialogDescription className="text-white/60 text-sm">
+                  Please wait while we create your shareable link.
+                </DialogDescription>
+              </DialogHeader>
+            </>
+          ) : shareUrl ? (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                    <Check className="w-6 h-6 text-green-400" />
+                  </div>
+                  <DialogTitle className="text-xl font-bold text-white">
+                    Link Copied to Clipboard!
+                  </DialogTitle>
+                </div>
+                <DialogDescription className="text-white/60 text-sm">
+                  Your share link has been copied. You can now share it with others.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="mt-4 space-y-3">
+                <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                  <p className="text-xs text-white/40 mb-1.5">Share Link:</p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={shareUrl}
+                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/90 focus:outline-none focus:ring-2 focus:ring-white/20"
+                      onClick={(e) => (e.target as HTMLInputElement).select()}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-white/10 text-white hover:bg-white/10"
+                      onClick={async () => {
+                        if (shareUrl) {
+                          try {
+                            await navigator.clipboard.writeText(shareUrl);
+                            toast.success("Copied again!", { duration: 2000 });
+                          } catch {
+                            const textArea = document.createElement("textarea");
+                            textArea.value = shareUrl;
+                            textArea.style.position = "fixed";
+                            textArea.style.left = "-999999px";
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                            toast.success("Copied again!", { duration: 2000 });
+                          }
+                        }
+                      }}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowShareDialog(false)}
+                  className="border-white/10 text-white hover:bg-white/10 hover:!text-white"
+                >
+                  Close
+                </Button>
+              </div>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

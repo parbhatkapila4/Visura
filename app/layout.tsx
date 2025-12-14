@@ -50,7 +50,12 @@ export default function RootLayout({
             <main className="flex-1 w-full relative z-10"> {children}</main>
             <ConditionalFooter />
           </div>
-          <Toaster />
+          <Toaster 
+            position="top-center"
+            richColors
+            closeButton
+            duration={3000}
+          />
         </body>
       </html>
     </ClerkProvider>

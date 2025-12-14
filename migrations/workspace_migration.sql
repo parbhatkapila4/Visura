@@ -86,21 +86,6 @@ CREATE TABLE IF NOT EXISTS workspace_activities (
 );
 
 -- ============================================
--- WORKSPACE CHAT TABLE
--- ============================================
-
-CREATE TABLE IF NOT EXISTS workspace_chat_messages (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
-    user_id VARCHAR(255) NOT NULL, -- Clerk user ID
-    user_email VARCHAR(255) NOT NULL,
-    user_name VARCHAR(255),
-    message_content TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- ============================================
 -- INDEXES FOR PERFORMANCE
 -- ============================================
 
@@ -115,11 +100,6 @@ CREATE INDEX IF NOT EXISTS idx_document_comments_pdf_summary_id ON document_comm
 CREATE INDEX IF NOT EXISTS idx_document_comments_workspace_id ON document_comments(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_activities_workspace_id ON workspace_activities(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_activities_created_at ON workspace_activities(created_at DESC);
-
--- Chat table indexes
-CREATE INDEX IF NOT EXISTS idx_workspace_chat_messages_workspace_id ON workspace_chat_messages(workspace_id);
-CREATE INDEX IF NOT EXISTS idx_workspace_chat_messages_created_at ON workspace_chat_messages(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_workspace_chat_messages_user_id ON workspace_chat_messages(user_id);
 
 -- ============================================
 -- TRIGGERS FOR UPDATED_AT
@@ -151,14 +131,18 @@ BEFORE UPDATE ON document_comments
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
-DROP TRIGGER IF EXISTS update_workspace_chat_messages_updated_at ON workspace_chat_messages;
-CREATE TRIGGER update_workspace_chat_messages_updated_at
-BEFORE UPDATE ON workspace_chat_messages
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
-
 -- ============================================
 -- MIGRATION COMPLETE
 -- ============================================
--- Workspace collaboration tables and chat functionality have been added to your database
+-- Workspace collaboration tables have been added to your database
+
+
+
+
+
+
+
+
+
+
 
