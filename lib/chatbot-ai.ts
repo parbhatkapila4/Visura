@@ -71,8 +71,8 @@ Answer their question based on the text content provided above.`;
     const response = await openrouterChatCompletion({
       model: "google/gemini-2.5-flash",
       messages: aiMessages,
-      temperature: 0.3,
-      max_tokens: 1000,
+      temperature: 0.4,
+      max_tokens: 2000,
     });
 
     return response;

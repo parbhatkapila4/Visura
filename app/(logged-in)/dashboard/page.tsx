@@ -33,12 +33,7 @@ export default async function DashboardPage() {
   const summaries = (await getUserSummaries(userId, userPlan)) as Summary[];
 
   return (
-    <main className="relative min-h-screen bg-black">
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(249,115,22,0.12),transparent)]" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-      </div>
-
+    <main className="min-h-screen bg-[#0a0a0a]">
       <DashboardClient
         summaries={summaries}
         uploadLimit={uploadLimit}

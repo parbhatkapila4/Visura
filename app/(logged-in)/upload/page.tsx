@@ -1,4 +1,3 @@
-import BgGradient from "@/components/common/bg-gradient";
 import SupabaseUploadForm from "@/components/upload/supabase-upload-form";
 import UploadHeader from "@/components/upload/upload-header";
 import { BackgroundLines } from "@/components/ui/background-lines";
@@ -6,7 +5,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { hasReachedUploadLimit } from "@/lib/user";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
 
 export default async function UploadPage() {
   const user = await currentUser();
@@ -21,24 +20,44 @@ export default async function UploadPage() {
   );
 
   return (
-    <section className="bg-black min-h-screen overflow-x-hidden relative">
-      <BackgroundLines className="min-h-screen flex items-center justify-center w-full flex-col px-3 sm:px-4 bg-black overflow-x-hidden">
-        <BgGradient />
-        <Link
-          href="/dashboard"
-          className="absolute top-4 left-3 sm:top-6 sm:left-6 z-50 flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-white/70 hover:text-white transition-colors rounded-lg hover:bg-white/10 border border-white/10 hover:border-white/20"
-        >
-          <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          <span className="hidden sm:inline">Back to Dashboard</span>
-          <span className="sm:hidden">Back</span>
-        </Link>
-        <div className="mx-auto max-w-7xl px-3 sm:px-6 pt-28 sm:pt-12 md:py-20 lg:py-24">
-          <div className="flex flex-col items-center justify-center gap-4 sm:gap-6 text-center">
-            <UploadHeader />
+    <div className="min-h-screen bg-[#0a0a0a] relative">
+      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-[#1f1f1f]">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 text-[#666] hover:text-white transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="text-sm hidden sm:block">Dashboard</span>
+              </Link>
+              <span className="text-[#333]">/</span>
+              <h1 className="text-sm font-medium text-white">Upload</h1>
+            </div>
+
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-[#666] hover:text-white transition-colors"
+            >
+              <Home className="w-4 h-4" />
+              <span className="text-sm hidden sm:block">Home</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <div className="relative min-h-[calc(100vh-56px)] w-full overflow-auto">
+        <BackgroundLines className="fixed inset-0 top-14 w-full h-[calc(100vh-56px)] pointer-events-none bg-transparent">{null}</BackgroundLines>
+        <div className="relative z-10 flex items-center justify-center min-h-[calc(100vh-56px)] px-4 py-12">
+          <div className="w-full max-w-xl">
+            <div className="mb-10">
+              <UploadHeader />
+            </div>
             <SupabaseUploadForm hasReachedLimit={hasReachedLimit} uploadLimit={uploadLimit} />
           </div>
         </div>
-      </BackgroundLines>
-    </section>
+      </div>
+    </div>
   );
 }

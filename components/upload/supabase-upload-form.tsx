@@ -23,14 +23,8 @@ declare global {
 const schema = z.object({
   file: z
     .instanceof(File, { message: "Invalid file" })
-    .refine(
-      (file) => file.size <= 32 * 1024 * 1024,
-      "File size must be less than 32MB"
-    )
-    .refine(
-      (file) => file.type.startsWith("application/pdf"),
-      "File must be a PDF"
-    ),
+    .refine((file) => file.size <= 32 * 1024 * 1024, "File size must be less than 32MB")
+    .refine((file) => file.type.startsWith("application/pdf"), "File must be a PDF"),
 });
 
 interface UploadResult {
@@ -69,24 +63,24 @@ export default function SupabaseUploadForm({
       console.log("File details:", {
         name: file.name,
         size: file.size,
-        type: file.type
+        type: file.type,
       });
 
       if (!window.pdfjsLib) {
         console.log("Loading PDF.js from CDN...");
         await new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+          const script = document.createElement("script");
+          script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
           script.onload = resolve;
           script.onerror = reject;
           document.head.appendChild(script);
         });
-        
+
         if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
-          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 
-            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
         }
-        
+
         console.log("PDF.js loaded successfully");
       }
 
@@ -94,45 +88,75 @@ export default function SupabaseUploadForm({
       const arrayBuffer = await file.arrayBuffer();
 
       console.log("Loading PDF document...");
-      const loadingTask = pdfjsLib.getDocument({ 
+      const loadingTask = pdfjsLib.getDocument({
         data: arrayBuffer,
       });
-      
+
       const pdf = await loadingTask.promise;
-      console.log(`PDF loaded successfully with ${pdf.numPages} pages`);
+      const totalPages = pdf.numPages;
+      console.log(`PDF loaded successfully with ${totalPages} pages`);
+
+      const MAX_PAGES_TO_PROCESS = 500;
+      const BATCH_SIZE = 50;
+      const BATCH_DELAY_MS = 10;
+
+      const pagesToProcess = Math.min(totalPages, MAX_PAGES_TO_PROCESS);
+      const willTruncate = totalPages > MAX_PAGES_TO_PROCESS;
+
+      if (willTruncate) {
+        console.warn(
+          `⚠️ Large PDF detected (${totalPages} pages). Processing first ${MAX_PAGES_TO_PROCESS} pages only.`
+        );
+        toast.info("Large PDF detected", {
+          description: `Processing first ${MAX_PAGES_TO_PROCESS} of ${totalPages} pages to ensure stability.`,
+          duration: 5000,
+        });
+      }
 
       let fullText = "";
       let pagesWithText = 0;
 
-      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        try {
-          console.log(`Processing page ${pageNum}...`);
-          const page = await pdf.getPage(pageNum);
-          const textContent = await page.getTextContent();
+      for (let batchStart = 1; batchStart <= pagesToProcess; batchStart += BATCH_SIZE) {
+        const batchEnd = Math.min(batchStart + BATCH_SIZE - 1, pagesToProcess);
 
-          const pageText = textContent.items
-            .filter((item: any) => item && typeof item === 'object' && 'str' in item)
-            .map((item: any) => {
-              const str = item.str;
-              return typeof str === 'string' ? str : String(str);
-            })
-            .join(" ")
-            .trim();
+        console.log(`Processing batch: pages ${batchStart}-${batchEnd}...`);
 
-          if (pageText.length > 0) {
-            pagesWithText++;
-            fullText += pageText + " ";
-            console.log(`Page ${pageNum}: ${pageText.length} chars`);
-          } else {
-            console.log(`Page ${pageNum}: No text`);
+        for (let pageNum = batchStart; pageNum <= batchEnd; pageNum++) {
+          try {
+            const page = await pdf.getPage(pageNum);
+            const textContent = await page.getTextContent();
+
+            const pageText = textContent.items
+              .filter((item: any) => item && typeof item === "object" && "str" in item)
+              .map((item: any) => {
+                const str = item.str;
+                return typeof str === "string" ? str : String(str);
+              })
+              .join(" ")
+              .trim();
+
+            if (pageText.length > 0) {
+              pagesWithText++;
+              fullText += pageText + " ";
+            }
+          } catch (pageError) {
+            console.error(`Error processing page ${pageNum}:`, pageError);
           }
-        } catch (pageError) {
-          console.error(`Error processing page ${pageNum}:`, pageError);
+        }
+
+        if (batchEnd < pagesToProcess) {
+          await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS));
         }
       }
 
-      console.log(`Extraction complete: ${pagesWithText}/${pdf.numPages} pages had text`);
+      console.log(
+        `Extraction complete: ${pagesWithText}/${pagesToProcess} pages processed (${totalPages} total)`
+      );
       console.log(`Total extracted: ${fullText.length} characters`);
+
+      if (willTruncate) {
+        fullText += `\n\n[Note: This PDF has ${totalPages} pages. Only the first ${MAX_PAGES_TO_PROCESS} pages were processed to ensure system stability.]`;
+      }
 
       if (fullText.trim().length === 0) {
         throw new Error("No text found in PDF - this may be a scanned/image-based document");
@@ -143,14 +167,21 @@ export default function SupabaseUploadForm({
       console.error("PDF text extraction failed:", error);
 
       let errorMessage = "Text extraction failed";
-      
+
       if (error.message) {
-        if (error.message.includes('password') || error.message.includes('encrypted')) {
+        if (error.message.includes("password") || error.message.includes("encrypted")) {
           errorMessage = "PDF is password-protected";
-        } else if (error.message.includes('No text found')) {
+        } else if (error.message.includes("No text found")) {
           errorMessage = "Scanned document detected - no text layer";
-        } else if (error.message.includes('Invalid PDF')) {
+        } else if (error.message.includes("Invalid PDF")) {
           errorMessage = "PDF file appears to be corrupted";
+        } else if (
+          error.message.includes("timeout") ||
+          error.message.includes("Timeout") ||
+          error.name === "TimeoutError"
+        ) {
+          errorMessage =
+            "PDF processing timed out. The file may be too large or complex. Try splitting the PDF into smaller files.";
         } else {
           errorMessage = error.message;
         }
@@ -174,13 +205,9 @@ export default function SupabaseUploadForm({
       return;
     }
 
-    if (
-      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    ) {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
       toast.error("Configuration Error", {
-        description:
-          "Missing Supabase configuration. Please check your environment variables.",
+        description: "Missing Supabase configuration. Please check your environment variables.",
       });
       return;
     }
@@ -208,7 +235,7 @@ export default function SupabaseUploadForm({
 
     let extractedText = "";
     let hadExtractionError = false;
-    
+
     try {
       console.log("Step 1: Extracting text from PDF...");
       extractedText = await extractTextFromPDF(file);
@@ -216,38 +243,38 @@ export default function SupabaseUploadForm({
       console.log("First 300 characters:", extractedText.substring(0, 300));
     } catch (extractError: any) {
       console.error("❌ Extraction error:", extractError);
-      
+
       const errorMsg = extractError.message || "Unknown extraction error";
-      
-      if (errorMsg.includes('password-protected')) {
+
+      if (errorMsg.includes("password-protected")) {
         toast.error("Password-Protected PDF", {
-          description: "This PDF is encrypted. Please unlock it and try again."
+          description: "This PDF is encrypted. Please unlock it and try again.",
         });
         setIsLoading(false);
         return;
       }
-      
-      if (errorMsg.includes('corrupted')) {
+
+      if (errorMsg.includes("corrupted")) {
         toast.error("Corrupted PDF File", {
-          description: "This PDF file appears to be damaged. Please try a different file."
+          description: "This PDF file appears to be damaged. Please try a different file.",
         });
         setIsLoading(false);
         return;
       }
-      
-      if (errorMsg.includes('Scanned document') || errorMsg.includes('No text found')) {
+
+      if (errorMsg.includes("Scanned document") || errorMsg.includes("No text found")) {
         console.log("🖼️ Scanned PDF detected - will use fallback");
         hadExtractionError = true;
         toast.error("Scanned Document - Cannot Process", {
-          description: "This PDF has no text layer. OCR support coming soon. Upload failed."
+          description: "This PDF has no text layer. OCR support coming soon. Upload failed.",
         });
         setIsLoading(false);
         return;
       }
-      
+
       console.error("⚠️ Unexpected extraction error:", errorMsg);
       toast.error("Text Extraction Failed", {
-        description: errorMsg
+        description: errorMsg,
       });
       setIsLoading(false);
       return;
@@ -269,18 +296,18 @@ export default function SupabaseUploadForm({
       console.log("Step 3: Generating AI summary...");
       console.log("📊 Extracted text length:", extractedText.length);
       console.log("📊 First 500 chars:", extractedText.substring(0, 500));
-      
+
       if (!extractedText || extractedText.trim().length < 100) {
         console.error("❌ CRITICAL: No text extracted! Length:", extractedText.length);
         toast.error("Cannot Generate Summary", {
-          description: "No text content found in PDF. Please try a different file."
+          description: "No text content found in PDF. Please try a different file.",
         });
         setIsLoading(false);
         return;
       }
-      
+
       console.log("✅ Using REAL PDF text for summary generation");
-      
+
       const summaryResult = await generatePdfSummaryFromText(
         extractedText,
         supabaseResult.data.fileName,
@@ -299,17 +326,13 @@ export default function SupabaseUploadForm({
             summaryLength: summaryResult.data.summary.length,
             fileUrl: supabaseResult.data.publicUrl,
             fileName: file.name,
-            title: formatFileNameAsTitle(
-              summaryResult.data.fileName || file.name
-            ),
+            title: formatFileNameAsTitle(summaryResult.data.fileName || file.name),
           });
 
           const storeResult = await storePdfSummaryAction({
             summary: summaryResult.data.summary,
             fileUrl: supabaseResult.data.publicUrl,
-            title: formatFileNameAsTitle(
-              summaryResult.data.fileName || file.name
-            ),
+            title: formatFileNameAsTitle(summaryResult.data.fileName || file.name),
             fileName: file.name,
           });
 
@@ -323,10 +346,7 @@ export default function SupabaseUploadForm({
             formRef.current?.reset();
             router.push(`/summaries/${storeResult.id}`);
           } else {
-            console.error(
-              "Failed to save summary to database:",
-              storeResult.message
-            );
+            console.error("Failed to save summary to database:", storeResult.message);
             toast.error("Summary generated but not saved", {
               description: `Database error: ${storeResult.message}`,
             });
@@ -351,17 +371,12 @@ export default function SupabaseUploadForm({
         duration: 8000,
       });
 
-      
       try {
         router.push("/dashboard");
       } catch {}
 
       try {
-        const fallbackResult = await generateFallbackSummary(
-          file.name,
-          "",
-          friendlyMessage
-        );
+        const fallbackResult = await generateFallbackSummary(file.name, "", friendlyMessage);
         if (fallbackResult.success) {
           setResult(fallbackResult);
 
@@ -370,9 +385,7 @@ export default function SupabaseUploadForm({
             const storeResult = await storePdfSummaryAction({
               summary: fallbackResult.data.summary,
               fileUrl: "",
-              title: formatFileNameAsTitle(
-                fallbackResult.data.fileName || file.name
-              ),
+              title: formatFileNameAsTitle(fallbackResult.data.fileName || file.name),
               fileName: file.name,
             });
 
@@ -384,10 +397,7 @@ export default function SupabaseUploadForm({
               formRef.current?.reset();
               router.push(`/summaries/${storeResult.id}`);
             } else {
-              console.error(
-                "Failed to save fallback summary to database:",
-                storeResult.message
-              );
+              console.error("Failed to save fallback summary to database:", storeResult.message);
             }
           }
         }

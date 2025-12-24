@@ -1,39 +1,31 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import {
   Plus,
   FileText,
   MessageSquare,
-  Download,
-  Trash2,
   Search,
-  Command,
   ArrowUpRight,
-  Sparkles,
+  ArrowDownRight,
   Zap,
   Clock,
   Eye,
-  MoreHorizontal,
   ChevronRight,
   Crown,
   Folder,
   BarChart3,
-  Settings,
-  Bell,
   Grid3X3,
   List,
-  Filter,
-  SortDesc,
-  Star,
   TrendingUp,
   Activity,
   Home,
   X,
+  LucideIcon,
 } from "lucide-react";
 import DeleteButton from "@/components/summaries/delete-button";
 import DownloadSummaryButtonDashboard from "@/components/summaries/download-summary-button-dashboard";
@@ -57,107 +49,20 @@ interface DashboardClientProps {
   hasReachedLimit: boolean;
 }
 
-const MagneticButton = ({
-  children,
-  className = "",
-  onClick,
-  href,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  onClick?: () => void;
-  href?: string;
-}) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const springX = useSpring(x, { stiffness: 300, damping: 20 });
-  const springY = useSpring(y, { stiffness: 300, damping: 20 });
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    x.set((e.clientX - centerX) * 0.15);
-    y.set((e.clientY - centerY) * 0.15);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
-  const content = (
-    <motion.div
-      ref={ref}
-      style={{ x: springX, y: springY }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      onClick={onClick}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-
-  if (href) {
-    return <Link href={href}>{content}</Link>;
-  }
-  return content;
-};
-
 const GlowCard = ({
   children,
   className = "",
-  glowColor = "orange",
 }: {
   children: React.ReactNode;
   className?: string;
   glowColor?: "orange" | "purple" | "blue" | "green";
 }) => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
-
-  const colors = {
-    orange: "rgba(249, 115, 22, 0.15)",
-    purple: "rgba(168, 85, 247, 0.15)",
-    blue: "rgba(59, 130, 246, 0.15)",
-    green: "rgba(34, 197, 94, 0.15)",
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePosition({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
-
   return (
-    <motion.div
-      className={`relative overflow-hidden ${className}`}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      whileHover={{ scale: 1.01 }}
-      transition={{ duration: 0.2 }}
+    <div
+      className={`relative bg-[#111111] rounded-xl border border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors duration-200 ${className}`}
     >
-      <motion.div
-        className="pointer-events-none absolute -inset-px rounded-[inherit] opacity-0 transition-opacity duration-300"
-        style={{
-          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, ${colors[glowColor]}, transparent 40%)`,
-          opacity: isHovered ? 1 : 0,
-        }}
-      />
-      <div className="absolute inset-0 rounded-[inherit] border border-white/[0.08]" />
-      <motion.div
-        className="absolute inset-0 rounded-[inherit] border border-white/20 opacity-0"
-        animate={{ opacity: isHovered ? 1 : 0 }}
-        transition={{ duration: 0.2 }}
-      />
       {children}
-    </motion.div>
+    </div>
   );
 };
 
@@ -176,7 +81,6 @@ const PremiumSummaryCard = ({
 }) => {
   const fileName = summary.original_file_url ? formatFileName(summary.original_file_url) : null;
   const preview = extractSummaryPreview(summary.summary_text, summary.title, fileName);
-  const [isHovered, setIsHovered] = useState(false);
 
   const getStatusColor = () => {
     const status = summary.status?.toLowerCase() || "completed";
@@ -185,239 +89,114 @@ const PremiumSummaryCard = ({
     return "bg-emerald-500";
   };
 
-  const keyInsights = preview.keyPoints || [];
-  const displayInsights = isLarge ? keyInsights.slice(0, 4) : keyInsights.slice(0, 0);
-  const hasMoreInsights = keyInsights.length > (isLarge ? 4 : 0);
-
   const wordCount = summary.summary_text?.split(/\s+/).length || 0;
-  const charCount = summary.summary_text?.length || 0;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
-      className={`group ${isLarge ? "col-span-2 row-span-2" : ""}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+    <div
+      className={`group relative bg-[#111111] rounded-xl border border-[#1f1f1f] hover:border-[#333] transition-all duration-200 cursor-pointer ${
+        isLarge ? "col-span-2 row-span-2" : ""
+      }`}
+      onClick={() => (window.location.href = `/summaries/${summary.id}`)}
     >
-      <GlowCard
-        className="h-full bg-[#0a0a0a] rounded-2xl cursor-pointer"
-        glowColor={index % 2 === 0 ? "orange" : "purple"}
-      >
-        <div
-          className="relative h-full p-5 sm:p-6 flex flex-col"
-          onClick={() => (window.location.href = `/summaries/${summary.id}`)}
-        >
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 flex items-center justify-center border border-orange-500/20">
-                  <FileText className="w-5 h-5 text-orange-400" />
-                </div>
-                <div
-                  className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ${getStatusColor()} ring-2 ring-[#0a0a0a]`}
-                />
+      <div className={`p-4 ${isLarge ? "p-5" : ""} h-full flex flex-col`}>
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="relative">
+              <div className="w-8 h-8 rounded-lg bg-[#1a1a1a] border border-[#252525] flex items-center justify-center">
+                <FileText className="w-4 h-4 text-[#666]" />
               </div>
-
-              <div className="flex items-center gap-1.5 text-xs text-white/40">
-                <Clock className="w-3 h-3" />
-                {formatDistanceToNow(new Date(summary.created_at), { addSuffix: true })}
-              </div>
-            </div>
-
-            <div
-              className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <DownloadSummaryButtonDashboard
-                summaryId={summary.id}
-                title={summary.title}
-                summaryText={summary.summary_text}
-                userPlan={userPlan}
+              <div
+                className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ${getStatusColor()} ring-2 ring-[#111111]`}
               />
-              <DeleteButton summaryId={summary.id} onDelete={onDelete} />
             </div>
-          </div>
-
-          <h3
-            className={`font-semibold text-white mb-3 line-clamp-2 group-hover:text-orange-100 transition-colors ${
-              isLarge ? "text-xl" : "text-base"
-            }`}
-          >
-            {summary.title || preview.title || "Untitled Document"}
-          </h3>
-
-          <p
-            className={`text-white/50 leading-relaxed mb-4 ${
-              isLarge ? "text-sm line-clamp-3" : "text-xs line-clamp-2"
-            }`}
-          >
-            {preview.executiveSummary || "Processing..."}
-          </p>
-
-          <div className="flex flex-wrap gap-2 mb-3">
-            <span className="px-2.5 py-1 rounded-lg bg-white/5 text-white/50 text-xs font-medium">
-              {preview.documentType || "Document"}
+            <span className="text-xs text-[#555]">
+              {formatDistanceToNow(new Date(summary.created_at), { addSuffix: true })}
             </span>
-            {preview.keyPoints.length > 0 && (
-              <span className="px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-400/80 text-xs font-medium">
-                {preview.keyPoints.length} insights
-              </span>
-            )}
           </div>
 
-          {!isLarge && preview.keyPoints.length > 0 && (
-            <div className="space-y-2 mb-3">
-              {preview.keyPoints.slice(0, 2).map((insight, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-start gap-2 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-                >
-                  <div className="w-1 h-1 rounded-full bg-gradient-to-r from-orange-400 to-amber-400 mt-1.5 flex-shrink-0" />
-                  <p className="text-xs text-white/60 leading-relaxed line-clamp-2 flex-1">
-                    {insight.length > 80 ? `${insight.substring(0, 80)}...` : insight}
-                  </p>
+          <div
+            className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <DownloadSummaryButtonDashboard
+              summaryId={summary.id}
+              title={summary.title}
+              summaryText={summary.summary_text}
+              userPlan={userPlan}
+            />
+            <DeleteButton summaryId={summary.id} onDelete={onDelete} />
+          </div>
+        </div>
+
+        <h3
+          className={`font-medium text-white mb-2 line-clamp-2 ${isLarge ? "text-lg" : "text-sm"}`}
+        >
+          {summary.title || preview.title || "Untitled Document"}
+        </h3>
+
+        <p
+          className={`text-[#666] leading-relaxed mb-3 ${
+            isLarge ? "text-sm line-clamp-3" : "text-xs line-clamp-2"
+          }`}
+        >
+          {preview.executiveSummary || "Processing..."}
+        </p>
+
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          <span className="px-2 py-0.5 rounded bg-[#1a1a1a] text-[#666] text-xs">
+            {preview.documentType || "Document"}
+          </span>
+          {preview.keyPoints.length > 0 && (
+            <span className="px-2 py-0.5 rounded bg-[#1a1a1a] text-[#666] text-xs">
+              {preview.keyPoints.length} insights
+            </span>
+          )}
+          <span className="px-2 py-0.5 rounded bg-[#1a1a1a] text-[#666] text-xs">
+            {wordCount.toLocaleString()} words
+          </span>
+        </div>
+
+        {isLarge && preview.keyPoints.length > 0 && (
+          <div className="flex-1 mb-3">
+            <div className="space-y-1.5">
+              {preview.keyPoints.slice(0, 3).map((insight, idx) => (
+                <div key={idx} className="flex items-start gap-2 text-xs">
+                  <span className="text-[#333] mt-1">•</span>
+                  <p className="text-[#888] line-clamp-1">{insight}</p>
                 </div>
               ))}
             </div>
-          )}
-
-          {!isLarge && (
-            <div className="flex items-center gap-3 mb-3 text-xs">
-              <div className="flex items-center gap-1.5 text-white/40">
-                <FileText className="w-3 h-3" />
-                <span>{wordCount.toLocaleString()} words</span>
-              </div>
-              <div className="w-1 h-1 rounded-full bg-white/20" />
-              <div className="flex items-center gap-1.5 text-white/40">
-                <Zap className="w-3 h-3" />
-                <span>{(charCount / 1000).toFixed(1)}k chars</span>
-              </div>
-            </div>
-          )}
-
-          {isLarge && (
-            <div className="flex-1 space-y-4 mb-4">
-              {displayInsights.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-orange-400" />
-                    <h4 className="text-sm font-semibold text-white">Key Insights</h4>
-                  </div>
-                  <div className="space-y-2.5">
-                    {displayInsights.map((insight, idx) => (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 * idx }}
-                        className="flex items-start gap-2.5 p-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group/insight"
-                      >
-                        <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-orange-400 to-amber-400 mt-1.5 flex-shrink-0" />
-                        <p className="text-xs text-white/70 leading-relaxed flex-1 group-hover/insight:text-white/90 transition-colors">
-                          {insight}
-                        </p>
-                      </motion.div>
-                    ))}
-                    {hasMoreInsights && (
-                      <div className="text-xs text-white/40 italic pl-4">
-                        +{keyInsights.length - 4} more insights
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-3 pt-4 border-t border-white/5">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/40">Words</p>
-                    <p className="text-sm font-semibold text-white">{wordCount.toLocaleString()}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/40">Characters</p>
-                    <p className="text-sm font-semibold text-white">{charCount.toLocaleString()}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs font-medium transition-all border border-white/10 hover:border-white/20"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.location.href = `/summaries/${summary.id}`;
-                  }}
-                >
-                  <Eye className="w-4 h-4" />
-                  View Full
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-gradient-to-r from-orange-500/10 to-amber-500/10 hover:from-orange-500/20 hover:to-amber-500/20 text-orange-400 text-xs font-medium transition-all border border-orange-500/20"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.location.href = `/chatbot/${summary.id}`;
-                  }}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Start Chat
-                </motion.button>
-              </div>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
-            <div className="flex items-center gap-2">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs font-medium transition-all"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.location.href = `/summaries/${summary.id}`;
-                }}
-              >
-                <Eye className="w-3.5 h-3.5" />
-                View
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-orange-500/10 to-amber-500/10 hover:from-orange-500/20 hover:to-amber-500/20 text-orange-400 text-xs font-medium transition-all border border-orange-500/20"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.location.href = `/chatbot/${summary.id}`;
-                }}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                Chat
-              </motion.button>
-            </div>
-
-            <motion.div
-              className="flex items-center gap-1 text-white/30 group-hover:text-orange-400 transition-colors"
-              animate={{ x: isHovered ? 3 : 0 }}
-            >
-              <span className="text-xs font-medium">Open</span>
-              <ChevronRight className="w-4 h-4" />
-            </motion.div>
           </div>
+        )}
+
+        <div className="flex items-center justify-between pt-3 border-t border-[#1f1f1f] mt-auto">
+          <div className="flex items-center gap-2">
+            <button
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#1a1a1a] hover:bg-[#222] text-[#888] hover:text-white text-xs transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.location.href = `/summaries/${summary.id}`;
+              }}
+            >
+              <Eye className="w-3 h-3" />
+              View
+            </button>
+            <button
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#1a1a1a] hover:bg-[#222] text-[#888] hover:text-white text-xs transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.location.href = `/chatbot/${summary.id}`;
+              }}
+            >
+              <MessageSquare className="w-3 h-3" />
+              Chat
+            </button>
+          </div>
+
+          <ChevronRight className="w-4 h-4 text-[#333] group-hover:text-[#666] transition-colors" />
         </div>
-      </GlowCard>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 
@@ -441,283 +220,182 @@ const PremiumStatsGrid = ({
   const successRate = totalDocs > 0 ? Math.round((completed / totalDocs) * 100) : 100;
   const availableNum = typeof available === "number" ? available : 0;
 
-  return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      <div className="col-span-2 lg:col-span-2 relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-950/40 via-[#0f0f0f] to-[#0a0a0a] border border-orange-500/10">
-        <div className="absolute -top-20 -right-20 w-40 h-40 bg-orange-500/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl" />
-
-        <div className="relative p-5 sm:p-6">
-          <div className="flex items-start justify-between mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
-              <FileText className="w-6 h-6 text-white" />
+  const StatCard = ({
+    label,
+    value,
+    suffix,
+    sublabel,
+    icon: Icon,
+    trend,
+    children,
+  }: {
+    label: string;
+    value: number | string;
+    suffix?: string;
+    sublabel?: string;
+    icon: LucideIcon;
+    trend?: { value: number; positive: boolean };
+    children?: React.ReactNode;
+  }) => (
+    <div className="relative bg-[#111111] rounded-xl border border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors duration-200">
+      <div className="p-5">
+        <div className="flex items-start justify-between mb-4">
+          <div className="w-9 h-9 rounded-lg bg-[#1a1a1a] border border-[#252525] flex items-center justify-center">
+            <Icon className="w-4 h-4 text-[#888]" />
+          </div>
+          {trend && (
+            <div
+              className={`flex items-center gap-1 text-xs font-medium ${
+                trend.positive ? "text-emerald-500" : "text-red-500"
+              }`}
+            >
+              {trend.positive ? (
+                <TrendingUp className="w-3 h-3" />
+              ) : (
+                <ArrowDownRight className="w-3 h-3" />
+              )}
+              {trend.positive ? "+" : ""}
+              {trend.value}%
             </div>
-            <span className="px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-[10px] font-semibold text-orange-400 uppercase tracking-wide">
-              Primary
+          )}
+        </div>
+
+        <p className="text-[11px] text-[#666] font-medium uppercase tracking-wider mb-1">{label}</p>
+
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-3xl font-semibold text-white tracking-tight tabular-nums">
+            {value}
+          </span>
+          {suffix && <span className="text-sm text-[#555]">{suffix}</span>}
+        </div>
+
+        {sublabel && <p className="text-xs text-[#555] mt-1">{sublabel}</p>}
+
+        {children && <div className="mt-4">{children}</div>}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <StatCard
+        label="Total Documents"
+        value={totalDocs}
+        suffix="files"
+        icon={FileText}
+        trend={totalDocs > 0 ? { value: 12, positive: true } : undefined}
+      >
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs">
+            <span className="text-[#555]">Storage</span>
+            <span className="text-[#888] tabular-nums">
+              {isUnlimited ? "∞" : `${totalDocs}/${uploadLimit}`}
             </span>
           </div>
-
-          <div className="mb-5">
-            <p className="text-xs text-white/40 font-medium uppercase tracking-wide mb-1">
-              Total Documents
-            </p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-5xl sm:text-6xl font-black text-white">{totalDocs}</span>
-              <span className="text-sm text-white/30 font-medium">files</span>
-            </div>
+          <div className="h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-[#666] to-[#888] rounded-full transition-all duration-500"
+              style={{ width: `${usagePercent}%` }}
+            />
           </div>
+        </div>
+      </StatCard>
 
-          <div className="p-4 rounded-xl bg-black/30 border border-white/5">
-            <div className="flex justify-between text-xs mb-2">
-              <span className="text-white/40">Storage used</span>
-              <span className="text-white/60 font-semibold">
-                {isUnlimited ? "∞" : `${totalDocs}/${uploadLimit}`}
-              </span>
-            </div>
-            <div className="h-2.5 bg-white/5 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-orange-500 to-amber-400 rounded-full"
-                style={{ width: `${usagePercent}%` }}
+      <StatCard
+        label="This Week"
+        value={thisWeek}
+        suffix="new"
+        icon={Clock}
+        trend={thisWeek > 0 ? { value: thisWeek * 10, positive: true } : undefined}
+      >
+        <div className="flex items-end gap-1 h-8">
+          {[20, 35, 25, 50, 40, 65, thisWeek > 0 ? 100 : 30].map((h, i) => (
+            <div
+              key={i}
+              className="flex-1 rounded-sm transition-all duration-300"
+              style={{
+                height: `${h}%`,
+                backgroundColor: i === 6 ? "#888" : "#1f1f1f",
+              }}
+            />
+          ))}
+        </div>
+      </StatCard>
+
+      <StatCard label="Completed" value={completed} suffix={`/ ${totalDocs}`} icon={Activity}>
+        <div className="flex items-center gap-3">
+          <div className="relative w-10 h-10">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 40 40">
+              <circle cx="20" cy="20" r="16" fill="none" stroke="#1f1f1f" strokeWidth="3" />
+              <circle
+                cx="20"
+                cy="20"
+                r="16"
+                fill="none"
+                stroke="#10b981"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray={`${(successRate / 100) * 100.5} 100.5`}
               />
-            </div>
-            <div className="flex justify-between mt-3 pt-3 border-t border-white/5">
-              <div>
-                <p className="text-[10px] text-white/30 uppercase">This Month</p>
-                <p className="text-sm font-bold text-white">
-                  {thisWeek + Math.floor(totalDocs * 0.4)}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-[10px] text-white/30 uppercase">Weekly Avg</p>
-                <p className="text-sm font-bold text-white">
-                  {Math.max(1, Math.floor(totalDocs / 4))}
-                </p>
-              </div>
-            </div>
+            </svg>
+          </div>
+          <div>
+            <p className="text-xs text-[#555]">Success rate</p>
+            <p className="text-sm font-semibold text-emerald-500 tabular-nums">{successRate}%</p>
           </div>
         </div>
-      </div>
+      </StatCard>
 
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-950/40 via-[#0f0f0f] to-[#0a0a0a] border border-violet-500/10">
-        <div className="absolute -top-16 -right-16 w-32 h-32 bg-violet-500/20 rounded-full blur-3xl" />
-
-        <div className="relative p-5 sm:p-6 h-full flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
-              <Clock className="w-5 h-5 text-white" />
-            </div>
-            {thisWeek > 0 && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400">
-                <TrendingUp className="w-3 h-3" /> +{thisWeek}
-              </span>
-            )}
+      <StatCard
+        label="Available"
+        value={isUnlimited ? "∞" : availableNum}
+        suffix={isUnlimited ? "" : "left"}
+        sublabel={isUnlimited ? "Unlimited uploads" : undefined}
+        icon={Zap}
+      >
+        {isUnlimited ? (
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#1a1a1a] border border-[#252525]">
+            <Crown className="w-3.5 h-3.5 text-amber-500" />
+            <span className="text-xs font-medium text-[#888]">Pro Plan</span>
           </div>
-
-          <p className="text-[10px] text-white/40 font-medium uppercase tracking-wide mb-1">
-            This Week
-          </p>
-          <p className="text-4xl sm:text-5xl font-black text-white mb-4">{thisWeek}</p>
-
-          <div className="mt-auto p-3 rounded-lg bg-black/30 border border-white/5">
-            <p className="text-[10px] text-white/30 mb-2">Daily activity</p>
-            <div className="flex items-end gap-1 h-10">
-              {[25, 50, 35, 70, 45, 85, thisWeek > 0 ? 100 : 30].map((h, i) => (
-                <div
-                  key={i}
-                  className="flex-1 rounded-sm"
-                  style={{
-                    height: `${h}%`,
-                    background:
-                      i === 6
-                        ? "linear-gradient(to top, #8b5cf6, #a78bfa)"
-                        : "rgba(255,255,255,0.08)",
-                  }}
-                />
-              ))}
-            </div>
+        ) : (
+          <div className="flex gap-1">
+            {[...Array(10)].map((_, i) => (
+              <div
+                key={i}
+                className={`flex-1 h-6 rounded-sm ${
+                  i < Math.ceil((availableNum / uploadLimit) * 10) ? "bg-[#555]" : "bg-[#1a1a1a]"
+                }`}
+              />
+            ))}
           </div>
-        </div>
-      </div>
-
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-950/40 via-[#0f0f0f] to-[#0a0a0a] border border-emerald-500/10">
-        <div className="absolute -bottom-16 -right-16 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl" />
-
-        <div className="relative p-5 sm:p-6 h-full flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-              <Activity className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-bold text-emerald-400">{successRate}%</span>
-          </div>
-
-          <p className="text-[10px] text-white/40 font-medium uppercase tracking-wide mb-1">
-            Completed
-          </p>
-          <div className="flex items-baseline gap-1.5 mb-4">
-            <span className="text-4xl sm:text-5xl font-black text-white">{completed}</span>
-            <span className="text-sm text-white/30">/{totalDocs}</span>
-          </div>
-
-          <div className="mt-auto p-3 rounded-lg bg-black/30 border border-white/5">
-            <div className="flex items-center gap-3">
-              <div className="relative w-12 h-12 flex-shrink-0">
-                <svg className="w-full h-full -rotate-90">
-                  <circle
-                    cx="24"
-                    cy="24"
-                    r="20"
-                    fill="none"
-                    stroke="rgba(255,255,255,0.05)"
-                    strokeWidth="5"
-                  />
-                  <circle
-                    cx="24"
-                    cy="24"
-                    r="20"
-                    fill="none"
-                    stroke="url(#grad1)"
-                    strokeWidth="5"
-                    strokeLinecap="round"
-                    strokeDasharray={`${(successRate / 100) * 126} 126`}
-                  />
-                  <defs>
-                    <linearGradient id="grad1">
-                      <stop offset="0%" stopColor="#10b981" />
-                      <stop offset="100%" stopColor="#34d399" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <Star
-                  className="w-4 h-4 text-emerald-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                  fill="currentColor"
-                />
-              </div>
-              <div>
-                <p className="text-[10px] text-white/30">Success rate</p>
-                <p className="text-lg font-bold text-white">{successRate}%</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="col-span-2 lg:col-span-4 relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-950/30 via-[#0a0a0a] to-cyan-950/30 border border-blue-500/10">
-        <div className="absolute -left-20 top-1/2 -translate-y-1/2 w-40 h-40 bg-blue-500/15 rounded-full blur-3xl" />
-        <div className="absolute -right-20 top-1/2 -translate-y-1/2 w-40 h-40 bg-cyan-500/15 rounded-full blur-3xl" />
-
-        <div className="relative p-5 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <Zap className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <p className="text-[10px] text-white/40 font-medium uppercase tracking-wide mb-0.5">
-                  Available Uploads
-                </p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl sm:text-5xl font-black text-white">
-                    {isUnlimited ? "∞" : availableNum}
-                  </span>
-                  {!isUnlimited && <span className="text-sm text-white/30">remaining</span>}
-                  {isUnlimited && <span className="text-sm text-white/30">unlimited</span>}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {isUnlimited ? (
-                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20">
-                  <Crown className="w-4 h-4 text-blue-400" />
-                  <span className="text-sm font-semibold text-blue-400">Pro Plan Active</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <div className="flex gap-1.5">
-                    {[...Array(10)].map((_, i) => (
-                      <div
-                        key={i}
-                        className={`w-3 h-8 rounded-sm ${
-                          i < Math.ceil((availableNum / uploadLimit) * 10)
-                            ? "bg-gradient-to-t from-blue-500 to-cyan-400"
-                            : "bg-white/5"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] text-white/30">Capacity</p>
-                    <p className="text-sm font-bold text-white">
-                      {Math.round((availableNum / uploadLimit) * 100)}%
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+        )}
+      </StatCard>
     </div>
   );
 };
 
 const EmptyState = () => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.95 }}
-    animate={{ opacity: 1, scale: 1 }}
-    className="col-span-full"
-  >
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a0a0a] to-[#111] border border-white/5 p-12 sm:p-16">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
+  <div className="col-span-full">
+    <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] p-12 text-center">
+      <div className="w-12 h-12 mx-auto mb-4 rounded-lg bg-[#1a1a1a] border border-[#252525] flex items-center justify-center">
+        <FileText className="w-6 h-6 text-[#555]" />
       </div>
 
-      <div className="relative text-center max-w-lg mx-auto">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", delay: 0.2 }}
-          className="w-20 h-20 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 border border-orange-500/20 flex items-center justify-center"
-        >
-          <FileText className="w-10 h-10 text-orange-400" />
-        </motion.div>
+      <h3 className="text-lg font-medium text-white mb-2">No documents yet</h3>
+      <p className="text-[#666] text-sm mb-6 max-w-sm mx-auto">
+        Upload your first document to get started with AI-powered summaries.
+      </p>
 
-        <motion.h3
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="text-2xl font-bold text-white mb-3"
-        >
-          Start Your Journey
-        </motion.h3>
-
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="text-white/50 mb-8 leading-relaxed"
-        >
-          Upload your first document and let AI transform it into actionable insights. It only takes
-          seconds.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <MagneticButton href="/upload">
-            <div className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold hover:shadow-lg hover:shadow-orange-500/25 transition-shadow cursor-pointer">
-              <Plus className="w-5 h-5" />
-              Upload Your First PDF
-              <ArrowUpRight className="w-4 h-4" />
-            </div>
-          </MagneticButton>
-        </motion.div>
-      </div>
+      <Link
+        href="/upload"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black text-sm font-medium hover:bg-[#e5e5e5] transition-colors"
+      >
+        <Plus className="w-4 h-4" />
+        Upload Document
+      </Link>
     </div>
-  </motion.div>
+  </div>
 );
 
 export default function DashboardClient({
@@ -754,69 +432,62 @@ export default function DashboardClient({
 
   return (
     <div className="min-h-screen">
-      <motion.header
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="sticky top-0 z-50 backdrop-blur-xl bg-black/50 border-b border-white/5"
-      >
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-6">
+      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-[#1f1f1f]">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-4">
               <Link
                 href="/"
-                className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+                className="flex items-center gap-2 text-[#666] hover:text-white transition-colors"
               >
                 <Home className="w-4 h-4" />
-                <span className="text-sm font-medium hidden sm:block">Home</span>
+                <span className="text-sm hidden sm:block">Home</span>
               </Link>
-              <div className="h-4 w-px bg-white/10" />
-              <h1 className="text-lg font-semibold text-white">Dashboard</h1>
+              <span className="text-[#333]">/</span>
+              <h1 className="text-sm font-medium text-white">Dashboard</h1>
             </div>
 
             <div className="hidden md:flex items-center">
-              <motion.button
+              <button
                 onClick={() => setIsSearchOpen(true)}
-                className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all min-w-[280px]"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#111] border border-[#1f1f1f] hover:border-[#333] transition-colors min-w-[240px]"
               >
-                <Search className="w-4 h-4 text-white/40" />
-                <span className="text-sm text-white/40">Search documents...</span>
-                <div className="ml-auto flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-white/40 font-medium">
+                <Search className="w-3.5 h-3.5 text-[#555]" />
+                <span className="text-sm text-[#555]">Search...</span>
+                <div className="ml-auto flex items-center gap-0.5">
+                  <kbd className="px-1.5 py-0.5 rounded bg-[#1a1a1a] text-[10px] text-[#555] font-mono">
                     ⌘
                   </kbd>
-                  <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-white/40 font-medium">
+                  <kbd className="px-1.5 py-0.5 rounded bg-[#1a1a1a] text-[10px] text-[#555] font-mono">
                     K
                   </kbd>
                 </div>
-              </motion.button>
+              </button>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {userPlan === "pro" && (
-                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
-                  <Crown className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-xs font-medium text-amber-400">Pro</span>
+                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#111] border border-[#1f1f1f]">
+                  <Crown className="w-3 h-3 text-amber-500" />
+                  <span className="text-xs text-[#888]">Pro</span>
                 </div>
               )}
 
-              <MagneticButton href="/upload">
-                <div
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all cursor-pointer ${
-                    hasReachedLimit
-                      ? "bg-white/5 text-white/40 cursor-not-allowed"
-                      : "bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:shadow-lg hover:shadow-orange-500/25"
-                  }`}
-                >
-                  <Plus className="w-4 h-4" />
-                  <span className="hidden sm:block">New</span>
-                </div>
-              </MagneticButton>
+              <Link
+                href={hasReachedLimit ? "#" : "/upload"}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  hasReachedLimit
+                    ? "bg-[#1a1a1a] text-[#555] cursor-not-allowed"
+                    : "bg-white text-black hover:bg-[#e5e5e5]"
+                }`}
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:block">New</span>
+              </Link>
             </div>
           </div>
         </div>
-      </motion.header>
+      </header>
 
       <AnimatePresence>
         {isSearchOpen && (
@@ -824,61 +495,58 @@ export default function DashboardClient({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-start justify-center pt-[20vh] px-4 bg-black/60 backdrop-blur-sm"
             onClick={() => setIsSearchOpen(false)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: -20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -20 }}
-              className="w-full max-w-xl bg-[#111] rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="w-full max-w-lg bg-[#111] rounded-lg border border-[#1f1f1f] shadow-2xl overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center gap-3 px-4 py-4 border-b border-white/5">
-                <Search className="w-5 h-5 text-white/40" />
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-[#1f1f1f]">
+                <Search className="w-4 h-4 text-[#555]" />
                 <input
                   type="text"
                   placeholder="Search documents..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 bg-transparent text-white placeholder-white/40 outline-none text-base"
+                  className="flex-1 bg-transparent text-white placeholder-[#555] outline-none text-sm"
                   autoFocus
                 />
                 <button
                   onClick={() => setIsSearchOpen(false)}
-                  className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-colors"
+                  className="p-1 rounded hover:bg-[#1f1f1f] text-[#555] hover:text-white transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="max-h-[400px] overflow-y-auto p-2">
+              <div className="max-h-[320px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {filteredSummaries.length === 0 ? (
-                  <div className="py-12 text-center text-white/40 text-sm">No documents found</div>
+                  <div className="py-12 text-center text-[#555] text-sm">No documents found</div>
                 ) : (
-                  filteredSummaries.slice(0, 5).map((summary) => (
-                    <motion.div
+                  filteredSummaries.slice(0, 6).map((summary) => (
+                    <div
                       key={summary.id}
-                      whileHover={{ backgroundColor: "rgba(255,255,255,0.05)" }}
-                      className="flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer"
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#1a1a1a] cursor-pointer transition-colors"
                       onClick={() => {
                         setIsSearchOpen(false);
                         window.location.href = `/summaries/${summary.id}`;
                       }}
                     >
-                      <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                        <FileText className="w-4 h-4 text-orange-400" />
+                      <div className="w-8 h-8 rounded-md bg-[#1a1a1a] border border-[#252525] flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-[#666]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">
-                          {summary.title || "Untitled"}
-                        </p>
-                        <p className="text-xs text-white/40">
+                        <p className="text-sm text-white truncate">{summary.title || "Untitled"}</p>
+                        <p className="text-xs text-[#555]">
                           {formatDistanceToNow(new Date(summary.created_at), { addSuffix: true })}
                         </p>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-white/20" />
-                    </motion.div>
+                      <ChevronRight className="w-4 h-4 text-[#333]" />
+                    </div>
                   ))
                 )}
               </div>
@@ -887,20 +555,15 @@ export default function DashboardClient({
         )}
       </AnimatePresence>
 
-      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="mb-8"
-        >
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-            Welcome back{user?.firstName ? `, ${user.firstName}` : ""} 👋
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6">
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold text-white mb-1">
+            Welcome back{user?.firstName ? `, ${user.firstName}` : ""}
           </h2>
-          <p className="text-white/50">Here's what's happening with your documents</p>
-        </motion.div>
+          <p className="text-[#666] text-sm">Here's an overview of your documents</p>
+        </div>
 
-        <div className="mb-10">
+        <div className="mb-6">
           <PremiumStatsGrid
             totalDocs={summaries.length}
             thisWeek={thisWeekCount}
@@ -914,60 +577,34 @@ export default function DashboardClient({
         </div>
 
         {userPlan === "basic" && summaries.length >= uploadLimit * 0.7 && (
-          <div className="mb-8">
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-950/50 via-[#0a0a0a] to-amber-950/50 border border-orange-500/20">
-              <div className="absolute -left-20 top-1/2 -translate-y-1/2 w-60 h-60 bg-orange-500/20 rounded-full blur-3xl" />
-              <div className="absolute -right-20 top-1/2 -translate-y-1/2 w-60 h-60 bg-amber-500/15 rounded-full blur-3xl" />
-
-              <div className="relative p-6 lg:p-8">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                  <div className="flex items-start gap-5">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-xl shadow-orange-500/30 flex-shrink-0">
-                      <Crown className="w-8 h-8 text-white" />
-                    </div>
-
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-bold text-white">Upgrade to Pro</h3>
-                        <span className="px-2 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/30 text-[10px] font-bold text-orange-400 uppercase">
-                          Limited
-                        </span>
-                      </div>
-                      <p className="text-sm text-white/50 mb-4">
-                        You've used{" "}
-                        <span className="text-orange-400 font-bold">
-                          {summaries.length}/{uploadLimit}
-                        </span>{" "}
-                        documents. Unlock unlimited access.
-                      </p>
-
-                      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-                        <div className="w-40">
-                          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-gradient-to-r from-orange-500 to-amber-400 rounded-full"
-                              style={{ width: `${(summaries.length / uploadLimit) * 100}%` }}
-                            />
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-white/40">
-                          <Zap className="w-3.5 h-3.5 text-orange-400" />
-                          <span>Unlimited</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-white/40">
-                          <Sparkles className="w-3.5 h-3.5 text-orange-400" />
-                          <span>Priority AI</span>
-                        </div>
-                      </div>
-                    </div>
+          <div className="mb-6">
+            <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] border border-[#252525] flex items-center justify-center">
+                    <Crown className="w-5 h-5 text-amber-500" />
                   </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">
+                      {summaries.length}/{uploadLimit} documents used
+                    </p>
+                    <p className="text-xs text-[#666]">Upgrade to Pro for unlimited access</p>
+                  </div>
+                </div>
 
+                <div className="flex items-center gap-3">
+                  <div className="w-32 h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#666] rounded-full"
+                      style={{ width: `${(summaries.length / uploadLimit) * 100}%` }}
+                    />
+                  </div>
                   <Link
                     href="/checkout"
-                    className="flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold shadow-xl shadow-orange-500/30 hover:shadow-orange-500/40 transition-shadow flex-shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-black text-sm font-medium hover:bg-[#e5e5e5] transition-colors"
                   >
-                    Upgrade Now
-                    <ArrowUpRight className="w-5 h-5" />
+                    Upgrade
+                    <ArrowUpRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </div>
@@ -975,100 +612,75 @@ export default function DashboardClient({
           </div>
         )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="flex items-center justify-between mb-6"
-        >
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-1 p-0.5 rounded-lg bg-[#111] border border-[#1f1f1f]">
             {[
               { id: "documents", label: "Documents", icon: Folder },
               { id: "analytics", label: "Analytics", icon: BarChart3 },
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  activeTab === tab.id ? "bg-white/10 text-white" : "text-white/50 hover:text-white"
+                onClick={() => setActiveTab(tab.id as "documents" | "analytics")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${
+                  activeTab === tab.id ? "bg-[#1a1a1a] text-white" : "text-[#666] hover:text-white"
                 }`}
               >
-                <tab.icon className="w-4 h-4" />
+                <tab.icon className="w-3.5 h-3.5" />
                 {tab.label}
               </button>
             ))}
           </div>
 
           {activeTab === "documents" && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-[#111] border border-[#1f1f1f]">
               <button
                 onClick={() => setActiveView("grid")}
-                className={`p-2 rounded-lg transition-colors ${
-                  activeView === "grid"
-                    ? "bg-white/10 text-white"
-                    : "text-white/40 hover:text-white"
+                className={`p-1.5 rounded-md transition-colors ${
+                  activeView === "grid" ? "bg-[#1a1a1a] text-white" : "text-[#555] hover:text-white"
                 }`}
               >
                 <Grid3X3 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setActiveView("list")}
-                className={`p-2 rounded-lg transition-colors ${
-                  activeView === "list"
-                    ? "bg-white/10 text-white"
-                    : "text-white/40 hover:text-white"
+                className={`p-1.5 rounded-md transition-colors ${
+                  activeView === "list" ? "bg-[#1a1a1a] text-white" : "text-[#555] hover:text-white"
                 }`}
               >
                 <List className="w-4 h-4" />
               </button>
             </div>
           )}
-        </motion.div>
+        </div>
 
-        <AnimatePresence mode="wait">
-          {activeTab === "documents" ? (
-            <motion.div
-              key="documents"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {summaries.length === 0 ? (
-                <EmptyState />
-              ) : (
-                <div
-                  className={`grid gap-4 ${
-                    activeView === "grid"
-                      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                      : "grid-cols-1"
-                  }`}
-                >
-                  {filteredSummaries.map((summary, index) => (
-                    <PremiumSummaryCard
-                      key={summary.id}
-                      summary={summary}
-                      index={index}
-                      onDelete={() => handleDelete(summary.id)}
-                      isLarge={activeView === "grid" && index === 0}
-                      userPlan={userPlan}
-                    />
-                  ))}
-                </div>
-              )}
-            </motion.div>
-          ) : (
-            <motion.div
-              key="analytics"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {user?.id && <AnalyticsDashboard userId={user.id} />}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {activeTab === "documents" ? (
+          <div>
+            {summaries.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <div
+                className={`grid gap-3 ${
+                  activeView === "grid"
+                    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                    : "grid-cols-1"
+                }`}
+              >
+                {filteredSummaries.map((summary, index) => (
+                  <PremiumSummaryCard
+                    key={summary.id}
+                    summary={summary}
+                    index={index}
+                    onDelete={() => handleDelete(summary.id)}
+                    isLarge={activeView === "grid" && index === 0 && filteredSummaries.length > 2}
+                    userPlan={userPlan}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div>{user?.id && <AnalyticsDashboard userId={user.id} />}</div>
+        )}
       </main>
 
       <KeyboardShortcuts onSearchOpen={() => setIsSearchOpen(true)} />

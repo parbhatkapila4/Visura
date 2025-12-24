@@ -1,17 +1,14 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence, useInView, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { toast } from "sonner";
 import { parseSection, extractSummaryPreview } from "@/utils/summary-helpers";
 import {
   ChevronLeft,
   MessageSquare,
-  BookOpen,
   Share2,
   Copy,
-  X,
   Building2,
   Clock,
   FileText,
@@ -21,7 +18,6 @@ import {
   Check,
   AlertTriangle,
   RefreshCw,
-  ChevronRight,
   Hash,
   Eye,
   BookMarked,
@@ -31,13 +27,14 @@ import {
   ListChecks,
   TrendingUp,
   Quote,
+  Download,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -58,71 +55,6 @@ interface PremiumSummaryViewProps {
   };
 }
 
-const GlowCard = ({
-  children,
-  className = "",
-  color = "orange",
-}: {
-  children: React.ReactNode;
-  className?: string;
-  color?: "orange" | "purple" | "blue" | "green" | "red" | "cyan" | "amber";
-}) => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
-
-  const colors: Record<string, string> = {
-    orange: "rgba(249, 115, 22, 0.12)",
-    purple: "rgba(168, 85, 247, 0.12)",
-    blue: "rgba(59, 130, 246, 0.12)",
-    green: "rgba(34, 197, 94, 0.12)",
-    red: "rgba(239, 68, 68, 0.12)",
-    cyan: "rgba(6, 182, 212, 0.12)",
-    amber: "rgba(245, 158, 11, 0.12)",
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePosition({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
-
-  return (
-    <motion.div
-      className={`relative overflow-hidden ${className}`}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        willChange: "transform",
-        transform: "translateZ(0)",
-        WebkitTransform: "translateZ(0)",
-        backfaceVisibility: "hidden",
-        WebkitBackfaceVisibility: "hidden",
-      }}
-    >
-      <motion.div
-        className="pointer-events-none absolute -inset-px rounded-[inherit] opacity-0 transition-opacity duration-500"
-        style={{
-          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, ${colors[color]}, transparent 40%)`,
-          opacity: isHovered ? 1 : 0,
-          willChange: "opacity",
-          transform: "translateZ(0)",
-          WebkitTransform: "translateZ(0)",
-        }}
-      />
-      <div className="absolute inset-0 rounded-[inherit] border border-white/[0.08]" />
-      <motion.div
-        className="absolute inset-0 rounded-[inherit] border border-white/20 opacity-0"
-        animate={{ opacity: isHovered ? 1 : 0 }}
-        transition={{ duration: 0.2 }}
-      />
-      {children}
-    </motion.div>
-  );
-};
-
 const getSectionIcon = (title: string) => {
   const lowerTitle = title.toLowerCase();
   if (lowerTitle.includes("thesis") || lowerTitle.includes("argument")) return Brain;
@@ -140,241 +72,8 @@ const getSectionIcon = (title: string) => {
   return Hash;
 };
 
-const getSectionColor = (
-  index: number
-): "orange" | "purple" | "blue" | "green" | "cyan" | "amber" => {
-  const colors: ("orange" | "purple" | "blue" | "green" | "cyan" | "amber")[] = [
-    "orange",
-    "purple",
-    "blue",
-    "green",
-    "cyan",
-    "amber",
-  ];
-  return colors[index % colors.length];
-};
-
-const SectionCard = ({
-  section,
-  index,
-}: {
-  section: { title: string; points: string[] };
-  index: number;
-}) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-50px" });
-  const color = getSectionColor(index);
-  const Icon = getSectionIcon(section.title);
-
-  const colorClasses: Record<string, { bg: string; border: string; text: string; glow: string }> = {
-    orange: {
-      bg: "from-orange-500/10 to-amber-500/5",
-      border: "border-orange-500/20",
-      text: "text-orange-400",
-      glow: "shadow-orange-500/10",
-    },
-    purple: {
-      bg: "from-purple-500/10 to-pink-500/5",
-      border: "border-purple-500/20",
-      text: "text-purple-400",
-      glow: "shadow-purple-500/10",
-    },
-    blue: {
-      bg: "from-blue-500/10 to-cyan-500/5",
-      border: "border-blue-500/20",
-      text: "text-blue-400",
-      glow: "shadow-blue-500/10",
-    },
-    green: {
-      bg: "from-emerald-500/10 to-teal-500/5",
-      border: "border-emerald-500/20",
-      text: "text-emerald-400",
-      glow: "shadow-emerald-500/10",
-    },
-    cyan: {
-      bg: "from-cyan-500/10 to-blue-500/5",
-      border: "border-cyan-500/20",
-      text: "text-cyan-400",
-      glow: "shadow-cyan-500/10",
-    },
-    amber: {
-      bg: "from-amber-500/10 to-yellow-500/5",
-      border: "border-amber-500/20",
-      text: "text-amber-400",
-      glow: "shadow-amber-500/10",
-    },
-  };
-
-  const styles = colorClasses[color];
-
-  const cleanTitle = section.title.replace(/^\d+\.\s*/, "").replace(/^#+\s*/, "");
-
-  return (
-    <motion.div
-      ref={ref}
-      id={`section-${index}`}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: index * 0.05 }}
-      className="scroll-mt-24"
-      style={{
-        willChange: isInView ? "auto" : "transform, opacity",
-        contentVisibility: "auto",
-        containIntrinsicSize: "auto 500px",
-      }}
-    >
-      <GlowCard className="bg-[#0a0a0a] rounded-2xl" color={color}>
-        <div className="p-6 sm:p-8">
-          <div className="w-full flex items-start gap-4 text-left">
-            <div
-              className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${styles.bg} ${styles.border} border flex items-center justify-center shadow-lg ${styles.glow}`}
-            >
-              <Icon className={`w-6 h-6 ${styles.text}`} />
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`text-xs font-bold ${styles.text} uppercase tracking-wider`}>
-                  Section {index + 1}
-                </span>
-                <span className="text-white/20">•</span>
-                <span className="text-xs text-white/40">{section.points.length} insights</span>
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-white transition-colors leading-tight">
-                {cleanTitle}
-              </h3>
-            </div>
-          </div>
-
-          <div className="pt-6 space-y-4">
-            {section.points
-              .map((point, pointIndex) => {
-                const cleanText = point
-                  .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/gu, "")
-                  .replace(/\*\*(.*?)\*\*/g, "$1")
-                  .replace(/\*(.*?)\*/g, "$1")
-                  .replace(/^•\s*/, "")
-                  .replace(/^-\s*/, "")
-                  .trim();
-
-                if (!cleanText || cleanText.length < 3) return null;
-
-                return (
-                  <motion.div
-                    key={pointIndex}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
-                    transition={{ delay: pointIndex * 0.03 }}
-                    className="group/point flex gap-4 p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-transparent hover:border-white/10 transition-all duration-300"
-                    style={{
-                      willChange: isInView ? "auto" : "transform, opacity",
-                      transform: "translateZ(0)",
-                      WebkitTransform: "translateZ(0)",
-                      backfaceVisibility: "hidden",
-                    }}
-                  >
-                    <div
-                      className={`flex-shrink-0 w-1.5 h-1.5 rounded-full bg-gradient-to-r ${styles.bg
-                        .replace("/10", "/60")
-                        .replace("/5", "/40")} mt-2.5`}
-                    />
-                    <p className="text-white/70 group-hover/point:text-white/90 leading-relaxed transition-colors text-sm sm:text-base">
-                      {cleanText}
-                    </p>
-                  </motion.div>
-                );
-              })
-              .filter(Boolean)}
-          </div>
-        </div>
-      </GlowCard>
-    </motion.div>
-  );
-};
-
-const TableOfContents = ({
-  sections,
-  activeSection,
-  onSectionClick,
-  isScrollingRef,
-}: {
-  sections: { title: string; points: string[] }[];
-  activeSection: number;
-  onSectionClick?: (index: number) => void;
-  isScrollingRef?: React.MutableRefObject<boolean>;
-}) => {
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, index: number) => {
-    e.preventDefault();
-
-    requestAnimationFrame(() => {
-      const element = document.getElementById(`section-${index}`);
-      if (!element) {
-        console.warn(
-          `Section element with id "section-${index}" not found. Available sections:`,
-          Array.from(document.querySelectorAll('[id^="section-"]')).map((el) => el.id)
-        );
-        return;
-      }
-
-      if (isScrollingRef) {
-        isScrollingRef.current = true;
-      }
-
-      if (onSectionClick) {
-        onSectionClick(index);
-      }
-
-      const headerOffset = 80;
-      const elementTop = element.offsetTop;
-      const offsetPosition = elementTop - headerOffset;
-
-      window.scrollTo({
-        top: Math.max(0, offsetPosition),
-        behavior: "smooth",
-      });
-
-      if (isScrollingRef) {
-        setTimeout(() => {
-          isScrollingRef.current = false;
-        }, 1000);
-      }
-    });
-  };
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 px-3 py-2">
-        <BookMarked className="w-4 h-4 text-orange-400" />
-        <span className="text-xs font-bold text-white/60 uppercase tracking-wider">Contents</span>
-      </div>
-      <nav className="space-y-1">
-        {sections.map((section, index) => {
-          const cleanTitle = section.title.replace(/^\d+\.\s*/, "").replace(/^#+\s*/, "");
-          const isActive = activeSection === index;
-
-          return (
-            <a
-              key={index}
-              href={`#section-${index}`}
-              onClick={(e) => handleClick(e, index)}
-              className={`block px-3 py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer ${
-                isActive
-                  ? "bg-orange-500/10 text-orange-400 border-l-2 border-orange-500"
-                  : "text-white/50 hover:text-white/80 hover:bg-white/5"
-              }`}
-            >
-              <span className="line-clamp-1">{cleanTitle}</span>
-            </a>
-          );
-        })}
-      </nav>
-    </div>
-  );
-};
-
 export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps) {
   const [activeSection, setActiveSection] = useState(0);
-  const [hasActiveShare, setHasActiveShare] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [isGeneratingShareLink, setIsGeneratingShareLink] = useState(false);
@@ -383,13 +82,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
   const [isAddingToWorkspace, setIsAddingToWorkspace] = useState(false);
   const [workspacesWithDocument, setWorkspacesWithDocument] = useState<Set<string>>(new Set());
   const hasFetchedWorkspaces = useRef(false);
-  const containerRef = useRef<HTMLDivElement>(null);
   const isScrollingRef = useRef(false);
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
 
   const isErrorSummary =
     summary.summary_text.toLowerCase().includes("extraction error") ||
@@ -430,28 +123,6 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
       }
     };
 
-    const observerOptions = {
-      root: null,
-      rootMargin: "-100px 0px -50% 0px",
-      threshold: 0,
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const sectionId = entry.target.id;
-          const sectionIndex = parseInt(sectionId.split("-")[1]);
-          if (!isNaN(sectionIndex) && activeSection !== sectionIndex) {
-            setActiveSection(sectionIndex);
-          }
-        }
-      });
-    }, observerOptions);
-
-    sectionElements.forEach((el) => {
-      if (el) observer.observe(el);
-    });
-
     let ticking = false;
     const throttledHandleScroll = () => {
       if (!ticking) {
@@ -468,7 +139,6 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
 
     return () => {
       window.removeEventListener("scroll", throttledHandleScroll);
-      observer.disconnect();
     };
   }, [sections.length, activeSection]);
 
@@ -542,87 +212,124 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
     }
   };
 
+  const handleShare = async () => {
+    setShowShareDialog(true);
+    setIsGeneratingShareLink(true);
+    setShareUrl(null);
+
+    try {
+      const res = await fetch(`/api/summaries/${summary.id}/share`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      if (!data.shareUrl) {
+        throw new Error("Share URL not found in response");
+      }
+
+      try {
+        await navigator.clipboard.writeText(data.shareUrl);
+      } catch {
+        const textArea = document.createElement("textarea");
+        textArea.value = data.shareUrl;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+
+      setShareUrl(data.shareUrl);
+      setIsGeneratingShareLink(false);
+    } catch (e: any) {
+      console.error("Share error:", e);
+      setIsGeneratingShareLink(false);
+      setShowShareDialog(false);
+      toast.error("Share Failed", {
+        description: e.message || "Failed to share. Please try again.",
+      });
+    }
+  };
+
+  const scrollToSection = (index: number) => {
+    const element = document.getElementById(`section-${index}`);
+    if (!element) return;
+
+    isScrollingRef.current = true;
+    setActiveSection(index);
+
+    const headerOffset = 80;
+    const elementTop = element.offsetTop;
+    const offsetPosition = elementTop - headerOffset;
+
+    window.scrollTo({
+      top: Math.max(0, offsetPosition),
+      behavior: "smooth",
+    });
+
+    setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 1000);
+  };
+
   if (isErrorSummary) {
     return (
-      <div className="min-h-screen bg-black">
-        <div className="max-w-4xl mx-auto px-4 py-16">
-          <GlowCard className="bg-[#0a0a0a] rounded-3xl" color="red">
-            <div className="p-8 sm:p-12">
-              <div className="flex items-start gap-6">
-                <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
-                  <AlertTriangle className="w-8 h-8 text-red-400" />
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-white mb-3">Processing Failed</h2>
-                  <p className="text-white/60 mb-6 leading-relaxed">
-                    We couldn't extract text from this document. This usually happens with scanned
-                    PDFs, password-protected files, or corrupted documents.
-                  </p>
-                  <div className="flex gap-3">
-                    <Link href="/upload">
-                      <Button className="bg-orange-500 hover:bg-orange-600 text-white">
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Try Another File
-                      </Button>
-                    </Link>
-                    <Link href="/dashboard">
-                      <Button
-                        variant="outline"
-                        className="border-white/10 text-white hover:bg-white/5"
-                      >
-                        Back to Dashboard
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
+      <div className="min-h-screen bg-[#0a0a0a]">
+        <div className="max-w-2xl mx-auto px-6 py-20">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="w-8 h-8 text-red-400" />
             </div>
-          </GlowCard>
+            <h1 className="text-2xl font-semibold text-white mb-3">Processing Failed</h1>
+            <p className="text-[#888] leading-relaxed max-w-md mx-auto">
+              We couldn't extract text from this document. This usually happens with scanned PDFs,
+              password-protected files, or corrupted documents.
+            </p>
+          </div>
+          <div className="flex justify-center gap-3">
+            <Link href="/upload">
+              <Button className="bg-white text-black hover:bg-[#e5e5e5]">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Try Another File
+              </Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button variant="outline" className="border-[#2a2a2a] text-white hover:bg-[#1a1a1a]">
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="min-h-screen bg-black"
-      style={{
-        scrollBehavior: "smooth",
-        WebkitOverflowScrolling: "touch",
-        overscrollBehavior: "contain",
-      }}
-    >
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 origin-left z-50"
-        style={{
-          scaleX: scrollYProgress,
-          willChange: "transform",
-          transform: "translateZ(0)",
-          WebkitTransform: "translateZ(0)",
-          backfaceVisibility: "hidden",
-          WebkitBackfaceVisibility: "hidden",
-        }}
-      />
-
-      <header
-        className="sticky top-0 z-40 backdrop-blur-xl bg-black/80 border-b border-white/5"
-        style={{
-          willChange: "transform",
-          transform: "translateZ(0)",
-          WebkitTransform: "translateZ(0)",
-          backfaceVisibility: "hidden",
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span className="text-sm font-medium hidden sm:block">Dashboard</span>
-            </Link>
+    <div className="min-h-screen bg-[#0a0a0a]">
+      <header className="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-[#1f1f1f]">
+        <div className="max-w-[1400px] mx-auto px-6">
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 text-[#666] hover:text-white transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span className="text-sm">Back</span>
+              </Link>
+              <span className="text-[#333]">/</span>
+              <span className="text-sm text-white font-medium truncate max-w-[200px] sm:max-w-[300px]">
+                {summary.title}
+              </span>
+            </div>
 
             <div className="flex items-center gap-2">
               <DropdownMenu
@@ -637,22 +344,21 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 <DropdownMenuTrigger asChild>
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="border-white/10 text-white hover:bg-white/5 hover:!text-white"
+                    variant="ghost"
+                    className="text-[#888] hover:text-white hover:bg-[#1a1a1a]"
                   >
-                    <Building2 className="w-4 h-4 sm:mr-2" />
-                    <span className="hidden sm:block">Workspace</span>
+                    <Building2 className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 bg-[#111] border-white/10">
+                <DropdownMenuContent align="end" className="w-64 bg-[#111] border-[#1f1f1f]">
                   <div className="p-2">
-                    <p className="text-xs text-white/40 px-2 py-1 mb-2">Add to workspace</p>
+                    <p className="text-xs text-[#666] px-2 py-1 mb-2">Add to workspace</p>
                     {isLoadingWorkspaces ? (
                       <div className="py-8 flex justify-center">
-                        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                        <div className="w-5 h-5 border-2 border-[#333] border-t-white rounded-full animate-spin" />
                       </div>
                     ) : workspaces.length === 0 ? (
-                      <div className="py-6 text-center text-white/40 text-sm">
+                      <div className="py-6 text-center text-[#666] text-sm">
                         No workspaces found
                       </div>
                     ) : (
@@ -663,22 +369,22 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                             key={ws.id}
                             onClick={() => !added && handleAddToWorkspace(ws.id)}
                             disabled={added || isAddingToWorkspace}
-                            className="flex items-center gap-3 p-2 rounded-lg cursor-pointer text-white hover:!text-white focus:!text-white focus:bg-white/10 hover:bg-white/10"
+                            className="flex items-center gap-3 p-2 rounded-lg cursor-pointer text-white hover:text-white focus:text-white focus:bg-[#1a1a1a] hover:bg-[#1a1a1a]"
                           >
                             <div
                               className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                added ? "bg-green-500/10" : "bg-blue-500/10"
+                                added ? "bg-emerald-500/10" : "bg-[#1a1a1a]"
                               }`}
                             >
                               {added ? (
-                                <Check className="w-4 h-4 text-green-400" />
+                                <Check className="w-4 h-4 text-emerald-500" />
                               ) : (
-                                <Building2 className="w-4 h-4 text-blue-400" />
+                                <Building2 className="w-4 h-4 text-[#666]" />
                               )}
                             </div>
                             <div className="flex-1">
                               <p className="text-sm text-white">{ws.name}</p>
-                              {added && <p className="text-xs text-green-400">Added</p>}
+                              {added && <p className="text-xs text-emerald-500">Added</p>}
                             </div>
                           </DropdownMenuItem>
                         );
@@ -689,414 +395,373 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
               </DropdownMenu>
 
               <Button
-                type="button"
                 size="sm"
-                variant="outline"
-                className="border-white/10 text-white hover:bg-white/5 hover:!text-white relative z-10"
-                onClick={async (e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-
-                  setShowShareDialog(true);
-                  setIsGeneratingShareLink(true);
-                  setShareUrl(null);
-
-                  try {
-                    const res = await fetch(`/api/summaries/${summary.id}/share`, {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                    });
-
-                    if (!res.ok) {
-                      const errorData = await res.json().catch(() => ({}));
-                      const errorMessage =
-                        errorData.error || errorData.message || `HTTP error! status: ${res.status}`;
-                      throw new Error(errorMessage);
-                    }
-
-                    const data = await res.json();
-
-                    if (!data.shareUrl) {
-                      throw new Error("Share URL not found in response");
-                    }
-
-                    try {
-                      if (navigator.clipboard && navigator.clipboard.writeText) {
-                        await navigator.clipboard.writeText(data.shareUrl);
-                      } else {
-                        const textArea = document.createElement("textarea");
-                        textArea.value = data.shareUrl;
-                        textArea.style.position = "fixed";
-                        textArea.style.left = "-999999px";
-                        document.body.appendChild(textArea);
-                        textArea.focus();
-                        textArea.select();
-                        document.execCommand("copy");
-                        document.body.removeChild(textArea);
-                      }
-                    } catch (clipboardError) {
-                      console.error("Clipboard error:", clipboardError);
-                    }
-
-                    setShareUrl(data.shareUrl);
-                    setIsGeneratingShareLink(false);
-                    setHasActiveShare(true);
-                  } catch (e: any) {
-                    console.error("Share error:", e);
-                    setIsGeneratingShareLink(false);
-                    setShowShareDialog(false);
-                    toast.error("Share Failed", {
-                      description: e.message || "Failed to share. Please try again.",
-                      duration: 5000,
-                      position: "top-center",
-                    });
-                  }
-                }}
+                variant="ghost"
+                className="text-[#888] hover:text-white hover:bg-[#1a1a1a]"
+                onClick={handleShare}
               >
-                <Share2 className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:block">Share</span>
+                <Share2 className="w-4 h-4" />
               </Button>
+
+              <Link href={`/chatbot/${summary.id}`}>
+                <Button size="sm" className="bg-white text-black hover:bg-[#e5e5e5] ml-2">
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Chat</span>
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
       </header>
 
-      <section className="relative py-12 sm:py-16 lg:py-24 overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
-        </div>
+      <div className="max-w-[1400px] mx-auto px-6">
+        <div className="flex gap-8 py-8">
+          <aside className="hidden lg:block w-64 flex-shrink-0">
+            <div className="sticky top-20">
+              <div className="mb-6 p-4 rounded-xl bg-[#111111] border border-[#1f1f1f]">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-[10px] text-[#555] uppercase tracking-wider mb-1">
+                      Sections
+                    </p>
+                    <p className="text-lg font-semibold text-white">{sections.length}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#555] uppercase tracking-wider mb-1">
+                      Insights
+                    </p>
+                    <p className="text-lg font-semibold text-white">{totalInsights}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#555] uppercase tracking-wider mb-1">
+                      Read time
+                    </p>
+                    <p className="text-lg font-semibold text-white">{estimatedReadTime}m</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#555] uppercase tracking-wider mb-1">Words</p>
+                    <p className="text-lg font-semibold text-white">
+                      {(wordCount / 1000).toFixed(1)}k
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", delay: 0.1 }}
-              className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 mb-8 shadow-2xl shadow-orange-500/25"
-            >
-              <BookOpen className="w-10 h-10 text-white" />
-            </motion.div>
+              <div className="p-4 rounded-xl bg-[#111111] border border-[#1f1f1f]">
+                <p className="text-[11px] text-[#555] uppercase tracking-wider font-medium mb-3 px-2">
+                  On this page
+                </p>
+                <nav className="space-y-0.5">
+                  {sections.map((section, index) => {
+                    const cleanTitle = section.title.replace(/^\d+\.\s*/, "").replace(/^#+\s*/, "");
+                    const isActive = activeSection === index;
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6 leading-tight"
-            >
-              {summary.title}
-            </motion.h1>
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => scrollToSection(index)}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+                          isActive
+                            ? "bg-white/5 text-white"
+                            : "text-[#666] hover:text-[#999] hover:bg-white/[0.02]"
+                        }`}
+                      >
+                        <span className="line-clamp-1">{cleanTitle}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+            </div>
+          </aside>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="flex flex-wrap items-center justify-center gap-6 text-white/50"
-            >
-              <div className="flex items-center gap-2">
+          <main className="flex-1 min-w-0 max-w-3xl">
+            <div className="mb-8 pb-8 border-b border-[#1f1f1f]">
+              <div className="flex items-center gap-2 text-[#555] text-sm mb-4">
                 <FileText className="w-4 h-4" />
-                <span className="text-sm">{sections.length} sections</span>
+                <span>{preview.documentType || "Document"}</span>
+                <span className="text-[#333]">•</span>
+                <span>
+                  {new Date(summary.created_at).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
               </div>
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4" />
-                <span className="text-sm">{totalInsights} insights</span>
+
+              <h1 className="text-3xl sm:text-4xl font-semibold text-white mb-4 leading-tight tracking-tight">
+                {summary.title}
+              </h1>
+
+              <div className="flex flex-wrap gap-4 text-sm text-[#666] lg:hidden mb-6">
+                <span className="flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5" />
+                  {sections.length} sections
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5" />
+                  {totalInsights} insights
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" />
+                  {estimatedReadTime} min
+                </span>
               </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                <span className="text-sm">{estimatedReadTime} min read</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4" />
-                <span className="text-sm">{wordCount.toLocaleString()} words</span>
-              </div>
-            </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-10"
-            >
-              <Link href={`/chatbot/${summary.id}`}>
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:opacity-90 text-lg px-8 py-6 rounded-2xl shadow-2xl shadow-orange-500/25"
-                >
-                  <MessageSquare className="w-5 h-5 mr-3" />
-                  Chat with this Document
-                  <ArrowUpRight className="w-5 h-5 ml-3" />
-                </Button>
-              </Link>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-8 lg:py-12 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-            >
-              <GlowCard className="bg-[#0a0a0a] rounded-2xl p-6 h-full" glowColor="orange">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-6 h-6 text-orange-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-white/40 mb-1">Document Type</p>
-                    <p className="text-sm font-semibold text-white truncate">
-                      {preview.documentType || "Document"}
-                    </p>
-                  </div>
-                </div>
-              </GlowCard>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-            >
-              <GlowCard className="bg-[#0a0a0a] rounded-2xl p-6 h-full" glowColor="purple">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
-                    <ListChecks className="w-6 h-6 text-purple-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-white/40 mb-1">Total Sections</p>
-                    <p className="text-sm font-semibold text-white">
-                      {sections.length} {sections.length === 1 ? "section" : "sections"}
-                    </p>
-                  </div>
-                </div>
-              </GlowCard>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 }}
-            >
-              <GlowCard className="bg-[#0a0a0a] rounded-2xl p-6 h-full" glowColor="blue">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
-                    <Lightbulb className="w-6 h-6 text-blue-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-white/40 mb-1">Key Insights</p>
-                    <p className="text-sm font-semibold text-white">
-                      {totalInsights} {totalInsights === 1 ? "insight" : "insights"}
-                    </p>
-                  </div>
-                </div>
-              </GlowCard>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-            >
-              <GlowCard className="bg-[#0a0a0a] rounded-2xl p-6 h-full" glowColor="green">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-6 h-6 text-green-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-white/40 mb-1">Reading Time</p>
-                    <p className="text-sm font-semibold text-white">
-                      ~{estimatedReadTime} {estimatedReadTime === 1 ? "minute" : "minutes"}
-                    </p>
-                  </div>
-                </div>
-              </GlowCard>
-            </motion.div>
-          </div>
-
-          {preview.keyPoints.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.5 }}
-              className="mt-8"
-            >
-              <GlowCard className="bg-[#0a0a0a] rounded-2xl p-6 lg:p-8" glowColor="orange">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-                    <Target className="w-5 h-5 text-orange-400" />
-                  </div>
-                  <h3 className="text-lg font-bold text-white">Document Highlights</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {preview.keyPoints.slice(0, 4).map((point, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, x: -10 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.6 + idx * 0.1 }}
-                      className="flex items-start gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5"
-                    >
-                      <div className="w-6 h-6 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Hash className="w-3.5 h-3.5 text-orange-400" />
-                      </div>
-                      <p className="text-sm text-white/70 leading-relaxed flex-1">
-                        {point.length > 120 ? `${point.substring(0, 120)}...` : point}
-                      </p>
-                    </motion.div>
-                  ))}
-                </div>
-              </GlowCard>
-            </motion.div>
-          )}
-        </div>
-      </section>
-
-      <section
-        className="py-12 lg:py-16"
-        style={{
-          transform: "translateZ(0)",
-          WebkitTransform: "translateZ(0)",
-          backfaceVisibility: "hidden",
-        }}
-      >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <main className="space-y-6">
-            {sections.map((section, index) => (
-              <SectionCard key={index} section={section} index={index} />
-            ))}
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="pt-8"
-            >
-              <GlowCard className="bg-gradient-to-br from-[#0a0a0a] to-[#111] rounded-3xl">
-                <div className="p-8 sm:p-12 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 border border-orange-500/20 flex items-center justify-center mx-auto mb-6">
-                    <Sparkles className="w-8 h-8 text-orange-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-3">
-                    Have questions about this document?
-                  </h3>
-                  <p className="text-white/50 mb-8 max-w-md mx-auto">
-                    Start a conversation with our AI to explore deeper insights and get instant
-                    answers.
+              {preview.keyPoints.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-[11px] text-[#555] uppercase tracking-wider font-medium">
+                    Key highlights
                   </p>
-                  <Link href={`/chatbot/${summary.id}`}>
-                    <Button
-                      size="lg"
-                      className="bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:opacity-90 px-8 py-6 rounded-2xl"
-                    >
-                      <MessageSquare className="w-5 h-5 mr-3" />
-                      Start Chatting
-                      <ChevronRight className="w-5 h-5 ml-2" />
-                    </Button>
-                  </Link>
+                  <div className="flex flex-wrap gap-2">
+                    {preview.keyPoints.slice(0, 3).map((point, idx) => (
+                      <div
+                        key={idx}
+                        className="px-3 py-1.5 rounded-full bg-[#111] border border-[#1f1f1f] text-[#888] text-xs"
+                      >
+                        {point.length > 50 ? `${point.substring(0, 50)}...` : point}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </GlowCard>
-            </motion.div>
+              )}
+            </div>
+
+            <div className="space-y-8">
+              {sections.map((section, index) => {
+                const Icon = getSectionIcon(section.title);
+                const cleanTitle = section.title.replace(/^\d+\.\s*/, "").replace(/^#+\s*/, "");
+
+                return (
+                  <section key={index} id={`section-${index}`} className="scroll-mt-20">
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="w-8 h-8 rounded-lg bg-[#1a1a1a] border border-[#252525] flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Icon className="w-4 h-4 text-[#666]" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-[#555] uppercase tracking-wider mb-1">
+                          Section {index + 1}
+                        </p>
+                        <h2 className="text-xl font-semibold text-white">{cleanTitle}</h2>
+                      </div>
+                    </div>
+
+                    <div className="pl-11 space-y-3">
+                      {section.points
+                        .map((point, pointIndex) => {
+                          const cleanText = point
+                            .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/gu, "")
+                            .replace(/\*\*(.*?)\*\*/g, "$1")
+                            .replace(/\*(.*?)\*/g, "$1")
+                            .replace(/^•\s*/, "")
+                            .replace(/^-\s*/, "")
+                            .trim();
+
+                          if (!cleanText || cleanText.length < 3) return null;
+
+                          return (
+                            <div
+                              key={pointIndex}
+                              className="group flex gap-3 py-2 border-l-2 border-[#1f1f1f] hover:border-[#333] pl-4 transition-colors"
+                            >
+                              <p className="text-[#999] text-[15px] leading-relaxed group-hover:text-[#bbb] transition-colors">
+                                {cleanText}
+                              </p>
+                            </div>
+                          );
+                        })
+                        .filter(Boolean)}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+
+            <div className="mt-12 pt-8 border-t border-[#1f1f1f]">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-xl bg-[#111] border border-[#1f1f1f]">
+                <div>
+                  <h3 className="text-lg font-medium text-white mb-1">Want to explore deeper?</h3>
+                  <p className="text-sm text-[#666]">
+                    Chat with AI to ask questions about this document
+                  </p>
+                </div>
+                <Link href={`/chatbot/${summary.id}`}>
+                  <Button className="bg-white text-black hover:bg-[#e5e5e5] whitespace-nowrap">
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Start Chat
+                    <ArrowUpRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </main>
+
+          <aside className="hidden xl:block w-48 flex-shrink-0">
+            <div className="sticky top-20 space-y-3">
+              <Link href={`/chatbot/${summary.id}`} className="block">
+                <div className="p-4 rounded-xl bg-[#111111] border border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors cursor-pointer">
+                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mb-3">
+                    <MessageSquare className="w-4 h-4 text-white" />
+                  </div>
+                  <p className="text-sm font-medium text-white mb-1">Ask AI</p>
+                  <p className="text-xs text-[#666]">Chat about this doc</p>
+                </div>
+              </Link>
+
+              <div
+                onClick={handleShare}
+                className="p-4 rounded-xl bg-[#111111] border border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mb-3">
+                  <Share2 className="w-4 h-4 text-[#888]" />
+                </div>
+                <p className="text-sm font-medium text-white mb-1">Share</p>
+                <p className="text-xs text-[#666]">Copy link</p>
+              </div>
+
+              <DropdownMenu
+                onOpenChange={(open) => {
+                  if (open && !hasFetchedWorkspaces.current) {
+                    hasFetchedWorkspaces.current = true;
+                    fetchWorkspaces();
+                  }
+                  if (!open) hasFetchedWorkspaces.current = false;
+                }}
+              >
+                <DropdownMenuTrigger asChild>
+                  <div className="p-4 rounded-xl bg-[#111111] border border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors cursor-pointer">
+                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mb-3">
+                      <Building2 className="w-4 h-4 text-[#888]" />
+                    </div>
+                    <p className="text-sm font-medium text-white mb-1">Workspace</p>
+                    <p className="text-xs text-[#666]">Add to team</p>
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64 bg-[#111] border-[#1f1f1f]">
+                  <div className="p-2">
+                    <p className="text-xs text-[#666] px-2 py-1 mb-2">Add to workspace</p>
+                    {isLoadingWorkspaces ? (
+                      <div className="py-8 flex justify-center">
+                        <div className="w-5 h-5 border-2 border-[#333] border-t-white rounded-full animate-spin" />
+                      </div>
+                    ) : workspaces.length === 0 ? (
+                      <div className="py-6 text-center text-[#666] text-sm">
+                        No workspaces found
+                      </div>
+                    ) : (
+                      workspaces.map((ws) => {
+                        const added = workspacesWithDocument.has(ws.id);
+                        return (
+                          <DropdownMenuItem
+                            key={ws.id}
+                            onClick={() => !added && handleAddToWorkspace(ws.id)}
+                            disabled={added || isAddingToWorkspace}
+                            className="flex items-center gap-3 p-2 rounded-lg cursor-pointer text-white hover:text-white focus:text-white focus:bg-[#1a1a1a] hover:bg-[#1a1a1a]"
+                          >
+                            <div
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                added ? "bg-emerald-500/10" : "bg-[#1a1a1a]"
+                              }`}
+                            >
+                              {added ? (
+                                <Check className="w-4 h-4 text-emerald-500" />
+                              ) : (
+                                <Building2 className="w-4 h-4 text-[#666]" />
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm text-white">{ws.name}</p>
+                              {added && <p className="text-xs text-emerald-500">Added</p>}
+                            </div>
+                          </DropdownMenuItem>
+                        );
+                      })
+                    )}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </aside>
         </div>
-      </section>
+      </div>
 
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-md [&>button]:hidden">
+        <DialogContent className="bg-[#111111] border-[#1f1f1f] text-white max-w-md [&>button]:hidden">
           {isGeneratingShareLink ? (
-            <>
-              <DialogHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    >
-                      <RefreshCw className="w-6 h-6 text-orange-400" />
-                    </motion.div>
-                  </div>
-                  <DialogTitle className="text-xl font-bold text-white">
-                    Generating Share Link...
-                  </DialogTitle>
+            <DialogHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] border border-[#252525] flex items-center justify-center">
+                  <RefreshCw className="w-5 h-5 text-[#888] animate-spin" />
                 </div>
-                <DialogDescription className="text-white/60 text-sm">
-                  Please wait while we create your shareable link.
-                </DialogDescription>
-              </DialogHeader>
-            </>
+                <DialogTitle className="text-lg font-semibold text-white">
+                  Generating Share Link...
+                </DialogTitle>
+              </div>
+              <DialogDescription className="text-[#666] text-sm">
+                Please wait while we create your shareable link.
+              </DialogDescription>
+            </DialogHeader>
           ) : shareUrl ? (
             <>
               <DialogHeader>
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-                    <Check className="w-6 h-6 text-green-400" />
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                    <Check className="w-5 h-5 text-emerald-500" />
                   </div>
-                  <DialogTitle className="text-xl font-bold text-white">
-                    Link Copied to Clipboard!
+                  <DialogTitle className="text-lg font-semibold text-white">
+                    Link Copied!
                   </DialogTitle>
                 </div>
-                <DialogDescription className="text-white/60 text-sm">
-                  Your share link has been copied. You can now share it with others.
+                <DialogDescription className="text-[#666] text-sm">
+                  Your share link has been copied to clipboard.
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="mt-4 space-y-3">
-                <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-                  <p className="text-xs text-white/40 mb-1.5">Share Link:</p>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      readOnly
-                      value={shareUrl}
-                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/90 focus:outline-none focus:ring-2 focus:ring-white/20"
-                      onClick={(e) => (e.target as HTMLInputElement).select()}
-                    />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-white/10 text-white hover:bg-white/10"
-                      onClick={async () => {
-                        if (shareUrl) {
-                          try {
-                            await navigator.clipboard.writeText(shareUrl);
-                            toast.success("Copied again!", { duration: 2000 });
-                          } catch {
-                            const textArea = document.createElement("textarea");
-                            textArea.value = shareUrl;
-                            textArea.style.position = "fixed";
-                            textArea.style.left = "-999999px";
-                            document.body.appendChild(textArea);
-                            textArea.select();
-                            document.execCommand("copy");
-                            document.body.removeChild(textArea);
-                            toast.success("Copied again!", { duration: 2000 });
-                          }
+              <div className="mt-4">
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-[#0a0a0a] border border-[#1f1f1f]">
+                  <input
+                    type="text"
+                    readOnly
+                    value={shareUrl}
+                    className="flex-1 bg-transparent text-sm text-[#888] focus:outline-none"
+                    onClick={(e) => (e.target as HTMLInputElement).select()}
+                  />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-[#888] hover:text-white hover:bg-[#1a1a1a]"
+                    onClick={async () => {
+                      if (shareUrl) {
+                        try {
+                          await navigator.clipboard.writeText(shareUrl);
+                          toast.success("Copied!", { duration: 2000 });
+                        } catch {
+                          const textArea = document.createElement("textarea");
+                          textArea.value = shareUrl;
+                          textArea.style.position = "fixed";
+                          textArea.style.left = "-999999px";
+                          document.body.appendChild(textArea);
+                          textArea.select();
+                          document.execCommand("copy");
+                          document.body.removeChild(textArea);
+                          toast.success("Copied!", { duration: 2000 });
                         }
-                      }}
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </div>
+                      }
+                    }}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6">
+              <div className="flex justify-end mt-4">
                 <Button
                   variant="outline"
                   onClick={() => setShowShareDialog(false)}
-                  className="border-white/10 text-white hover:bg-white/10 hover:!text-white"
+                  className="border-[#2a2a2a] text-white hover:bg-[#1a1a1a] hover:text-white"
                 >
-                  Close
+                  Done
                 </Button>
               </div>
             </>

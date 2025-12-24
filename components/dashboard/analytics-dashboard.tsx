@@ -136,7 +136,7 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="h-36 bg-gradient-to-br from-gray-900/50 to-gray-800/50 rounded-2xl border border-gray-800/50 animate-pulse"
+              className="h-36 bg-gradient-to-br from-gray-900/50 to-gray-800/50 rounded-2xl border border-[#1f1f1f] animate-pulse"
             />
           ))}
         </div>
@@ -151,10 +151,8 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
           <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/10 border border-orange-500/20 flex items-center justify-center">
             <BarChart3 className="w-10 h-10 text-orange-400" />
           </div>
-          <p className="text-gray-300 text-xl font-semibold mb-2">
-            No analytics data available yet
-          </p>
-          <p className="text-gray-500 text-sm">Upload your first document to see insights</p>
+          <p className="text-[#888] text-xl font-semibold mb-2">No analytics data available yet</p>
+          <p className="text-[#555] text-sm">Upload your first document to see insights</p>
         </div>
       </div>
     );
@@ -285,9 +283,8 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
       const last4Weeks = chartData.slice(-4);
       const totalDocs = last4Weeks.reduce((sum, item) => sum + item.documents, 0);
       const totalTimeSaved = last4Weeks.reduce((sum, item) => sum + item.timeSaved, 0);
-      const totalValue = totalTimeSaved * 50; // $50/hour estimate
+      const totalValue = totalTimeSaved * 50;
 
-      // Calculate week-over-week growth
       const thisWeek = last4Weeks[last4Weeks.length - 1]?.documents || 0;
       const lastWeek = last4Weeks[last4Weeks.length - 2]?.documents || 0;
       const growth = lastWeek > 0 ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100) : 0;
@@ -428,77 +425,72 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
   };
 
   return (
-    <motion.div
-      className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      <motion.div variants={itemVariants} className="px-6 py-8 border-b border-gray-800/50">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+    <div className="bg-[#0a0a0a]">
+      <div className="pb-6 border-b border-[#1f1f1f] mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-white mb-3">Document analytics</h1>
+            <h1 className="text-2xl font-semibold text-white">Document analytics</h1>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center bg-gray-800 rounded-lg p-1">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center p-0.5 rounded-lg bg-[#111] border border-[#1f1f1f]">
               <button
                 onClick={() => setTimeFilter("weekly")}
-                className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+                className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
                   timeFilter === "weekly"
-                    ? "bg-gray-700 text-white font-semibold"
-                    : "text-gray-400 hover:text-white"
+                    ? "bg-[#1a1a1a] text-white"
+                    : "text-[#666] hover:text-white"
                 }`}
               >
                 Weekly
               </button>
               <button
                 onClick={() => setTimeFilter("monthly")}
-                className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+                className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
                   timeFilter === "monthly"
-                    ? "bg-gray-700 text-white font-semibold"
-                    : "text-gray-400 hover:text-white"
+                    ? "bg-[#1a1a1a] text-white"
+                    : "text-[#666] hover:text-white"
                 }`}
               >
                 Monthly
               </button>
             </div>
-            <div className="px-4 py-2 rounded-lg bg-gray-800 text-white text-sm">
+            <div className="px-3 py-1.5 rounded-lg bg-[#111] border border-[#1f1f1f] text-[#888] text-sm">
               {new Date()
                 .toLocaleDateString("en-US", { month: "long", year: "numeric" })
                 .replace("2024", "2025")}
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      <div className="px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <motion.div variants={itemVariants} className="lg:col-span-2 flex">
-            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl w-full flex flex-col">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-white">Processing Efficiency</h3>
-                  <Activity className="w-6 h-6 text-orange-400" />
+      <div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 flex">
+            <div className="relative bg-[#111111] rounded-xl border border-[#1f1f1f] w-full flex flex-col">
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-lg font-medium text-white">Processing Efficiency</h3>
+                  <div className="w-8 h-8 rounded-lg bg-[#1a1a1a] border border-[#252525] flex items-center justify-center">
+                    <Activity className="w-4 h-4 text-[#666]" />
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">Success Rate</span>
-                      <span className="text-2xl font-bold text-white">
+                      <span className="text-sm text-[#666]">Success Rate</span>
+                      <span className="text-xl font-semibold text-white tabular-nums">
                         {analytics.successRate}%
                       </span>
                     </div>
-                    <div className="relative h-3 bg-gray-800 rounded-full overflow-hidden">
-                      <motion.div
-                        className="h-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${analytics.successRate}%` }}
-                        transition={{ duration: 1, ease: "easeOut" }}
+                    <div className="relative h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-emerald-500 rounded-full"
+                        style={{ width: `${analytics.successRate}%` }}
                       />
                     </div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-[#555]">
                       {analytics.totalDocuments > 0
                         ? `${
                             analytics.successRate >= 95
@@ -511,25 +503,25 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                     </p>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">Avg Words/Document</span>
-                      <span className="text-2xl font-bold text-white">
+                      <span className="text-sm text-[#666]">Avg Words/Document</span>
+                      <span className="text-xl font-semibold text-white tabular-nums">
                         {formatNumber(analytics.avgWordsPerDocument)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-blue-400" />
+                      <FileText className="w-4 h-4 text-[#555]" />
                       <div className="flex-1">
                         <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-gray-500">Total Words</span>
-                          <span className="text-white font-semibold">
+                          <span className="text-[#555]">Total Words</span>
+                          <span className="text-[#888] font-medium tabular-nums">
                             {formatNumber(analytics.totalWordsProcessed)}
                           </span>
                         </div>
-                        <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                        <div className="h-1 bg-[#1a1a1a] rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full"
+                            className="h-full bg-[#555] rounded-full"
                             style={{
                               width: `${Math.min(
                                 (analytics.totalWordsProcessed / 100000) * 100,
@@ -544,12 +536,12 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">Processing Speed</span>
+                      <span className="text-sm text-[#666]">Processing Speed</span>
                       <Zap className="w-5 h-5 text-yellow-400" />
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">Avg Time Saved</span>
+                        <span className="text-xs text-[#555]">Avg Time Saved</span>
                         <span className="text-lg font-bold text-white">
                           {analytics.totalDocuments > 0
                             ? `${(analytics.totalTimeSavedHours / analytics.totalDocuments).toFixed(
@@ -558,18 +550,18 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                             : "0h"}
                         </span>
                       </div>
-                      <div className="text-xs text-gray-400">Per document vs manual review</div>
+                      <div className="text-xs text-[#666]">Per document vs manual review</div>
                     </div>
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">Volume Trend</span>
+                      <span className="text-sm text-[#666]">Volume Trend</span>
                       <TrendingUp className="w-5 h-5 text-emerald-400" />
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">Growth Rate</span>
+                        <span className="text-xs text-[#555]">Growth Rate</span>
                         <span
                           className={`text-lg font-bold ${
                             analytics.monthOverMonthGrowth > 0
@@ -586,7 +578,7 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                             : "0%"}
                         </span>
                       </div>
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-[#666]">
                         {analytics.monthOverMonthGrowth > 0
                           ? "Increasing processing activity"
                           : analytics.monthOverMonthGrowth < 0
@@ -598,14 +590,14 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                 </div>
 
                 {analytics.totalDocuments > 0 && (
-                  <div className="mt-6 p-4 rounded-lg bg-gradient-to-r from-gray-800/50 to-gray-800/30 border border-gray-700/50">
+                  <div className="mt-6 p-4 rounded-lg bg-gradient-to-r from-gray-800/50 to-gray-800/30 border border-[#1f1f1f]">
                     <div className="flex items-start gap-3">
                       <Sparkles className="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
                         <h4 className="text-sm font-semibold text-white mb-2">
                           Performance Recommendations
                         </h4>
-                        <ul className="space-y-1 text-xs text-gray-300">
+                        <ul className="space-y-1 text-xs text-[#888]">
                           {analytics.successRate < 95 && (
                             <li>
                               • Consider reviewing failed documents to improve your{" "}
@@ -647,11 +639,11 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
 
                 {analytics.totalDocuments > 0 && (
                   <>
-                    <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-gray-700/50">
+                    <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-[#1f1f1f]">
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <Target className="w-4 h-4 text-purple-400" />
-                          <span className="text-xs text-gray-400 font-medium">Processing Rate</span>
+                          <span className="text-xs text-[#666] font-medium">Processing Rate</span>
                         </div>
                         <div className="flex items-baseline gap-1">
                           <span className="text-2xl font-bold text-white">
@@ -661,9 +653,9 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                               ? (analytics.docsThisMonth / 30).toFixed(1)
                               : "0"}
                           </span>
-                          <span className="text-xs text-gray-400">docs/day</span>
+                          <span className="text-xs text-[#666]">docs/day</span>
                         </div>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-[#555]">
                           {analytics.docsThisWeek > 0
                             ? "Average daily processing this week"
                             : analytics.docsThisMonth > 0
@@ -675,9 +667,7 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <CheckCircle className="w-4 h-4 text-emerald-400" />
-                          <span className="text-xs text-gray-400 font-medium">
-                            Efficiency Score
-                          </span>
+                          <span className="text-xs text-[#666] font-medium">Efficiency Score</span>
                         </div>
                         <div className="flex items-baseline gap-1">
                           <span className="text-2xl font-bold text-white">
@@ -686,9 +676,9 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                                 Math.min((analytics.totalDocuments / 10) * 30, 30)
                             )}
                           </span>
-                          <span className="text-xs text-gray-400">/100</span>
+                          <span className="text-xs text-[#666]">/100</span>
                         </div>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-[#555]">
                           Based on success rate and processing volume
                         </p>
                       </div>
@@ -696,17 +686,15 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4 text-blue-400" />
-                          <span className="text-xs text-gray-400 font-medium">
-                            Avg Document Size
-                          </span>
+                          <span className="text-xs text-[#666] font-medium">Avg Document Size</span>
                         </div>
                         <div className="flex items-baseline gap-1">
                           <span className="text-2xl font-bold text-white">
                             {formatNumber(analytics.avgWordsPerDocument)}
                           </span>
-                          <span className="text-xs text-gray-400">words</span>
+                          <span className="text-xs text-[#666]">words</span>
                         </div>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-[#555]">
                           {analytics.avgWordsPerDocument > 1000
                             ? "Large documents - complex processing"
                             : analytics.avgWordsPerDocument > 500
@@ -717,10 +705,10 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                     </div>
 
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2 p-3 rounded-lg bg-gray-800/30 border border-gray-700/30">
+                      <div className="space-y-2 p-3 rounded-lg bg-[#131313] border border-[#1a1a1a]">
                         <div className="flex items-center gap-2">
                           <DollarSign className="w-4 h-4 text-emerald-400" />
-                          <span className="text-xs text-gray-400 font-medium">Cost Efficiency</span>
+                          <span className="text-xs text-[#666] font-medium">Cost Efficiency</span>
                         </div>
                         <div className="flex items-baseline gap-1">
                           <span className="text-xl font-bold text-white">
@@ -729,17 +717,17 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                               analytics.totalMoneySaved / Math.max(analytics.totalDocuments, 1)
                             ).toFixed(0)}
                           </span>
-                          <span className="text-xs text-gray-400">per doc</span>
+                          <span className="text-xs text-[#666]">per doc</span>
                         </div>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-[#555]">
                           Average value saved per document processed
                         </p>
                       </div>
 
-                      <div className="space-y-2 p-3 rounded-lg bg-gray-800/30 border border-gray-700/30">
+                      <div className="space-y-2 p-3 rounded-lg bg-[#131313] border border-[#1a1a1a]">
                         <div className="flex items-center gap-2">
                           <Activity className="w-4 h-4 text-orange-400" />
-                          <span className="text-xs text-gray-400 font-medium">
+                          <span className="text-xs text-[#666] font-medium">
                             Processing Consistency
                           </span>
                         </div>
@@ -754,7 +742,7 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                               : "Building"}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-[#555]">
                           {analytics.docsThisMonth > 0 && analytics.docsLastMonth > 0
                             ? Math.abs(analytics.monthOverMonthGrowth) < 20
                               ? "Stable processing volume"
@@ -763,10 +751,10 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                         </p>
                       </div>
 
-                      <div className="space-y-2 p-3 rounded-lg bg-gray-800/30 border border-gray-700/30">
+                      <div className="space-y-2 p-3 rounded-lg bg-[#131313] border border-[#1a1a1a]">
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-cyan-400" />
-                          <span className="text-xs text-gray-400 font-medium">Time Efficiency</span>
+                          <span className="text-xs text-[#666] font-medium">Time Efficiency</span>
                         </div>
                         <div className="flex items-baseline gap-1">
                           <span className="text-xl font-bold text-white">
@@ -778,13 +766,13 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                               : "0%"}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-[#555]">
                           Time saved compared to manual processing
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-4 p-4 rounded-lg bg-gradient-to-r from-gray-800/40 to-gray-800/20 border border-gray-700/40">
+                    <div className="mt-4 p-4 rounded-lg bg-gradient-to-r from-gray-800/40 to-gray-800/20 border border-[#1f1f1f]">
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         <div className="text-center">
                           <div className="text-2xl font-bold text-purple-400 mb-1">
@@ -792,7 +780,7 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                               ? analytics.docsThisWeek
                               : analytics.docsThisMonth}
                           </div>
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-[#666]">
                             {analytics.docsThisWeek > 0 ? "This Week" : "This Month"}
                           </div>
                         </div>
@@ -806,7 +794,7 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                                 ).toFixed(1)}K`
                               : "0K"}
                           </div>
-                          <div className="text-xs text-gray-400">Avg Words/Doc</div>
+                          <div className="text-xs text-[#666]">Avg Words/Doc</div>
                         </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-yellow-400 mb-1">
@@ -817,20 +805,20 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                                 ).toFixed(0)}`
                               : "0"}
                           </div>
-                          <div className="text-xs text-gray-400">Mins Saved/Doc</div>
+                          <div className="text-xs text-[#666]">Mins Saved/Doc</div>
                         </div>
                       </div>
                     </div>
                   </>
                 )}
               </div>
-            </Card>
-          </motion.div>
+            </div>
+          </div>
 
-          <motion.div variants={itemVariants} className="space-y-4 flex flex-col">
-            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl flex flex-col min-h-[180px]">
+          <div className="space-y-4 flex flex-col">
+            <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] flex flex-col">
               <div className="p-6 flex flex-col h-full">
-                <p className="text-sm text-gray-400 mb-2">
+                <p className="text-sm text-[#666] mb-2">
                   {timeFilter === "weekly" ? "Documents (Last 4 weeks)" : "Total Documents"}
                 </p>
                 <div className="flex items-baseline gap-2 mb-3">
@@ -850,17 +838,17 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-gray-500 leading-relaxed mt-auto">
+                <p className="text-xs text-[#555] leading-relaxed mt-auto">
                   {timeFilter === "weekly"
                     ? "This shows the count from the last 4 weeks."
                     : "Total number of documents processed through the system. The percentage change shows growth or decline compared to the previous period."}
                 </p>
               </div>
-            </Card>
+            </div>
 
-            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl flex flex-col min-h-[180px]">
+            <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] flex flex-col">
               <div className="p-6 flex flex-col h-full">
-                <p className="text-sm text-gray-400 mb-2">
+                <p className="text-sm text-[#666] mb-2">
                   {timeFilter === "weekly" ? "Time Saved (Last 4 weeks)" : "Total Time Saved"}
                 </p>
                 <div className="flex items-baseline gap-2 mb-3">
@@ -870,7 +858,7 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                       : filteredStats.totalTimeSaved >= 24
                       ? `${(filteredStats.totalTimeSaved / 24).toFixed(1)}`
                       : `${filteredStats.totalTimeSaved.toFixed(1)}`}
-                    <span className="text-2xl text-gray-400 ml-1">
+                    <span className="text-2xl text-[#666] ml-1">
                       {timeFilter === "weekly"
                         ? "hrs"
                         : filteredStats.totalTimeSaved >= 24
@@ -879,17 +867,17 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                     </span>
                   </p>
                 </div>
-                <p className="text-xs text-gray-500 leading-relaxed mt-auto">
+                <p className="text-xs text-[#555] leading-relaxed mt-auto">
                   {timeFilter === "weekly"
                     ? "Time saved in the last 4 weeks by using automated processing."
                     : "Calculated at 0.5 hours saved per document. This represents real time you can use for other important tasks."}
                 </p>
               </div>
-            </Card>
+            </div>
 
-            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl flex flex-col min-h-[180px]">
+            <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] flex flex-col">
               <div className="p-6 flex flex-col h-full">
-                <p className="text-sm text-gray-400 mb-2">
+                <p className="text-sm text-[#666] mb-2">
                   {timeFilter === "weekly" ? "Value (Last 4 weeks)" : "Total Net Value"}
                 </p>
                 <div className="flex items-baseline gap-2 mb-3">
@@ -897,23 +885,23 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                     {formatCurrency(filteredStats.totalValue).replace(".00", "")}
                   </p>
                 </div>
-                <p className="text-xs text-gray-500 leading-relaxed mt-auto">
+                <p className="text-xs text-[#555] leading-relaxed mt-auto">
                   {timeFilter === "weekly"
                     ? "Estimated value from the last 4 weeks of automation."
                     : "Calculated by multiplying time saved (hours) by $50/hour. A conservative estimate of value gained through automation."}
                 </p>
               </div>
-            </Card>
-          </motion.div>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          <motion.div variants={itemVariants} className="flex">
-            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl w-full flex flex-col">
+          <div className="flex">
+            <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] w-full flex flex-col">
               <div className="p-6 flex flex-col flex-1">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-bold text-white">Recent Activity</h3>
-                  <Clock className="w-5 h-5 text-gray-400" />
+                  <Clock className="w-5 h-5 text-[#666]" />
                 </div>
 
                 <div className="space-y-3 flex-1 overflow-y-auto pr-2 min-h-0">
@@ -924,12 +912,9 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                       const isRecent = Date.now() - date.getTime() < 24 * 60 * 60 * 1000; // Within 24 hours
 
                       return (
-                        <motion.div
+                        <div
                           key={activity.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          className="flex items-start gap-3 p-3 rounded-lg bg-gray-800/50 hover:bg-gray-800/70 transition-colors border border-gray-700/50"
+                          className="flex items-start gap-3 p-3 rounded-lg bg-[#151515] hover:bg-[#1a1a1a] transition-colors border border-[#1f1f1f]"
                         >
                           <div
                             className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
@@ -941,27 +926,27 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                               {activity.title}
                             </p>
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs text-gray-400">{activity.action}</span>
-                              <span className="text-xs text-gray-500">•</span>
-                              <span className="text-xs text-gray-500">{timeAgo}</span>
+                              <span className="text-xs text-[#666]">{activity.action}</span>
+                              <span className="text-xs text-[#555]">•</span>
+                              <span className="text-xs text-[#555]">{timeAgo}</span>
                             </div>
                           </div>
-                        </motion.div>
+                        </div>
                       );
                     })
                   ) : (
                     <div className="text-center py-8">
-                      <FileText className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                      <p className="text-sm text-gray-400">No recent activity</p>
+                      <FileText className="w-12 h-12 text-[#555] mx-auto mb-3" />
+                      <p className="text-sm text-[#666]">No recent activity</p>
                     </div>
                   )}
                 </div>
               </div>
-            </Card>
-          </motion.div>
+            </div>
+          </div>
 
-          <motion.div variants={itemVariants} className="flex">
-            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl w-full flex flex-col">
+          <div className="flex">
+            <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] w-full flex flex-col">
               <div className="p-6 flex flex-col flex-1">
                 <h3 className="text-lg font-bold text-white mb-6">Processing Analysis</h3>
 
@@ -986,7 +971,7 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <p className="text-3xl font-bold text-white">{analytics.successRate}%</p>
-                      <p className="text-xs text-gray-400">Success</p>
+                      <p className="text-xs text-[#666]">Success</p>
                     </div>
                   </div>
                 </div>
@@ -995,31 +980,31 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                      <span className="text-gray-300">PDFs</span>
+                      <span className="text-[#888]">PDFs</span>
                     </div>
                     <span className="text-white font-semibold">65%</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                      <span className="text-gray-300">Documents</span>
+                      <span className="text-[#888]">Documents</span>
                     </div>
                     <span className="text-white font-semibold">25%</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                      <span className="text-gray-300">Others</span>
+                      <span className="text-[#888]">Others</span>
                     </div>
                     <span className="text-white font-semibold">10%</span>
                   </div>
                 </div>
               </div>
-            </Card>
-          </motion.div>
+            </div>
+          </div>
 
-          <motion.div variants={itemVariants} className="flex">
-            <Card className="relative overflow-hidden border-0 bg-gray-900/70 backdrop-blur-xl shadow-2xl w-full flex flex-col">
+          <div className="flex">
+            <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] w-full flex flex-col">
               <div className="p-6 flex flex-col flex-1">
                 <h3 className="text-lg font-bold text-white mb-6">Performance Forecast</h3>
 
@@ -1062,9 +1047,9 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                   </ResponsiveContainer>
                 </div>
 
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-gray-800/50 border border-gray-700/50 mb-3">
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-[#151515] border border-[#1f1f1f] mb-3">
                   <Sparkles className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-gray-300">
+                  <p className="text-xs text-[#888]">
                     Expecting{" "}
                     <span className="font-semibold text-blue-400">
                       growth in {forecastData[forecastData.length - 1]?.month}
@@ -1074,14 +1059,14 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                     optimizing current workflows.
                   </p>
                 </div>
-                <p className="text-xs text-gray-500 leading-relaxed">
+                <p className="text-xs text-[#555] leading-relaxed">
                   The blue line shows your actual document processing data, while the pink dashed
                   line shows the projected forecast based on your current growth patterns. Helps you
                   anticipate future processing needs.
                 </p>
               </div>
-            </Card>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1122,12 +1107,8 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
               }
             }}
           >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ duration: 0.2 }}
-              className="bg-gray-900 border border-gray-800 rounded-2xl p-8 max-w-md w-full shadow-2xl my-auto"
+            <div
+              className="bg-[#111111] border border-[#1f1f1f] rounded-xl p-6 max-w-md w-full my-auto"
               style={{
                 maxHeight: "90vh",
                 overflowY: "auto",
@@ -1142,13 +1123,13 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
               onWheel={(e) => e.stopPropagation()}
             >
               <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 rounded-xl bg-gray-800 border border-gray-700">
+                <div className="p-3 rounded-xl bg-[#1a1a1a] border border-[#1f1f1f]">
                   {modalContent.icon}
                 </div>
                 <h2 className="text-2xl font-bold text-white">{modalContent.title}</h2>
               </div>
 
-              <p className="text-gray-300 text-lg leading-relaxed mb-6 whitespace-pre-line">
+              <p className="text-[#888] text-lg leading-relaxed mb-6 whitespace-pre-line">
                 {modalContent.description}
               </p>
 
@@ -1160,7 +1141,7 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                     setShowModal(false);
                     setInfoModalCard(null);
                   }}
-                  className="flex-1 px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors"
+                  className="flex-1 px-6 py-3 bg-[#1a1a1a] hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors"
                   type="button"
                 >
                   Close
@@ -1183,10 +1164,10 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                   </button>
                 )}
               </div>
-            </motion.div>
+            </div>
           </div>,
           document.body
         )}
-    </motion.div>
+    </div>
   );
 }

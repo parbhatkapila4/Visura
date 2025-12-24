@@ -1,9 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import {
@@ -14,10 +11,14 @@ import {
   MessageSquare,
   MoreVertical,
   Trash2,
-  ScanSearch,
   Brain,
   FileText,
   Search,
+  Sparkles,
+  ArrowUp,
+  FileQuestion,
+  Lightbulb,
+  ListChecks,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -55,22 +56,19 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const isSendingRef = useRef(false);
   const lastSentMessageRef = useRef<{ text: string; timestamp: number } | null>(null);
 
   useEffect(() => {
     let mounted = true;
-
     const loadData = async () => {
-      if (mounted) {
-        await loadSessions();
-      }
+      if (mounted) await loadSessions();
     };
-
     loadData();
-
     return () => {
       mounted = false;
     };
@@ -78,7 +76,6 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
 
   useEffect(() => {
     let mounted = true;
-
     const loadData = async () => {
       if (currentSessionId && mounted) {
         await loadMessages(currentSessionId);
@@ -86,18 +83,14 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
         setMessages([]);
       }
     };
-
     loadData();
-
     return () => {
       mounted = false;
     };
   }, [currentSessionId]);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      scrollToBottom();
-    }
+    if (messages.length > 0) scrollToBottom();
   }, [messages]);
 
   const scrollToBottom = () => {
@@ -105,10 +98,7 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
       const container = messagesContainerRef.current;
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          container.scrollTo({
-            top: container.scrollHeight,
-            behavior: "smooth",
-          });
+          container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
         });
       });
     }
@@ -119,10 +109,8 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
       setIsLoadingSessions(true);
       const response = await fetch(`/api/chatbot/sessions?pdfStoreId=${pdfStoreId}`);
       const data = await response.json();
-
       if (response.ok) {
         setSessions(data.sessions);
-
         if (data.sessions.length > 0 && !currentSessionId) {
           setCurrentSessionId(data.sessions[0].id);
         }
@@ -138,12 +126,7 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
     try {
       const response = await fetch(`/api/chatbot/messages?sessionId=${sessionId}`);
       const data = await response.json();
-
-      if (response.ok) {
-        setMessages(data.messages || []);
-      } else {
-        console.error("Error loading messages:", data);
-      }
+      if (response.ok) setMessages(data.messages || []);
     } catch (error) {
       console.error("Error loading messages:", error);
     }
@@ -157,7 +140,6 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
       .filter((word) => word.length > 2)
       .slice(0, 4)
       .join(" ");
-
     return cleanMessage.length > 35
       ? cleanMessage.substring(0, 32) + "..."
       : cleanMessage || `Chat ${sessions.length + 1}`;
@@ -168,31 +150,16 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
       const sessionName = firstMessage
         ? generateSessionName(firstMessage)
         : `Chat ${sessions.length + 1}`;
-
       const response = await fetch("/api/chatbot/sessions", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          pdfStoreId,
-          sessionName: sessionName,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pdfStoreId, sessionName }),
       });
-
       const data = await response.json();
-
-      if (!response.ok || !data.session?.id) {
-        console.error("Error creating session:", data);
-        return null;
-      }
-
-      const newSessionId: string = data.session.id;
-      setCurrentSessionId(newSessionId);
-
+      if (!response.ok || !data.session?.id) return null;
+      setCurrentSessionId(data.session.id);
       loadSessions();
-
-      return newSessionId;
+      return data.session.id;
     } catch (error) {
       console.error("Error creating session:", error);
       return null;
@@ -208,17 +175,12 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
       lastSentMessageRef.current &&
       lastSentMessageRef.current.text === messageToSend.trim() &&
       now - lastSentMessageRef.current.timestamp < 1000
-    ) {
-      console.log("Blocking duplicate message send");
+    )
       return;
-    }
-
     lastSentMessageRef.current = { text: messageToSend.trim(), timestamp: now };
-
     isSendingRef.current = true;
 
     let activeSessionId = currentSessionId;
-
     if (!activeSessionId) {
       activeSessionId = await createNewSession(messageToSend);
       if (!activeSessionId) {
@@ -229,37 +191,38 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
 
     const messageText = messageToSend.trim();
     setInputMessage("");
+
+    
+    const optimisticUserMessage: Message = {
+      id: `temp-${Date.now()}`,
+      message_type: "user",
+      message_content: messageText,
+      created_at: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, optimisticUserMessage]);
     setIsLoading(true);
 
     try {
       const response = await fetch("/api/chatbot/messages", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          sessionId: activeSessionId,
-          message: messageText,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: activeSessionId, message: messageText }),
       });
-
       const data = await response.json();
-
       if (response.ok) {
         await loadMessages(activeSessionId);
         await loadSessions();
-      } else {
-        console.error("API Error:", data);
       }
     } catch (error) {
       console.error("Error sending message:", error);
+      setMessages((prev) => prev.filter((m) => m.id !== optimisticUserMessage.id));
     } finally {
       setIsLoading(false);
       isSendingRef.current = false;
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
@@ -271,12 +234,9 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
       const response = await fetch(`/api/chatbot/sessions?sessionId=${sessionId}`, {
         method: "DELETE",
       });
-
       if (response.ok) {
         await loadSessions();
-        if (currentSessionId === sessionId) {
-          setCurrentSessionId(null);
-        }
+        if (currentSessionId === sessionId) setCurrentSessionId(null);
       }
     } catch (error) {
       console.error("Error deleting session:", error);
@@ -285,417 +245,293 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
 
   const currentSession = sessions.find((s) => s.id === currentSessionId);
 
+  const quickActions = [
+    {
+      icon: Lightbulb,
+      label: "Explain concepts",
+      prompt: "Explain the main concepts from this document in simple terms",
+    },
+    {
+      icon: ListChecks,
+      label: "Key takeaways",
+      prompt: "What are the key takeaways from this document?",
+    },
+    {
+      icon: FileQuestion,
+      label: "Questions",
+      prompt: "Generate important questions based on this document",
+    },
+    {
+      icon: Search,
+      label: "Deep dive",
+      prompt: "Do a deep analysis of the most important topics in this document",
+    },
+  ];
+
   return (
-    <div className="flex flex-col lg:flex-row h-full gap-2 sm:gap-3 md:gap-4 lg:gap-6">
-      <div className="w-full lg:w-80 h-48 lg:h-full flex-shrink-0">
-        <div className="h-full bg-gradient-to-br from-black via-gray-900 to-black rounded-xl sm:rounded-2xl lg:rounded-3xl border border-orange-500/20 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent rounded-2xl lg:rounded-3xl pointer-events-none"></div>
-          <div
-            className="absolute inset-0 rounded-2xl lg:rounded-3xl pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(circle at top left, rgba(249, 115, 22, 0.1) 0%, transparent 50%)",
-            }}
-          ></div>
+    <div className="flex h-full">
+      <aside className="w-72 flex-shrink-0 flex flex-col bg-[#0c0c0c] border-r border-[#1a1a1a]">
+        <div className="p-4 flex items-center justify-between">
+          <span className="text-sm font-medium text-[#888]">Chat History</span>
+          <button
+            onClick={() => setCurrentSessionId(null)}
+            className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-[#2a2a2a] flex items-center gap-2 text-sm text-white transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            New
+          </button>
+        </div>
 
-          <div className="relative z-10 p-2 sm:p-3 md:p-4 lg:p-5 border-b border-orange-500/20 flex items-center justify-between backdrop-blur-sm flex-shrink-0">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/50">
-                <MessageSquare className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-white" />
-              </div>
-              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-white">
-                Chat Sessions
-              </h3>
-            </div>
-            <Button
-              size="sm"
-              onClick={() => createNewSession()}
-              className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 p-0 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-500 rounded-lg sm:rounded-xl shadow-lg shadow-orange-500/30 transition-all"
-            >
-              <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-white" />
-            </Button>
-          </div>
-
-          <div className="relative z-10 flex-1 min-h-0 overflow-y-auto p-2 sm:p-3">
+        <div className="flex-1 overflow-y-auto px-2 pb-4">
             {isLoadingSessions ? (
-              <div className="flex items-center justify-center py-6 sm:py-8 md:py-12">
-                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-2 border-orange-500/30 border-t-orange-500"></div>
+              <div className="flex items-center justify-center py-12">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" />
+                </div>
               </div>
             ) : sessions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full py-6 sm:py-8 md:py-12 text-center">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mb-3 sm:mb-4 md:mb-6 rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-500/20 via-orange-600/10 to-black/40 flex items-center justify-center shadow-lg border border-orange-500/20">
-                  <MessageSquare className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-orange-500" />
-                </div>
-                <p className="text-xs sm:text-sm font-medium text-gray-200 uppercase tracking-[0.25em] sm:tracking-[0.35em]">
-                  No chats yet
-                </p>
-                <p className="text-[10px] sm:text-xs text-gray-400 mt-1.5 sm:mt-2 inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full border border-orange-500/30 bg-orange-500/10 tracking-wide">
-                  <span className="inline-flex h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full bg-orange-400 animate-pulse"></span>
-                  Click + and start
-                </p>
+              <div className="flex flex-col items-center justify-center h-48 text-center px-4">
+                <MessageSquare className="w-8 h-8 text-[#333] mb-3" />
+                <p className="text-sm text-[#555]">No conversations yet</p>
               </div>
             ) : (
-              <div className="space-y-1.5 sm:space-y-2">
+              <div className="space-y-1">
                 {sessions.map((session) => (
                   <div
                     key={session.id}
-                    className={`group relative p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-xl cursor-pointer transition-all backdrop-blur-sm ${
-                      currentSessionId === session.id
-                        ? "bg-gradient-to-r from-orange-500/20 via-orange-600/10 to-orange-500/20 border border-orange-500/50 shadow-lg shadow-orange-500/20"
-                        : "bg-gradient-to-r from-gray-800/50 via-black/30 to-gray-800/50 border border-gray-700/30 hover:from-orange-500/10 hover:via-gray-800/40 hover:to-orange-500/10 hover:border-orange-500/30 hover:shadow-md"
-                    }`}
                     onClick={() => setCurrentSessionId(session.id)}
+                    className={`group px-3 py-2.5 rounded-lg cursor-pointer transition-all ${
+                      currentSessionId === session.id ? "bg-white/[0.08]" : "hover:bg-white/[0.04]"
+                    }`}
                   >
-                    <div className="flex items-start justify-between gap-1.5 sm:gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs sm:text-sm font-medium text-white truncate mb-0.5 sm:mb-1">
-                          {session.session_name}
-                        </p>
-                        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                          <Badge
-                            variant="secondary"
-                            className="text-[10px] sm:text-xs bg-gradient-to-r from-orange-500/30 via-orange-600/20 to-orange-500/30 text-white border border-orange-500/40 backdrop-blur-sm px-1.5 sm:px-2 py-0 sm:py-0.5"
-                          >
-                            {session.message_count} msgs
-                          </Badge>
-                          <span className="text-[10px] sm:text-xs text-gray-400">
-                            {new Date(session.updated_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm text-[#ccc] truncate flex-1">{session.session_name}</p>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button
-                            size="sm"
-                            className="h-6 w-6 sm:h-7 sm:w-7 p-0 bg-transparent hover:bg-orange-500/20 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                          <button
                             onClick={(e) => e.stopPropagation()}
+                            className="w-6 h-6 rounded hover:bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <MoreVertical className="w-3 h-3 sm:w-4 sm:h-4" />
-                          </Button>
+                            <MoreVertical className="w-3.5 h-3.5 text-[#666]" />
+                          </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="bg-gray-900 border border-gray-700 rounded-lg sm:rounded-xl p-1.5 sm:p-2"
-                        >
+                        <DropdownMenuContent align="end" className="bg-[#161616] border-[#2a2a2a]">
                           <DropdownMenuItem
                             onClick={() => deleteSession(session.id)}
-                            className="text-red-400 hover:bg-red-500/20 rounded-md sm:rounded-lg text-xs sm:text-sm"
+                            className="text-red-400 hover:text-red-400 focus:text-red-400 hover:bg-red-500/10 focus:bg-red-500/10"
                           >
-                            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
+                            <Trash2 className="w-4 h-4 mr-2" />
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
+                    <p className="text-[11px] text-[#555] mt-0.5">
+                      {session.message_count} messages
+                    </p>
                   </div>
                 ))}
               </div>
             )}
+        </div>
+
+        <div className="p-3 border-t border-[#1a1a1a]">
+          <div className="px-3 py-2.5 rounded-lg bg-white/[0.03]">
+            <p className="text-[10px] text-[#555] uppercase tracking-wider mb-1">Document</p>
+            <p className="text-xs text-[#888] truncate">{pdfTitle}</p>
           </div>
         </div>
-      </div>
+      </aside>
 
-      <div className="flex-1 min-w-0 min-h-0">
-        <div className="h-full bg-gradient-to-br from-black via-gray-900 to-black rounded-xl sm:rounded-2xl lg:rounded-3xl border border-orange-500/20 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden relative">
-          <div
-            className="absolute inset-0 rounded-2xl lg:rounded-3xl pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(circle at center, rgba(249, 115, 22, 0.08) 0%, transparent 70%)",
-            }}
-          ></div>
-          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-white/10 via-white/5 to-transparent rounded-t-2xl lg:rounded-t-3xl pointer-events-none"></div>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl pointer-events-none"></div>
-
-          {currentSessionId ? (
-            <>
-              <div className="relative z-10 p-2 sm:p-3 md:p-4 lg:p-5 border-b border-orange-500/20 flex items-center gap-2 sm:gap-3 backdrop-blur-sm flex-shrink-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/50">
-                  <Bot className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm sm:text-base md:text-lg font-semibold text-white truncate">
-                    {currentSession?.session_name}
-                  </h3>
-                </div>
-              </div>
-
-              <div
-                ref={messagesContainerRef}
-                className="relative z-10 flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-6 space-y-3 sm:space-y-4 md:space-y-5"
-              >
+      <div className="flex-1 min-w-0 flex flex-col relative">
+        {currentSessionId ? (
+          <>
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto">
+              <div className="max-w-3xl mx-auto px-4 py-6">
                 {messages.length === 0 ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center px-4">
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mx-auto mb-3 sm:mb-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-500/20 via-orange-600/10 to-black/40 flex items-center justify-center shadow-lg border border-orange-500/20">
-                        <Bot className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-orange-500" />
+                  <div className="flex items-center justify-center h-[60vh]">
+                    <div className="text-center">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
+                        <Bot className="w-8 h-8 text-white/60" />
                       </div>
-                      <h3 className="text-base sm:text-lg md:text-xl font-semibold text-white mb-1.5 sm:mb-2">
-                        Start a conversation
-                      </h3>
-                      <p className="text-gray-400 text-xs sm:text-sm">
-                        Ask questions about:{" "}
-                        <span className="text-orange-500 font-medium">"{pdfTitle}"</span>
+                      <p className="text-white text-lg font-medium mb-2">Start the conversation</p>
+                      <p className="text-[#666] text-sm max-w-sm">
+                        Ask anything about <span className="text-[#888]">"{pdfTitle}"</span>
                       </p>
                     </div>
                   </div>
                 ) : (
-                  <>
+                  <div className="space-y-6">
                     {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex gap-2 sm:gap-3 md:gap-4 ${
-                          message.message_type === "user" ? "justify-end" : "justify-start"
-                        }`}
-                      >
+                      <div key={message.id} className="flex gap-4">
                         <div
-                          className={`flex gap-2 sm:gap-2.5 md:gap-3 max-w-[90%] sm:max-w-[85%] md:max-w-[80%] ${
-                            message.message_type === "user" ? "flex-row-reverse" : "flex-row"
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                            message.message_type === "user"
+                              ? "bg-white"
+                              : "bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] border border-[#2a2a2a]"
                           }`}
                         >
-                          <div
-                            className={`w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg ${
-                              message.message_type === "user"
-                                ? "bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 shadow-orange-500/30"
-                                : "bg-gradient-to-br from-gray-800/80 to-black/60 backdrop-blur-sm border border-gray-700/50"
-                            }`}
-                          >
-                            {message.message_type === "user" ? (
-                              <User className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-white" />
-                            ) : (
-                              <Bot className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-white" />
-                            )}
-                          </div>
-                          <div
-                            className={`rounded-xl sm:rounded-2xl px-3 py-2 sm:px-4 sm:py-3 shadow-lg backdrop-blur-sm ${
-                              message.message_type === "user"
-                                ? "bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 text-white shadow-orange-500/20"
-                                : "bg-gradient-to-br from-gray-800/80 via-gray-900/60 to-black/80 text-gray-200 border border-gray-700/50"
-                            }`}
-                          >
-                            {message.message_type === "assistant" ? (
-                              <div className="prose prose-sm max-w-none prose-invert">
-                                <ReactMarkdown
-                                  components={{
-                                    p: ({ children }) => (
-                                      <p className="mb-1.5 sm:mb-2 last:mb-0 text-gray-200 text-xs sm:text-sm leading-relaxed">
-                                        {children}
-                                      </p>
-                                    ),
-                                    ul: ({ children }) => (
-                                      <ul className="list-disc pl-3 sm:pl-4 mb-1.5 sm:mb-2 space-y-0.5 sm:space-y-1 text-gray-200">
-                                        {children}
-                                      </ul>
-                                    ),
-                                    ol: ({ children }) => (
-                                      <ol className="list-decimal pl-3 sm:pl-4 mb-1.5 sm:mb-2 space-y-0.5 sm:space-y-1 text-gray-200">
-                                        {children}
-                                      </ol>
-                                    ),
-                                    li: ({ children }) => (
-                                      <li className="leading-relaxed text-gray-200 text-xs sm:text-sm">
-                                        {children}
-                                      </li>
-                                    ),
-                                    strong: ({ children }) => (
-                                      <strong className="font-semibold text-white text-xs sm:text-sm">
-                                        {children}
-                                      </strong>
-                                    ),
-                                    code: ({ children }) => (
-                                      <code className="bg-black/60 px-1 sm:px-1.5 py-0.5 rounded text-[11px] sm:text-sm font-mono text-orange-400 border border-orange-500/20 break-all">
-                                        {children}
-                                      </code>
-                                    ),
-                                  }}
-                                >
-                                  {message.message_content}
-                                </ReactMarkdown>
-                              </div>
-                            ) : (
-                              <p className="whitespace-pre-wrap text-white text-xs sm:text-sm break-words">
+                          {message.message_type === "user" ? (
+                            <User className="w-4 h-4 text-black" />
+                          ) : (
+                            <Sparkles className="w-4 h-4 text-white/70" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0 pt-1">
+                          <p className="text-[11px] text-[#555] mb-1.5 uppercase tracking-wider">
+                            {message.message_type === "user" ? "You" : "AI Assistant"}
+                          </p>
+                          {message.message_type === "assistant" ? (
+                            <div className="prose prose-sm max-w-none prose-invert">
+                              <ReactMarkdown
+                                components={{
+                                  p: ({ children }) => (
+                                    <p className="mb-3 last:mb-0 text-[#ccc] text-[15px] leading-relaxed">
+                                      {children}
+                                    </p>
+                                  ),
+                                  ul: ({ children }) => (
+                                    <ul className="list-disc pl-5 mb-3 space-y-1.5 text-[#ccc]">
+                                      {children}
+                                    </ul>
+                                  ),
+                                  ol: ({ children }) => (
+                                    <ol className="list-decimal pl-5 mb-3 space-y-1.5 text-[#ccc]">
+                                      {children}
+                                    </ol>
+                                  ),
+                                  li: ({ children }) => (
+                                    <li className="text-[#ccc] text-[15px]">{children}</li>
+                                  ),
+                                  strong: ({ children }) => (
+                                    <strong className="font-semibold text-white">{children}</strong>
+                                  ),
+                                  code: ({ children }) => (
+                                    <code className="bg-[#1a1a1a] px-1.5 py-0.5 rounded text-sm font-mono text-emerald-400">
+                                      {children}
+                                    </code>
+                                  ),
+                                  pre: ({ children }) => (
+                                    <pre className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-4 overflow-x-auto my-3">
+                                      {children}
+                                    </pre>
+                                  ),
+                                }}
+                              >
                                 {message.message_content}
-                              </p>
-                            )}
-                            <p
-                              className={`text-[10px] sm:text-xs mt-1.5 sm:mt-2 ${
-                                message.message_type === "user" ? "text-white/70" : "text-gray-400"
-                              }`}
-                            >
-                              {new Date(message.created_at).toLocaleTimeString()}
+                              </ReactMarkdown>
+                            </div>
+                          ) : (
+                            <p className="text-[15px] text-white leading-relaxed">
+                              {message.message_content}
                             </p>
-                          </div>
+                          )}
                         </div>
                       </div>
                     ))}
                     {isLoading && (
-                      <div className="flex gap-2 sm:gap-2.5 md:gap-3 justify-start">
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-gradient-to-br from-gray-800/80 to-black/60 backdrop-blur-sm border border-gray-700/50 flex items-center justify-center shadow-lg">
-                          <Bot className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-white" />
+                      <div className="flex gap-4">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] border border-[#2a2a2a] flex items-center justify-center">
+                          <Sparkles className="w-4 h-4 text-white/70" />
                         </div>
-                        <div className="bg-gradient-to-br from-gray-800/80 via-gray-900/60 to-black/80 backdrop-blur-sm border border-gray-700/50 rounded-xl sm:rounded-2xl px-3 py-2 sm:px-4 sm:py-3 shadow-lg">
-                          <div className="flex items-center gap-2 sm:gap-3">
-                            <div className="animate-spin rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 border-2 border-orange-500/30 border-t-orange-500"></div>
-                            <span className="text-gray-300 text-xs sm:text-sm">Thinking...</span>
+                        <div className="flex-1 pt-1">
+                          <p className="text-[11px] text-[#555] mb-1.5 uppercase tracking-wider">
+                            AI Assistant
+                          </p>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-2 h-2 bg-white/50 rounded-full animate-pulse" />
+                            <div className="w-2 h-2 bg-white/50 rounded-full animate-pulse [animation-delay:0.2s]" />
+                            <div className="w-2 h-2 bg-white/50 rounded-full animate-pulse [animation-delay:0.4s]" />
                           </div>
                         </div>
                       </div>
                     )}
                     <div ref={messagesEndRef} />
-                  </>
+                  </div>
                 )}
               </div>
+            </div>
 
-              <div className="relative z-10 p-2 sm:p-3 md:p-4 lg:p-5 border-t border-orange-500/20 backdrop-blur-sm flex-shrink-0">
-                <div className="flex gap-2 sm:gap-3">
-                  <div className="flex-1 relative">
-                    <Input
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Ask a question about your document..."
-                      disabled={isLoading}
-                      className="w-full h-10 sm:h-11 md:h-12 px-3 sm:px-4 bg-gradient-to-r from-gray-800/60 via-black/40 to-gray-800/60 border border-gray-700/50 rounded-lg sm:rounded-xl text-white text-xs sm:text-sm placeholder:text-gray-400 focus:border-orange-500/50 focus:ring-2 focus:ring-orange-500/20 backdrop-blur-sm shadow-lg"
-                    />
-                  </div>
-                  <Button
+            <div className="p-4 border-t border-[#1a1a1a]">
+              <div className="max-w-3xl mx-auto">
+                <div className="relative bg-[#111] border border-[#2a2a2a] rounded-xl focus-within:border-[#404040] transition-colors">
+                  <textarea
+                    ref={inputRef}
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Ask a question about your document..."
+                    disabled={isLoading}
+                    rows={1}
+                    className="w-full px-4 py-3.5 pr-14 bg-transparent text-white text-[15px] placeholder:text-[#555] focus:outline-none resize-none disabled:opacity-50"
+                  />
+                  <button
                     onClick={() => sendMessage()}
                     disabled={!inputMessage.trim() || isLoading}
-                    className="h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12 p-0 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-500 rounded-lg sm:rounded-xl disabled:opacity-50 shadow-lg shadow-orange-500/30 transition-all flex-shrink-0"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white hover:bg-[#e5e5e5] disabled:bg-[#2a2a2a] rounded-lg flex items-center justify-center transition-all disabled:opacity-50"
                   >
-                    <Send className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-white" />
-                  </Button>
+                    <ArrowUp className="w-5 h-5 text-black" />
+                  </button>
                 </div>
-              </div>
-            </>
-          ) : (
-            <div className="relative z-10 flex-1 flex flex-col justify-center items-center px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 lg:py-12 min-h-0 overflow-y-auto">
-              <div className="w-full max-w-3xl mx-auto flex flex-col items-center text-center gap-4 sm:gap-6 md:gap-8 lg:gap-10">
-                <div className="space-y-1 sm:space-y-2 md:space-y-3">
-                  <p className="text-xs sm:text-sm md:text-base text-gray-400">Welcome back</p>
-                  <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white leading-tight px-4">
-                    How can I{" "}
-                    <span className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 bg-clip-text text-transparent">
-                      assist
-                    </span>{" "}
-                    you today?
-                  </h2>
-                </div>
-
-                <div className="relative w-full bg-gradient-to-br from-gray-900/90 via-black/70 to-gray-900/90 backdrop-blur-2xl border border-orange-500/30 sm:border-2 sm:border-orange-500/40 rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 lg:p-8 shadow-[0_20px_60px_-15px_rgba(249,115,22,0.4)] sm:shadow-[0_30px_80px_-20px_rgba(249,115,22,0.5)] overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 sm:from-white/15 via-transparent to-transparent rounded-2xl sm:rounded-3xl pointer-events-none"></div>
-                  <div className="absolute top-0 left-0 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-orange-500/15 sm:bg-orange-500/20 rounded-full blur-3xl pointer-events-none"></div>
-                  <div className="absolute bottom-0 right-0 w-40 h-40 sm:w-60 sm:h-60 md:w-80 md:h-80 bg-amber-500/10 sm:bg-amber-500/15 rounded-full blur-3xl pointer-events-none"></div>
-
-                  <div className="relative z-10 flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-                    <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-                      <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 shadow-xl sm:shadow-2xl shadow-orange-500/40 sm:shadow-orange-500/50 border border-orange-400/30 hover:scale-105 transition-transform cursor-pointer flex-shrink-0">
-                        <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 rounded-lg sm:rounded-xl bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-md">
-                          <ScanSearch className="w-5 h-5 sm:w-6 sm:h-6 md:w-6.5 md:h-6.5 lg:w-7 lg:h-7 text-white drop-shadow-lg" />
-                        </div>
-                      </div>
-
-                      <Input
-                        value={inputMessage}
-                        onChange={(e) => setInputMessage(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Initiate a query or send a command to the AI..."
-                        className="flex-1 h-10 sm:h-12 md:h-14 lg:h-16 px-3 sm:px-4 md:px-5 lg:px-6 bg-gradient-to-r from-black/40 via-gray-900/50 to-black/40 backdrop-blur-md border border-gray-700/50 sm:border-2 sm:border-gray-700/60 rounded-xl sm:rounded-2xl text-white text-xs sm:text-sm md:text-base placeholder:text-gray-400 focus:border-orange-500/60 focus:ring-2 sm:focus:ring-4 focus:ring-orange-500/25 shadow-inner transition-all"
-                      />
-
-                      <Button
-                        onClick={() => sendMessage()}
-                        disabled={!inputMessage.trim() || isLoading}
-                        className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16 p-0 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-500 hover:from-orange-400 hover:via-orange-500 hover:to-orange-400 rounded-xl sm:rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed shadow-xl sm:shadow-2xl shadow-orange-500/30 sm:shadow-orange-500/40 hover:shadow-orange-500/60 transition-all hover:scale-105 active:scale-95 border border-orange-400/30 flex-shrink-0"
-                      >
-                        <Send className="w-4 h-4 sm:w-5 sm:h-5 md:w-5.5 md:h-5.5 lg:w-6 lg:h-6 text-white drop-shadow-lg" />
-                      </Button>
-                    </div>
-
-                    <div className="space-y-2 sm:space-y-3">
-                      <p className="text-[10px] sm:text-xs uppercase tracking-wide text-orange-400/80 text-center">
-                        Quick Actions
-                      </p>
-
-                      <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
-                        <button
-                          type="button"
-                          onClick={async (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (isLoading || isSendingRef.current) {
-                              return;
-                            }
-
-                            try {
-                              await sendMessage("Help me reason through this document");
-                            } catch (error) {
-                              console.error("Error sending quick action message:", error);
-                              toast.error("Failed to send message. Please try again.");
-                            }
-                          }}
-                          disabled={isLoading || isSendingRef.current}
-                          className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border border-orange-500/30 bg-black/60 text-gray-300 hover:text-white hover:border-orange-500/50 hover:bg-orange-500/10 text-xs sm:text-sm backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-                        >
-                          <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                          <span>Reasoning</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={async (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (isLoading || isSendingRef.current) {
-                              return;
-                            }
-
-                            try {
-                              await sendMessage("Summarize the key points from this document");
-                            } catch (error) {
-                              console.error("Error sending quick action message:", error);
-                              toast.error("Failed to send message. Please try again.");
-                            }
-                          }}
-                          disabled={isLoading || isSendingRef.current}
-                          className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border border-orange-500/30 bg-black/60 text-gray-300 hover:text-white hover:border-orange-500/50 hover:bg-orange-500/10 text-xs sm:text-sm backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-                        >
-                          <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                          <span>Summarize Key Points</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={async (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (isLoading || isSendingRef.current) {
-                              return;
-                            }
-
-                            try {
-                              await sendMessage(
-                                "Do deep research on the key topics in this document"
-                              );
-                            } catch (error) {
-                              console.error("Error sending quick action message:", error);
-                              toast.error("Failed to send message. Please try again.");
-                            }
-                          }}
-                          disabled={isLoading || isSendingRef.current}
-                          className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full border border-orange-500/30 bg-black/60 text-gray-300 hover:text-white hover:border-orange-500/50 hover:bg-orange-500/10 text-xs sm:text-sm backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-                        >
-                          <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                          <span>Deep Research</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <p className="text-center text-[11px] text-[#444] mt-3">
+                  AI can make mistakes. Consider checking important information.
+                </p>
               </div>
             </div>
-          )}
-        </div>
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto">
+            <div className="max-w-2xl w-full">
+              <div className="text-center mb-12">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-transparent border border-emerald-500/20 mb-6">
+                  <Bot className="w-10 h-10 text-emerald-400" />
+                </div>
+                <h1 className="text-3xl sm:text-4xl font-semibold text-white mb-3 tracking-tight">
+                  Chat with your document
+                </h1>
+                <p className="text-[#666] text-lg">
+                  Ask questions, get insights, and explore your content
+                </p>
+              </div>
+
+              <div className="relative bg-[#111] border border-[#2a2a2a] rounded-xl focus-within:border-[#404040] transition-colors mb-8">
+                <textarea
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="What would you like to know?"
+                  rows={1}
+                  className="w-full px-5 py-4 pr-14 bg-transparent text-white text-base placeholder:text-[#555] focus:outline-none resize-none"
+                />
+                <button
+                  onClick={() => sendMessage()}
+                  disabled={!inputMessage.trim() || isLoading}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white hover:bg-[#e5e5e5] disabled:bg-[#2a2a2a] rounded-lg flex items-center justify-center transition-all disabled:opacity-50"
+                >
+                  <ArrowUp className="w-5 h-5 text-black" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {quickActions.map((action, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => sendMessage(action.prompt)}
+                    disabled={isLoading}
+                    className="group p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-[#1f1f1f] hover:border-[#2a2a2a] text-left transition-all disabled:opacity-50"
+                  >
+                    <action.icon className="w-5 h-5 text-[#555] group-hover:text-[#888] mb-2 transition-colors" />
+                    <p className="text-sm text-[#888] group-hover:text-white transition-colors">
+                      {action.label}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
