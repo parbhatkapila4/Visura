@@ -8,23 +8,18 @@ import { storePdfSummaryAction } from "@/actions/upload-actions";
 import UploadFormInput from "@/components/upload/upload-form-input";
 import { uploadToSupabase } from "@/lib/supabase";
 import { formatFileNameAsTitle } from "@/utils/format-utils";
+import { extractTextFromDocument, isFileTypeSupported, getFileTypeLabel } from "@/lib/document-extractor";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-declare global {
-  interface Window {
-    pdfjsLib: any;
-  }
-}
-
 const schema = z.object({
   file: z
     .instanceof(File, { message: "Invalid file" })
     .refine((file) => file.size <= 32 * 1024 * 1024, "File size must be less than 32MB")
-    .refine((file) => file.type.startsWith("application/pdf"), "File must be a PDF"),
+    .refine((file) => isFileTypeSupported(file), "Unsupported file type. Supported: PDF, Word, Text, Markdown, Excel, PowerPoint"),
 });
 
 interface UploadResult {
@@ -53,146 +48,10 @@ export default function SupabaseUploadForm({
     setIsClient(true);
   }, []);
 
-  const extractTextFromPDF = async (file: File): Promise<string> => {
-    try {
-      if (!isClient || typeof window === "undefined") {
-        throw new Error("PDF processing only available on client-side");
-      }
-
-      console.log("Starting client-side PDF text extraction...");
-      console.log("File details:", {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      });
-
-      if (!window.pdfjsLib) {
-        console.log("Loading PDF.js from CDN...");
-        await new Promise((resolve, reject) => {
-          const script = document.createElement("script");
-          script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-          script.onload = resolve;
-          script.onerror = reject;
-          document.head.appendChild(script);
-        });
-
-        if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
-          window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-        }
-
-        console.log("PDF.js loaded successfully");
-      }
-
-      const pdfjsLib = window.pdfjsLib;
-      const arrayBuffer = await file.arrayBuffer();
-
-      console.log("Loading PDF document...");
-      const loadingTask = pdfjsLib.getDocument({
-        data: arrayBuffer,
-      });
-
-      const pdf = await loadingTask.promise;
-      const totalPages = pdf.numPages;
-      console.log(`PDF loaded successfully with ${totalPages} pages`);
-
-      const MAX_PAGES_TO_PROCESS = 500;
-      const BATCH_SIZE = 50;
-      const BATCH_DELAY_MS = 10;
-
-      const pagesToProcess = Math.min(totalPages, MAX_PAGES_TO_PROCESS);
-      const willTruncate = totalPages > MAX_PAGES_TO_PROCESS;
-
-      if (willTruncate) {
-        console.warn(
-          `⚠️ Large PDF detected (${totalPages} pages). Processing first ${MAX_PAGES_TO_PROCESS} pages only.`
-        );
-        toast.info("Large PDF detected", {
-          description: `Processing first ${MAX_PAGES_TO_PROCESS} of ${totalPages} pages to ensure stability.`,
-          duration: 5000,
-        });
-      }
-
-      let fullText = "";
-      let pagesWithText = 0;
-
-      for (let batchStart = 1; batchStart <= pagesToProcess; batchStart += BATCH_SIZE) {
-        const batchEnd = Math.min(batchStart + BATCH_SIZE - 1, pagesToProcess);
-
-        console.log(`Processing batch: pages ${batchStart}-${batchEnd}...`);
-
-        for (let pageNum = batchStart; pageNum <= batchEnd; pageNum++) {
-          try {
-            const page = await pdf.getPage(pageNum);
-            const textContent = await page.getTextContent();
-
-            const pageText = textContent.items
-              .filter((item: any) => item && typeof item === "object" && "str" in item)
-              .map((item: any) => {
-                const str = item.str;
-                return typeof str === "string" ? str : String(str);
-              })
-              .join(" ")
-              .trim();
-
-            if (pageText.length > 0) {
-              pagesWithText++;
-              fullText += pageText + " ";
-            }
-          } catch (pageError) {
-            console.error(`Error processing page ${pageNum}:`, pageError);
-          }
-        }
-
-        if (batchEnd < pagesToProcess) {
-          await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS));
-        }
-      }
-
-      console.log(
-        `Extraction complete: ${pagesWithText}/${pagesToProcess} pages processed (${totalPages} total)`
-      );
-      console.log(`Total extracted: ${fullText.length} characters`);
-
-      if (willTruncate) {
-        fullText += `\n\n[Note: This PDF has ${totalPages} pages. Only the first ${MAX_PAGES_TO_PROCESS} pages were processed to ensure system stability.]`;
-      }
-
-      if (fullText.trim().length === 0) {
-        throw new Error("No text found in PDF - this may be a scanned/image-based document");
-      }
-
-      return fullText.trim();
-    } catch (error: any) {
-      console.error("PDF text extraction failed:", error);
-
-      let errorMessage = "Text extraction failed";
-
-      if (error.message) {
-        if (error.message.includes("password") || error.message.includes("encrypted")) {
-          errorMessage = "PDF is password-protected";
-        } else if (error.message.includes("No text found")) {
-          errorMessage = "Scanned document detected - no text layer";
-        } else if (error.message.includes("Invalid PDF")) {
-          errorMessage = "PDF file appears to be corrupted";
-        } else if (
-          error.message.includes("timeout") ||
-          error.message.includes("Timeout") ||
-          error.name === "TimeoutError"
-        ) {
-          errorMessage =
-            "PDF processing timed out. The file may be too large or complex. Try splitting the PDF into smaller files.";
-        } else {
-          errorMessage = error.message;
-        }
-      }
-
-      throw new Error(`Extraction Error: ${errorMessage}`);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    e.stopPropagation();
     console.log("Form submit triggered", { user: !!user, isClient, isLoading });
 
     if (!user) {
@@ -213,23 +72,48 @@ export default function SupabaseUploadForm({
     }
 
     const formData = new FormData(e.currentTarget);
-    const file = formData.get("file") as File;
+    let file = formData.get("file") as File;
+    
+    
+    if (!file || file.size === 0) {
+      const formElement = e.currentTarget;
+      const fileInput = formElement.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput && fileInput.files && fileInput.files.length > 0) {
+        file = fileInput.files[0];
+        console.log("File retrieved from input element directly");
+      }
+    }
+    
+    console.log("File from form:", file ? { name: file.name, size: file.size, type: file.type } : "null");
 
     if (!file || file.size === 0) {
-      toast.error("Please select a PDF file");
+      toast.error("Please select a file", {
+        description: "No file found in form. Please try selecting the file again.",
+      });
+      return;
+    }
+
+    if (!isFileTypeSupported(file)) {
+      toast.error("Unsupported file type", {
+        description: "Supported formats: PDF, Word (DOCX/DOC), Text (TXT), Markdown (MD), Excel (XLSX/XLS), PowerPoint (PPTX/PPT)",
+      });
       return;
     }
 
     const validation = schema.safeParse({ file });
     if (!validation.success) {
+      console.error("Validation error:", validation.error.issues);
       toast.error("Invalid file", {
-        description: validation.error.issues[0]?.message,
+        description: validation.error.issues[0]?.message || "File validation failed",
       });
       return;
     }
+    
+    console.log("✅ File validation passed");
 
+    const fileTypeLabel = getFileTypeLabel(file);
     setIsLoading(true);
-    toast.info("Processing PDF...", {
+    toast.info(`Processing ${fileTypeLabel}...`, {
       description: "Extracting text and uploading to Supabase",
     });
 
@@ -237,8 +121,8 @@ export default function SupabaseUploadForm({
     let hadExtractionError = false;
 
     try {
-      console.log("Step 1: Extracting text from PDF...");
-      extractedText = await extractTextFromPDF(file);
+      console.log(`Step 1: Extracting text from ${fileTypeLabel}...`);
+      extractedText = await extractTextFromDocument(file);
       console.log("✅ Text extraction completed, length:", extractedText.length);
       console.log("First 300 characters:", extractedText.substring(0, 300));
     } catch (extractError: any) {
@@ -246,27 +130,27 @@ export default function SupabaseUploadForm({
 
       const errorMsg = extractError.message || "Unknown extraction error";
 
-      if (errorMsg.includes("password-protected")) {
-        toast.error("Password-Protected PDF", {
-          description: "This PDF is encrypted. Please unlock it and try again.",
+      if (errorMsg.includes("password-protected") || errorMsg.includes("encrypted")) {
+        toast.error("Password-Protected Document", {
+          description: "This document is encrypted. Please unlock it and try again.",
         });
         setIsLoading(false);
         return;
       }
 
       if (errorMsg.includes("corrupted")) {
-        toast.error("Corrupted PDF File", {
-          description: "This PDF file appears to be damaged. Please try a different file.",
+        toast.error("Corrupted File", {
+          description: "This file appears to be damaged. Please try a different file.",
         });
         setIsLoading(false);
         return;
       }
 
       if (errorMsg.includes("Scanned document") || errorMsg.includes("No text found")) {
-        console.log("🖼️ Scanned PDF detected - will use fallback");
+        console.log("🖼️ Scanned document detected - will use fallback");
         hadExtractionError = true;
         toast.error("Scanned Document - Cannot Process", {
-          description: "This PDF has no text layer. OCR support coming soon. Upload failed.",
+          description: "This document has no text layer. OCR support coming soon. Upload failed.",
         });
         setIsLoading(false);
         return;
@@ -300,13 +184,13 @@ export default function SupabaseUploadForm({
       if (!extractedText || extractedText.trim().length < 100) {
         console.error("❌ CRITICAL: No text extracted! Length:", extractedText.length);
         toast.error("Cannot Generate Summary", {
-          description: "No text content found in PDF. Please try a different file.",
+          description: `No text content found in ${fileTypeLabel}. Please try a different file.`,
         });
         setIsLoading(false);
         return;
       }
 
-      console.log("✅ Using REAL PDF text for summary generation");
+      console.log("✅ Using extracted text for summary generation");
 
       const summaryResult = await generatePdfSummaryFromText(
         extractedText,
@@ -315,7 +199,7 @@ export default function SupabaseUploadForm({
       );
 
       if (summaryResult.success) {
-        toast.success("PDF analysis complete!", {
+        toast.success(`${fileTypeLabel} analysis complete!`, {
           description: "Summary generated successfully",
         });
         setResult(summaryResult);
@@ -391,7 +275,7 @@ export default function SupabaseUploadForm({
 
             if (storeResult.success) {
               toast.success("Fallback summary saved to database!", {
-                description: "Your PDF summary has been stored successfully",
+                description: "Your document summary has been stored successfully",
               });
 
               formRef.current?.reset();
@@ -412,7 +296,7 @@ export default function SupabaseUploadForm({
   if (!isClient) {
     return (
       <div className="mx-auto w-full max-w-4xl p-8 text-center">
-        <div className="animate-pulse">Loading PDF processor...</div>
+        <div className="animate-pulse">Loading document processor...</div>
       </div>
     );
   }

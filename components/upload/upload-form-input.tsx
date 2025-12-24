@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { isFileTypeSupported } from "@/lib/document-extractor";
 import {
   Upload,
   FileText,
@@ -37,7 +38,19 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
+      console.log(
+        "File selected:",
+        file ? { name: file.name, size: file.size, type: file.type } : "null"
+      );
       setSelectedFile(file || null);
+
+      if (file && fileInputRef.current) {
+        if (fileInputRef.current.files?.length === 0) {
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(file);
+          fileInputRef.current.files = dataTransfer.files;
+        }
+      }
     };
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -58,13 +71,14 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
       if (isLoading || hasReachedLimit) return;
 
       const file = e.dataTransfer.files?.[0];
-      if (file && file.type === "application/pdf") {
+      if (file && isFileTypeSupported(file)) {
         setSelectedFile(file);
         if (fileInputRef.current) {
           const dataTransfer = new DataTransfer();
           dataTransfer.items.add(file);
           fileInputRef.current.files = dataTransfer.files;
         }
+      } else if (file) {
       }
     };
 
@@ -75,7 +89,14 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onClick={() => !isLoading && !hasReachedLimit && fileInputRef.current?.click()}
+            onClick={(e) => {
+              if ((e.target as HTMLElement).closest("button")) {
+                return;
+              }
+              if (!isLoading && !hasReachedLimit && !selectedFile && fileInputRef.current) {
+                fileInputRef.current.click();
+              }
+            }}
             className={cn(
               "relative rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer backdrop-blur-sm",
               isDragging
@@ -91,7 +112,7 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
               id="file"
               type="file"
               name="file"
-              accept="application/pdf"
+              accept=".pdf,.docx,.doc,.txt,.md,.xlsx,.xls,.pptx,.ppt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,text/plain,text/markdown,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.ms-powerpoint"
               required
               onChange={handleFileChange}
               className="hidden"
@@ -131,10 +152,12 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
                   </div>
                   <div>
                     <p className="text-white font-medium">
-                      Drop your PDF here or{" "}
+                      Drop your document here or{" "}
                       <span className="text-white underline underline-offset-2">browse</span>
                     </p>
-                    <p className="text-[#555] text-sm mt-1">Maximum file size: 32MB</p>
+                    <p className="text-[#555] text-sm mt-1">
+                      PDF, Word, Text, Markdown, Excel, PowerPoint • Max 32MB
+                    </p>
                   </div>
                 </div>
               )}
@@ -167,7 +190,7 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
                 Upload and Analyze
               </>
             ) : (
-              "Select a PDF to continue"
+              "Select a document to continue"
             )}
           </button>
 
@@ -207,8 +230,8 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
             </div>
             <div className="text-sm">
               <p className="text-[#888]">
-                <span className="text-white">Text-based PDFs</span> work best for AI chat. Scanned
-                documents will be summarized but chat may be limited.
+                <span className="text-white">Text-based documents</span> work best for AI chat.
+                Scanned documents will be summarized but chat may be limited.
               </p>
             </div>
           </div>
@@ -220,7 +243,7 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                  <span className="text-white font-medium">Processing your PDF</span>
+                  <span className="text-white font-medium">Processing your document</span>
                 </div>
                 <span className="text-[#555] text-sm">Please wait...</span>
               </div>

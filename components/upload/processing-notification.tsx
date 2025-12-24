@@ -19,7 +19,7 @@ export default function ProcessingNotification({ isVisible }: ProcessingNotifica
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-medium text-gray-900 mb-1">Processing PDF</h4>
+            <h4 className="text-sm font-medium text-gray-900 mb-1">Processing document</h4>
             <p className="text-sm text-gray-600">
               Hang tight! Our AI is reading through your document!
             </p>

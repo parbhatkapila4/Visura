@@ -261,23 +261,6 @@ export default function Header() {
           }`}
           layout
         >
-          {isScrolled && (
-            <motion.div
-              className="absolute inset-0 rounded-2xl p-[1px] -z-10 overflow-hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-[#ff6b00] via-[#ff00ff] to-[#00ff88]"
-                animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                }}
-                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                style={{ backgroundSize: "200% 200%" }}
-              />
-            </motion.div>
-          )}
-
           <div className="px-4 sm:px-6 py-3 grid grid-cols-3 items-center">
             <div className="flex justify-start">
               <AnimatedLogo />

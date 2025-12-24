@@ -6,10 +6,10 @@ export default function UploadHeader() {
         <span className="text-xs text-[#888]">Ready to process</span>
       </div>
       <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-white tracking-tight mb-3">
-        Upload your PDF
+        Upload your document
       </h1>
       <p className="text-[#666] text-base sm:text-lg max-w-md mx-auto">
-        Our AI will analyze and summarize your document in seconds
+        Our AI will analyze and summarize your document in seconds. Supports PDF, Word, Text, Markdown, Excel, and PowerPoint.
       </p>
     </div>
   );

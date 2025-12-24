@@ -266,11 +266,6 @@ export default function DemoSection() {
 
   return (
     <section ref={ref} id="demo" className="relative py-24 overflow-hidden bg-black">
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,107,0,0.12)_0%,transparent_70%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,0,255,0.08)_0%,transparent_50%)]" />
-      </div>
-
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -352,109 +347,45 @@ export default function DemoSection() {
               </motion.button>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6 p-6">
-              <div className="space-y-4">
-                <div
-                  className="relative h-[320px] rounded-xl overflow-hidden group bg-black"
+            <div className="p-6">
+              <div
+                className="relative w-full aspect-video rounded-xl overflow-hidden bg-black"
+                style={{
+                  transform: "translateZ(0)",
+                  willChange: "contents",
+                  backfaceVisibility: "hidden",
+                }}
+              >
+                <video
+                  ref={videoRef}
+                  src="/visura-demo.mp4"
+                  className="w-full h-full object-contain"
                   style={{
+                    display: isPlaying ? "block" : "none",
                     transform: "translateZ(0)",
-                    willChange: "contents",
+                    willChange: "auto",
                     backfaceVisibility: "hidden",
+                    WebkitTransform: "translateZ(0)",
+                    WebkitBackfaceVisibility: "hidden",
                   }}
-                >
-                  <video
-                    ref={videoRef}
-                    src="/visura-demo.mp4"
-                    className="w-full h-full object-contain"
-                    style={{
-                      display: isPlaying ? "block" : "none",
-                      transform: "translateZ(0)",
-                      willChange: "auto",
-                      backfaceVisibility: "hidden",
-                      WebkitTransform: "translateZ(0)",
-                      WebkitBackfaceVisibility: "hidden",
-                    }}
-                    controls={true}
-                    onEnded={handleVideoEnd}
-                    onPlay={() => {
-                      setIsPlaying(true);
-                    }}
-                    onPause={() => {
-                      setIsPlaying(false);
-                    }}
-                    onError={(e) => {
-                      console.error("Video error:", e, videoRef.current?.error);
-                      setIsPlaying(false);
-                    }}
-                    playsInline
-                    preload="none"
-                    muted={false}
-                    disablePictureInPicture
-                    disableRemotePlayback
-                  />
-
-                  {!isPlaying && (
-                    <div className="absolute inset-0">
-                      <MockPDFViewer />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="text-center"
-                        >
-                          <motion.button
-                            className="w-20 h-20 rounded-full bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] flex items-center justify-center mb-4 mx-auto cursor-pointer"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={startDemo}
-                            type="button"
-                          >
-                            <Play className="w-10 h-10 text-white ml-1" />
-                          </motion.button>
-                          <p className="text-white/80 text-sm font-medium">Click to play demo</p>
-                        </motion.div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  {stages.map((stage, index) => (
-                    <ProcessingStage
-                      key={stage.id}
-                      {...stage}
-                      index={index}
-                      isActive={demoStage === stage.id}
-                      isComplete={
-                        stages.findIndex((s) => s.id === demoStage) >
-                        stages.findIndex((s) => s.id === stage.id)
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="h-[320px] rounded-xl overflow-hidden">
-                  {showChat ? (
-                    <AIChatInterface isActive={showChat} />
-                  ) : (
-                    <div className="h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-950 via-black to-gray-950 text-center p-8 border-2 border-dashed border-white/10 rounded-xl">
-                      <motion.div
-                        animate={{
-                          scale: [1, 1.1, 1],
-                          opacity: [0.3, 0.5, 0.3],
-                        }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        <MessageCircle className="w-16 h-16 text-white/20 mb-4" />
-                      </motion.div>
-                      <div className="text-white/50 text-sm font-medium">
-                        AI chat will appear here after processing
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  controls={true}
+                  onEnded={handleVideoEnd}
+                  onPlay={() => {
+                    setIsPlaying(true);
+                  }}
+                  onPause={() => {
+                    setIsPlaying(false);
+                  }}
+                  onError={(e) => {
+                    console.error("Video error:", e, videoRef.current?.error);
+                    setIsPlaying(false);
+                  }}
+                  playsInline
+                  preload="none"
+                  muted={false}
+                  disablePictureInPicture
+                  disableRemotePlayback
+                />
               </div>
             </div>
           </div>

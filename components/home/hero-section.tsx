@@ -253,7 +253,7 @@ export default function HeroSection() {
   return (
     <>
       <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#ff6b00] via-[#ff00ff] to-[#00ff88] origin-left z-[100]"
+        className="fixed top-0 left-0 right-0 h-1 bg-white/20 origin-left z-[100]"
         style={{ scaleX: scrollYProgress }}
       />
 

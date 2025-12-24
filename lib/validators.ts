@@ -55,12 +55,26 @@ export const FileUploadSchema = z.object({
     .instanceof(File)
     .refine((file) => file.size <= 52428800, "File too large (max 50MB)")
     .refine(
-      (file) =>
-        [
+      (file) => {
+        const supportedTypes = [
           "application/pdf",
           "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        ].includes(file.type),
-      "Invalid file type (PDF or DOCX only)"
+          "application/msword",
+          "text/plain",
+          "text/markdown",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.ms-excel",
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          "application/vnd.ms-powerpoint",
+        ];
+        const fileName = file.name.toLowerCase();
+        const supportedExtensions = [".pdf", ".docx", ".doc", ".txt", ".md", ".xlsx", ".xls", ".pptx", ".ppt"];
+        
+        if (supportedTypes.includes(file.type)) return true;
+        
+        return supportedExtensions.some((ext) => fileName.endsWith(ext));
+      },
+      "Invalid file type. Supported: PDF, Word (DOCX/DOC), Text (TXT), Markdown (MD), Excel (XLSX/XLS), PowerPoint (PPTX/PPT)"
     ),
 });
 
@@ -70,6 +84,13 @@ export const FileMetadataSchema = z.object({
   fileType: z.enum([
     "application/pdf",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/msword",
+    "text/plain",
+    "text/markdown",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.ms-powerpoint",
   ]),
 });
 
