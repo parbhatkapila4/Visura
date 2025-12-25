@@ -152,19 +152,12 @@
     -webkit-transform: translateZ(0);
     will-change: scroll-position;
     background-color: #000000 !important;
-    height: 100vh;
-    max-height: 100vh;
-    overflow: hidden;
   }
 
   body {
     @apply bg-background text-foreground;
     background: var(--background);
     background-color: #000000 !important;
-    height: 100vh;
-    max-height: 100vh;
-    min-height: 100vh;
-    overflow: hidden;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
     backface-visibility: hidden;

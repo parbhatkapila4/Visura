@@ -42,17 +42,13 @@ export default function RootLayout({
           className={`${fontSans.variable} font-sans antialiased bg-black text-white overflow-x-hidden`}
           style={{
             backgroundColor: "#000000",
-            overflow: "hidden",
-            height: "100vh",
-            maxHeight: "100vh",
           }}
         >
           <div className="fixed inset-0 bg-black -z-10" />
-          <div className="relative w-full flex flex-col h-screen max-h-screen bg-black antialiased overflow-hidden">
+          <div className="relative w-full flex flex-col min-h-screen bg-black antialiased">
             <Spotlight />
             <Header />
-            <main className="flex-1 w-full relative z-10 min-h-0 overflow-hidden bg-black h-full max-h-full">
-              {" "}
+            <main className="flex-1 w-full relative z-10 bg-black">
               {children}
             </main>
             <ConditionalFooter />
