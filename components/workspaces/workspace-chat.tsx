@@ -44,8 +44,9 @@ export default function WorkspaceChat({ workspaceId }: WorkspaceChatProps) {
   const isUserScrollingRef = useRef(false);
 
   const scrollToBottom = useCallback(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      const container = messagesContainerRef.current;
+      container.scrollTop = container.scrollHeight;
     }
   }, []);
 
@@ -245,9 +246,12 @@ export default function WorkspaceChat({ workspaceId }: WorkspaceChatProps) {
         return newMessages;
       });
 
-      requestAnimationFrame(() => {
-        scrollToBottom();
-      });
+      setTimeout(() => {
+        if (messagesContainerRef.current) {
+          const container = messagesContainerRef.current;
+          container.scrollTop = container.scrollHeight;
+        }
+      }, 100);
     } catch (err: any) {
       console.error("Error sending message:", err);
       setError(err.message || "Failed to send message");
@@ -309,8 +313,7 @@ export default function WorkspaceChat({ workspaceId }: WorkspaceChatProps) {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* Header */}
+    <div className="flex flex-col h-full overflow-hidden max-h-full">
       <div className="p-5 border-b border-white/[0.06]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -326,11 +329,16 @@ export default function WorkspaceChat({ workspaceId }: WorkspaceChatProps) {
         </div>
       </div>
 
-      {/* Messages */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide"
-        style={{ maxHeight: "calc(100vh - 350px)" }}
+        className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide min-h-0 max-h-full"
+        style={{ maxHeight: "100%" }}
+        onWheel={(e) => {
+          e.stopPropagation();
+        }}
+        onScroll={(e) => {
+          e.stopPropagation();
+        }}
       >
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center py-8">
@@ -364,7 +372,6 @@ export default function WorkspaceChat({ workspaceId }: WorkspaceChatProps) {
         </div>
       )}
 
-      {/* Input */}
       <div className="p-4 border-t border-white/[0.06]">
         <div className="flex items-center gap-2">
           <Input
@@ -425,8 +432,8 @@ const MessageItem = React.memo(
         <div className="flex-shrink-0">
           <div
             className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold ${
-              isOwn 
-                ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white" 
+              isOwn
+                ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white"
                 : "bg-white/10 text-white/80"
             }`}
           >
@@ -447,7 +454,9 @@ const MessageItem = React.memo(
                 : "bg-white/5 text-white/90 rounded-tl-sm"
             }`}
           >
-            <p className="whitespace-pre-wrap break-words leading-relaxed">{message.message_content}</p>
+            <p className="whitespace-pre-wrap break-words leading-relaxed">
+              {message.message_content}
+            </p>
           </div>
         </div>
       </div>

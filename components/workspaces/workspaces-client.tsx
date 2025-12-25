@@ -281,7 +281,6 @@ export default function WorkspacesClient() {
   const totalMembers = members.length;
   const totalDocuments = documents.length;
 
-  // Loading State
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#030303]">
@@ -294,11 +293,27 @@ export default function WorkspacesClient() {
   }
 
   return (
-    <div className="min-h-screen bg-[#030303] flex">
-      {/* ==================== SIDEBAR ==================== */}
-      <aside className={`${sidebarOpen ? 'w-72' : 'w-0'} flex-shrink-0 border-r border-white/[0.06] bg-[#0a0a0a] transition-all duration-300 overflow-hidden`}>
+    <div
+      className="fixed inset-0 bg-[#030303] flex overflow-hidden z-50"
+      style={{
+        height: "100vh",
+        width: "100vw",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        position: "fixed",
+        maxHeight: "100vh",
+        maxWidth: "100vw",
+        overflow: "hidden",
+      }}
+    >
+      <aside
+        className={`${
+          sidebarOpen ? "w-72" : "w-0"
+        } flex-shrink-0 border-r border-white/[0.06] bg-[#0a0a0a] transition-all duration-300 overflow-hidden`}
+      >
         <div className="h-full flex flex-col p-4">
-          {/* Logo */}
           <div className="flex items-center gap-3 px-2 mb-6">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
               <Building2 className="w-5 h-5 text-white" />
@@ -306,7 +321,6 @@ export default function WorkspacesClient() {
             <span className="text-lg font-bold text-white">Workspaces</span>
           </div>
 
-          {/* Search */}
           <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
             <input
@@ -318,7 +332,6 @@ export default function WorkspacesClient() {
             />
           </div>
 
-          {/* Create Button */}
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
               <button className="w-full flex items-center justify-center gap-2 h-10 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 transition-colors mb-4">
@@ -350,7 +363,9 @@ export default function WorkspacesClient() {
                   />
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-white/60 mb-2 block">Description</Label>
+                  <Label className="text-sm font-medium text-white/60 mb-2 block">
+                    Description
+                  </Label>
                   <Textarea
                     value={workspaceDescription}
                     onChange={(e) => setWorkspaceDescription(e.target.value)}
@@ -360,10 +375,18 @@ export default function WorkspacesClient() {
                   />
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <Button variant="ghost" onClick={() => setCreateDialogOpen(false)} className="flex-1 h-11 text-white/60 hover:text-white hover:bg-white/5 rounded-xl">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setCreateDialogOpen(false)}
+                    className="flex-1 h-11 text-white/60 hover:text-white hover:bg-white/5 rounded-xl"
+                  >
                     Cancel
                   </Button>
-                  <Button onClick={handleCreateWorkspace} disabled={isCreating || !workspaceName.trim()} className="flex-1 h-11 bg-white text-black hover:bg-white/90 font-semibold rounded-xl">
+                  <Button
+                    onClick={handleCreateWorkspace}
+                    disabled={isCreating || !workspaceName.trim()}
+                    className="flex-1 h-11 bg-white text-black hover:bg-white/90 font-semibold rounded-xl"
+                  >
                     {isCreating ? "Creating..." : "Create"}
                   </Button>
                 </div>
@@ -371,9 +394,10 @@ export default function WorkspacesClient() {
             </DialogContent>
           </Dialog>
 
-          {/* Workspaces List */}
-          <div className="flex-1 overflow-y-auto space-y-1">
-            <p className="text-[10px] font-semibold text-white/30 uppercase tracking-wider px-2 mb-2">Your Workspaces</p>
+          <div className="flex-1 overflow-y-auto space-y-1 scrollbar-hide">
+            <p className="text-[10px] font-semibold text-white/30 uppercase tracking-wider px-2 mb-2">
+              Your Workspaces
+            </p>
             {filteredWorkspaces.length === 0 ? (
               <p className="text-sm text-white/30 px-2">No workspaces found</p>
             ) : (
@@ -387,16 +411,20 @@ export default function WorkspacesClient() {
                       : "hover:bg-white/5 border border-transparent"
                   }`}
                 >
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                    selectedWorkspace?.id === workspace.id
-                      ? "bg-gradient-to-br from-violet-500 to-purple-600"
-                      : "bg-white/10"
-                  }`}>
+                  <div
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      selectedWorkspace?.id === workspace.id
+                        ? "bg-gradient-to-br from-violet-500 to-purple-600"
+                        : "bg-white/10"
+                    }`}
+                  >
                     <Building2 className="w-4 h-4 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-white truncate">{workspace.name}</p>
-                    <p className="text-xs text-white/40 truncate">{workspace.description || "No description"}</p>
+                    <p className="text-xs text-white/40 truncate">
+                      {workspace.description || "No description"}
+                    </p>
                   </div>
                   {workspace.role === "owner" && (
                     <Crown className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
@@ -406,9 +434,11 @@ export default function WorkspacesClient() {
             )}
           </div>
 
-          {/* Bottom Nav */}
           <div className="pt-4 border-t border-white/[0.06] space-y-1">
-            <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all">
+            <Link
+              href="/"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all"
+            >
               <Home className="w-4 h-4" />
               <span className="text-sm font-medium">Back to Home</span>
             </Link>
@@ -416,19 +446,22 @@ export default function WorkspacesClient() {
         </div>
       </aside>
 
-      {/* ==================== MAIN CONTENT ==================== */}
-      <main className="flex-1 overflow-hidden">
-        {/* Top Bar */}
+      <main className="flex-1 overflow-hidden flex flex-col h-full max-h-full">
         <header className="h-16 border-b border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-xl flex items-center justify-between px-6">
           <div className="flex items-center gap-4">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all"
+            >
               <Menu className="w-4 h-4" />
             </button>
             {selectedWorkspace && (
               <div className="flex items-center gap-2">
                 <h1 className="text-lg font-bold text-white">{selectedWorkspace.name}</h1>
                 {selectedWorkspace.role === "owner" && (
-                  <span className="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400 uppercase">Owner</span>
+                  <span className="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400 uppercase">
+                    Owner
+                  </span>
                 )}
               </div>
             )}
@@ -451,13 +484,17 @@ export default function WorkspacesClient() {
                         </div>
                         <div>
                           <h2 className="text-xl font-bold text-white">Invite Member</h2>
-                          <p className="text-sm text-white/40">Add someone to {selectedWorkspace.name}</p>
+                          <p className="text-sm text-white/40">
+                            Add someone to {selectedWorkspace.name}
+                          </p>
                         </div>
                       </div>
                     </div>
                     <div className="p-6 space-y-4">
                       <div>
-                        <Label className="text-sm font-medium text-white/60 mb-2 block">Email Address *</Label>
+                        <Label className="text-sm font-medium text-white/60 mb-2 block">
+                          Email Address *
+                        </Label>
                         <Input
                           type="email"
                           value={inviteEmail}
@@ -467,14 +504,17 @@ export default function WorkspacesClient() {
                           className="h-11 bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl"
                         />
                       </div>
-                      <Button onClick={handleInviteMember} className="w-full h-11 bg-white text-black hover:bg-white/90 font-semibold rounded-xl">
+                      <Button
+                        onClick={handleInviteMember}
+                        className="w-full h-11 bg-white text-black hover:bg-white/90 font-semibold rounded-xl"
+                      >
                         <Mail className="w-4 h-4 mr-2" />
                         Send Invitation
                       </Button>
                     </div>
                   </DialogContent>
                 </Dialog>
-                
+
                 {selectedWorkspace.role === "owner" && (
                   <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                     <DialogTrigger asChild>
@@ -494,13 +534,24 @@ export default function WorkspacesClient() {
                       </DialogHeader>
                       <div className="space-y-4 mt-4">
                         <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
-                          <p className="text-sm text-white font-medium">Workspace: {selectedWorkspace.name}</p>
+                          <p className="text-sm text-white font-medium">
+                            Workspace: {selectedWorkspace.name}
+                          </p>
                         </div>
                         <div className="flex gap-3">
-                          <Button variant="ghost" onClick={() => setDeleteDialogOpen(false)} disabled={isDeleting} className="flex-1 h-11 text-white/60 hover:text-white hover:bg-white/5 rounded-xl">
+                          <Button
+                            variant="ghost"
+                            onClick={() => setDeleteDialogOpen(false)}
+                            disabled={isDeleting}
+                            className="flex-1 h-11 text-white/60 hover:text-white hover:bg-white/5 rounded-xl"
+                          >
                             Cancel
                           </Button>
-                          <Button onClick={handleDeleteWorkspace} disabled={isDeleting} className="flex-1 h-11 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl">
+                          <Button
+                            onClick={handleDeleteWorkspace}
+                            disabled={isDeleting}
+                            className="flex-1 h-11 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl"
+                          >
                             {isDeleting ? "Deleting..." : "Delete Forever"}
                           </Button>
                         </div>
@@ -516,17 +567,22 @@ export default function WorkspacesClient() {
           </div>
         </header>
 
-        {/* Content Area */}
-        <div className="h-[calc(100vh-64px)] overflow-y-auto p-6">
+        <div
+          className="h-[calc(100vh-64px)] overflow-y-auto p-6 overflow-x-hidden scrollbar-hide"
+          style={{ maxHeight: "calc(100vh - 64px)", height: "calc(100vh - 64px)" }}
+          onWheel={(e) => e.stopPropagation()}
+          onScroll={(e) => e.stopPropagation()}
+        >
           {workspaces.length === 0 ? (
-            // ==================== EMPTY STATE ====================
             <div className="h-full flex items-center justify-center">
               <div className="text-center max-w-md">
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-600/20 border border-violet-500/20 flex items-center justify-center mx-auto mb-6">
                   <Building2 className="w-10 h-10 text-violet-400" />
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-2">No workspaces yet</h2>
-                <p className="text-white/40 mb-6">Create your first workspace to start collaborating with your team.</p>
+                <p className="text-white/40 mb-6">
+                  Create your first workspace to start collaborating with your team.
+                </p>
                 <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
                   <DialogTrigger asChild>
                     <button className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black font-semibold hover:bg-white/90 transition-colors">
@@ -538,14 +594,14 @@ export default function WorkspacesClient() {
               </div>
             </div>
           ) : selectedWorkspace ? (
-            // ==================== WORKSPACE VIEW ====================
-            <div className="max-w-[1400px] mx-auto space-y-6">
-              
-              {/* Workspace Header Card */}
+            <div
+              className="max-w-[1400px] mx-auto space-y-6 pb-6"
+              style={{ maxHeight: "calc(100vh - 64px)" }}
+            >
               <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-950/50 via-[#0a0a0a] to-purple-950/30 border border-violet-500/10">
                 <div className="absolute -top-32 -right-32 w-64 h-64 bg-violet-500/20 rounded-full blur-3xl" />
                 <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-purple-500/15 rounded-full blur-3xl" />
-                
+
                 <div className="relative p-6 lg:p-8">
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                     <div className="flex items-start gap-5">
@@ -554,7 +610,9 @@ export default function WorkspacesClient() {
                       </div>
                       <div>
                         <div className="flex items-center gap-3 mb-1">
-                          <h1 className="text-2xl lg:text-3xl font-bold text-white">{selectedWorkspace.name}</h1>
+                          <h1 className="text-2xl lg:text-3xl font-bold text-white">
+                            {selectedWorkspace.name}
+                          </h1>
                           {selectedWorkspace.role === "owner" && (
                             <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs font-bold text-amber-400 flex items-center gap-1.5">
                               <Crown className="w-3 h-3" />
@@ -563,7 +621,9 @@ export default function WorkspacesClient() {
                           )}
                         </div>
                         {selectedWorkspace.description && (
-                          <p className="text-white/50 text-sm mb-3">{selectedWorkspace.description}</p>
+                          <p className="text-white/50 text-sm mb-3">
+                            {selectedWorkspace.description}
+                          </p>
                         )}
                         <div className="flex items-center gap-4 text-sm">
                           <div className="flex items-center gap-1.5 text-white/40">
@@ -576,7 +636,9 @@ export default function WorkspacesClient() {
                           </div>
                           <div className="flex items-center gap-1.5 text-white/40">
                             <Clock className="w-4 h-4" />
-                            <span>Created {new Date(selectedWorkspace.created_at).toLocaleDateString()}</span>
+                            <span>
+                              Created {new Date(selectedWorkspace.created_at).toLocaleDateString()}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -585,49 +647,48 @@ export default function WorkspacesClient() {
                 </div>
               </div>
 
-              {/* Stats Row */}
               <div className="grid grid-cols-3 gap-4">
-                {/* Members Stat */}
                 <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-950/40 via-[#0a0a0a] to-[#080808] border border-blue-500/10 p-5">
                   <div className="absolute -top-10 -right-10 w-24 h-24 bg-blue-500/20 rounded-full blur-2xl" />
                   <div className="relative">
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-4">
                       <Users className="w-5 h-5 text-white" />
                     </div>
-                    <p className="text-xs text-white/40 font-medium uppercase tracking-wide mb-1">Team Members</p>
+                    <p className="text-xs text-white/40 font-medium uppercase tracking-wide mb-1">
+                      Team Members
+                    </p>
                     <p className="text-3xl font-bold text-white">{totalMembers}</p>
                   </div>
                 </div>
 
-                {/* Documents Stat */}
                 <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-950/40 via-[#0a0a0a] to-[#080808] border border-emerald-500/10 p-5">
                   <div className="absolute -top-10 -right-10 w-24 h-24 bg-emerald-500/20 rounded-full blur-2xl" />
                   <div className="relative">
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-4">
                       <FileText className="w-5 h-5 text-white" />
                     </div>
-                    <p className="text-xs text-white/40 font-medium uppercase tracking-wide mb-1">Documents</p>
+                    <p className="text-xs text-white/40 font-medium uppercase tracking-wide mb-1">
+                      Documents
+                    </p>
                     <p className="text-3xl font-bold text-white">{totalDocuments}</p>
                   </div>
                 </div>
 
-                {/* Workspaces Stat */}
                 <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-orange-950/40 via-[#0a0a0a] to-[#080808] border border-orange-500/10 p-5">
                   <div className="absolute -top-10 -right-10 w-24 h-24 bg-orange-500/20 rounded-full blur-2xl" />
                   <div className="relative">
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center mb-4">
                       <Building2 className="w-5 h-5 text-white" />
                     </div>
-                    <p className="text-xs text-white/40 font-medium uppercase tracking-wide mb-1">Workspaces</p>
+                    <p className="text-xs text-white/40 font-medium uppercase tracking-wide mb-1">
+                      Workspaces
+                    </p>
                     <p className="text-3xl font-bold text-white">{workspaces.length}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Main Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                {/* Team Members Panel */}
                 <div className="bg-[#0a0a0a] rounded-xl border border-white/[0.06] overflow-hidden">
                   <div className="p-5 border-b border-white/[0.06]">
                     <div className="flex items-center justify-between">
@@ -640,12 +701,15 @@ export default function WorkspacesClient() {
                           <p className="text-xs text-white/40">{totalMembers} people</p>
                         </div>
                       </div>
-                      <button onClick={() => setInviteDialogOpen(true)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all">
+                      <button
+                        onClick={() => setInviteDialogOpen(true)}
+                        className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all"
+                      >
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-                  <div className="p-4 max-h-[400px] overflow-y-auto">
+                  <div className="p-4 max-h-[400px] overflow-y-auto scrollbar-hide">
                     {members.length === 0 ? (
                       <div className="text-center py-8">
                         <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mx-auto mb-3">
@@ -657,13 +721,19 @@ export default function WorkspacesClient() {
                     ) : (
                       <div className="space-y-2">
                         {members.map((member) => (
-                          <div key={member.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-all group">
+                          <div
+                            key={member.id}
+                            className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-all group"
+                          >
                             <div className="flex items-center gap-3">
                               <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20 border border-violet-500/20 flex items-center justify-center text-white font-semibold text-sm">
-                                {member.user_name?.[0]?.toUpperCase() || member.user_email[0]?.toUpperCase()}
+                                {member.user_name?.[0]?.toUpperCase() ||
+                                  member.user_email[0]?.toUpperCase()}
                               </div>
                               <div>
-                                <p className="text-sm font-medium text-white">{member.user_name || member.user_email.split('@')[0]}</p>
+                                <p className="text-sm font-medium text-white">
+                                  {member.user_name || member.user_email.split("@")[0]}
+                                </p>
                                 <p className="text-xs text-white/40">{member.user_email}</p>
                               </div>
                             </div>
@@ -671,11 +741,16 @@ export default function WorkspacesClient() {
                               {member.role === "owner" ? (
                                 <Crown className="w-4 h-4 text-amber-400" />
                               ) : (
-                                <span className="text-xs text-white/40 capitalize">{member.role}</span>
+                                <span className="text-xs text-white/40 capitalize">
+                                  {member.role}
+                                </span>
                               )}
                               {selectedWorkspace?.role === "owner" && member.role !== "owner" && (
                                 <button
-                                  onClick={() => { setMemberToRemove(member); setRemoveMemberDialogOpen(true); }}
+                                  onClick={() => {
+                                    setMemberToRemove(member);
+                                    setRemoveMemberDialogOpen(true);
+                                  }}
                                   className="w-7 h-7 rounded-lg bg-transparent hover:bg-red-500/10 flex items-center justify-center text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
                                 >
                                   <X className="w-3.5 h-3.5" />
@@ -689,7 +764,6 @@ export default function WorkspacesClient() {
                   </div>
                 </div>
 
-                {/* Documents Panel */}
                 <div className="bg-[#0a0a0a] rounded-xl border border-white/[0.06] overflow-hidden">
                   <div className="p-5 border-b border-white/[0.06]">
                     <div className="flex items-center justify-between">
@@ -704,7 +778,7 @@ export default function WorkspacesClient() {
                       </div>
                     </div>
                   </div>
-                  <div className="p-4 max-h-[400px] overflow-y-auto">
+                  <div className="p-4 max-h-[400px] overflow-y-auto scrollbar-hide">
                     {documents.length === 0 ? (
                       <div className="text-center py-8">
                         <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mx-auto mb-3">
@@ -726,12 +800,16 @@ export default function WorkspacesClient() {
                                 <FileText className="w-4 h-4 text-emerald-400" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-white truncate">{doc.title || "Untitled"}</p>
+                                <p className="text-sm font-medium text-white truncate">
+                                  {doc.title || "Untitled"}
+                                </p>
                                 <p className="text-xs text-white/40 truncate">{doc.file_name}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/5 text-white/40 font-medium capitalize">{doc.permission}</span>
+                              <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/5 text-white/40 font-medium capitalize">
+                                {doc.permission}
+                              </span>
                               <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/60 transition-colors" />
                             </div>
                           </button>
@@ -741,8 +819,7 @@ export default function WorkspacesClient() {
                   </div>
                 </div>
 
-                {/* Chat Panel */}
-                <div className="bg-[#0a0a0a] rounded-xl border border-white/[0.06] overflow-hidden min-h-[500px]">
+                <div className="bg-[#0a0a0a] rounded-xl border border-white/[0.06] overflow-hidden h-[500px] flex flex-col max-h-[500px]">
                   {selectedWorkspace && <WorkspaceChat workspaceId={selectedWorkspace.id} />}
                 </div>
               </div>
@@ -755,7 +832,6 @@ export default function WorkspacesClient() {
         </div>
       </main>
 
-      {/* Remove Member Dialog */}
       <Dialog open={removeMemberDialogOpen} onOpenChange={setRemoveMemberDialogOpen}>
         <DialogContent className="bg-[#0a0a0a] border border-white/10 max-w-md">
           <DialogHeader>
@@ -772,20 +848,35 @@ export default function WorkspacesClient() {
               <div className="p-4 rounded-xl bg-white/5 border border-white/10">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white font-bold">
-                    {memberToRemove.user_name?.[0]?.toUpperCase() || memberToRemove.user_email[0]?.toUpperCase()}
+                    {memberToRemove.user_name?.[0]?.toUpperCase() ||
+                      memberToRemove.user_email[0]?.toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-white">{memberToRemove.user_name || memberToRemove.user_email}</p>
+                    <p className="text-sm font-medium text-white">
+                      {memberToRemove.user_name || memberToRemove.user_email}
+                    </p>
                     <p className="text-xs text-white/40">{memberToRemove.user_email}</p>
                   </div>
                 </div>
               </div>
             )}
             <div className="flex gap-3">
-              <Button variant="ghost" onClick={() => { setRemoveMemberDialogOpen(false); setMemberToRemove(null); }} disabled={isRemovingMember} className="flex-1 h-11 text-white/60 hover:text-white hover:bg-white/5 rounded-xl">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setRemoveMemberDialogOpen(false);
+                  setMemberToRemove(null);
+                }}
+                disabled={isRemovingMember}
+                className="flex-1 h-11 text-white/60 hover:text-white hover:bg-white/5 rounded-xl"
+              >
                 Cancel
               </Button>
-              <Button onClick={handleRemoveMember} disabled={isRemovingMember} className="flex-1 h-11 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl">
+              <Button
+                onClick={handleRemoveMember}
+                disabled={isRemovingMember}
+                className="flex-1 h-11 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl"
+              >
                 {isRemovingMember ? "Removing..." : "Remove"}
               </Button>
             </div>
