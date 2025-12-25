@@ -68,6 +68,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.13",
+    "tesseract.js": "^5.1.0",
     "three": "^0.181.2",
     "uploadthing": "^7.7.4",
     "xlsx": "^0.18.5",

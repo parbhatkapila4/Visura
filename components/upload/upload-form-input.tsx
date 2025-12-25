@@ -38,20 +38,22 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      console.log(
-        "File selected:",
-        file ? { name: file.name, size: file.size, type: file.type } : "null"
-      );
       setSelectedFile(file || null);
+    };
 
-      if (file && fileInputRef.current) {
-        if (fileInputRef.current.files?.length === 0) {
+    useEffect(() => {
+      if (selectedFile && fileInputRef.current) {
+        if (
+          !fileInputRef.current.files ||
+          fileInputRef.current.files.length === 0 ||
+          fileInputRef.current.files[0]?.name !== selectedFile.name
+        ) {
           const dataTransfer = new DataTransfer();
-          dataTransfer.items.add(file);
+          dataTransfer.items.add(selectedFile);
           fileInputRef.current.files = dataTransfer.files;
         }
       }
-    };
+    }, [selectedFile]);
 
     const handleDragOver = (e: React.DragEvent) => {
       e.preventDefault();
@@ -78,7 +80,6 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
           dataTransfer.items.add(file);
           fileInputRef.current.files = dataTransfer.files;
         }
-      } else if (file) {
       }
     };
 
@@ -90,18 +91,17 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={(e) => {
-              
               const target = e.target as HTMLElement;
               if (target.tagName === "BUTTON") {
                 return;
               }
-              
+
               if (!isLoading && !hasReachedLimit && !selectedFile) {
                 console.log("Drag zone clicked, opening file picker", {
                   hasInputRef: !!fileInputRef.current,
                   isLoading,
                   hasReachedLimit,
-                  selectedFile: !!selectedFile
+                  selectedFile: !!selectedFile,
                 });
                 e.stopPropagation();
                 if (fileInputRef.current) {
@@ -167,7 +167,7 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
                   <div>
                     <p className="text-white font-medium">
                       Drop your document here or{" "}
-                      <span 
+                      <span
                         className="text-white underline underline-offset-2 cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -191,42 +191,11 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
           <button
             type="submit"
             disabled={isLoading || hasReachedLimit || !selectedFile}
-            onClick={async (e) => {
-              e.stopPropagation();
-              
+            onClick={(e) => {
               if (isLoading || hasReachedLimit || !selectedFile) {
                 e.preventDefault();
-                console.log("Button click prevented:", { isLoading, hasReachedLimit, hasFile: !!selectedFile });
                 return;
               }
-
-              if (fileInputRef.current && selectedFile) {
-                const form = fileInputRef.current.form;
-                if (form) {
-                  if (fileInputRef.current.files?.length === 0 || 
-                      fileInputRef.current.files?.[0]?.name !== selectedFile.name) {
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(selectedFile);
-                    fileInputRef.current.files = dataTransfer.files;
-                    console.log("File attached to input element");
-                  }
-                  
-                  const formData = new FormData(form);
-                  if (!formData.get("file")) {
-                    formData.append("file", selectedFile);
-                    console.log("File added to FormData");
-                  }
-                }
-              }
-
-              console.log("Submit button clicked - form should submit", { 
-                hasFile: !!selectedFile, 
-                fileInInput: fileInputRef.current?.files ? fileInputRef.current.files.length > 0 : false,
-                fileInputName: fileInputRef.current?.name,
-                isLoading, 
-                hasReachedLimit 
-              });
-              
             }}
             className={cn(
               "w-full mt-4 h-12 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2",

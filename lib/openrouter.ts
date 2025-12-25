@@ -34,7 +34,7 @@ export async function openrouterChatCompletion(options: ChatCompletionOptions): 
     "X-Title": APP_TITLE,
   };
 
-  const tryModels = [model, "google/gemini-2.5-flash", "openai/gpt-4o-mini", "anthropic/claude-3-haiku"];
+  const tryModels = [model, "openai/gpt-4o-mini", "google/gemini-2.0-flash-exp", "anthropic/claude-3-haiku"];
 
   for (let i = 0; i < tryModels.length; i++) {
     const m = tryModels[i];

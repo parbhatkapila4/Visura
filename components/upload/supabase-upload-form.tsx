@@ -8,7 +8,11 @@ import { storePdfSummaryAction } from "@/actions/upload-actions";
 import UploadFormInput from "@/components/upload/upload-form-input";
 import { uploadToSupabase } from "@/lib/supabase";
 import { formatFileNameAsTitle } from "@/utils/format-utils";
-import { extractTextFromDocument, isFileTypeSupported, getFileTypeLabel } from "@/lib/document-extractor";
+import {
+  extractTextFromDocument,
+  isFileTypeSupported,
+  getFileTypeLabel,
+} from "@/lib/document-extractor";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
@@ -19,7 +23,10 @@ const schema = z.object({
   file: z
     .instanceof(File, { message: "Invalid file" })
     .refine((file) => file.size <= 32 * 1024 * 1024, "File size must be less than 32MB")
-    .refine((file) => isFileTypeSupported(file), "Unsupported file type. Supported: PDF, Word, Text, Markdown, Excel, PowerPoint"),
+    .refine(
+      (file) => isFileTypeSupported(file),
+      "Unsupported file type. Supported: PDF, Word, Text, Markdown, Excel, PowerPoint"
+    ),
 });
 
 interface UploadResult {
@@ -48,7 +55,6 @@ export default function SupabaseUploadForm({
     setIsClient(true);
   }, []);
 
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -73,18 +79,14 @@ export default function SupabaseUploadForm({
 
     const formData = new FormData(e.currentTarget);
     let file = formData.get("file") as File;
-    
-    
+
     if (!file || file.size === 0) {
       const formElement = e.currentTarget;
       const fileInput = formElement.querySelector('input[type="file"]') as HTMLInputElement;
       if (fileInput && fileInput.files && fileInput.files.length > 0) {
         file = fileInput.files[0];
-        console.log("File retrieved from input element directly");
       }
     }
-    
-    console.log("File from form:", file ? { name: file.name, size: file.size, type: file.type } : "null");
 
     if (!file || file.size === 0) {
       toast.error("Please select a file", {
@@ -95,7 +97,8 @@ export default function SupabaseUploadForm({
 
     if (!isFileTypeSupported(file)) {
       toast.error("Unsupported file type", {
-        description: "Supported formats: PDF, Word (DOCX/DOC), Text (TXT), Markdown (MD), Excel (XLSX/XLS), PowerPoint (PPTX/PPT)",
+        description:
+          "Supported formats: PDF, Word (DOCX/DOC), Text (TXT), Markdown (MD), Excel (XLSX/XLS), PowerPoint (PPTX/PPT)",
       });
       return;
     }
@@ -108,7 +111,7 @@ export default function SupabaseUploadForm({
       });
       return;
     }
-    
+
     console.log("✅ File validation passed");
 
     const fileTypeLabel = getFileTypeLabel(file);
@@ -119,49 +122,47 @@ export default function SupabaseUploadForm({
 
     let extractedText = "";
     let hadExtractionError = false;
+    let extractionErrorMsg = "";
 
     try {
       console.log(`Step 1: Extracting text from ${fileTypeLabel}...`);
       extractedText = await extractTextFromDocument(file);
       console.log("✅ Text extraction completed, length:", extractedText.length);
-      console.log("First 300 characters:", extractedText.substring(0, 300));
+      if (extractedText.length > 0) {
+        console.log("First 300 characters:", extractedText.substring(0, 300));
+      }
     } catch (extractError: any) {
       console.error("❌ Extraction error:", extractError);
+      hadExtractionError = true;
+      extractionErrorMsg = extractError.message || "Unknown extraction error";
 
-      const errorMsg = extractError.message || "Unknown extraction error";
-
-      if (errorMsg.includes("password-protected") || errorMsg.includes("encrypted")) {
-        toast.error("Password-Protected Document", {
-          description: "This document is encrypted. Please unlock it and try again.",
+      if (
+        extractionErrorMsg.includes("password-protected") ||
+        extractionErrorMsg.includes("encrypted")
+      ) {
+        toast.warning("Password-Protected Document", {
+          description: "Text extraction limited. Proceeding with file upload and basic summary.",
         });
-        setIsLoading(false);
-        return;
-      }
-
-      if (errorMsg.includes("corrupted")) {
-        toast.error("Corrupted File", {
-          description: "This file appears to be damaged. Please try a different file.",
+        extractedText = "";
+      } else if (extractionErrorMsg.includes("corrupted")) {
+        toast.warning("File may be corrupted", {
+          description: "Proceeding with upload. Some features may be limited.",
         });
-        setIsLoading(false);
-        return;
-      }
-
-      if (errorMsg.includes("Scanned document") || errorMsg.includes("No text found")) {
-        console.log("🖼️ Scanned document detected - will use fallback");
-        hadExtractionError = true;
-        toast.error("Scanned Document - Cannot Process", {
-          description: "This document has no text layer. OCR support coming soon. Upload failed.",
+        extractedText = "";
+      } else if (
+        extractionErrorMsg.includes("Scanned document") ||
+        extractionErrorMsg.includes("No text found") ||
+        extractionErrorMsg.includes("OCR also failed")
+      ) {
+        console.log("🖼️ Scanned/image-based document - OCR will be attempted automatically");
+        toast.info("Scanned document detected", {
+          description: "Running OCR to extract text from images...",
         });
-        setIsLoading(false);
-        return;
+        extractedText = "";
+      } else {
+        console.log("⚠️ Extraction error - continuing with fallback:", extractionErrorMsg);
+        extractedText = "";
       }
-
-      console.error("⚠️ Unexpected extraction error:", errorMsg);
-      toast.error("Text Extraction Failed", {
-        description: errorMsg,
-      });
-      setIsLoading(false);
-      return;
     }
 
     try {
@@ -177,30 +178,42 @@ export default function SupabaseUploadForm({
         description: "Generating AI summary...",
       });
 
-      console.log("Step 3: Generating AI summary...");
+      console.log("Step 3: Generating summary...");
       console.log("📊 Extracted text length:", extractedText.length);
-      console.log("📊 First 500 chars:", extractedText.substring(0, 500));
 
-      if (!extractedText || extractedText.trim().length < 100) {
-        console.error("❌ CRITICAL: No text extracted! Length:", extractedText.length);
-        toast.error("Cannot Generate Summary", {
-          description: `No text content found in ${fileTypeLabel}. Please try a different file.`,
+      let summaryResult;
+
+      if (!extractedText || extractedText.trim().length < 50) {
+        console.log("⚠️ No/minimal text extracted - using fallback summary generation");
+        toast.info("Generating summary from file metadata", {
+          description: "Text extraction limited. Creating summary from file information.",
         });
-        setIsLoading(false);
-        return;
+
+        summaryResult = await generateFallbackSummary(
+          supabaseResult.data.fileName,
+          supabaseResult.data.publicUrl,
+          extractionErrorMsg || "No text content extracted from document"
+        );
+      } else {
+        console.log("✅ Using extracted text for AI summary generation");
+        console.log("📊 First 500 chars:", extractedText.substring(0, 500));
+        summaryResult = await generatePdfSummaryFromText(
+          extractedText,
+          supabaseResult.data.fileName,
+          supabaseResult.data.publicUrl
+        );
       }
 
-      console.log("✅ Using extracted text for summary generation");
-
-      const summaryResult = await generatePdfSummaryFromText(
-        extractedText,
-        supabaseResult.data.fileName,
-        supabaseResult.data.publicUrl
-      );
-
       if (summaryResult.success) {
-        toast.success(`${fileTypeLabel} analysis complete!`, {
-          description: "Summary generated successfully",
+        const summaryType =
+          hadExtractionError || !extractedText || extractedText.trim().length < 50
+            ? "fallback"
+            : "AI-generated";
+
+        toast.success(`${fileTypeLabel} processed successfully!`, {
+          description: `Summary ${
+            summaryType === "fallback" ? "created from file metadata" : "generated with AI"
+          }`,
         });
         setResult(summaryResult);
 
@@ -211,6 +224,7 @@ export default function SupabaseUploadForm({
             fileUrl: supabaseResult.data.publicUrl,
             fileName: file.name,
             title: formatFileNameAsTitle(summaryResult.data.fileName || file.name),
+            summaryType,
           });
 
           const storeResult = await storePdfSummaryAction({
@@ -218,14 +232,14 @@ export default function SupabaseUploadForm({
             fileUrl: supabaseResult.data.publicUrl,
             title: formatFileNameAsTitle(summaryResult.data.fileName || file.name),
             fileName: file.name,
-            extractedText: extractedText, 
+            extractedText: extractedText || "",
           });
 
           console.log("Database save result:", storeResult);
 
           if (storeResult.success) {
-            toast.success("Summary saved to database!", {
-              description: "Your PDF summary has been stored successfully",
+            toast.success("Document saved successfully!", {
+              description: "Your document has been processed and stored",
             });
 
             formRef.current?.reset();

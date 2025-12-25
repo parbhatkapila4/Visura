@@ -348,44 +348,44 @@ export default function DemoSection() {
             </div>
 
             <div className="p-6">
-              <div
+                <div
                 className="relative w-full aspect-video rounded-xl overflow-hidden bg-black"
-                style={{
-                  transform: "translateZ(0)",
-                  willChange: "contents",
-                  backfaceVisibility: "hidden",
-                }}
-              >
-                <video
-                  ref={videoRef}
-                  src="/visura-demo.mp4"
-                  className="w-full h-full object-contain"
                   style={{
-                    display: isPlaying ? "block" : "none",
                     transform: "translateZ(0)",
-                    willChange: "auto",
+                    willChange: "contents",
                     backfaceVisibility: "hidden",
-                    WebkitTransform: "translateZ(0)",
-                    WebkitBackfaceVisibility: "hidden",
                   }}
-                  controls={true}
-                  onEnded={handleVideoEnd}
-                  onPlay={() => {
-                    setIsPlaying(true);
-                  }}
-                  onPause={() => {
-                    setIsPlaying(false);
-                  }}
-                  onError={(e) => {
-                    console.error("Video error:", e, videoRef.current?.error);
-                    setIsPlaying(false);
-                  }}
-                  playsInline
-                  preload="none"
-                  muted={false}
-                  disablePictureInPicture
-                  disableRemotePlayback
-                />
+                >
+                  <video
+                    ref={videoRef}
+                    src="/visura-demo.mp4"
+                    className="w-full h-full object-contain"
+                    style={{
+                      display: isPlaying ? "block" : "none",
+                      transform: "translateZ(0)",
+                      willChange: "auto",
+                      backfaceVisibility: "hidden",
+                      WebkitTransform: "translateZ(0)",
+                      WebkitBackfaceVisibility: "hidden",
+                    }}
+                    controls={true}
+                    onEnded={handleVideoEnd}
+                    onPlay={() => {
+                      setIsPlaying(true);
+                    }}
+                    onPause={() => {
+                      setIsPlaying(false);
+                    }}
+                    onError={(e) => {
+                      console.error("Video error:", e, videoRef.current?.error);
+                      setIsPlaying(false);
+                    }}
+                    playsInline
+                    preload="none"
+                    muted={false}
+                    disablePictureInPicture
+                    disableRemotePlayback
+                  />
               </div>
             </div>
           </div>

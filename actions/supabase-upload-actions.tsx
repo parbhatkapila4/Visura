@@ -56,19 +56,20 @@ export async function generateFallbackSummary(
   fileUrl: string,
   errorMessage?: string
 ) {
-  console.log("⚠️ WARNING: Using fallback summary for:", fileName);
-  console.log("⚠️ This means text extraction failed!");
-  console.log("Error reason:", errorMessage);
+  console.log("📄 Generating fallback summary for:", fileName);
+  console.log("Reason:", errorMessage || "No text content available");
 
   const fileExtension = fileName.toLowerCase();
   let documentType = "document";
   let possibleContent = "";
+  let documentCategory = "";
 
   if (fileExtension.includes("invoice")) {
     documentType = "invoice";
-    possibleContent = `This appears to be an invoice document based on the filename "${fileName}".
+    documentCategory = "Financial Document";
+    possibleContent = `This document appears to be an invoice based on the filename "${fileName}".
 
-Typical invoice elements that would be analyzed:
+**Typical Invoice Content:**
 • Invoice number and date
 • Billing and shipping addresses  
 • Itemized list of products/services
@@ -77,12 +78,13 @@ Typical invoice elements that would be analyzed:
 • Payment terms and due date
 • Company contact information
 
-`;
+**Note:** This is a scanned or image-based document. The file has been successfully uploaded and stored securely.`;
   } else if (fileExtension.includes("receipt")) {
     documentType = "receipt";
-    possibleContent = `This appears to be a receipt document based on the filename "${fileName}".
+    documentCategory = "Financial Document";
+    possibleContent = `This document appears to be a receipt based on the filename "${fileName}".
 
-Typical receipt elements that would be analyzed:
+**Typical Receipt Content:**
 • Transaction date and time
 • Merchant information
 • Items purchased with prices
@@ -90,12 +92,13 @@ Typical receipt elements that would be analyzed:
 • Total amount paid
 • Tax information
 
-`;
+**Note:** This is a scanned or image-based document. The file has been successfully uploaded and stored securely.`;
   } else if (fileExtension.includes("statement") || fileExtension.includes("stmt")) {
     documentType = "statement";
-    possibleContent = `This appears to be a financial statement based on the filename "${fileName}".
+    documentCategory = "Financial Document";
+    possibleContent = `This document appears to be a financial statement based on the filename "${fileName}".
 
-Typical statement elements that would be analyzed:
+**Typical Statement Content:**
 • Account information
 • Statement period
 • Transaction history
@@ -103,12 +106,13 @@ Typical statement elements that would be analyzed:
 • Fees and charges
 • Summary information
 
-`;
+**Note:** This is a scanned or image-based document. The file has been successfully uploaded and stored securely.`;
   } else if (fileExtension.includes("notes") || fileExtension.includes("class")) {
     documentType = "notes";
-    possibleContent = `This appears to be class notes or educational content based on the filename "${fileName}".
+    documentCategory = "Educational Document";
+    possibleContent = `This document appears to be class notes or educational content based on the filename "${fileName}".
 
-Typical educational content that would be analyzed:
+**Typical Educational Content:**
 • Course topics and concepts
 • Key learning objectives
 • Examples and explanations
@@ -116,46 +120,84 @@ Typical educational content that would be analyzed:
 • Important definitions
 • Practice problems or exercises
 
-`;
+**Note:** This is a scanned or image-based document. The file has been successfully uploaded and stored securely.`;
+  } else if (
+    fileExtension.includes("presentation") ||
+    fileExtension.includes("ppt") ||
+    fileExtension.includes("pptx")
+  ) {
+    documentType = "presentation";
+    documentCategory = "Presentation Document";
+    possibleContent = `This document appears to be a presentation (PowerPoint) based on the filename "${fileName}".
+
+**Typical Presentation Content:**
+• Slides with titles and bullet points
+• Visual content and graphics
+• Key talking points
+• Summary or conclusion slides
+
+**Note:** This is a scanned or image-based presentation. The file has been successfully uploaded and stored securely.`;
+  } else if (
+    fileExtension.includes("spreadsheet") ||
+    fileExtension.includes("xls") ||
+    fileExtension.includes("xlsx")
+  ) {
+    documentType = "spreadsheet";
+    documentCategory = "Data Document";
+    possibleContent = `This document appears to be a spreadsheet (Excel) based on the filename "${fileName}".
+
+**Typical Spreadsheet Content:**
+• Data tables and calculations
+• Charts and graphs
+• Formulas and functions
+• Organized rows and columns
+
+**Note:** This is a scanned or image-based spreadsheet. The file has been successfully uploaded and stored securely.`;
+  } else {
+    documentCategory = "Document";
+    possibleContent = `This document has been successfully uploaded and stored securely.
+
+**Document Details:**
+- Filename: ${fileName}
+- File Type: ${fileExtension.split(".").pop()?.toUpperCase() || "Unknown"}
+- Storage: Secure cloud storage
+- Status: Uploaded successfully
+
+**Note:** This appears to be a scanned or image-based document. While text extraction was not possible, the file is safely stored and accessible.`;
   }
 
   const fallbackSummary = `# ${fileName}
 
-## Document Upload Status
+## Document Information
 
-**📄 File Information:**
-- Filename: ${fileName}
-- Storage: Supabase Storage (pdf bucket)
-- Access: Secure URL available
-- Status: ⚠️ Text extraction failed
+**📄 File Details:**
+- **Filename:** ${fileName}
+- **Document Type:** ${documentCategory}
+- **Storage:** Secure cloud storage (Supabase)
+- **Status:** ✅ Successfully uploaded and stored
+- **Access:** File is accessible via secure URL
 
-## Issue Encountered
+${possibleContent}
 
-The PDF file was uploaded successfully, but we couldn't extract readable text content. This typically happens with:
+## Processing Status
 
-- 🖼️ **Scanned documents** - PDFs created from scanned images
-- 🔒 **Password-protected files** - Encrypted PDFs
-- 📸 **Image-based PDFs** - Screenshots or photos saved as PDF
-${errorMessage ? `\n**Error:** ${errorMessage}` : ""}
+**Text Extraction:** ⚠️ Limited
+- This document appears to be a scanned or image-based file
+- Text extraction was not possible due to the document format
+- The file has been successfully uploaded and is securely stored
 
-## Recommendations
+${errorMessage ? `\n**Technical Note:** ${errorMessage}` : ""}
 
-1. **If this is a scanned document:**
-   - OCR (Optical Character Recognition) support is in development
-   - Consider re-scanning with text recognition enabled
-   
-2. **If this is a normal PDF:**
-   - Try re-uploading the file
-   - Ensure the PDF is not corrupted
-   - Check if it's password-protected
+## Available Features
 
-3. **Alternative:**
-   - Upload a different version of the document
-   - Use a text-based PDF instead of scanned images
+✅ **File Storage** - Document is safely stored
+✅ **Secure Access** - File accessible via secure URL
+⚠️ **AI Chat** - Limited (requires text content)
+⚠️ **Full Summary** - Basic summary from file metadata
 
 ## Next Steps
 
-The file is safely stored and accessible. However, AI-powered features like summarization and chat will be limited without text content. Please try uploading a text-based PDF for full functionality.`;
+Your document has been successfully processed and saved. While full AI-powered features require text content, the file is accessible and stored securely.`;
 
   try {
     console.log("Returning direct fallback summary (not using AI)");

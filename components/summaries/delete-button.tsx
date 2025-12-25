@@ -26,17 +26,18 @@ export default function DeleteButton({ summaryId, onDelete }: DeleteButtonProps)
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      console.log("Deleting summary:", summaryId);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
       const response = await fetch(`/api/summaries/${summaryId}`, {
         method: "DELETE",
+        signal: controller.signal,
       });
 
-      console.log("Delete response status:", response.status);
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("Delete failed:", errorData);
         throw new Error(
           errorData.error || errorData.message || `Failed to delete (${response.status})`
         );
@@ -48,11 +49,12 @@ export default function DeleteButton({ summaryId, onDelete }: DeleteButtonProps)
       if (onDelete) {
         onDelete(summaryId);
       }
-
-      window.location.reload();
     } catch (error) {
-      console.error("Delete error:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to delete summary");
+      if (error instanceof Error && error.name === 'AbortError') {
+        toast.error("Delete request timed out. Please try again.");
+      } else {
+        toast.error(error instanceof Error ? error.message : "Failed to delete summary");
+      }
     } finally {
       setIsDeleting(false);
     }

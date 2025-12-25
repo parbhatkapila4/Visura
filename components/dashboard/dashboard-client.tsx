@@ -431,9 +431,9 @@ export default function DashboardClient({
   ).length;
 
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-[#1f1f1f]">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
+    <div className="min-h-screen w-full flex flex-col items-center">
+      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-[#1f1f1f] w-full">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-4">
               <Link
@@ -555,7 +555,7 @@ export default function DashboardClient({
         )}
       </AnimatePresence>
 
-      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6 w-full">
         <div className="mb-8">
           <h2 className="text-2xl font-semibold text-white mb-1">
             Welcome back{user?.firstName ? `, ${user.firstName}` : ""}

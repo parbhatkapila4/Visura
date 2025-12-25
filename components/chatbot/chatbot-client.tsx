@@ -57,6 +57,7 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -64,9 +65,54 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
   const lastSentMessageRef = useRef<{ text: string; timestamp: number } | null>(null);
 
   useEffect(() => {
+    console.log("ChatbotClient mounted", { pdfSummaryId, pdfStoreId, pdfTitle });
+  }, [pdfSummaryId, pdfStoreId, pdfTitle]);
+
+  if (!pdfStoreId) {
+    return (
+      <div className="flex items-center justify-center h-full w-full bg-[#0a0a0a]">
+        <div className="text-center">
+          <p className="text-white">Invalid document store ID</p>
+        </div>
+      </div>
+    );
+  }
+
+  const loadSessions = async () => {
+    try {
+      setIsLoadingSessions(true);
+      setError(null);
+      console.log("Loading sessions for pdfStoreId:", pdfStoreId);
+      const response = await fetch(`/api/chatbot/sessions?pdfStoreId=${pdfStoreId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to load sessions: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log("Sessions loaded:", data);
+      if (response.ok) {
+        setSessions(data.sessions || []);
+        if (data.sessions && data.sessions.length > 0 && !currentSessionId) {
+          setCurrentSessionId(data.sessions[0].id);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading sessions:", error);
+      setError(error instanceof Error ? error.message : "Failed to load chat sessions");
+    } finally {
+      setIsLoadingSessions(false);
+    }
+  };
+
+  useEffect(() => {
     let mounted = true;
     const loadData = async () => {
-      if (mounted) await loadSessions();
+      try {
+        if (mounted && pdfStoreId) {
+          await loadSessions();
+        }
+      } catch (error) {
+        console.error("Error loading sessions:", error);
+      }
     };
     loadData();
     return () => {
@@ -101,24 +147,6 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
           container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
         });
       });
-    }
-  };
-
-  const loadSessions = async () => {
-    try {
-      setIsLoadingSessions(true);
-      const response = await fetch(`/api/chatbot/sessions?pdfStoreId=${pdfStoreId}`);
-      const data = await response.json();
-      if (response.ok) {
-        setSessions(data.sessions);
-        if (data.sessions.length > 0 && !currentSessionId) {
-          setCurrentSessionId(data.sessions[0].id);
-        }
-      }
-    } catch (error) {
-      console.error("Error loading sessions:", error);
-    } finally {
-      setIsLoadingSessions(false);
     }
   };
 
@@ -192,7 +220,6 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
     const messageText = messageToSend.trim();
     setInputMessage("");
 
-    
     const optimisticUserMessage: Message = {
       id: `temp-${Date.now()}`,
       message_type: "user",
@@ -268,8 +295,47 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
     },
   ];
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full w-full p-6">
+        <div className="text-center max-w-md">
+          <p className="text-red-400 mb-4">Error: {error}</p>
+          <button
+            onClick={async () => {
+              setError(null);
+              setIsLoadingSessions(true);
+              try {
+                const response = await fetch(`/api/chatbot/sessions?pdfStoreId=${pdfStoreId}`);
+                if (!response.ok) throw new Error(`Failed: ${response.statusText}`);
+                const data = await response.json();
+                setSessions(data.sessions || []);
+              } catch (err) {
+                setError(err instanceof Error ? err.message : "Failed to load");
+              } finally {
+                setIsLoadingSessions(false);
+              }
+            }}
+            className="px-4 py-2 bg-white text-black rounded-lg hover:bg-[#e5e5e5] transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  console.log("ChatbotClient rendering main UI", {
+    sessionsCount: sessions.length,
+    currentSessionId,
+    isLoadingSessions,
+    error,
+  });
+
   return (
-    <div className="flex h-full">
+    <div
+      className="flex h-full w-full min-h-0 bg-[#0a0a0a]"
+      style={{ height: "100%", width: "100%", minHeight: "400px" }}
+    >
       <aside className="w-72 flex-shrink-0 flex flex-col bg-[#0c0c0c] border-r border-[#1a1a1a]">
         <div className="p-4 flex items-center justify-between">
           <span className="text-sm font-medium text-[#888]">Chat History</span>
@@ -283,58 +349,56 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
         </div>
 
         <div className="flex-1 overflow-y-auto px-2 pb-4">
-            {isLoadingSessions ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                  <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                  <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" />
-                </div>
+          {isLoadingSessions ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" />
               </div>
-            ) : sessions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-48 text-center px-4">
-                <MessageSquare className="w-8 h-8 text-[#333] mb-3" />
-                <p className="text-sm text-[#555]">No conversations yet</p>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {sessions.map((session) => (
-                  <div
-                    key={session.id}
-                    onClick={() => setCurrentSessionId(session.id)}
-                    className={`group px-3 py-2.5 rounded-lg cursor-pointer transition-all ${
-                      currentSessionId === session.id ? "bg-white/[0.08]" : "hover:bg-white/[0.04]"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm text-[#ccc] truncate flex-1">{session.session_name}</p>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button
-                            onClick={(e) => e.stopPropagation()}
-                            className="w-6 h-6 rounded hover:bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <MoreVertical className="w-3.5 h-3.5 text-[#666]" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-[#161616] border-[#2a2a2a]">
-                          <DropdownMenuItem
-                            onClick={() => deleteSession(session.id)}
-                            className="text-red-400 hover:text-red-400 focus:text-red-400 hover:bg-red-500/10 focus:bg-red-500/10"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <p className="text-[11px] text-[#555] mt-0.5">
-                      {session.message_count} messages
-                    </p>
+            </div>
+          ) : sessions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-48 text-center px-4">
+              <MessageSquare className="w-8 h-8 text-[#333] mb-3" />
+              <p className="text-sm text-[#555]">No conversations yet</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {sessions.map((session) => (
+                <div
+                  key={session.id}
+                  onClick={() => setCurrentSessionId(session.id)}
+                  className={`group px-3 py-2.5 rounded-lg cursor-pointer transition-all ${
+                    currentSessionId === session.id ? "bg-white/[0.08]" : "hover:bg-white/[0.04]"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm text-[#ccc] truncate flex-1">{session.session_name}</p>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-6 h-6 rounded hover:bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <MoreVertical className="w-3.5 h-3.5 text-[#666]" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-[#161616] border-[#2a2a2a]">
+                        <DropdownMenuItem
+                          onClick={() => deleteSession(session.id)}
+                          className="text-red-400 hover:text-red-400 focus:text-red-400 hover:bg-red-500/10 focus:bg-red-500/10"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                ))}
-              </div>
-            )}
+                  <p className="text-[11px] text-[#555] mt-0.5">{session.message_count} messages</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="p-3 border-t border-[#1a1a1a]">

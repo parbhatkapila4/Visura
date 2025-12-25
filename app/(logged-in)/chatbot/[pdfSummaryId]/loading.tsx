@@ -7,9 +7,9 @@ export default function ChatbotLoading() {
           <div className="flex items-center gap-3">
             <div className="h-8 w-40 bg-[#1a1a1a] rounded-lg animate-pulse" />
             <div className="h-6 w-20 bg-emerald-500/10 rounded-full animate-pulse" />
-          </div>
-          <div className="w-16" />
         </div>
+          <div className="w-16" />
+      </div>
       </header>
 
       <div className="flex-1 flex overflow-hidden">
@@ -17,21 +17,21 @@ export default function ChatbotLoading() {
           <div className="p-4 flex items-center justify-between">
             <div className="h-4 w-24 bg-[#1a1a1a] rounded animate-pulse" />
             <div className="h-8 w-16 bg-[#1a1a1a] rounded-lg animate-pulse" />
-          </div>
+              </div>
           <div className="px-2 space-y-2">
-            {[1, 2, 3].map((i) => (
+              {[1, 2, 3].map((i) => (
               <div key={i} className="px-3 py-3 rounded-lg bg-white/[0.02] animate-pulse">
                 <div className="h-4 w-4/5 bg-[#1a1a1a] rounded mb-2" />
                 <div className="h-3 w-1/3 bg-[#1a1a1a] rounded" />
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
           <div className="absolute bottom-0 left-0 w-72 p-3 border-t border-[#1a1a1a]">
             <div className="px-3 py-3 rounded-lg bg-white/[0.02]">
               <div className="h-2 w-16 bg-[#1a1a1a] rounded mb-2 animate-pulse" />
               <div className="h-3 w-3/4 bg-[#1a1a1a] rounded animate-pulse" />
-            </div>
-          </div>
+                  </div>
+                </div>
         </aside>
 
         <div className="flex-1 flex flex-col">
@@ -52,7 +52,7 @@ export default function ChatbotLoading() {
                   >
                     <div className="w-5 h-5 bg-[#1a1a1a] rounded mb-2" />
                     <div className="h-4 w-24 bg-[#1a1a1a] rounded" />
-                  </div>
+                </div>
                 ))}
               </div>
             </div>

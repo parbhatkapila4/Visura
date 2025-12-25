@@ -39,14 +39,15 @@ export async function removeSummary(id: string, userId: string) {
   try {
     const sql = await getDbConnection();
 
-    const [summary] =
-      await sql`SELECT id FROM pdf_summaries WHERE id = ${id} AND user_id = ${userId}`;
+    const result = await sql`
+      DELETE FROM pdf_summaries 
+      WHERE id = ${id} AND user_id = ${userId}
+      RETURNING id
+    `;
 
-    if (!summary) {
+    if (!result || result.length === 0) {
       throw new Error("Summary not found or access denied");
     }
-
-    await sql`DELETE FROM pdf_summaries WHERE id = ${id} AND user_id = ${userId}`;
 
     return { success: true };
   } catch (error) {

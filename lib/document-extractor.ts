@@ -41,6 +41,48 @@ export const SUPPORTED_FILE_EXTENSIONS = [
   ".ppt",
 ];
 
+async function extractTextFromPDFWithOCR(file: File, pdf: any, pageNum: number): Promise<string> {
+  console.log(`🖼️ Running OCR on page ${pageNum}...`);
+
+  try {
+    const Tesseract = (await import("tesseract.js")).default;
+    const page = await pdf.getPage(pageNum);
+
+    const viewport = page.getViewport({ scale: 2.0 });
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      throw new Error("Could not get canvas context");
+    }
+
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    await page.render({
+      canvasContext: context,
+      viewport: viewport,
+    }).promise;
+
+    const imageData = canvas.toDataURL("image/png");
+
+    const {
+      data: { text },
+    } = await Tesseract.recognize(imageData, "eng", {
+      logger: (m) => {
+        if (m.status === "recognizing text") {
+          console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+        }
+      },
+    });
+
+    return text.trim();
+  } catch (ocrError) {
+    console.error(`OCR error on page ${pageNum}:`, ocrError);
+    return "";
+  }
+}
+
 async function extractTextFromPDF(file: File): Promise<string> {
   if (typeof window === "undefined") {
     throw new Error("PDF processing only available on client-side");
@@ -68,8 +110,8 @@ async function extractTextFromPDF(file: File): Promise<string> {
   const pdf = await loadingTask.promise;
   const totalPages = pdf.numPages;
 
-  const MAX_PAGES_TO_PROCESS = 500;
-  const BATCH_SIZE = 50;
+  const MAX_PAGES_TO_PROCESS = 50;
+  const BATCH_SIZE = 10;
   const BATCH_DELAY_MS = 10;
 
   const pagesToProcess = Math.min(totalPages, MAX_PAGES_TO_PROCESS);
@@ -77,6 +119,7 @@ async function extractTextFromPDF(file: File): Promise<string> {
 
   let fullText = "";
   let pagesWithText = 0;
+  let pagesNeedingOCR: number[] = [];
 
   for (let batchStart = 1; batchStart <= pagesToProcess; batchStart += BATCH_SIZE) {
     const batchEnd = Math.min(batchStart + BATCH_SIZE - 1, pagesToProcess);
@@ -98,9 +141,12 @@ async function extractTextFromPDF(file: File): Promise<string> {
         if (pageText.length > 0) {
           pagesWithText++;
           fullText += pageText + " ";
+        } else {
+          pagesNeedingOCR.push(pageNum);
         }
       } catch (pageError) {
         console.error(`Error processing page ${pageNum}:`, pageError);
+        pagesNeedingOCR.push(pageNum);
       }
     }
 
@@ -109,12 +155,43 @@ async function extractTextFromPDF(file: File): Promise<string> {
     }
   }
 
+  if (pagesNeedingOCR.length > 0 && fullText.trim().length === 0) {
+    console.log(`📄 No text found in PDF. Running OCR on ${pagesNeedingOCR.length} page(s)...`);
+
+    try {
+      const ocrPagesToProcess = Math.min(pagesNeedingOCR.length, 10);
+
+      for (let i = 0; i < ocrPagesToProcess; i++) {
+        const pageNum = pagesNeedingOCR[i];
+        try {
+          const ocrText = await extractTextFromPDFWithOCR(file, pdf, pageNum);
+          if (ocrText.length > 0) {
+            fullText += ocrText + " ";
+            pagesWithText++;
+            console.log(`✅ OCR extracted ${ocrText.length} characters from page ${pageNum}`);
+          }
+        } catch (ocrError) {
+          console.error(`Failed OCR on page ${pageNum}:`, ocrError);
+        }
+      }
+
+      if (ocrPagesToProcess < pagesNeedingOCR.length) {
+        console.log(
+          `⚠️ Processed first ${ocrPagesToProcess} pages with OCR. Remaining pages skipped for performance.`
+        );
+      }
+    } catch (ocrInitError) {
+      console.error("OCR initialization failed:", ocrInitError);
+      throw new Error("No text found in PDF - OCR also failed to extract text");
+    }
+  }
+
   if (willTruncate) {
     fullText += `\n\n[Note: This PDF has ${totalPages} pages. Only the first ${MAX_PAGES_TO_PROCESS} pages were processed to ensure system stability.]`;
   }
 
   if (fullText.trim().length === 0) {
-    throw new Error("No text found in PDF - this may be a scanned/image-based document");
+    throw new Error("No text found in PDF - OCR also failed to extract text");
   }
 
   return fullText.trim();
