@@ -4,7 +4,7 @@ import { getDbConnection } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { savePdfStore } from "@/lib/chatbot";
-import { fetchAndExtractPdfText } from "@/lib/langchain";
+import { extractTextFromDocumentUrl } from "@/lib/document-text-extractor";
 
 interface PdfSummaryType {
   userId?: string;
@@ -12,6 +12,7 @@ interface PdfSummaryType {
   summary: string;
   title: string;
   fileName: string;
+  extractedText?: string;
 }
 
 async function savePdfSummary({
@@ -47,7 +48,7 @@ async function savePdfSummary({
   }
 }
 
-export async function storePdfSummaryAction({ fileUrl, summary, title, fileName }: PdfSummaryType) {
+export async function storePdfSummaryAction({ fileUrl, summary, title, fileName, extractedText }: PdfSummaryType) {
   let savedSummary: any;
   try {
     const { userId } = await auth();
@@ -74,24 +75,34 @@ export async function storePdfSummaryAction({ fileUrl, summary, title, fileName 
 
     try {
       console.log("Initializing document chat functionality...");
-      console.log("PDF Summary ID:", savedSummary.id);
+      console.log("Summary ID:", savedSummary.id);
       console.log("User ID:", userId);
       console.log("File URL:", fileUrl);
+      console.log("File Name:", fileName);
 
-      const fullTextContent = await fetchAndExtractPdfText(fileUrl);
+      let fullTextContent: string;
+      
+      if (extractedText && extractedText.trim().length > 0) {
+        console.log("Using pre-extracted text from client");
+        fullTextContent = extractedText;
+      } else {
+        console.log("Extracting text from document URL...");
+        fullTextContent = await extractTextFromDocumentUrl(fileUrl, fileName);
+      }
+      
       console.log("Extracted text length:", fullTextContent?.length || 0);
 
       if (fullTextContent && fullTextContent.trim().length > 0) {
-        console.log("Saving PDF store...");
+        console.log("Saving document store for chatbot...");
         const pdfStoreResult = await savePdfStore({
           pdfSummaryId: savedSummary.id,
           userId,
           fullTextContent,
         });
-        console.log("PDF store saved successfully:", pdfStoreResult);
+        console.log("Document store saved successfully:", pdfStoreResult);
         console.log("Document chat functionality initialized successfully");
       } else {
-        console.warn("No text content extracted, skipping PDF store creation");
+        console.warn("No text content extracted, skipping document store creation");
       }
     } catch (chatbotError) {
       console.error("Error initializing document chat functionality:", chatbotError);

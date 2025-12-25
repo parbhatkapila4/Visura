@@ -176,42 +176,68 @@ async function extractTextFromExcel(file: File): Promise<string> {
 }
 
 async function extractTextFromPowerPoint(file: File): Promise<string> {
+  const fileName = file.name.toLowerCase();
+
+  if (fileName.endsWith(".ppt") && !fileName.endsWith(".pptx")) {
+    throw new Error(
+      "Old PowerPoint format (.ppt) is not supported. " +
+        "Please convert your file to the newer .pptx format (PowerPoint 2007 or later) and try again. " +
+        "The .pptx format is a ZIP archive that can be processed, while .ppt is a binary format that requires specialized libraries."
+    );
+  }
+
   const JSZip = (await import("jszip")).default;
   const arrayBuffer = await file.arrayBuffer();
 
-  const zip = await JSZip.loadAsync(arrayBuffer);
-  let fullText = "";
+  try {
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    let fullText = "";
 
-  const slideFiles = Object.keys(zip.files).filter((name) =>
-    name.match(/ppt\/slides\/slide\d+\.xml/)
-  );
+    const slideFiles = Object.keys(zip.files).filter((name) =>
+      name.match(/ppt\/slides\/slide\d+\.xml/)
+    );
 
-  if (slideFiles.length === 0) {
-    throw new Error("No slides found in PowerPoint file");
-  }
-
-  for (const slideFile of slideFiles) {
-    const slideContent = await zip.files[slideFile].async("string");
-
-    const textMatches = slideContent.match(/<a:t[^>]*>([^<]*)<\/a:t>/g) || [];
-    const slideText = textMatches
-      .map((match) => {
-        const textMatch = match.match(/<a:t[^>]*>([^<]*)<\/a:t>/);
-        return textMatch ? textMatch[1] : "";
-      })
-      .filter((text) => text.trim().length > 0)
-      .join(" ");
-
-    if (slideText.trim()) {
-      fullText += slideText + "\n\n";
+    if (slideFiles.length === 0) {
+      throw new Error(
+        "No slides found in PowerPoint file. The file may be corrupted or in an unsupported format."
+      );
     }
-  }
 
-  if (!fullText || fullText.trim().length === 0) {
-    throw new Error("No text found in PowerPoint file");
-  }
+    for (const slideFile of slideFiles) {
+      const slideContent = await zip.files[slideFile].async("string");
 
-  return fullText.trim();
+      const textMatches = slideContent.match(/<a:t[^>]*>([^<]*)<\/a:t>/g) || [];
+      const slideText = textMatches
+        .map((match) => {
+          const textMatch = match.match(/<a:t[^>]*>([^<]*)<\/a:t>/);
+          return textMatch ? textMatch[1] : "";
+        })
+        .filter((text) => text.trim().length > 0)
+        .join(" ");
+
+      if (slideText.trim()) {
+        fullText += slideText + "\n\n";
+      }
+    }
+
+    if (!fullText || fullText.trim().length === 0) {
+      throw new Error("No text found in PowerPoint file");
+    }
+
+    return fullText.trim();
+  } catch (error: any) {
+    if (
+      error.message?.includes("Can't find end of central directory") ||
+      error.message?.includes("zip file")
+    ) {
+      throw new Error(
+        "This PowerPoint file cannot be processed. " +
+          "It may be in the old .ppt format (not supported) or corrupted. " +
+          "Please ensure you're using a .pptx file (PowerPoint 2007 or later format)."
+      );
+    }
+    throw error;
+  }
 }
 
 export async function extractTextFromDocument(file: File): Promise<string> {
@@ -262,10 +288,10 @@ export async function extractTextFromDocument(file: File): Promise<string> {
     } else if (
       detectedType ===
         "application/vnd.openxmlformats-officedocument.presentationml.presentation" ||
-      detectedType === "application/vnd.ms-powerpoint" ||
-      fileName.endsWith(".pptx") ||
-      fileName.endsWith(".ppt")
+      fileName.endsWith(".pptx")
     ) {
+      return await extractTextFromPowerPoint(file);
+    } else if (detectedType === "application/vnd.ms-powerpoint" || fileName.endsWith(".ppt")) {
       return await extractTextFromPowerPoint(file);
     } else {
       throw new Error(`Unsupported file type: ${detectedType || "unknown"}`);

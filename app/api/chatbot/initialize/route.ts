@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getDbConnection } from "@/lib/db";
-import { fetchAndExtractPdfText } from "@/lib/langchain";
+import { extractTextFromDocumentUrl } from "@/lib/document-text-extractor";
 import { savePdfStore, getPdfStoreBySummaryId } from "@/lib/chatbot";
 
 export async function POST(request: NextRequest) {
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     const existingStore = await getPdfStoreBySummaryId(pdfSummaryId, userId);
     if (existingStore) {
       return NextResponse.json({
-        message: "Chatbot already initialized for this PDF",
+        message: "Chatbot already initialized for this document",
         pdfStoreId: existingStore.id,
       });
     }
@@ -32,14 +32,22 @@ export async function POST(request: NextRequest) {
     `;
 
     if (!summary) {
-      return NextResponse.json({ error: "PDF summary not found" }, { status: 404 });
+      return NextResponse.json({ error: "Document summary not found" }, { status: 404 });
     }
 
     console.log("Extracting full text for chatbot initialization...");
-    const fullTextContent = await fetchAndExtractPdfText(summary.original_file_url);
+    console.log("File URL:", summary.original_file_url);
+    console.log("File Name:", summary.file_name);
+    
+    const fullTextContent = await extractTextFromDocumentUrl(
+      summary.original_file_url,
+      summary.file_name || undefined
+    );
 
     if (!fullTextContent || fullTextContent.trim().length === 0) {
-      return NextResponse.json({ error: "Could not extract text from PDF" }, { status: 400 });
+      return NextResponse.json({ 
+        error: "Could not extract text from document. The document may be empty, corrupted, or in an unsupported format." 
+      }, { status: 400 });
     }
 
     const pdfStore = await savePdfStore({

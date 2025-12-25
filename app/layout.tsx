@@ -39,16 +39,15 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body
-          className={`${fontSans.variable} font-sans antialiased bg-black text-white overflow-x-hidden`}
+          className={`${fontSans.variable} font-sans antialiased bg-[#0a0a0a] text-white overflow-x-hidden`}
           style={{
-            backgroundColor: "#000000",
+            backgroundColor: "#0a0a0a",
           }}
         >
-          <div className="fixed inset-0 bg-black -z-10" />
-          <div className="relative w-full flex flex-col min-h-screen bg-black antialiased">
+          <div className="relative w-full flex flex-col bg-[#0a0a0a] antialiased">
             <Spotlight />
             <Header />
-            <main className="flex-1 w-full relative z-10 bg-black">
+            <main className="flex-1 w-full relative z-10 bg-[#0a0a0a]">
               {children}
             </main>
             <ConditionalFooter />

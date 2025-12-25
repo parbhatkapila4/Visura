@@ -218,6 +218,7 @@ export default function SupabaseUploadForm({
             fileUrl: supabaseResult.data.publicUrl,
             title: formatFileNameAsTitle(summaryResult.data.fileName || file.name),
             fileName: file.name,
+            extractedText: extractedText, 
           });
 
           console.log("Database save result:", storeResult);

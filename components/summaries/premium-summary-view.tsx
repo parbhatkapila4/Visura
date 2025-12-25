@@ -282,7 +282,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
 
   if (isErrorSummary) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a]">
+      <div className="bg-[#0a0a0a]">
         <div className="max-w-2xl mx-auto px-6 py-20">
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-6">
@@ -313,7 +313,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="bg-[#0a0a0a] min-h-[calc(100vh-56px)] pb-12">
       <header className="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-[#1f1f1f]">
         <div className="max-w-[1400px] mx-auto px-6">
           <div className="flex items-center justify-between h-14">
@@ -578,7 +578,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
               })}
             </div>
 
-            <div className="mt-12 pt-8 border-t border-[#1f1f1f]">
+            <div className="mt-12 pt-8 pb-8 border-t border-[#1f1f1f]">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-xl bg-[#111] border border-[#1f1f1f]">
                 <div>
                   <h3 className="text-lg font-medium text-white mb-1">Want to explore deeper?</h3>
@@ -718,40 +718,108 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="mt-4">
+              <div className="mt-4" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-[#0a0a0a] border border-[#1f1f1f]">
                   <input
                     type="text"
                     readOnly
                     value={shareUrl}
-                    className="flex-1 bg-transparent text-sm text-[#888] focus:outline-none"
-                    onClick={(e) => (e.target as HTMLInputElement).select()}
-                  />
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-[#888] hover:text-white hover:bg-[#1a1a1a]"
-                    onClick={async () => {
-                      if (shareUrl) {
-                        try {
+                    className="flex-1 bg-transparent text-sm text-[#888] focus:outline-none cursor-pointer"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      const input = e.target as HTMLInputElement;
+                      input.select();
+
+                      try {
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
                           await navigator.clipboard.writeText(shareUrl);
-                          toast.success("Copied!", { duration: 2000 });
-                        } catch {
-                          const textArea = document.createElement("textarea");
-                          textArea.value = shareUrl;
-                          textArea.style.position = "fixed";
-                          textArea.style.left = "-999999px";
-                          document.body.appendChild(textArea);
-                          textArea.select();
-                          document.execCommand("copy");
-                          document.body.removeChild(textArea);
-                          toast.success("Copied!", { duration: 2000 });
+                          toast.success("Copied to clipboard!", {
+                            description: "Share link has been copied to your clipboard",
+                            duration: 3000,
+                          });
                         }
+                      } catch (err) {}
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="p-2 rounded-lg text-[#888] hover:text-white hover:bg-[#1a1a1a] transition-colors flex-shrink-0"
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+
+                      if (!shareUrl) {
+                        toast.error("No URL to copy");
+                        return;
+                      }
+
+                      const copyToClipboard = async (text: string) => {
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                          await navigator.clipboard.writeText(text);
+                          return true;
+                        }
+                        return false;
+                      };
+
+                      const copyFallback = (text: string) => {
+                        const textArea = document.createElement("textarea");
+                        textArea.value = text;
+                        textArea.style.position = "fixed";
+                        textArea.style.top = "0";
+                        textArea.style.left = "0";
+                        textArea.style.width = "2em";
+                        textArea.style.height = "2em";
+                        textArea.style.padding = "0";
+                        textArea.style.border = "none";
+                        textArea.style.outline = "none";
+                        textArea.style.boxShadow = "none";
+                        textArea.style.background = "transparent";
+                        textArea.setAttribute("readonly", "");
+                        textArea.setAttribute("aria-hidden", "true");
+                        document.body.appendChild(textArea);
+                        textArea.focus();
+                        textArea.select();
+                        textArea.setSelectionRange(0, 99999);
+
+                        try {
+                          const successful = document.execCommand("copy");
+                          document.body.removeChild(textArea);
+                          return successful;
+                        } catch {
+                          document.body.removeChild(textArea);
+                          return false;
+                        }
+                      };
+
+                      try {
+                        const success = await copyToClipboard(shareUrl);
+                        if (success) {
+                          toast.success("Copied to clipboard!", {
+                            description: "Share link has been copied to your clipboard",
+                            duration: 3000,
+                          });
+                        } else {
+                          const fallbackSuccess = copyFallback(shareUrl);
+                          if (fallbackSuccess) {
+                            toast.success("Copied to clipboard!", {
+                              description: "Share link has been copied to your clipboard",
+                              duration: 3000,
+                            });
+                          } else {
+                            throw new Error("All copy methods failed");
+                          }
+                        }
+                      } catch (error) {
+                        console.error("Copy failed:", error);
+                        toast.error("Failed to copy", {
+                          description: "Please copy the link manually from the input field",
+                          duration: 5000,
+                        });
                       }
                     }}
                   >
                     <Copy className="w-4 h-4" />
-                  </Button>
+                  </button>
                 </div>
               </div>
 

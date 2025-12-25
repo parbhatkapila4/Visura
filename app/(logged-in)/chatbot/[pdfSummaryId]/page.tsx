@@ -86,7 +86,7 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
               <h3 className="text-xl font-semibold text-white mb-3">Chat Not Available</h3>
               <p className="text-[#666] mb-8 leading-relaxed">
                 The chatbot functionality is not yet initialized for this document. This usually
-                happens when PDF text extraction failed during upload.
+                happens when text extraction failed during upload, or the document doesn't contain extractable text content.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link

@@ -90,11 +90,25 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={(e) => {
-              if ((e.target as HTMLElement).closest("button")) {
+              
+              const target = e.target as HTMLElement;
+              if (target.tagName === "BUTTON") {
                 return;
               }
-              if (!isLoading && !hasReachedLimit && !selectedFile && fileInputRef.current) {
-                fileInputRef.current.click();
+              
+              if (!isLoading && !hasReachedLimit && !selectedFile) {
+                console.log("Drag zone clicked, opening file picker", {
+                  hasInputRef: !!fileInputRef.current,
+                  isLoading,
+                  hasReachedLimit,
+                  selectedFile: !!selectedFile
+                });
+                e.stopPropagation();
+                if (fileInputRef.current) {
+                  fileInputRef.current.click();
+                } else {
+                  console.error("File input ref is null!");
+                }
               }
             }}
             className={cn(
@@ -153,7 +167,17 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
                   <div>
                     <p className="text-white font-medium">
                       Drop your document here or{" "}
-                      <span className="text-white underline underline-offset-2">browse</span>
+                      <span 
+                        className="text-white underline underline-offset-2 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isLoading && !hasReachedLimit && fileInputRef.current) {
+                            fileInputRef.current.click();
+                          }
+                        }}
+                      >
+                        browse
+                      </span>
                     </p>
                     <p className="text-[#555] text-sm mt-1">
                       PDF, Word, Text, Markdown, Excel, PowerPoint • Max 32MB
@@ -167,6 +191,43 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
           <button
             type="submit"
             disabled={isLoading || hasReachedLimit || !selectedFile}
+            onClick={async (e) => {
+              e.stopPropagation();
+              
+              if (isLoading || hasReachedLimit || !selectedFile) {
+                e.preventDefault();
+                console.log("Button click prevented:", { isLoading, hasReachedLimit, hasFile: !!selectedFile });
+                return;
+              }
+
+              if (fileInputRef.current && selectedFile) {
+                const form = fileInputRef.current.form;
+                if (form) {
+                  if (fileInputRef.current.files?.length === 0 || 
+                      fileInputRef.current.files?.[0]?.name !== selectedFile.name) {
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(selectedFile);
+                    fileInputRef.current.files = dataTransfer.files;
+                    console.log("File attached to input element");
+                  }
+                  
+                  const formData = new FormData(form);
+                  if (!formData.get("file")) {
+                    formData.append("file", selectedFile);
+                    console.log("File added to FormData");
+                  }
+                }
+              }
+
+              console.log("Submit button clicked - form should submit", { 
+                hasFile: !!selectedFile, 
+                fileInInput: fileInputRef.current?.files ? fileInputRef.current.files.length > 0 : false,
+                fileInputName: fileInputRef.current?.name,
+                isLoading, 
+                hasReachedLimit 
+              });
+              
+            }}
             className={cn(
               "w-full mt-4 h-12 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2",
               isLoading || hasReachedLimit || !selectedFile

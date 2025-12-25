@@ -1,7 +1,7 @@
 import { openrouterChatCompletion } from "@/lib/openrouter";
 import { getQASessionById, getQAMessagesBySession } from "./chatbot";
 
-const CHATBOT_SYSTEM_PROMPT = `You are a helpful document assistant. The user has uploaded a PDF and I will provide you with the FULL TEXT CONTENT of that document. Your job is to answer questions based ONLY on the text content I provide. The text is extracted and given to you directly - you DO have access to it. Answer questions naturally and helpfully. If something isn't in the provided text, say so.`;
+const CHATBOT_SYSTEM_PROMPT = `You are a helpful document assistant. The user has uploaded a document (PDF, Word, Excel, PowerPoint, or text file) and I will provide you with the FULL TEXT CONTENT of that document. Your job is to answer questions based ONLY on the text content I provide. The text is extracted and given to you directly - you DO have access to it. Answer questions naturally and helpfully. If something isn't in the provided text, say so.`;
 
 export async function generateChatbotResponse(
   sessionId: string,
@@ -25,16 +25,18 @@ export async function generateChatbotResponse(
     if (!hasValidContent) {
       return `I apologize, but this document doesn't have accessible text content. This usually happens with:
 
-📄 **Scanned documents** - PDFs created from scanned images
-🔒 **Encrypted files** - Password-protected PDFs  
-💥 **Corrupted files** - Damaged PDF files
+📄 **Scanned documents** - Documents created from scanned images
+🔒 **Encrypted files** - Password-protected documents  
+💥 **Corrupted files** - Damaged files
+🖼️ **Image-only files** - Documents that are purely images without text
 
 **What you can do:**
 • Upload a different version of the document
-• If it's a scanned PDF, OCR support is coming soon
+• If it's a scanned document, OCR support is coming soon
 • For password-protected files, unlock them first and re-upload
+• Make sure the document contains actual text content
 
-The file was uploaded successfully, but without text content, I can't answer questions about it. Please try uploading a text-based PDF.`;
+The file was uploaded successfully, but without text content, I can't answer questions about it. Please try uploading a document with extractable text content.`;
     }
 
     const messages = await getQAMessagesBySession(sessionId, userId);
@@ -44,7 +46,7 @@ The file was uploaded successfully, but without text content, I can't answer que
       content: msg.message_content,
     }));
 
-    const pdfContext = `Here is the COMPLETE TEXT CONTENT from the PDF titled "${
+    const pdfContext = `Here is the COMPLETE TEXT CONTENT from the document titled "${
       session.title || session.file_name
     }". This text was extracted and is provided to you directly:
 
