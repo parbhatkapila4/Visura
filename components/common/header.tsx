@@ -241,7 +241,7 @@ export default function Header() {
   return (
     <>
       <motion.nav
-        className={`fixed top-0 left-0 right-0 z-50 px-4 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 px-4 transition-all duration-300 bg-black ${
           isScrolled ? "py-2" : "py-4"
         }`}
         initial={{ y: -100 }}
@@ -254,10 +254,10 @@ export default function Header() {
         <motion.div
           className={`max-w-6xl mx-auto rounded-2xl transition-all duration-300 ${
             isScrolled
-              ? "bg-black/80 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/50"
+              ? "bg-[#0a0a0a] backdrop-blur-xl border-t border-l border-r border-white/10 shadow-2xl shadow-black/50"
               : isHomePage
-              ? "bg-black/40 backdrop-blur-md border border-white/5"
-              : "bg-black/80 backdrop-blur-xl border border-white/10"
+              ? "bg-[#0a0a0a] backdrop-blur-md border-t border-l border-r border-white/5"
+              : "bg-[#0a0a0a] backdrop-blur-xl border-t border-l border-r border-white/10"
           }`}
           layout
         >
