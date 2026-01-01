@@ -28,12 +28,15 @@ export const Spotlight = ({
 }: SpotlightProps = {}) => {
   const pathname = usePathname();
 
-  // Don't render on specific pages where a clean background is needed
   const hiddenRoutes = ["/features", "/shipping"];
-  if (hiddenRoutes.includes(pathname)) {
+  if (
+    hiddenRoutes.includes(pathname) ||
+    pathname?.startsWith("/sign-in") ||
+    pathname?.startsWith("/sign-up")
+  ) {
     return null;
   }
-  
+
   return (
     <motion.div
       initial={{

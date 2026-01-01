@@ -56,7 +56,6 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -336,7 +335,7 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
       className="flex h-full w-full min-h-0 bg-[#0a0a0a]"
       style={{ height: "100%", width: "100%", minHeight: "400px" }}
     >
-      <aside className="w-72 flex-shrink-0 flex flex-col bg-[#0c0c0c] border-r border-[#1a1a1a]">
+      <aside className="w-72 flex-shrink-0 flex flex-col bg-[#0c0c0c] border-r border-[#1a1a1a] scrollbar-hide">
         <div className="p-4 flex items-center justify-between">
           <span className="text-sm font-medium text-[#888]">Chat History</span>
           <button
@@ -348,7 +347,7 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-2 pb-4">
+        <div className="flex-1 overflow-y-auto px-2 pb-4 scrollbar-hide">
           {isLoadingSessions ? (
             <div className="flex items-center justify-center py-12">
               <div className="flex gap-1">
@@ -412,7 +411,7 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
       <div className="flex-1 min-w-0 flex flex-col relative">
         {currentSessionId ? (
           <>
-            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto">
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto scrollbar-hide">
               <div className="max-w-3xl mx-auto px-4 py-6">
                 {messages.length === 0 ? (
                   <div className="flex items-center justify-center h-[60vh]">
