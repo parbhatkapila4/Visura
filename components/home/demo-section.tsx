@@ -265,14 +265,6 @@ export default function DemoSection() {
     }
   }, []);
 
-  useEffect(() => {
-    if (isInView && videoRef.current) {
-      videoRef.current.play().catch((error) => {
-        console.error("Autoplay prevented:", error);
-      });
-    }
-  }, [isInView]);
-
   return (
     <section ref={ref} id="demo" className="relative py-24 overflow-hidden bg-black">
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -391,7 +383,6 @@ export default function DemoSection() {
                   playsInline
                   preload="auto"
                   muted={false}
-                  autoPlay
                   disablePictureInPicture
                   disableRemotePlayback
                 />
