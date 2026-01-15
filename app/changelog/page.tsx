@@ -7,6 +7,21 @@ export default function ChangelogPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const updates = [
     {
+      version: "v2.5.0",
+      date: "January 2026",
+      type: "feature",
+      title: "Workspace Collaboration & Performance",
+      description: "Major release focused on real-time collaboration, performance, and reliability.",
+      changes: [
+        "Introduced shared workspaces so teams can collaborate on document analysis in real time",
+        "Added per-workspace permissions for safer sharing with teammates and external collaborators",
+        "Optimized PDF ingestion pipeline for large files, reducing processing time by up to 40%",
+        "Rolled out autosave for chat sessions so conversation context is never lost between refreshes",
+        "Improved dashboard analytics with richer usage graphs and per-user activity insights",
+        "Enhanced error handling and retry behavior for flaky uploads and third‑party API calls",
+      ],
+    },
+    {
       version: "v2.1.0",
       date: "October 2025",
       type: "feature",
@@ -64,9 +79,9 @@ export default function ChangelogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen w-full bg-white">
       <div className="bg-white border-b border-gray-200 py-8 sm:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition-colors mb-6 sm:mb-8"
@@ -84,8 +99,8 @@ export default function ChangelogPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16">
-        <div className="space-y-6 sm:space-y-8">
+      <div className="w-full px-6 lg:px-12 xl:px-20 py-8 sm:py-16">
+        <div className="w-full space-y-6 sm:space-y-8">
           {updates.map((update, index) => (
             <div key={index} className="relative">
               {index !== updates.length - 1 && (
@@ -139,63 +154,7 @@ export default function ChangelogPage() {
         </div>
       </div>
 
-      <div className="bg-black text-white py-12 sm:py-16">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Stay Updated</h2>
-          <p className="text-base sm:text-xl text-gray-300 mb-6 sm:mb-8">
-            Get notified about new features and updates as soon as they're released.
-          </p>
-          <div className="flex justify-center">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="px-6 sm:px-8 py-2.5 sm:py-3 border border-white text-white font-semibold rounded-lg hover:bg-white hover:text-black transition-colors text-sm sm:text-base"
-            >
-              Contact Us
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 max-w-md w-full relative">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-600 transition-colors bg-white bg-opacity-70 rounded-full p-1"
-            >
-              <X className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-
-            <div className="text-center">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                <Mail className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
-              </div>
-
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Contact Us</h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
-                Get in touch with our team for support or inquiries
-              </p>
-
-              <div className="bg-gray-50 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-                <p className="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">Email us at:</p>
-                <a
-                  href="mailto:help@productsolution.net"
-                  className="text-base sm:text-lg font-semibold text-blue-600 hover:text-blue-700 transition-colors break-all"
-                >
-                  help@productsolution.net
-                </a>
-              </div>
-
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="px-5 sm:px-6 py-2 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors text-sm sm:text-base"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 }

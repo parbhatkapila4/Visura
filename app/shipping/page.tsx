@@ -14,7 +14,7 @@ export default function ShippingPolicyPage() {
   return (
     <div className="min-h-screen bg-white">
       <div className="bg-black text-white py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors mb-8"
@@ -31,7 +31,7 @@ export default function ShippingPolicyPage() {
       </div>
 
       <div className="py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="space-y-12">
             <div>
               <h2 className="text-3xl font-bold text-black mb-6">Digital Delivery</h2>
@@ -101,7 +101,7 @@ export default function ShippingPolicyPage() {
                 </div>
               </div>
               <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <p className="text-black font-semibold">Email: help@productsolution.net</p>
+              <p className="text-black font-semibold">Email: parbhat@parbhat.dev</p>
               </div>
             </div>
           </div>

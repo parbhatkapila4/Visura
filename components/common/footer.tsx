@@ -15,7 +15,6 @@ export default function Footer() {
     product: [
       { name: "Features", href: "/features" },
       { name: "Changelog", href: "/changelog" },
-      { name: "Shipping", href: "/shipping" },
     ],
     resources: [
       { name: "Documentation", href: "/docs" },
@@ -24,19 +23,18 @@ export default function Footer() {
     company: [
       { name: "About", href: "/about" },
       { name: "Contact", href: "/contact" },
-      { name: "Cancellation & Refund", href: "/cancellation-refund" },
     ],
   };
 
   const socialLinks = [
-    { name: "Twitter", href: "https://x.com/Devcodies", icon: Twitter },
+    { name: "Twitter", href: "https://x.com/Parbhat03", icon: Twitter },
     { name: "LinkedIn", href: "https://www.linkedin.com/in/parbhat-kapila/", icon: Linkedin },
     { name: "GitHub", href: "https://github.com/parbhatkapila4/Visura", icon: Github },
   ];
 
   return (
-    <footer className="w-full px-4 py-8" ref={ref}>
-      <div className="max-w-6xl mx-auto">
+    <footer className="w-full px-0 py-8" ref={ref}>
+      <div className="w-full px-6 lg:px-12 xl:px-20">
         <motion.div
           className="bg-black rounded-3xl px-6 py-8 relative overflow-hidden shadow-lg border border-gray-200"
           initial={{ opacity: 0, y: 50 }}

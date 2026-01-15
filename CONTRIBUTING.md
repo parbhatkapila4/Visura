@@ -302,7 +302,7 @@ Before submitting:
 
 - **Issues**: [GitHub Issues](https://github.com/yourusername/visura/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/yourusername/visura/discussions)
-- **Email**: help@productsolution.net
+- **Email**: parbhat@parbhat.dev
 
 ---
 

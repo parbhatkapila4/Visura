@@ -441,7 +441,7 @@ git push origin feature/amazing-feature
 
 ## Support
 
-- **Email**: help@productsolution.net
+- **Email**: parbhat@parbhat.dev
 - **GitHub Issues**: Bug reports and feature requests
 - **Documentation**: [ARCHITECTURE.md](ARCHITECTURE.md)
 
@@ -458,7 +458,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 </p>
 
 <p align="center">
-  <a href="https://x.com/Devcodies">Twitter</a> •
+  <a href="https://x.com/Parbhat03">Twitter</a> •
   <a href="https://www.linkedin.com/in/parbhat-kapila/">LinkedIn</a> •
   <a href="https://github.com/parbhatkapila4/Visura">GitHub</a>
 </p>

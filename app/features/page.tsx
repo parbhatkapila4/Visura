@@ -159,10 +159,10 @@ export default function FeaturesPage() {
 
       <div className="bg-black text-white py-12 sm:py-16 lg:py-20 relative z-10 overflow-hidden">
         <div className="absolute inset-0 bg-black -z-10" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="w-full px-6 lg:px-12 xl:px-20 relative z-10">
           <Link
             href="/"
-            className="inline-flex items-center justify-center md:justify-start gap-2 text-gray-300 hover:text-white transition-colors mb-6 sm:mb-8 w-full md:w-auto -ml-30"
+            className="inline-flex items-center justify-start gap-2 text-gray-300 hover:text-white transition-colors mb-6 sm:mb-8"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="text-sm sm:text-base">Back to Home</span>
@@ -180,7 +180,7 @@ export default function FeaturesPage() {
       </div>
 
       <div className="py-12 sm:py-16 lg:py-24 bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="w-full px-6 lg:px-12 xl:px-20 text-center">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-6 sm:mb-8">
             The Best Way to Analyze Documents with AI, Anywhere, Anytime
           </h2>
@@ -191,7 +191,7 @@ export default function FeaturesPage() {
           </p>
           <div className="flex justify-center">
             <a
-              href="mailto:help@productsolution.net?subject=Interested in Visura Document Analysis Services&body=Hello,%0D%0A%0D%0AI am interested in learning more about Visura's document analysis services. Could you please provide me with more information about your pricing, features, and how to get started?%0D%0A%0D%0AThank you for your time.%0D%0A%0D%0ABest regards"
+              href="mailto:parbhat@parbhat.dev?subject=Interested in Visura Document Analysis Services&body=Hello,%0D%0A%0D%0AI am interested in learning more about Visura's document analysis services. Could you please provide me with more information about your pricing, features, and how to get started?%0D%0A%0D%0AThank you for your time.%0D%0A%0D%0ABest regards"
               className="px-6 sm:px-8 lg:px-10 py-3 sm:py-4 border-2 border-black text-black font-semibold rounded-xl hover:bg-gray-100 transition-all duration-300 text-sm sm:text-base lg:text-lg"
             >
               Contact Sales
@@ -201,7 +201,7 @@ export default function FeaturesPage() {
       </div>
 
       <div className="py-12 sm:py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="text-center mb-8 sm:mb-12 lg:mb-16">
             <h3 className="text-xs sm:text-sm text-gray-500 uppercase tracking-wide mb-3 sm:mb-4">
               Core Features
@@ -260,7 +260,7 @@ export default function FeaturesPage() {
       </div>
 
       <div className="py-12 sm:py-16 lg:py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="text-center mb-8 sm:mb-12 lg:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-4 sm:mb-6">
               Advanced Capabilities
@@ -306,7 +306,7 @@ export default function FeaturesPage() {
       </div>
 
       <div className="py-12 sm:py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="text-center mb-8 sm:mb-12 lg:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-4 sm:mb-6">
               Why Choose Visura?
@@ -338,7 +338,7 @@ export default function FeaturesPage() {
       </div>
 
       <div className="py-12 sm:py-16 lg:py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="text-center mb-8 sm:mb-12 lg:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-4 sm:mb-6">
               Feature Comparison

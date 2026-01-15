@@ -16,6 +16,16 @@ export default function ConditionalFooter() {
     pathname?.startsWith("/analytics/") ||
     pathname?.startsWith("/workspaces/") ||
     pathname?.startsWith("/checkout/") ||
+    pathname?.startsWith("/features") ||
+    pathname?.startsWith("/about") ||
+    pathname?.startsWith("/changelog") ||
+    pathname?.startsWith("/shipping") ||
+    pathname?.startsWith("/contact") ||
+    pathname?.startsWith("/docs") ||
+    pathname?.startsWith("/support") ||
+    pathname?.startsWith("/privacy") ||
+    pathname?.startsWith("/terms") ||
+    pathname?.startsWith("/cookies") ||
     pathname?.startsWith("/sign-in") ||
     pathname?.startsWith("/sign-up") ||
     pathname?.startsWith("/upload") ||

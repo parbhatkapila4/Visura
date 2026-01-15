@@ -8,12 +8,10 @@ const footerLinks = {
   product: [
     { label: "Features", href: "#features" },
     { label: "Changelog", href: "/changelog" },
-    { label: "Shipping", href: "/shipping" },
   ],
   company: [
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
-    { label: "Cancellations & Refund", href: "/cancellations-refund" },
   ],
   resources: [
     { label: "Documentation", href: "/docs" },

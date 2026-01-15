@@ -51,7 +51,7 @@ export default function StarterCheckoutPage() {
 
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(56,189,248,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(56,189,248,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
 
-      <div className="relative mx-auto flex h-full w-full max-w-6xl flex-col gap-8 px-4 sm:px-6 pb-20 pt-6 md:pt-12">
+      <div className="relative flex h-full w-full flex-col gap-8 px-6 lg:px-12 xl:px-20 pb-20 pt-6 md:pt-12">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

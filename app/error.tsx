@@ -80,7 +80,7 @@ export default function Error({
             <p className="text-xs text-gray-500">
               If this problem persists,{" "}
               <a
-                href="mailto:help@productsolution.net"
+                href="mailto:parbhat@parbhat.dev"
                 className="text-orange-400 hover:text-orange-300 underline"
               >
                 contact support

@@ -293,21 +293,7 @@ export default function WorkspacesClient() {
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-[#030303] flex overflow-hidden z-50"
-      style={{
-        height: "100vh",
-        width: "100vw",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        position: "fixed",
-        maxHeight: "100vh",
-        maxWidth: "100vw",
-        overflow: "hidden",
-      }}
-    >
+    <div className="bg-[#030303] flex min-h-screen w-full overflow-hidden md:fixed md:inset-0 md:h-screen md:w-screen md:z-50">
       <aside
         className={`${
           sidebarOpen ? "w-72" : "w-0"
@@ -447,26 +433,27 @@ export default function WorkspacesClient() {
       </aside>
 
       <main className="flex-1 overflow-hidden flex flex-col h-full max-h-full">
-        <header className="h-16 border-b border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-xl flex items-center justify-between px-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all"
-            >
-              <Menu className="w-4 h-4" />
-            </button>
-            {selectedWorkspace && (
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold text-white">{selectedWorkspace.name}</h1>
-                {selectedWorkspace.role === "owner" && (
-                  <span className="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400 uppercase">
-                    Owner
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
+        <header className="border-b border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-xl px-4 md:px-6 py-3 md:py-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60 hover:text-white transition-all"
+              >
+                <Menu className="w-4 h-4" />
+              </button>
+              {selectedWorkspace && (
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg font-bold text-white">{selectedWorkspace.name}</h1>
+                  {selectedWorkspace.role === "owner" && (
+                    <span className="px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400 uppercase">
+                      Owner
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          <div className="flex items-center gap-2 md:gap-3 flex-wrap md:flex-nowrap justify-start md:justify-end">
             {selectedWorkspace && (
               <>
                 <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
@@ -565,6 +552,7 @@ export default function WorkspacesClient() {
               {user?.firstName?.[0] || user?.emailAddresses[0]?.emailAddress?.[0] || "U"}
             </div>
           </div>
+        </div>
         </header>
 
         <div
@@ -625,7 +613,7 @@ export default function WorkspacesClient() {
                             {selectedWorkspace.description}
                           </p>
                         )}
-                        <div className="flex items-center gap-4 text-sm">
+                        <div className="flex flex-wrap md:flex-nowrap items-center gap-x-4 gap-y-2 text-sm">
                           <div className="flex items-center gap-1.5 text-white/40">
                             <Users className="w-4 h-4" />
                             <span>{totalMembers} members</span>
@@ -647,7 +635,7 @@ export default function WorkspacesClient() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-950/40 via-[#0a0a0a] to-[#080808] border border-blue-500/10 p-5">
                   <div className="absolute -top-10 -right-10 w-24 h-24 bg-blue-500/20 rounded-full blur-2xl" />
                   <div className="relative">

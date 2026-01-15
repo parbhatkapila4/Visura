@@ -114,7 +114,7 @@ export default function CancellationRefundPage() {
                 our team so we can assist you directly.
               </p>
               <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <p className="text-black font-semibold">Email: help@productsolution.net</p>
+                <p className="text-black font-semibold">Email: parbhat@parbhat.dev</p>
               </div>
             </div>
           </div>

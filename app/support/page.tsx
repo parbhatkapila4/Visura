@@ -59,9 +59,9 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white" onClick={handlePageClick}>
+    <div className="min-h-screen w-full bg-white" onClick={handlePageClick}>
       <div className="bg-black text-white py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="flex justify-between items-start mb-8">
             <Link 
               href="/" 
@@ -82,7 +82,7 @@ export default function SupportPage() {
       </div>
 
       <div className="bg-gray-50 py-16 relative overflow-hidden">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <div className="w-full px-6 lg:px-12 xl:px-20 text-center relative z-10">
           <h2 className="text-4xl font-bold text-black mb-4">How can we help you today?</h2>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
             Find answers to common questions about document analysis, account management, and technical support.
@@ -108,7 +108,7 @@ export default function SupportPage() {
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-gray-200 rounded-full opacity-20 transform -translate-x-24 translate-y-24"></div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="w-full px-6 lg:px-12 xl:px-20 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {supportCategories.map((category, index) => (
             <div 
@@ -128,7 +128,7 @@ export default function SupportPage() {
       </div>
 
       <div className="bg-gray-50 py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-6 lg:px-12 xl:px-20">
           <h3 className="text-2xl font-bold text-black mb-6">Popular Topics</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
@@ -170,10 +170,10 @@ export default function SupportPage() {
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 <p className="text-sm text-gray-600 mb-2">Email us at:</p>
                 <a 
-                  href="mailto:help@productsolution.net"
+                  href="mailto:parbhat@parbhat.dev"
                   className="text-lg font-semibold text-black hover:text-gray-700 transition-colors"
                 >
-                  help@productsolution.net
+                  parbhat@parbhat.dev
                 </a>
               </div>
               
@@ -211,10 +211,10 @@ export default function SupportPage() {
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 <p className="text-sm text-gray-600 mb-2">For immediate support, contact us at:</p>
                 <a 
-                  href="mailto:help@productsolution.net"
+                  href="mailto:parbhat@parbhat.dev"
                   className="text-lg font-semibold text-black hover:text-gray-700 transition-colors"
                 >
-                  help@productsolution.net
+                  parbhat@parbhat.dev
                 </a>
               </div>
               
