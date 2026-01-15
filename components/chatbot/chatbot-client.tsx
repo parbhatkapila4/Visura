@@ -4,21 +4,15 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import {
-  Send,
   Bot,
   User,
   Plus,
   MessageSquare,
   MoreVertical,
   Trash2,
-  Brain,
   FileText,
-  Search,
   Sparkles,
   ArrowUp,
-  FileQuestion,
-  Lightbulb,
-  ListChecks,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -66,6 +60,16 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
   useEffect(() => {
     console.log("ChatbotClient mounted", { pdfSummaryId, pdfStoreId, pdfTitle });
   }, [pdfSummaryId, pdfStoreId, pdfTitle]);
+
+  useEffect(() => {
+    const handler = () => {
+      setCurrentSessionId(null);
+    };
+    window.addEventListener("chatbot-new-chat", handler);
+    return () => {
+      window.removeEventListener("chatbot-new-chat", handler);
+    };
+  }, []);
 
   if (!pdfStoreId) {
     return (
@@ -271,28 +275,88 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
 
   const currentSession = sessions.find((s) => s.id === currentSessionId);
 
-  const quickActions = [
-    {
-      icon: Lightbulb,
-      label: "Explain concepts",
-      prompt: "Explain the main concepts from this document in simple terms",
-    },
-    {
-      icon: ListChecks,
-      label: "Key takeaways",
-      prompt: "What are the key takeaways from this document?",
-    },
-    {
-      icon: FileQuestion,
-      label: "Questions",
-      prompt: "Generate important questions based on this document",
-    },
-    {
-      icon: Search,
-      label: "Deep dive",
-      prompt: "Do a deep analysis of the most important topics in this document",
-    },
+  const allPromptSets = [
+    [
+      {
+        label: "Get fresh perspectives on tricky problems",
+        prompt:
+          "Give me fresh perspectives and insights on the key problems discussed in this document",
+      },
+      {
+        label: "Brainstorm creative ideas",
+        prompt: "Help me brainstorm creative ideas based on this document",
+      },
+      {
+        label: "Rewrite message for maximum impact",
+        prompt: "Help me rewrite the key messages from this document for maximum impact",
+      },
+      { label: "Summarize key points", prompt: "Summarize the key points from this document" },
+    ],
+    [
+      {
+        label: "Explain this like I'm 5",
+        prompt:
+          "Explain the main concepts from this document in very simple terms, like I'm 5 years old",
+      },
+      {
+        label: "Find action items",
+        prompt: "What are the actionable items or next steps mentioned in this document?",
+      },
+      {
+        label: "Compare and contrast",
+        prompt:
+          "Identify and compare the different viewpoints or arguments presented in this document",
+      },
+      {
+        label: "Create a study guide",
+        prompt: "Create a comprehensive study guide based on this document",
+      },
+    ],
+    [
+      {
+        label: "Generate quiz questions",
+        prompt: "Generate 10 quiz questions with answers based on this document",
+      },
+      {
+        label: "Extract key quotes",
+        prompt: "Extract the most important and impactful quotes from this document",
+      },
+      {
+        label: "Identify gaps or weaknesses",
+        prompt: "What are the potential gaps, weaknesses, or missing information in this document?",
+      },
+      {
+        label: "Create an outline",
+        prompt: "Create a detailed outline of the structure and main points of this document",
+      },
+    ],
+    [
+      {
+        label: "What's the main argument?",
+        prompt: "What is the central argument or thesis of this document?",
+      },
+      {
+        label: "List all definitions",
+        prompt: "List and explain all key terms and definitions mentioned in this document",
+      },
+      {
+        label: "Suggest related topics",
+        prompt: "Based on this document, what related topics should I explore next?",
+      },
+      {
+        label: "Write an executive summary",
+        prompt: "Write a professional executive summary of this document",
+      },
+    ],
   ];
+
+  const [promptSetIndex, setPromptSetIndex] = useState(0);
+
+  const refreshPrompts = () => {
+    setPromptSetIndex((prev) => (prev + 1) % allPromptSets.length);
+  };
+
+  const quickActions = allPromptSets[promptSetIndex];
 
   if (error) {
     return (
@@ -332,78 +396,98 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
 
   return (
     <div
-      className="flex h-full w-full min-h-0 bg-[#0a0a0a]"
+      className="relative flex flex-col md:flex-row h-full w-full min-h-0 bg-[#0a0a0a] overflow-x-hidden overflow-y-auto md:overflow-y-hidden"
       style={{ height: "100%", width: "100%", minHeight: "400px" }}
     >
-      <aside className="w-72 flex-shrink-0 flex flex-col bg-[#0c0c0c] border-r border-[#1a1a1a] scrollbar-hide">
-        <div className="p-4 flex items-center justify-between">
-          <span className="text-sm font-medium text-[#888]">Chat History</span>
+      <aside className="hidden md:flex md:w-52 flex-shrink-0 flex-col bg-gradient-to-b from-[#0c0c0c] to-[#080808] border-r border-[#191919] scrollbar-hide">
+        <div className="p-3">
           <button
             onClick={() => setCurrentSessionId(null)}
-            className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-[#2a2a2a] flex items-center gap-2 text-sm text-white transition-colors"
+            className="w-full h-9 rounded-lg bg-[#161616] hover:bg-[#1a1a1a] border border-[#252525] hover:border-[#333] flex items-center justify-center gap-2 text-sm font-medium text-white transition-all"
           >
             <Plus className="w-4 h-4" />
-            New
+            New Chat
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-2 pb-4 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto px-2 pb-2 scrollbar-hide">
           {isLoadingSessions ? (
             <div className="flex items-center justify-center py-12">
               <div className="flex gap-1">
-                <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" />
+                <div className="w-1.5 h-1.5 bg-emerald-400/60 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                <div className="w-1.5 h-1.5 bg-emerald-400/60 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                <div className="w-1.5 h-1.5 bg-emerald-400/60 rounded-full animate-bounce" />
               </div>
             </div>
           ) : sessions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-48 text-center px-4">
-              <MessageSquare className="w-8 h-8 text-[#333] mb-3" />
-              <p className="text-sm text-[#555]">No conversations yet</p>
+            <div className="flex flex-col items-center justify-center h-40 text-center px-4">
+              <MessageSquare className="w-6 h-6 text-[#333] mb-2" />
+              <p className="text-xs text-[#555]">No conversations yet</p>
             </div>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-0.5">
+              <p className="px-2 py-1.5 text-[10px] font-medium text-[#444] uppercase tracking-wider">
+                Recent
+              </p>
               {sessions.map((session) => (
                 <div
                   key={session.id}
                   onClick={() => setCurrentSessionId(session.id)}
-                  className={`group px-3 py-2.5 rounded-lg cursor-pointer transition-all ${
-                    currentSessionId === session.id ? "bg-white/[0.08]" : "hover:bg-white/[0.04]"
+                  className={`group flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer transition-all ${
+                    currentSessionId === session.id ? "bg-[#1a1a1a]" : "hover:bg-[#141414]"
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm text-[#ccc] truncate flex-1">{session.session_name}</p>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          onClick={(e) => e.stopPropagation()}
-                          className="w-6 h-6 rounded hover:bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <MoreVertical className="w-3.5 h-3.5 text-[#666]" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-[#161616] border-[#2a2a2a]">
-                        <DropdownMenuItem
-                          onClick={() => deleteSession(session.id)}
-                          className="text-red-400 hover:text-red-400 focus:text-red-400 hover:bg-red-500/10 focus:bg-red-500/10"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  <MessageSquare
+                    className={`w-4 h-4 flex-shrink-0 ${
+                      currentSessionId === session.id ? "text-emerald-400" : "text-[#555]"
+                    }`}
+                  />
+
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-sm truncate ${
+                        currentSessionId === session.id ? "text-white" : "text-[#888]"
+                      }`}
+                    >
+                      {session.session_name}
+                    </p>
+                    <p className="text-[10px] text-[#555]">{session.message_count} messages</p>
                   </div>
-                  <p className="text-[11px] text-[#555] mt-0.5">{session.message_count} messages</p>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-6 h-6 rounded hover:bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <MoreVertical className="w-3.5 h-3.5 text-[#555]" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-[#161616] border-[#2a2a2a]">
+                      <DropdownMenuItem
+                        onClick={() => deleteSession(session.id)}
+                        className="text-red-400 hover:text-red-400 focus:text-red-400 hover:bg-red-500/10 focus:bg-red-500/10"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        <div className="p-3 border-t border-[#1a1a1a]">
-          <div className="px-3 py-2.5 rounded-lg bg-white/[0.03]">
-            <p className="text-[10px] text-[#555] uppercase tracking-wider mb-1">Document</p>
-            <p className="text-xs text-[#888] truncate">{pdfTitle}</p>
+        <div className="p-2 border-t border-[#191919]">
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-[#111]">
+            <FileText className="w-4 h-4 text-[#555] flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[9px] text-emerald-400/70 uppercase tracking-wider">
+                Active Document
+              </p>
+              <p className="text-xs text-[#888] truncate">{pdfTitle}</p>
+            </div>
           </div>
         </div>
       </aside>
@@ -412,7 +496,7 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
         {currentSessionId ? (
           <>
             <div ref={messagesContainerRef} className="flex-1 overflow-y-auto scrollbar-hide">
-              <div className="max-w-3xl mx-auto px-4 py-6">
+              <div className="max-w-full md:max-w-3xl mx-auto px-4 py-6">
                 {messages.length === 0 ? (
                   <div className="flex items-center justify-center h-[60vh]">
                     <div className="text-center">
@@ -518,7 +602,7 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
             </div>
 
             <div className="p-4 border-t border-[#1a1a1a]">
-              <div className="max-w-3xl mx-auto">
+              <div className="max-w-full md:max-w-3xl mx-auto">
                 <div className="relative bg-[#111] border border-[#2a2a2a] rounded-xl focus-within:border-[#404040] transition-colors">
                   <textarea
                     ref={inputRef}
@@ -545,52 +629,93 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center p-6 overflow-y-auto">
-            <div className="max-w-2xl w-full">
-              <div className="text-center mb-12">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-transparent border border-emerald-500/20 mb-6">
-                  <Bot className="w-10 h-10 text-emerald-400" />
+          <div className="flex-1 flex flex-col overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-white" />
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-semibold text-white mb-3 tracking-tight">
-                  Chat with your document
-                </h1>
-                <p className="text-[#666] text-lg">
-                  Ask questions, get insights, and explore your content
+                <span className="text-base font-medium text-white">Visura</span>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex items-center justify-center text-sm font-medium text-white/80">
+                V
+              </div>
+            </div>
+
+            <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-8 pb-8">
+              <div className="w-full max-w-3xl flex flex-col items-center text-center">
+                <div className="relative mb-8">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-b from-emerald-300 via-emerald-400 to-teal-600" />
+                  <div className="absolute inset-0 w-14 h-14 rounded-full bg-gradient-to-b from-emerald-300 to-teal-500 blur-xl opacity-50" />
+                </div>
+
+                <h1 className="text-2xl sm:text-3xl font-medium text-white mb-1">Hello there</h1>
+                <h2 className="text-2xl sm:text-3xl font-medium text-white mb-4">
+                  Can I help you with anything?
+                </h2>
+                <p className="text-sm text-[#666] mb-8">
+                  Choose a prompt below or write your own to start
+                  <br className="hidden sm:block" /> chatting with Visura
                 </p>
-              </div>
 
-              <div className="relative bg-[#111] border border-[#2a2a2a] rounded-xl focus-within:border-[#404040] transition-colors mb-8">
-                <textarea
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="What would you like to know?"
-                  rows={1}
-                  className="w-full px-5 py-4 pr-14 bg-transparent text-white text-base placeholder:text-[#555] focus:outline-none resize-none"
-                />
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 w-full mb-3">
+                  {quickActions.map((action, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => sendMessage(action.prompt)}
+                      disabled={isLoading}
+                      className="group px-4 py-3 rounded-xl bg-[#161616] hover:bg-[#1a1a1a] border border-[#262626] hover:border-[#333] text-left transition-all disabled:opacity-50"
+                    >
+                      <p className="text-sm text-[#888] group-hover:text-white transition-colors leading-snug">
+                        {action.label}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+
                 <button
-                  onClick={() => sendMessage()}
-                  disabled={!inputMessage.trim() || isLoading}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white hover:bg-[#e5e5e5] disabled:bg-[#2a2a2a] rounded-lg flex items-center justify-center transition-all disabled:opacity-50"
+                  onClick={refreshPrompts}
+                  className="flex items-center gap-1.5 text-[#555] hover:text-[#888] text-xs mb-8 transition-colors group bg-transparent border-none outline-none"
                 >
-                  <ArrowUp className="w-5 h-5 text-black" />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                {quickActions.map((action, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => sendMessage(action.prompt)}
-                    disabled={isLoading}
-                    className="group p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-[#1f1f1f] hover:border-[#2a2a2a] text-left transition-all disabled:opacity-50"
+                  <svg
+                    className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    <action.icon className="w-5 h-5 text-[#555] group-hover:text-[#888] mb-2 transition-colors" />
-                    <p className="text-sm text-[#888] group-hover:text-white transition-colors">
-                      {action.label}
-                    </p>
-                  </button>
-                ))}
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                  Refresh prompts
+                </button>
+
+                <div className="w-full">
+                  <div className="relative rounded-xl bg-[#161616] border border-[#262626] focus-within:border-[#404040] transition-colors">
+                    <textarea
+                      value={inputMessage}
+                      onChange={(e) => setInputMessage(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="How can Visura help you today?"
+                      rows={2}
+                      className="w-full resize-none bg-transparent px-4 py-4 pr-14 text-base text-white placeholder:text-[#555] focus:outline-none"
+                    />
+                    <button
+                      onClick={() => sendMessage()}
+                      disabled={!inputMessage.trim() || isLoading}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white hover:bg-[#e5e5e5] disabled:bg-[#2a2a2a] text-black transition-all disabled:opacity-50"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="mt-3 text-center text-[11px] text-[#555]">
+                    <p>Visura can make mistakes. Please double-check responses.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

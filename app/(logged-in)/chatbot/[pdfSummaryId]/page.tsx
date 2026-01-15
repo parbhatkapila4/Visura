@@ -8,6 +8,7 @@ import { MessageCircle, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import InitializeChatbotButton from "./initialize-chatbot-button";
 import ChatbotPortal from "./chatbot-portal";
+import MobileNewChatButton from "./mobile-new-chat-button";
 
 interface ChatbotPageProps {
   params: Promise<{
@@ -57,7 +58,7 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
         }}
       >
         <header className="h-14 flex-shrink-0 border-b border-[#1a1a1a] bg-[#0a0a0a] flex items-center">
-          <div className="h-full px-4 flex items-center w-full">
+          <div className="h-full px-4 flex items-center justify-between w-full">
             <Link
               href={`/summaries/${pdfSummaryId}`}
               className="flex items-center gap-2 text-[#666] hover:text-white transition-colors group"
@@ -65,6 +66,8 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
               <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
               <span className="text-sm">Back</span>
             </Link>
+
+            <MobileNewChatButton />
           </div>
         </header>
 

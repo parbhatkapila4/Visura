@@ -282,27 +282,32 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
 
   if (isErrorSummary) {
     return (
-      <div className="bg-[#0a0a0a]">
-        <div className="max-w-2xl mx-auto px-6 py-20">
+      <div className="bg-[#0a0a0a] overflow-x-hidden">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-6">
               <AlertTriangle className="w-8 h-8 text-red-400" />
             </div>
-            <h1 className="text-2xl font-semibold text-white mb-3">Processing Failed</h1>
-            <p className="text-[#888] leading-relaxed max-w-md mx-auto">
+            <h1 className="text-xl sm:text-2xl font-semibold text-white mb-3 px-4">
+              Processing Failed
+            </h1>
+            <p className="text-sm sm:text-base text-[#888] leading-relaxed max-w-md mx-auto px-4">
               We couldn't extract text from this document. This usually happens with scanned PDFs,
               password-protected files, or corrupted documents.
             </p>
           </div>
-          <div className="flex justify-center gap-3">
-            <Link href="/upload">
-              <Button className="bg-white text-black hover:bg-[#e5e5e5]">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 px-4">
+            <Link href="/upload" className="w-full sm:w-auto">
+              <Button className="bg-white text-black hover:bg-[#e5e5e5] w-full sm:w-auto">
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Try Another File
               </Button>
             </Link>
-            <Link href="/dashboard">
-              <Button variant="outline" className="border-[#2a2a2a] text-white hover:bg-[#1a1a1a]">
+            <Link href="/dashboard" className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                className="border-[#2a2a2a] text-white hover:bg-[#1a1a1a] w-full sm:w-auto"
+              >
                 Back to Dashboard
               </Button>
             </Link>
@@ -313,25 +318,25 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
   }
 
   return (
-    <div className="bg-[#0a0a0a] min-h-[calc(100vh-56px)] pb-12">
+    <div className="bg-[#0a0a0a] min-h-[calc(100vh-56px)] pb-12 overflow-x-hidden">
       <header className="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-[#1f1f1f]">
-        <div className="max-w-[1400px] mx-auto px-6">
-          <div className="flex items-center justify-between h-14">
-            <div className="flex items-center gap-4">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 overflow-x-hidden">
+          <div className="flex items-center justify-between h-14 gap-2">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
               <Link
                 href="/dashboard"
-                className="flex items-center gap-2 text-[#666] hover:text-white transition-colors"
+                className="flex items-center gap-1.5 sm:gap-2 text-[#666] hover:text-white transition-colors flex-shrink-0"
               >
                 <ChevronLeft className="w-4 h-4" />
-                <span className="text-sm">Back</span>
+                <span className="text-sm hidden sm:inline">Back</span>
               </Link>
-              <span className="text-[#333]">/</span>
-              <span className="text-sm text-white font-medium truncate max-w-[200px] sm:max-w-[300px]">
+              <span className="text-[#333] hidden sm:inline">/</span>
+              <span className="text-xs sm:text-sm text-white font-medium truncate min-w-0">
                 {summary.title}
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               <DropdownMenu
                 onOpenChange={(open) => {
                   if (open && !hasFetchedWorkspaces.current) {
@@ -345,7 +350,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="text-[#888] hover:text-white hover:bg-[#1a1a1a]"
+                    className="text-[#888] hover:text-white hover:bg-[#1a1a1a] h-8 w-8 p-0"
                   >
                     <Building2 className="w-4 h-4" />
                   </Button>
@@ -397,15 +402,18 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-[#888] hover:text-white hover:bg-[#1a1a1a]"
+                className="text-[#888] hover:text-white hover:bg-[#1a1a1a] h-8 w-8 p-0"
                 onClick={handleShare}
               >
                 <Share2 className="w-4 h-4" />
               </Button>
 
               <Link href={`/chatbot/${summary.id}`}>
-                <Button size="sm" className="bg-white text-black hover:bg-[#e5e5e5] ml-2">
-                  <MessageSquare className="w-4 h-4 mr-2" />
+                <Button
+                  size="sm"
+                  className="bg-white text-black hover:bg-[#e5e5e5] h-8 px-2 sm:px-3 sm:ml-2"
+                >
+                  <MessageSquare className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Chat</span>
                 </Button>
               </Link>
@@ -414,8 +422,8 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
         </div>
       </header>
 
-      <div className="max-w-[1400px] mx-auto px-6">
-        <div className="flex gap-8 py-8">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 overflow-x-hidden">
+        <div className="flex gap-4 sm:gap-8 py-6 sm:py-8">
           <aside className="hidden lg:block w-64 flex-shrink-0">
             <div className="sticky top-20">
               <div className="mb-6 p-4 rounded-xl bg-[#111111] border border-[#1f1f1f]">
@@ -476,9 +484,9 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
           </aside>
 
           <main className="flex-1 min-w-0 max-w-3xl">
-            <div className="mb-8 pb-8 border-b border-[#1f1f1f]">
-              <div className="flex items-center gap-2 text-[#555] text-sm mb-4">
-                <FileText className="w-4 h-4" />
+            <div className="mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-[#1f1f1f]">
+              <div className="flex items-center gap-2 text-[#555] text-xs sm:text-sm mb-3 sm:mb-4 flex-wrap">
+                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>{preview.documentType || "Document"}</span>
                 <span className="text-[#333]">•</span>
                 <span>
@@ -490,11 +498,11 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 </span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl font-semibold text-white mb-4 leading-tight tracking-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white mb-3 sm:mb-4 leading-tight tracking-tight break-words">
                 {summary.title}
               </h1>
 
-              <div className="flex flex-wrap gap-4 text-sm text-[#666] lg:hidden mb-6">
+              <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm text-[#666] lg:hidden mb-4 sm:mb-6">
                 <span className="flex items-center gap-1.5">
                   <FileText className="w-3.5 h-3.5" />
                   {sections.length} sections
@@ -518,7 +526,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                     {preview.keyPoints.slice(0, 3).map((point, idx) => (
                       <div
                         key={idx}
-                        className="px-3 py-1.5 rounded-full bg-[#111] border border-[#1f1f1f] text-[#888] text-xs"
+                        className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#111] border border-[#1f1f1f] text-[#888] text-xs break-words max-w-full"
                       >
                         {point.length > 50 ? `${point.substring(0, 50)}...` : point}
                       </div>
@@ -528,26 +536,28 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
               )}
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-6 sm:space-y-8">
               {sections.map((section, index) => {
                 const Icon = getSectionIcon(section.title);
                 const cleanTitle = section.title.replace(/^\d+\.\s*/, "").replace(/^#+\s*/, "");
 
                 return (
                   <section key={index} id={`section-${index}`} className="scroll-mt-20">
-                    <div className="flex items-start gap-3 mb-4">
-                      <div className="w-8 h-8 rounded-lg bg-[#1a1a1a] border border-[#252525] flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Icon className="w-4 h-4 text-[#666]" />
+                    <div className="flex items-start gap-2 sm:gap-3 mb-3 sm:mb-4">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#1a1a1a] border border-[#252525] flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#666]" />
                       </div>
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="text-[10px] text-[#555] uppercase tracking-wider mb-1">
                           Section {index + 1}
                         </p>
-                        <h2 className="text-xl font-semibold text-white">{cleanTitle}</h2>
+                        <h2 className="text-lg sm:text-xl font-semibold text-white break-words">
+                          {cleanTitle}
+                        </h2>
                       </div>
                     </div>
 
-                    <div className="pl-11 space-y-3">
+                    <div className="pl-0 sm:pl-11 space-y-2 sm:space-y-3">
                       {section.points
                         .map((point, pointIndex) => {
                           const cleanText = point
@@ -563,9 +573,9 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                           return (
                             <div
                               key={pointIndex}
-                              className="group flex gap-3 py-2 border-l-2 border-[#1f1f1f] hover:border-[#333] pl-4 transition-colors"
+                              className="group flex gap-2 sm:gap-3 py-2 border-l-2 border-[#1f1f1f] hover:border-[#333] pl-3 sm:pl-4 transition-colors"
                             >
-                              <p className="text-[#999] text-[15px] leading-relaxed group-hover:text-[#bbb] transition-colors">
+                              <p className="text-[#999] text-sm sm:text-[15px] leading-relaxed group-hover:text-[#bbb] transition-colors break-words">
                                 {cleanText}
                               </p>
                             </div>
@@ -578,16 +588,18 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
               })}
             </div>
 
-            <div className="mt-12 pt-8 pb-8 border-t border-[#1f1f1f]">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-xl bg-[#111] border border-[#1f1f1f]">
-                <div>
-                  <h3 className="text-lg font-medium text-white mb-1">Want to explore deeper?</h3>
-                  <p className="text-sm text-[#666]">
+            <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 pb-6 sm:pb-8 border-t border-[#1f1f1f]">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-6 rounded-xl bg-[#111] border border-[#1f1f1f]">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-base sm:text-lg font-medium text-white mb-1">
+                    Want to explore deeper?
+                  </h3>
+                  <p className="text-xs sm:text-sm text-[#666]">
                     Chat with AI to ask questions about this document
                   </p>
                 </div>
-                <Link href={`/chatbot/${summary.id}`}>
-                  <Button className="bg-white text-black hover:bg-[#e5e5e5] whitespace-nowrap">
+                <Link href={`/chatbot/${summary.id}`} className="w-full sm:w-auto">
+                  <Button className="bg-white text-black hover:bg-[#e5e5e5] whitespace-nowrap w-full sm:w-auto">
                     <MessageSquare className="w-4 h-4 mr-2" />
                     Start Chat
                     <ArrowUpRight className="w-4 h-4 ml-2" />

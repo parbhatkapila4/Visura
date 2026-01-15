@@ -632,7 +632,7 @@ export default function DashboardClient({
           </div>
 
           {activeTab === "documents" && (
-            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-[#111] border border-[#1f1f1f]">
+            <div className="hidden md:flex items-center gap-1 p-0.5 rounded-lg bg-[#111] border border-[#1f1f1f]">
               <button
                 onClick={() => setActiveView("grid")}
                 className={`p-1.5 rounded-md transition-colors ${

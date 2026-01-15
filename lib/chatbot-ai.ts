@@ -3,11 +3,7 @@ import { getQASessionById, getQAMessagesBySession } from "./chatbot";
 
 const CHATBOT_SYSTEM_PROMPT = `You are a helpful document assistant. The user has uploaded a document (PDF, Word, Excel, PowerPoint, or text file) and I will provide you with the FULL TEXT CONTENT of that document. Your job is to answer questions based ONLY on the text content I provide. The text is extracted and given to you directly - you DO have access to it. Answer questions naturally and helpfully. If something isn't in the provided text, say so.
 
-IMPORTANT: Before answering any question, check if the document content is sample/placeholder text:
-- If the document contains Lorem Ipsum text, repeating patterns like "abcd", "1234", or other obvious placeholder/sample content, DO NOT try to analyze or summarize it.
-- Instead, simply tell the user: "This appears to be a sample or placeholder document (like Lorem Ipsum or test content) with no meaningful information to analyze. Please upload a genuine document with actual content."
-- Only provide detailed analysis and summaries for genuine documents with real, meaningful content.
-- If the document is genuine and has actual content (not sample/placeholder text), proceed with your normal helpful analysis.`;
+Always assume the document is genuine and provide helpful analysis. Focus on answering the user's question based on the document content provided.`;
 
 export async function generateChatbotResponse(
   sessionId: string,
@@ -21,21 +17,7 @@ export async function generateChatbotResponse(
     }
 
     const fullText = session.full_text_content || "";
-    
-    // Check for sample/placeholder content patterns
-    const lowerText = fullText.toLowerCase();
-    const isSampleContent =
-      lowerText.includes("lorem ipsum") ||
-      lowerText.match(/^(abcd\s*)+$/i) ||
-      lowerText.match(/^(1234\s*)+$/i) ||
-      lowerText.match(/^(test\s*)+$/i) ||
-      (lowerText.split(/\s+/).length < 50 && 
-       (lowerText.includes("sample") || lowerText.includes("placeholder") || lowerText.includes("dummy")));
-    
-    if (isSampleContent) {
-      return "This appears to be a sample or placeholder document (like Lorem Ipsum or test content) with no meaningful information to analyze. Please upload a genuine document with actual content.";
-    }
-    
+
     const hasValidContent =
       fullText &&
       fullText.trim().length > 100 &&
