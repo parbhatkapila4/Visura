@@ -227,6 +227,252 @@ CREATE INDEX idx_messages_session ON chatbot_messages(session_id, created_at);
 
 ---
 
+## 💰 Cost-Aware Incremental Processing
+
+Visura implements a **Processing Cost Ledger** to make document intelligence economically observable and minimize AI processing costs.
+
+### Why Chunk Reuse Exists
+
+When documents are versioned (e.g., updated contracts, revised reports), most content remains unchanged. Reprocessing unchanged content wastes:
+- **AI API costs** (tokens consumed)
+- **Processing time** (user wait time)
+- **Compute resources** (serverless function invocations)
+
+### How Cost Tracking Works
+
+1. **Deterministic Chunking**: Documents are split into fixed-size chunks (~1000 tokens) with SHA-256 hashing
+2. **Hash-Based Matching**: New versions compare chunk hashes against previous versions
+3. **Selective Processing**: Only changed chunks trigger AI summarization
+4. **Cost Metrics**: Each version tracks:
+   - `total_chunks`: Total chunks in version
+   - `reused_chunks`: Chunks reused from previous version
+   - `new_chunks`: Chunks requiring new AI processing
+   - `estimated_tokens_saved`: `reused_chunks × 1000 tokens`
+
+### Why This Matters at Scale
+
+- **Cost Protection**: Prevents runaway AI spend on unchanged content
+- **Observability**: Clear metrics on processing efficiency per version
+- **Architectural Proof**: Demonstrates the system minimizes redundant work
+- **Economic Validation**: Quantifies the value of incremental processing
+
+### Invariants Enforced
+
+- `reused_chunks ≤ total_chunks`
+- `new_chunks + reused_chunks = total_chunks`
+- `estimated_tokens_saved ≥ 0`
+
+These invariants are enforced at the database level via CHECK constraints and validated during version creation.
+
+---
+
+## 🛡️ Operational Guarantees
+
+This section explicitly states what the system guarantees and what it does not.
+
+### Replay Guarantees
+
+**What Is Guaranteed:**
+- Any document version can be safely replayed after crashes, retries, or manual re-runs
+- Replay converges to the same final state regardless of failure point
+- No duplicate chunks created (UNIQUE constraint on `document_version_id, chunk_index`)
+- No duplicate summaries created (atomic `UPDATE ... WHERE summary IS NULL`)
+- Replay is idempotent: safe to run N times with same result
+
+**How It Works:**
+- Chunk processing checks `summary IS NULL AND reused_from_chunk_id IS NULL` before processing
+- All updates use atomic WHERE clauses that check current state
+- Replay endpoint (`/api/documents/[id]/versions/[versionId]/replay`) processes only incomplete chunks
+- Completed chunks are never reprocessed
+
+**What Is NOT Guaranteed:**
+- Replay does not fix corrupted data (if corruption occurs, manual intervention required)
+- Replay does not bypass AI provider rate limits
+- Replay does not guarantee processing order (chunks may process out of order)
+
+### Crash Guarantees
+
+**What Is Guaranteed:**
+- Partial progress is preserved: completed chunks remain valid after crash
+- System can resume processing from crash point
+- No data corruption from partial writes (atomic operations)
+- Chunk state is always valid (either complete or incomplete, never corrupted)
+
+**How It Works:**
+- Each chunk is processed independently (no cross-chunk dependencies)
+- Updates are atomic: `UPDATE ... WHERE summary IS NULL` only updates if condition met
+- Version completion check is idempotent: only creates final summary if `pdf_summary_id IS NULL`
+- Stuck job recovery automatically resets jobs stuck in processing >10 minutes
+
+**What Is NOT Guaranteed:**
+- Crash during initial version creation may leave version in inconsistent state (requires retry)
+- Crash during chunk creation may require manual cleanup (UNIQUE constraint prevents duplicates)
+- Crash does not preserve in-flight AI responses (must be regenerated)
+
+### Idempotency Guarantees
+
+**What Is Guaranteed:**
+- Chunk processing is idempotent: same input → same output, safe to retry
+- Version creation is idempotent: same document hash → same version (or existing version returned)
+- Summary updates are idempotent: only update if `summary IS NULL`
+- Final summary creation is idempotent: only create if `pdf_summary_id IS NULL`
+
+**How It Works:**
+- All database operations use WHERE clauses that check current state
+- Early returns prevent duplicate processing
+- UNIQUE constraints prevent duplicate records
+- Deterministic processing: same inputs always produce same outputs
+
+**What Is NOT Guaranteed:**
+- AI provider responses may vary slightly (though deterministic prompts minimize this)
+- Concurrent processing may result in duplicate AI calls (but only one summary is stored)
+
+### Cost Guarantees
+
+**What Is Guaranteed:**
+- Unchanged chunks are never reprocessed (hash-based matching)
+- Cost metrics are tracked per version (`total_chunks`, `reused_chunks`, `new_chunks`, `estimated_tokens_saved`)
+- Cost grows sub-linearly with version count (due to chunk reuse)
+- Cost is observable: all metrics stored in database
+
+**How It Works:**
+- Chunk reuse: hash-based matching identifies unchanged chunks
+- Cost tracking: computed during version creation, immutable per version
+- Reuse rate: typically 50-80% for versioned documents
+- Cost envelope: documented in `/docs/SCALE_AND_COST.md`
+
+**What Is NOT Guaranteed:**
+- Cost is not token-accurate (uses estimates: `ESTIMATED_TOKENS_PER_CHUNK = 1000`)
+- Cost does not account for AI provider rate limits or pricing changes
+- Cost does not include infrastructure costs (database, serverless functions)
+
+### What the System Intentionally Does NOT Guarantee
+
+1. **Real-Time Processing**: Chunks may process out of order, completion is eventual
+2. **Exact Token Counting**: Uses estimates, not actual token counts
+3. **Billing Integration**: Cost tracking is for observability, not billing
+4. **Cross-Version Consistency**: Each version is processed independently
+5. **AI Response Determinism**: AI responses may vary slightly (though prompts are deterministic)
+6. **Zero Downtime**: System may require maintenance or schema migrations
+7. **Infinite Scale**: Practical limits exist (documented in `/docs/SCALE_AND_COST.md`)
+
+### Operational Safety
+
+**Safe Operations:**
+- Replay any version (idempotent, no side effects)
+- Retry failed chunks (idempotent, no duplicates)
+- Query incomplete work (read-only, no side effects)
+- Monitor cost metrics (read-only, no side effects)
+
+**Unsafe Operations:**
+- Manually modifying chunk summaries (breaks idempotency)
+- Deleting chunks (breaks referential integrity)
+- Modifying version numbers (breaks versioning logic)
+- Bypassing idempotency checks (risks duplicate processing)
+
+---
+
+## 🚨 Production Alerting & On-Call Signals
+
+The system includes webhook-based alerting for production incidents. Alerts are sent to `ALERT_WEBHOOK_URL` (Slack-compatible webhook).
+
+### Alert Transport
+
+- **Webhook URL**: Configured via `ALERT_WEBHOOK_URL` environment variable
+- **Payload Format**: JSON with `alert_type`, `severity`, `message`, `timestamp`, `context`
+- **Deduplication**: Same alert type + entity ID suppressed for 10 minutes
+- **Failure Handling**: Alerts fail silently if webhook unavailable (never crash app)
+
+### What Triggers Alerts
+
+**CRITICAL Alerts:**
+
+1. **System Not Ready** (`system_not_ready`)
+   - Triggered when `/api/ready` returns 503
+   - Conditions:
+     - Stuck versions > 10 (older than 10 minutes)
+     - Orphaned reused chunks detected
+   - Context: Counts of stuck versions / orphaned chunks
+
+2. **Job Processing Failed** (`job_processing_failed`)
+   - Triggered when `/api/jobs/process` fails
+   - Context: `jobId`, `userId`, `errorMessage`
+
+3. **Job Retry Exhausted** (`job_retry_exhausted`)
+   - Triggered when job reaches `max_retries` (3)
+   - Context: `jobId`, `retryCount`, `maxRetries`
+
+4. **Health Check Failed** (`health_check_failed`)
+   - Triggered when `/api/health` returns 503
+   - Conditions:
+     - Database unreachable
+     - Missing required tables
+   - Context: `check` (database/schema), `errorMessage`
+
+**WARNING Alerts:**
+
+1. **Replay Failed** (`replay_failed`)
+   - Triggered when version replay throws error
+   - Context: `documentId`, `versionId`, `errorMessage`
+
+### What DOES NOT Trigger Alerts
+
+- Individual chunk processing failures (handled by retry logic)
+- Temporary AI provider rate limits (handled by retry)
+- Normal retry attempts (only alerts on exhaustion)
+- User-initiated errors (validation failures, auth failures)
+- Expected failures (e.g., document too short, unsupported format)
+
+### What an Operator Is Expected to Do When Alerted
+
+**CRITICAL: System Not Ready**
+1. Check `/api/ready` endpoint for details
+2. Query stuck versions: `SELECT * FROM document_versions WHERE ...` (see OPERATOR_QUERIES.sql)
+3. Replay stuck versions: `POST /api/documents/{id}/versions/{versionId}/replay`
+4. Investigate root cause (database issues, AI provider down, etc.)
+
+**CRITICAL: Job Processing Failed**
+1. Check job status: Query `summary_jobs` table
+2. Review error message in alert context
+3. If transient: Wait for retry cron (runs every 5 minutes)
+4. If persistent: Investigate AI provider status, network issues
+
+**CRITICAL: Job Retry Exhausted**
+1. Job has failed 3 times and will not auto-retry
+2. Manual intervention required:
+   - Review error logs
+   - Check AI provider status
+   - Manually trigger replay if appropriate
+   - Consider increasing `max_retries` if issue is transient
+
+**CRITICAL: Health Check Failed**
+1. Immediate investigation required
+2. Check database connectivity
+3. Verify schema migrations applied
+4. Check Vercel deployment status
+
+**WARNING: Replay Failed**
+1. Review error message in alert context
+2. Check version/chunk state in database
+3. Verify document/version exists and is accessible
+4. May require manual data fix if corruption detected
+
+### Alert Deduplication
+
+- Same alert type + same entity ID suppressed for 10 minutes
+- Prevents alert spam during ongoing incidents
+- Deduplication key: `${alert_type}:${entityId}`
+- Entity ID: `jobId`, `versionId`, `documentId`, or `userId`
+
+### Alert Reliability
+
+- Alerts never throw (wrapped in `.catch(() => {})`)
+- Alerts fail silently if `ALERT_WEBHOOK_URL` not configured
+- Webhook failures are logged but don't affect application flow
+- In-memory deduplication (resets on deployment - acceptable for serverless)
+
+---
+
 ## 🔄 Request/Response Flow
 
 ### 1. User Uploads PDF

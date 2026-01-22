@@ -55,6 +55,8 @@ export const clerkAppearance: Appearance = {
       marginBottom: "0",
       paddingTop: "0",
       paddingBottom: "0",
+      display: "flex",
+      gap: "0.875rem",
     },
     socialButtonsBlockButton: {
       backgroundColor: "#ffffff",
@@ -66,11 +68,18 @@ export const clerkAppearance: Appearance = {
       fontWeight: "500",
       marginBottom: "0",
       paddingBottom: "0.9375rem",
+      paddingTop: "0.9375rem",
       marginTop: "0",
       transition: "all 0.2s ease",
       boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+      width: "100%",
+      height: "auto",
+      minHeight: "3rem",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
       "&:not(:last-child)": {
-        marginBottom: "0.875rem",
+        marginBottom: "0",
       },
       "&:hover": {
         backgroundColor: "#f8f8f8",

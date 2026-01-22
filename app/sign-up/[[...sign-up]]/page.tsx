@@ -9,7 +9,7 @@ export default function Page() {
       <BlackBackground />
       <div className="fixed inset-0 z-50 bg-[#2C2638]">
         <div className="flex min-h-screen w-full">
-          <AuthVisualPane tagline="Capturing Moments, Creating Memories" currentPage="sign-up" />
+          <AuthVisualPane tagline="Transforming documents into actionable insights" currentPage="sign-up" />
 
           <div className="flex-1 lg:w-[50%] flex items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0">
