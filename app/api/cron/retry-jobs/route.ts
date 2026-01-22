@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRetryableJobs, getStuckJobs, resetStuckJob, resetFailedJobForRetry, getJobById } from "@/lib/jobs";
 import { sendAlert } from "@/lib/alerting";
+import { logger, generateRequestId } from "@/lib/logger";
 
 export const maxDuration = 60;
 
@@ -8,6 +9,7 @@ export const maxDuration = 60;
 const PROCESSING_TIMEOUT_MINUTES = 10;
 
 export async function GET(request: NextRequest) {
+  const requestId = generateRequestId();
 
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -15,6 +17,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    logger.info("Retry cron job started", { requestId });
 
     const stuckJobs = await getStuckJobs(PROCESSING_TIMEOUT_MINUTES, 50);
     const stuckRecovered = await Promise.allSettled(
@@ -70,7 +73,7 @@ export async function GET(request: NextRequest) {
       r.status === "fulfilled" && r.value.success
     ).length;
 
-    return NextResponse.json({
+    const result = {
       stuckJobsFound: stuckJobs.length,
       stuckJobsRecovered: stuckRecovered.filter(r => r.status === "fulfilled").length,
       failedJobsFound: failedJobs.length,
@@ -78,9 +81,13 @@ export async function GET(request: NextRequest) {
       totalProcessed: allJobsToProcess.length,
       succeeded,
       failed: allJobsToProcess.length - succeeded,
-    });
+    };
+
+    logger.info("Retry cron job completed", { requestId, ...result });
+
+    return NextResponse.json(result);
   } catch (error) {
-    console.error("Retry cron error:", error);
+    logger.error("Retry cron error", error, { requestId });
     return NextResponse.json(
       { error: "Retry failed", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }

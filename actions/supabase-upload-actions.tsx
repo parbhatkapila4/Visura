@@ -1,7 +1,15 @@
 "use server";
 
+/**
+ * @deprecated This synchronous path is deprecated. Use createVersionedDocumentJob from versioned-upload-actions.tsx instead.
+ * This file is kept for backward compatibility but should not be used for new uploads.
+ */
+
 import { generateSummaryFromText } from "@/lib/openai";
 
+/**
+ * @deprecated Use createVersionedDocumentJob instead
+ */
 export async function generatePdfSummaryFromText(
   pdfText: string,
   fileName: string,
@@ -51,6 +59,9 @@ export async function generatePdfSummaryFromText(
   }
 }
 
+/**
+ * @deprecated Use createVersionedDocumentJob instead
+ */
 export async function generateFallbackSummary(
   fileName: string,
   fileUrl: string,

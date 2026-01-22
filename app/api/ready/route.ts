@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { getDbConnection } from "@/lib/db";
 import { sendAlert } from "@/lib/alerting";
+import { logger, generateRequestId } from "@/lib/logger";
 
 const STUCK_VERSION_THRESHOLD_MINUTES = 10;
 const MAX_STUCK_VERSIONS = 10;
 
 export async function GET() {
+  const requestId = generateRequestId();
   const startTime = Date.now();
   const ready: {
     status: "ready" | "not_ready";
@@ -42,6 +44,11 @@ export async function GET() {
         message: `Too many stuck versions: ${stuckCount} (threshold: ${MAX_STUCK_VERSIONS})`,
         count: stuckCount,
       };
+      logger.error("System not ready: too many stuck versions", undefined, {
+        requestId,
+        stuckCount,
+        threshold: MAX_STUCK_VERSIONS,
+      });
       sendAlert({
         severity: "critical",
         type: "system_not_ready",
@@ -57,10 +64,12 @@ export async function GET() {
     }
   } catch (error) {
     ready.status = "not_ready";
+    const err = error instanceof Error ? error : new Error(String(error));
     ready.checks.stuck_versions = {
       status: "error",
-      message: error instanceof Error ? error.message : "Failed to check stuck versions",
+      message: err.message,
     };
+    logger.error("Readiness check failed: stuck versions check error", err, { requestId });
   }
 
   try {
@@ -87,6 +96,10 @@ export async function GET() {
         message: `Versions with orphaned reused chunks: ${orphanedCount}`,
         count: orphanedCount,
       };
+      logger.error("System not ready: orphaned reused chunks", undefined, {
+        requestId,
+        orphanedCount,
+      });
       sendAlert({
         severity: "critical",
         type: "system_not_ready",
@@ -102,14 +115,20 @@ export async function GET() {
     }
   } catch (error) {
     ready.status = "not_ready";
+    const err = error instanceof Error ? error : new Error(String(error));
     ready.checks.orphaned_reused_chunks = {
       status: "error",
-      message: error instanceof Error ? error.message : "Failed to check orphaned chunks",
+      message: err.message,
     };
+    logger.error("Readiness check failed: orphaned chunks check error", err, { requestId });
   }
 
   const totalDuration = Date.now() - startTime;
   const statusCode = ready.status === "ready" ? 200 : 503;
+
+  if (ready.status === "not_ready") {
+    logger.warn("Readiness check failed", { requestId, status: ready.status, duration: totalDuration });
+  }
 
   return NextResponse.json(
     {

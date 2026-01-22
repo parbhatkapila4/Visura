@@ -1,13 +1,8 @@
 "use client";
 
-import {
-  generatePdfSummaryFromText,
-  generateFallbackSummary,
-} from "@/actions/supabase-upload-actions";
-import { storePdfSummaryAction } from "@/actions/upload-actions";
+import { createVersionedDocumentJob } from "@/actions/versioned-upload-actions";
 import UploadFormInput from "@/components/upload/upload-form-input";
 import { uploadToSupabase } from "@/lib/supabase";
-import { formatFileNameAsTitle } from "@/utils/format-utils";
 import {
   extractTextFromDocument,
   isFileTypeSupported,
@@ -174,86 +169,63 @@ export default function SupabaseUploadForm({
       }
 
       console.log("✅ Upload successful:", supabaseResult.data.fileName);
-      toast.success("File uploaded successfully!", {
-        description: "Generating AI summary...",
-      });
-
-      console.log("Step 3: Generating summary...");
-      console.log("📊 Extracted text length:", extractedText.length);
-
-      let summaryResult;
 
       if (!extractedText || extractedText.trim().length < 50) {
-        console.log("⚠️ No/minimal text extracted - using fallback summary generation");
-        toast.info("Generating summary from file metadata", {
-          description: "Text extraction limited. Creating summary from file information.",
+        toast.error("Text extraction failed", {
+          description: "Unable to extract sufficient text from document. Please try a different file.",
         });
-
-        summaryResult = await generateFallbackSummary(
-          supabaseResult.data.fileName,
-          supabaseResult.data.publicUrl,
-          extractionErrorMsg || "No text content extracted from document"
-        );
-      } else {
-        console.log("✅ Using extracted text for AI summary generation");
-        console.log("📊 First 500 chars:", extractedText.substring(0, 500));
-        summaryResult = await generatePdfSummaryFromText(
-          extractedText,
-          supabaseResult.data.fileName,
-          supabaseResult.data.publicUrl
-        );
+        return;
       }
 
-      if (summaryResult.success) {
-        const summaryType =
-          hadExtractionError || !extractedText || extractedText.trim().length < 50
-            ? "fallback"
-            : "AI-generated";
+      console.log("Step 3: Creating versioned document job...");
+      console.log("📊 Extracted text length:", extractedText.length);
 
-        toast.success(`${fileTypeLabel} processed successfully!`, {
-          description: `Summary ${
-            summaryType === "fallback" ? "created from file metadata" : "generated with AI"
-          }`,
-        });
-        setResult(summaryResult);
+      toast.info("Processing document...", {
+        description: "Creating document version and enqueuing AI processing",
+      });
 
-        if (summaryResult.data?.summary) {
-          console.log("Saving summary to database...");
-          console.log("Summary data:", {
-            summaryLength: summaryResult.data.summary.length,
-            fileUrl: supabaseResult.data.publicUrl,
-            fileName: file.name,
-            title: formatFileNameAsTitle(summaryResult.data.fileName || file.name),
-            summaryType,
+      const versionResult = await createVersionedDocumentJob(
+        extractedText,
+        supabaseResult.data.fileName,
+        supabaseResult.data.publicUrl
+      );
+
+      if (!versionResult.success) {
+        if (versionResult.data?.costLimitExceeded) {
+          toast.error("Cost limit exceeded", {
+            description: versionResult.message || "You have exceeded your processing limits. Please try again tomorrow.",
           });
-
-          const storeResult = await storePdfSummaryAction({
-            summary: summaryResult.data.summary,
-            fileUrl: supabaseResult.data.publicUrl,
-            title: formatFileNameAsTitle(summaryResult.data.fileName || file.name),
-            fileName: file.name,
-            extractedText: extractedText || "",
-          });
-
-          console.log("Database save result:", storeResult);
-
-          if (storeResult.success) {
-            toast.success("Document saved successfully!", {
-              description: "Your document has been processed and stored",
-            });
-
-            formRef.current?.reset();
-            router.push(`/summaries/${storeResult.id}`);
-          } else {
-            console.error("Failed to save summary to database:", storeResult.message);
-            toast.error("Summary generated but not saved", {
-              description: `Database error: ${storeResult.message}`,
-            });
-          }
+        } else {
+          throw new Error(versionResult.message || "Failed to create document version");
         }
-      } else {
-        throw new Error(summaryResult.message);
+        return;
       }
+
+      if (versionResult.data?.unchanged) {
+        toast.success("Document already processed!", {
+          description: "Using existing version",
+        });
+        if (versionResult.data.pdfSummaryId) {
+          formRef.current?.reset();
+          router.push(`/summaries/${versionResult.data.pdfSummaryId}`);
+        } else {
+          router.push(`/documents/${versionResult.data.documentId}`);
+        }
+        return;
+      }
+
+      toast.success("Document uploaded successfully!", {
+        description: "Processing in background. You will be notified when complete.",
+      });
+
+      setResult({
+        success: true,
+        message: "Document version created",
+        data: versionResult.data,
+      });
+
+      formRef.current?.reset();
+      router.push("/dashboard");
     } catch (error) {
       console.error("Upload/processing error:", error);
       const rawMessage = error instanceof Error ? error.message : "Unknown error";
@@ -265,44 +237,12 @@ export default function SupabaseUploadForm({
         description: friendlyMessage,
         action: {
           label: "Close",
-          onClick: () => {},
+          onClick: () => { },
         },
         duration: 8000,
       });
 
-      try {
-        router.push("/dashboard");
-      } catch {}
-
-      try {
-        const fallbackResult = await generateFallbackSummary(file.name, "", friendlyMessage);
-        if (fallbackResult.success) {
-          setResult(fallbackResult);
-
-          if (fallbackResult.data?.summary) {
-            console.log("Saving fallback summary to database...");
-            const storeResult = await storePdfSummaryAction({
-              summary: fallbackResult.data.summary,
-              fileUrl: "",
-              title: formatFileNameAsTitle(fallbackResult.data.fileName || file.name),
-              fileName: file.name,
-            });
-
-            if (storeResult.success) {
-              toast.success("Fallback summary saved to database!", {
-                description: "Your document summary has been stored successfully",
-              });
-
-              formRef.current?.reset();
-              router.push(`/summaries/${storeResult.id}`);
-            } else {
-              console.error("Failed to save fallback summary to database:", storeResult.message);
-            }
-          }
-        }
-      } catch (fallbackError) {
-        console.error("Fallback generation failed:", fallbackError);
-      }
+      router.push("/dashboard");
     } finally {
       setIsLoading(false);
     }

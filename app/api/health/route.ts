@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { getDbConnection } from "@/lib/db";
 import { sendAlert } from "@/lib/alerting";
+import { logger, generateRequestId } from "@/lib/logger";
 
 export async function GET() {
+  const requestId = generateRequestId();
   const startTime = Date.now();
   const health: {
     status: "healthy" | "unhealthy";
@@ -31,6 +33,7 @@ export async function GET() {
       status: "error",
       message: err.message,
     };
+    logger.error("Health check failed: database unreachable", err, { requestId, check: "database" });
     sendAlert({
       severity: "critical",
       type: "health_check_failed",
@@ -74,6 +77,11 @@ export async function GET() {
         message: "Missing required tables",
         duration: schemaDuration,
       };
+      logger.error("Health check failed: missing required tables", undefined, {
+        requestId,
+        check: "schema",
+        missingTables: "document_versions, document_chunks, or summary_jobs",
+      });
       sendAlert({
         severity: "critical",
         type: "health_check_failed",
@@ -88,6 +96,7 @@ export async function GET() {
       status: "error",
       message: err.message,
     };
+    logger.error("Health check failed: schema check error", err, { requestId, check: "schema" });
     sendAlert({
       severity: "critical",
       type: "health_check_failed",
@@ -98,6 +107,10 @@ export async function GET() {
 
   const totalDuration = Date.now() - startTime;
   const statusCode = health.status === "healthy" ? 200 : 503;
+
+  if (health.status === "unhealthy") {
+    logger.warn("Health check failed", { requestId, status: health.status, duration: totalDuration });
+  }
 
   return NextResponse.json(
     {

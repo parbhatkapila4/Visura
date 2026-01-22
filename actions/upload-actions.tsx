@@ -48,6 +48,11 @@ async function savePdfSummary({
   }
 }
 
+/**
+ * @deprecated This synchronous path is deprecated. The versioned pipeline (createVersionedDocumentJob) 
+ * automatically creates pdf_summaries and pdf_stores on completion. This function is kept for backward 
+ * compatibility only.
+ */
 export async function storePdfSummaryAction({ fileUrl, summary, title, fileName, extractedText }: PdfSummaryType) {
   let savedSummary: any;
   try {

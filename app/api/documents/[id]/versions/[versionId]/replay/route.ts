@@ -4,11 +4,13 @@ import { getDbConnection } from "@/lib/db";
 import { replayVersion, replayIncompleteChunks } from "@/lib/version-replay";
 import { getVersionById } from "@/lib/versioned-documents";
 import { sendAlert } from "@/lib/alerting";
+import { logger, generateRequestId } from "@/lib/logger";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; versionId: string }> }
 ) {
+  const requestId = generateRequestId();
   const { id: documentId, versionId } = await params;
 
   try {
@@ -33,6 +35,8 @@ export async function POST(
 
     const { onlyIncomplete } = await request.json().catch(() => ({ onlyIncomplete: false }));
 
+    logger.info("Replay started", { requestId, documentId, versionId, userId, onlyIncomplete });
+
     let result;
     if (onlyIncomplete) {
       result = await replayIncompleteChunks(versionId);
@@ -40,13 +44,15 @@ export async function POST(
       result = await replayVersion(versionId);
     }
 
+    logger.info("Replay completed", { requestId, documentId, ...result });
+
     return NextResponse.json({
       success: true,
       ...result,
     });
   } catch (error) {
-    console.error("Replay error:", error);
     const err = error instanceof Error ? error : new Error(String(error));
+    logger.error("Replay error", err, { requestId, documentId, versionId });
     sendAlert({
       severity: "warning",
       type: "replay_failed",

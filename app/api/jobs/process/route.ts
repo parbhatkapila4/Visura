@@ -4,6 +4,7 @@ import { generateSummaryFromText } from "@/lib/openai";
 import { getDbConnection } from "@/lib/db";
 import { savePdfStore } from "@/lib/chatbot";
 import { sendAlert } from "@/lib/alerting";
+import { logger, generateRequestId } from "@/lib/logger";
 
 export const maxDuration = 60;
 
@@ -11,6 +12,7 @@ export const maxDuration = 60;
 const HEARTBEAT_INTERVAL_MS = 10000;
 
 export async function POST(request: NextRequest) {
+  const requestId = generateRequestId();
   let heartbeatInterval: NodeJS.Timeout | null = null;
 
   try {
@@ -20,10 +22,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "jobId required" }, { status: 400 });
     }
 
+    logger.info("Job processing started", { requestId, jobId });
+
     const job = await claimJob(jobId);
 
     if (!job) {
-
+      logger.warn("Job already claimed or not found", { requestId, jobId });
       return NextResponse.json({
         success: false,
         message: "Job already claimed or not found"
@@ -35,7 +39,7 @@ export async function POST(request: NextRequest) {
       try {
         await updateJobHeartbeat(jobId);
       } catch (err) {
-        console.error("Heartbeat update failed:", err);
+        logger.error("Heartbeat update failed", err, { requestId, jobId });
       }
     }, HEARTBEAT_INTERVAL_MS);
 
@@ -63,13 +67,18 @@ export async function POST(request: NextRequest) {
           fullTextContent: job.extracted_text,
         });
       } catch (chatbotError) {
-        console.error("Chatbot store failed (non-fatal):", chatbotError);
+        logger.warn("Chatbot store failed (non-fatal)", {
+          requestId,
+          jobId,
+          userId: job.user_id,
+          error: chatbotError instanceof Error ? chatbotError.message : String(chatbotError),
+        });
 
       }
 
-
       await markJobCompleted(jobId, savedSummary.id);
 
+      logger.info("Job processing completed", { requestId, jobId, userId: job.user_id, summaryId: savedSummary.id });
 
       if (heartbeatInterval) {
         clearInterval(heartbeatInterval);
@@ -84,6 +93,8 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       await markJobFailed(jobId, err);
+
+      logger.error("Job processing failed", err, { requestId, jobId, userId: job.user_id });
 
       sendAlert({
         severity: "critical",
@@ -105,7 +116,7 @@ export async function POST(request: NextRequest) {
     }
 
   } catch (error) {
-    console.error("Job processing error:", error);
+    logger.error("Job processing error", error, { requestId });
     return NextResponse.json(
       { error: "Processing failed", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }

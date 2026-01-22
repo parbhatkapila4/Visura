@@ -1,5 +1,5 @@
-import { getDbConnection } from "./db";
-import { getVersionById, getIncompleteChunks, isVersionComplete } from "./versioned-documents";
+import { getVersionById, getIncompleteChunks } from "./versioned-documents";
+import { processChunkInternal } from "./chunk-processor";
 
 export async function replayVersion(versionId: string): Promise<{
   versionId: string;
@@ -24,22 +24,14 @@ export async function replayVersion(versionId: string): Promise<{
     };
   }
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-
   const results = await Promise.allSettled(
     incomplete.map(async (chunk) => {
-      const response = await fetch(`${baseUrl}/api/jobs/process-chunk`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chunkId: chunk.id, versionId }),
-      });
-      return { chunkId: chunk.id, success: response.ok };
+      const result = await processChunkInternal(chunk.id, versionId);
+      return { chunkId: chunk.id, success: result.success };
     })
   );
 
-  const triggered = results.filter((r) => r.status === "fulfilled").length;
+  const triggered = results.filter((r) => r.status === "fulfilled" && r.value.success).length;
 
   return {
     versionId,
@@ -48,6 +40,7 @@ export async function replayVersion(versionId: string): Promise<{
     triggered,
   };
 }
+
 
 export async function replayIncompleteChunks(versionId: string): Promise<{
   versionId: string;
@@ -64,22 +57,14 @@ export async function replayIncompleteChunks(versionId: string): Promise<{
     };
   }
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-
   const results = await Promise.allSettled(
     incomplete.map(async (chunk) => {
-      const response = await fetch(`${baseUrl}/api/jobs/process-chunk`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chunkId: chunk.id, versionId }),
-      });
-      return { chunkId: chunk.id, success: response.ok };
+      const result = await processChunkInternal(chunk.id, versionId);
+      return { chunkId: chunk.id, success: result.success };
     })
   );
 
-  const triggered = results.filter((r) => r.status === "fulfilled").length;
+  const triggered = results.filter((r) => r.status === "fulfilled" && r.value.success).length;
 
   return {
     versionId,

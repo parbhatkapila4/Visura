@@ -86,11 +86,13 @@
 
 ### Document Upload & Processing Flow
 
+**IMPORTANT: ALL document uploads go through the versioned, async, replay-safe pipeline. There is exactly ONE upload path.**
+
 ```
 User                Client              Server              AI Service        Database
  │                    │                   │                     │               │
- │  1. Select PDF     │                   │                     │               │
- │───────────────────▶│                   │                     │               │
+ │  1. Select File    │                   │                     │               │
+ │───────────────────▶│                   │                    │              │
  │                    │                   │                     │               │
  │                    │  2. Extract Text  │                     │               │
  │                    │   (Client-side)   │                     │               │
@@ -100,16 +102,42 @@ User                Client              Server              AI Service        Da
  │                    │                   │  4. Store File      │               │
  │                    │                   │────────────────────▶│               │
  │                    │                   │                     │               │
- │                    │                   │  5. Generate Summary│               │
- │                    │                   │────────────────────▶│               │
- │                    │                   │                     │               │
- │                    │                   │  6. Save Summary    │               │
+ │                    │  5. Create Version│                     │               │
+ │                    │   (Async Job)     │                     │               │
+ │                    │──────────────────▶│                     │               │
+ │                    │                   │  6. Check Guardrails│               │
  │                    │                   │─────────────────────────────────────▶│
- │                    │                   │                     │               │
- │                    │  7. Redirect      │                     │               │
- │  8. View Summary   │◀──────────────────│                     │               │
+ │                    │                   │  7. Create Document │               │
+ │                    │                   │   & Version         │               │
+ │                    │                   │─────────────────────────────────────▶│
+ │                    │                   │  8. Chunk Document  │               │
+ │                    │                   │─────────────────────────────────────▶│
+ │                    │                   │  9. Enqueue Chunks  │               │
+ │                    │                   │   (Fire & Forget)   │               │
+ │                    │                   │────────────────────▶│               │
+ │                    │  10. Redirect     │                     │               │
+ │  11. View Status   │◀──────────────────│                     │               │
  │◀───────────────────│                   │                     │               │
+ │                    │                   │  [Background]      │               │
+ │                    │                   │  12. Process Chunks │               │
+ │                    │                   │────────────────────▶│               │
+ │                    │                   │                     │  13. Generate │
+ │                    │                   │                     │     Summary   │
+ │                    │                   │                     │◀──────────────│
+ │                    │                   │  14. Save Summary  │               │
+ │                    │                   │   & PDF Store      │               │
+ │                    │                   │─────────────────────────────────────▶│
+ │                    │                   │  15. Link Version  │               │
+ │                    │                   │─────────────────────────────────────▶│
 ```
+
+**Key Points:**
+- **Single Upload Path**: All uploads use `createVersionedDocumentJob()` from `actions/versioned-upload-actions.tsx`
+- **Async Processing**: Chunk processing happens in background via `/api/jobs/process-chunk`
+- **Cost Guardrails**: Enforced before version creation (prevents partial state)
+- **Automatic Completion**: When all chunks complete, `pdf_summaries` and `pdf_stores` are created automatically
+- **Replay-Safe**: All processing is idempotent and can be safely replayed
+- **Legacy Paths Deprecated**: `storePdfSummaryAction` and `generatePdfSummaryFromText` are deprecated but kept for backward compatibility
 
 ### Chat Message Flow
 
@@ -309,6 +337,56 @@ This section explicitly states what the system guarantees and what it does not.
 - Crash during chunk creation may require manual cleanup (UNIQUE constraint prevents duplicates)
 - Crash does not preserve in-flight AI responses (must be regenerated)
 
+### Automatic Recovery Guarantees
+
+**What Is Guaranteed:**
+- Incomplete document versions automatically self-heal without operator intervention
+- Versions with incomplete chunks older than 10 minutes are automatically recovered
+- Recovery uses direct function calls (no HTTP self-calls) - works even if routing is down
+- Only incomplete chunks are processed (completed/reused chunks are skipped)
+- No duplicate summaries or pdf_stores created (idempotency preserved)
+- System converges to complete state automatically
+
+**How It Works:**
+- **Cron Job**: `/api/cron/recover-versions` runs every 5 minutes
+- **Detection**: Finds `document_versions` where:
+  - `pdf_summary_id IS NULL` (not yet complete)
+  - `created_at < NOW() - 10 minutes` (older than safety threshold)
+  - Has incomplete chunks (`summary IS NULL AND reused_from_chunk_id IS NULL`)
+- **Recovery**: For each stuck version:
+  - Calls `replayIncompleteChunks(versionId)` directly (no HTTP)
+  - Uses `processChunkInternal()` for each incomplete chunk
+  - Skips completed chunks automatically (idempotency checks)
+  - When all chunks complete → `checkVersionCompletion()` creates summary & pdf_store
+- **Alerting**: CRITICAL alert only if recovery attempt fails (no alert for successful recovery)
+
+**What Auto-Heals:**
+- ✅ Chunk processing failures (serverless timeouts, AI provider errors)
+- ✅ Network interruptions during chunk processing
+- ✅ Concurrent processing race conditions
+- ✅ Stuck versions from crashes or retries
+
+**What Requires Manual Intervention:**
+- ❌ Corrupted chunk data (invalid text, malformed summaries)
+- ❌ Database constraint violations (requires data fix)
+- ❌ Orphaned chunks with missing source summaries (requires data fix)
+- ❌ Versions stuck due to cost guardrails (user must wait or reduce document size)
+
+**Recovery Loop:**
+1. Cron detects incomplete version (age > 10 minutes)
+2. Calls `replayIncompleteChunks()` directly
+3. For each incomplete chunk: `processChunkInternal()` (idempotent)
+4. Completed chunks skipped automatically
+5. When all complete: `checkVersionCompletion()` creates summary & pdf_store
+6. Version marked complete (`pdf_summary_id` set)
+7. System converges to healthy state
+
+**Convergence Guarantee:**
+- Every incomplete version will eventually be recovered (within 5-15 minutes of becoming stuck)
+- No manual replay required for transient failures
+- System self-heals from crashes, timeouts, and network issues
+- Operator only needed for data corruption or invariant violations
+
 ### Idempotency Guarantees
 
 **What Is Guaranteed:**
@@ -345,6 +423,47 @@ This section explicitly states what the system guarantees and what it does not.
 - Cost is not token-accurate (uses estimates: `ESTIMATED_TOKENS_PER_CHUNK = 1000`)
 - Cost does not account for AI provider rate limits or pricing changes
 - Cost does not include infrastructure costs (database, serverless functions)
+
+### Cost Guardrails
+
+**What Is Guaranteed:**
+- Cost limits are enforced **before** version creation (prevents partial state)
+- Limits are checked atomically (no race conditions)
+- Exceeding limits blocks job creation and sends CRITICAL alerts
+- Daily token usage is tracked per user (resets at midnight UTC)
+- Per-version chunk limits prevent oversized documents
+
+**How It Works:**
+- **Daily Token Limit**: `MAX_TOKENS_PER_USER_PER_DAY` (default: 100,000 tokens)
+  - Calculated as: `SUM(new_chunks × 1500)` for all versions created today
+  - Checked before creating any new version
+  - Blocks version creation if limit would be exceeded
+- **Per-Version Chunk Limit**: `MAX_NEW_CHUNKS_PER_VERSION` (default: 100 chunks)
+  - Prevents single documents from consuming excessive resources
+  - Blocks version creation if new chunks exceed limit
+- **Enforcement Point**: Guardrails checked in `createVersionedDocumentJob()` **before** `createDocumentVersion()`
+  - Ensures no partial versions are created when limits are exceeded
+  - Returns clear error message to caller
+- **Alerting**: CRITICAL alerts sent via `sendAlert()` when limits exceeded
+  - Includes: `userId`, `documentId`, `versionId`, `currentUsage`, `limit`, `limitType`
+  - Alert type: `cost_limit_exceeded`
+
+**What Happens When Limits Are Hit:**
+1. Version creation is **blocked** (no database writes occur)
+2. CRITICAL alert sent to `ALERT_WEBHOOK_URL` with full context
+3. Error returned to caller with clear message and usage details
+4. No partial jobs or chunks are created
+5. User must wait until next day (for daily limit) or reduce document size (for per-version limit)
+
+**Configuration:**
+- `MAX_TOKENS_PER_USER_PER_DAY`: Maximum estimated tokens per user per day (default: 100,000)
+- `MAX_NEW_CHUNKS_PER_VERSION`: Maximum new chunks per document version (default: 100)
+
+**What Is NOT Guaranteed:**
+- Limits are not enforced for replay operations (replay is recovery, not new work)
+- Limits do not account for actual token usage (uses estimates: 1500 tokens per new chunk)
+- Limits do not prevent concurrent requests from same user (last-write-wins for daily limit)
+- Limits are soft (can be adjusted via environment variables without code changes)
 
 ### What the System Intentionally Does NOT Guarantee
 
@@ -475,22 +594,42 @@ The system includes webhook-based alerting for production incidents. Alerts are 
 
 ## 🔄 Request/Response Flow
 
-### 1. User Uploads PDF
+### 1. User Uploads Document (Versioned Pipeline)
 
 ```typescript
 Client:
-1. User selects PDF → Browser validates file
-2. Extract text with pdf.js (client-side)
-3. Upload to UploadThing → Get URL
-4. POST /api/summaries with text & URL
-5. Redirect to /summaries/[id]
+1. User selects file → Browser validates file
+2. Extract text client-side (pdf.js, mammoth, etc.)
+3. Upload file to Supabase Storage → Get public URL
+4. Call createVersionedDocumentJob(text, fileName, fileUrl)
+5. Redirect to /documents/[documentId]/versions/[versionId] (status page)
 
-Server:
-1. Receive text + URL
-2. Generate summary with AI (Gemini 2.5 Flash)
-3. Save to database
-4. Return summary ID
-5. (Future) Initialize vector store for chatbot
+Server (createVersionedDocumentJob):
+1. Check cost guardrails (daily limit, per-version limit)
+2. Find or create Document record
+3. Check if document unchanged (hash match) → return existing version
+4. Chunk document deterministically
+5. Calculate chunk reuse vs new chunks
+6. Create DocumentVersion with file_url
+7. Create DocumentChunk records (reused or new)
+8. Fire-and-forget trigger /api/jobs/process-chunk for new chunks
+9. Return immediately with versionId and documentId
+
+Background Processing (/api/jobs/process-chunk):
+1. Process each chunk asynchronously
+2. Generate AI summary for new chunks
+3. Reuse summaries for unchanged chunks
+4. When all chunks complete → checkVersionCompletion()
+5. Stitch chunk summaries into final summary
+6. Create pdf_summaries record
+7. Create pdf_stores record (for chat)
+8. Link version to pdf_summary_id
+
+Result:
+- User sees processing status immediately
+- Background processing completes asynchronously
+- Chat works automatically when processing completes
+- All idempotency, replay, and cost guardrails enforced
 ```
 
 ### 2. User Chats with Document

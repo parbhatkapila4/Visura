@@ -11,14 +11,18 @@ import {
   createDocumentChunk,
 } from "@/lib/versioned-documents";
 import { formatFileNameAsTitle } from "@/utils/format-utils";
+import { checkCostGuardrails } from "@/lib/cost-guardrails";
+import { logger } from "@/lib/logger";
 
 export async function createVersionedDocumentJob(
   pdfText: string,
   fileName: string,
   fileUrl: string
 ) {
+  let userId: string | undefined = undefined;
   try {
-    const { userId } = await auth();
+    const authResult = await auth();
+    userId = authResult.userId || undefined;
     if (!userId) {
       return {
         success: false,
@@ -60,6 +64,7 @@ export async function createVersionedDocumentJob(
     let reusedChunks = 0;
     const chunksToProcess: string[] = [];
 
+
     for (const chunk of chunks) {
       const existingChunk = latestVersion
         ? await getChunksByHash(document.id, chunk.hash)
@@ -70,11 +75,41 @@ export async function createVersionedDocumentJob(
       }
     }
 
+    const newChunksCount = totalChunks - reusedChunks;
+
+
+    const costCheck = await checkCostGuardrails(
+      userId,
+      newChunksCount,
+      document.id
+    );
+
+    if (!costCheck.allowed) {
+      logger.warn("Cost guardrail blocked version creation", {
+        userId,
+        documentId: document.id,
+        reason: costCheck.reason,
+        currentUsage: costCheck.currentUsage,
+      });
+
+      return {
+        success: false,
+        message: costCheck.reason || "Cost limit exceeded",
+        data: {
+          blocked: true,
+          costLimitExceeded: true,
+          currentUsage: costCheck.currentUsage,
+        },
+      };
+    }
+
+
     const version = await createDocumentVersion(
       document.id,
       fullContentHash,
       totalChunks,
-      reusedChunks
+      reusedChunks,
+      fileUrl
     );
 
     for (const chunk of chunks) {
@@ -113,7 +148,12 @@ export async function createVersionedDocumentJob(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ chunkId, versionId: version.id }),
         }).catch((err) => {
-          console.error("Failed to trigger chunk processing:", err);
+          logger.error("Failed to trigger chunk processing", err, {
+            chunkId,
+            versionId: version.id,
+            documentId: document.id,
+            userId,
+          });
         });
       }
     }
@@ -132,7 +172,7 @@ export async function createVersionedDocumentJob(
       },
     };
   } catch (err) {
-    console.error("Error creating versioned document:", err);
+    logger.error("Error creating versioned document", err, { userId });
     return {
       success: false,
       message: `Error: ${err instanceof Error ? err.message : "Unknown error"}`,

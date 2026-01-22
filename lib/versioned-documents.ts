@@ -14,6 +14,7 @@ export interface DocumentVersion {
   version_number: number;
   full_content_hash: string;
   pdf_summary_id: string | null;
+  file_url: string | null;
   total_chunks: number;
   reused_chunks: number;
   new_chunks: number;
@@ -42,14 +43,14 @@ export function hashContent(content: string): string {
 export function chunkText(text: string, chunkSize: number = 1000): Array<{ text: string; hash: string; index: number }> {
   const chunks: Array<{ text: string; hash: string; index: number }> = [];
   const words = text.split(/\s+/);
-  
+
   let currentChunk: string[] = [];
   let currentSize = 0;
   let chunkIndex = 0;
 
   for (const word of words) {
     const wordSize = word.length + 1;
-    
+
     if (currentSize + wordSize > chunkSize && currentChunk.length > 0) {
       const chunkText = currentChunk.join(" ");
       chunks.push({
@@ -60,7 +61,7 @@ export function chunkText(text: string, chunkSize: number = 1000): Array<{ text:
       currentChunk = [];
       currentSize = 0;
     }
-    
+
     currentChunk.push(word);
     currentSize += wordSize;
   }
@@ -82,7 +83,7 @@ export async function findOrCreateDocument(
   title: string
 ): Promise<Document> {
   const sql = await getDbConnection();
-  
+
   const existing = await sql`
     SELECT * FROM documents 
     WHERE user_id = ${userId} AND title = ${title}
@@ -117,10 +118,11 @@ export async function createDocumentVersion(
   documentId: string,
   fullContentHash: string,
   totalChunks: number,
-  reusedChunks: number
+  reusedChunks: number,
+  fileUrl?: string | null
 ): Promise<DocumentVersion> {
   const sql = await getDbConnection();
-  
+
   const latest = await getLatestVersion(documentId);
   const nextVersion = latest ? latest.version_number + 1 : 1;
 
@@ -150,6 +152,7 @@ export async function createDocumentVersion(
       document_id, 
       version_number, 
       full_content_hash,
+      file_url,
       total_chunks,
       reused_chunks,
       new_chunks,
@@ -159,6 +162,7 @@ export async function createDocumentVersion(
       ${documentId}, 
       ${nextVersion}, 
       ${fullContentHash},
+      ${fileUrl || null},
       ${totalChunks},
       ${reusedChunks},
       ${newChunks},
@@ -175,7 +179,7 @@ export async function getChunksByHash(
   chunkHash: string
 ): Promise<DocumentChunk | null> {
   const sql = await getDbConnection();
-  
+
   const [chunk] = await sql`
     SELECT dc.* FROM document_chunks dc
     JOIN document_versions dv ON dc.document_version_id = dv.id
@@ -196,7 +200,7 @@ export async function createDocumentChunk(
   reusedFromChunkId: string | null = null
 ): Promise<DocumentChunk> {
   const sql = await getDbConnection();
-  
+
   try {
     const [chunk] = await sql`
       INSERT INTO document_chunks (
@@ -301,4 +305,27 @@ export async function getVersionById(versionId: string): Promise<DocumentVersion
     SELECT * FROM document_versions WHERE id = ${versionId}
   `;
   return (version as DocumentVersion) || null;
+}
+
+
+export async function getIncompleteVersionsOlderThan(
+  thresholdMinutes: number,
+  limit: number = 50
+): Promise<DocumentVersion[]> {
+  const sql = await getDbConnection();
+  const versions = await sql`
+    SELECT dv.*
+    FROM document_versions dv
+    WHERE dv.pdf_summary_id IS NULL
+      AND dv.created_at < NOW() - make_interval(mins => ${thresholdMinutes})
+      AND EXISTS (
+        SELECT 1 FROM document_chunks dc
+        WHERE dc.document_version_id = dv.id
+          AND dc.summary IS NULL
+          AND dc.reused_from_chunk_id IS NULL
+      )
+    ORDER BY dv.created_at ASC
+    LIMIT ${limit}
+  `;
+  return versions as DocumentVersion[];
 }
