@@ -1,5 +1,77 @@
 import { openrouterChatCompletion } from "@/lib/openrouter";
 
+function enforceSummaryStructure(summary: string, isShortDocument: boolean): string {
+  const sections: Array<{ title: string; content: string; index: number }> = [];
+  const seenHeaders = new Set<string>();
+  
+  const lines = summary.split('\n');
+  let currentSection: { title: string; content: string[] } | null = null;
+  let sectionIndex = 0;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const headerMatch = line.match(/^###\s+(.+)$/);
+    
+    if (headerMatch) {
+      const headerTitle = headerMatch[1].trim().toLowerCase();
+      
+      if (currentSection) {
+        sections.push({
+          title: currentSection.title,
+          content: currentSection.content.join('\n').trim(),
+          index: sectionIndex++,
+        });
+      }
+      
+      if (seenHeaders.has(headerTitle)) {
+        currentSection = null;
+        continue;
+      }
+      
+      seenHeaders.add(headerTitle);
+      currentSection = {
+        title: headerMatch[1].trim(),
+        content: [],
+      };
+    } else if (currentSection) {
+      currentSection.content.push(line);
+    }
+  }
+  
+  if (currentSection) {
+    sections.push({
+      title: currentSection.title,
+      content: currentSection.content.join('\n').trim(),
+      index: sectionIndex++,
+    });
+  }
+  
+  const uniqueSections = sections.slice(0, 5);
+  
+  const expectedSections = isShortDocument
+    ? ['Executive Summary', 'Key Insights', 'Evidence & Signals', 'Risks & Gaps', 'Action']
+    : ['Should I Care?', 'Core Mental Models', 'High-Signal Sections', 'Actionable Takeaways', 'Risks & Limits'];
+  
+  const finalSections: string[] = [];
+  
+  for (const expected of expectedSections) {
+    const found = uniqueSections.find(s => 
+      s.title.toLowerCase().includes(expected.toLowerCase()) ||
+      expected.toLowerCase().includes(s.title.toLowerCase())
+    );
+    
+    if (found) {
+      finalSections.push(`### ${found.title}\n\n${found.content}`);
+    }
+  }
+  
+  if (finalSections.length === 0 && uniqueSections.length > 0) {
+    return uniqueSections.slice(0, 5).map(s => `### ${s.title}\n\n${s.content}`).join('\n\n');
+  }
+  
+  return finalSections.join('\n\n');
+}
+
 export async function generateSummaryFromText(pdfText: string) {
   try {
     console.log("Starting summary generation...");
@@ -21,159 +93,91 @@ export async function generateSummaryFromText(pdfText: string) {
         "\n\n[Content truncated for processing - document is very long]"
         : pdfText;
 
+    console.log("Calling OpenRouter API for summary generation...");
     const summary = await openrouterChatCompletion({
       model: "google/gemini-2.5-flash",
       messages: [
         {
           role: "system",
-          content: `You are Visura, an AI document summarizer built for startup founders.
+          content: `You are Visura. You summarize documents for startup founders. 
 
-Your core principle:
-Founders want SIGNAL, not noise.
-Every sentence must either:
-(a) support a decision
-(b) establish credibility or risk
-(c) surface real-world relevance
-Anything else is removed.`,
+RULES:
+1. Output EXACTLY ${isShortDocument ? '5' : '5'} sections. No more, no less.
+2. Each section header appears ONCE. Never repeat a section.
+3. Every sentence must support a decision, establish risk/credibility, or surface real-world relevance.
+4. No fluff. No academic tone. No repetition.
+5. Founder-focused = actionable, direct, signal-focused.`,
         },
         {
           role: "user",
-          content: `────────────────────────
-STEP 1 — CLASSIFY DOCUMENT
-────────────────────────
+          content: `Document: ${estimatedPages} pages (${pdfText.length} chars)
 
-First, determine document length:
-
-- SHORT DOCUMENT = 15 pages or less (≈ 7,000 tokens / 28,000 characters)
-- LONG DOCUMENT = more than 15 pages
-
-Document text length: ${pdfText.length} characters (estimated ${estimatedPages} pages)
-Classification: ${isShortDocument ? 'SHORT DOCUMENT' : 'LONG DOCUMENT'}
-
-You MUST follow the rules for the detected category.
-Do not mix formats.
-
-${isShortDocument ? `────────────────────────
-SHORT DOCUMENT MODE
-(≤ 15 pages)
-────────────────────────
-
-GOAL:
-Help the reader fully understand the document quickly and act.
-
-ASSUMPTION:
-This document is short enough to be absorbed end-to-end.
-
-OUTPUT FORMAT (MANDATORY):
+${isShortDocument ? `OUTPUT EXACTLY 5 SECTIONS IN THIS ORDER:
 
 ### Executive Summary
-- 4–6 bullets
-- What this document is about
-- Why it matters
-- What decision or action it informs
+- 3-5 bullets: what this is, why it matters, what decision it informs
+- ONE paragraph max
 
-### Key Insights
-- Bullet points only
-- Non-obvious insights
+### Key Insights  
+- 5-8 bullet points of non-obvious insights
 - No restating obvious content
 
 ### Evidence & Signals
-- Data points, examples, or concrete claims
-- Explicitly call out weak or missing evidence
+- Concrete data points, examples, claims
+- Call out weak/missing evidence explicitly
 
-### Risks, Assumptions, or Gaps
+### Risks & Gaps
 - What could be wrong
-- What is assumed but not proven
+- What's assumed but not proven
+- Where this fails
 
-### Recommended Action
+### Action
 - What the reader should do next
-- If no action is justified, say so clearly
+- If no action: say "No immediate action required"` : `OUTPUT EXACTLY 5 SECTIONS IN THIS ORDER:
 
-STYLE RULES:
-- Direct, concise language
-- No academic tone
-- No filler
-- No emojis
-
-GUARDRAIL:
-If the document has low actionable signal, say so explicitly.` : `────────────────────────
-LONG DOCUMENT MODE
-(> 15 pages)
-────────────────────────
-
-GOAL:
-Guide understanding honestly instead of pretending to compress everything.
-
-IMPORTANT:
-No one can fully learn a long document or book from a short summary.
-Do NOT attempt to summarize everything.
-
-OUTPUT FORMAT (MANDATORY):
-
-### Orientation Summary (Should I Care?)
-- Core thesis (1–2 sentences)
+### Should I Care?
+- Core thesis (1-2 sentences)
 - Intended audience
-- When this document is useful
-- When it is not useful
+- When useful / when not useful
 
 ### Core Mental Models
-- 5–7 key ideas or frameworks
+- 5-7 key ideas or frameworks
 - One line each
-- Avoid chapter-by-chapter breakdowns
+- NO chapter-by-chapter breakdowns
 
 ### High-Signal Sections
-- Most valuable chapters or sections
-- Why each is worth reading
+- 3-5 most valuable sections
+- Why each matters
 - Be honest if value is uneven
 
 ### Actionable Takeaways
-- Decisions this document informs
-- Behaviors it encourages or discourages
+- Decisions this informs
+- Behaviors it encourages/discourages
 - Practical implications
 
-### Risks, Limits, or Gaps
+### Risks & Limits
 - Weak assumptions
 - Outdated thinking
-- Contexts where this advice fails
-
-STYLE RULES:
-- Clear, blunt, honest language
-- No academic tone
-- No filler
-- No fake certainty
-
-GUARDRAIL:
-If the document is bloated, repetitive, or low-signal, say so plainly.
-Do not pretend everything is important.`}
+- Contexts where this fails`}
 
 ────────────────────────
-FINAL CHECK
+CRITICAL CONSTRAINTS:
 ────────────────────────
+- EXACTLY ${isShortDocument ? '5' : '5'} sections. Count them before responding.
+- Each section header appears ONCE. Check for duplicates.
+- No repeating "Executive Summary" or any other section.
+- No numbered lists within sections unless specified.
+- No sub-sections. Just the 5 main sections above.
+- If document is fiction/novel: focus on themes, character arcs, plot structure, not chapter summaries.
 
-Before responding:
-- Remove any sentence that does not create decision value
-- Do NOT invent facts, metrics, or confidence
-- Do NOT exaggerate conclusions
-
-Now process the uploaded document using the correct mode.
-
-HERE IS THE COMPLETE TEXT TO ANALYZE:
-
+DOCUMENT TEXT:
 ${textToSummarize}
 
-────────────────────────
-
-CRITICAL INSTRUCTIONS:
-- Extract information directly from the document text provided above
-- Focus on SIGNAL: decision support, credibility/risk, real-world relevance
-- Remove noise: filler, obvious statements, academic fluff
-- Be honest about gaps, weak evidence, or low-signal content
-- Write in direct, founder-friendly language
-- Every section must create actionable value`,
+Now generate the summary with EXACTLY ${isShortDocument ? '5' : '5'} sections, no repetition.`,
         },
       ],
-      temperature: 0.3,
-      max_tokens: 12000,
+      temperature: 0.2,
+      max_tokens: 8000,
     });
 
     console.log("Summary generated successfully!");
@@ -192,7 +196,9 @@ CRITICAL INSTRUCTIONS:
       throw new Error("AI model is confused about having access to content");
     }
 
-    return summary;
+    const cleanedSummary = enforceSummaryStructure(summary, isShortDocument);
+    
+    return cleanedSummary;
   } catch (error: any) {
     console.error("Summary generation error:", error);
     console.error("Error details:", {

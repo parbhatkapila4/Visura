@@ -75,7 +75,14 @@ export async function processChunkInternal(
         };
       }
 
-      const updated = await updateChunkSummary(chunkId, reusedChunk.summary, null);
+      const [updated] = await sql`
+        UPDATE document_chunks
+        SET summary = ${reusedChunk.summary}
+        WHERE id = ${chunkId}
+          AND summary IS NULL
+        RETURNING id
+      `;
+      
       if (updated) {
         await checkVersionCompletion(versionId);
       }
@@ -88,7 +95,23 @@ export async function processChunkInternal(
     }
 
     try {
+      console.log(`Calling AI for chunk ${chunkId}`, {
+        textLength: chunk.text.length,
+        versionId,
+      });
+      logger.info("Calling AI for summary generation", {
+        chunkId,
+        versionId,
+        textLength: chunk.text.length,
+      });
+      
       const summary = await generateSummaryFromText(chunk.text);
+      
+      console.log(`AI SUMMARY RECEIVED for chunk ${chunkId}`, {
+        summaryLength: summary.length,
+        versionId,
+      });
+      
       const updated = await updateChunkSummary(chunkId, summary, null);
 
       if (!updated) {
@@ -135,22 +158,44 @@ export async function processChunkInternal(
   }
 }
 
-async function checkVersionCompletion(versionId: string): Promise<void> {
+export async function checkVersionCompletion(versionId: string): Promise<void> {
+  console.log(`checkVersionCompletion CALLED for ${versionId}`);
   const complete = await isVersionComplete(versionId);
+  console.log(`Checking version completion for ${versionId}:`, { complete });
+  
   if (!complete) {
+    console.log(`Version ${versionId} not complete yet - will retry later`);
     return;
   }
+
+  console.log(`Version ${versionId} is complete! Creating summary...`);
+  logger.info("Version completion detected", { versionId });
 
   const sql = await getDbConnection();
   const [version] = await sql`
     SELECT document_id, pdf_summary_id, file_url FROM document_versions WHERE id = ${versionId}
   `;
 
-  if (version?.pdf_summary_id) {
+  if (!version) {
+    console.error(`Version ${versionId} not found in database!`);
+    logger.error("Version not found when checking completion", { versionId });
     return;
   }
 
+  if (version?.pdf_summary_id) {
+    console.log(`Version ${versionId} already has summary: ${version.pdf_summary_id}`);
+    return;
+  }
+  
+  console.log(`Creating final summary for version ${versionId}...`);
+
   const allChunks = await getChunksForVersion(versionId);
+  console.log(`All chunks for version ${versionId}:`, {
+    total: allChunks.length,
+    withSummary: allChunks.filter(c => c.summary).length,
+    withoutSummary: allChunks.filter(c => !c.summary).length,
+  });
+  
   const sortedChunks = allChunks.sort((a, b) => a.chunk_index - b.chunk_index);
   const finalSummary = sortedChunks
     .map((chunk) => chunk.summary)
@@ -158,6 +203,22 @@ async function checkVersionCompletion(versionId: string): Promise<void> {
     .join("\n\n");
 
   const fullText = sortedChunks.map((chunk) => chunk.text).join("\n\n");
+
+  console.log(`Final summary length: ${finalSummary.length}, Full text length: ${fullText.length}`);
+
+  if (!finalSummary || finalSummary.trim().length === 0) {
+    console.error(`NO SUMMARY TO CREATE! All chunks:`, sortedChunks.map(c => ({
+      index: c.chunk_index,
+      hasSummary: !!c.summary,
+      reusedFrom: c.reused_from_chunk_id,
+    })));
+    logger.error("Cannot create summary - no chunk summaries available", {
+      versionId,
+      totalChunks: allChunks.length,
+      chunksWithSummary: allChunks.filter(c => c.summary).length,
+    });
+    return;
+  }
 
   if (finalSummary) {
     const [documentInfo] = await sql`
@@ -181,8 +242,24 @@ async function checkVersionCompletion(versionId: string): Promise<void> {
       RETURNING id
     `;
 
-    await linkVersionToSummary(versionId, pdfSummary.id);
-
+    const linked = await linkVersionToSummary(versionId, pdfSummary.id);
+    
+    if (!linked) {
+      console.error(`FAILED TO LINK SUMMARY! Version ${versionId}, Summary ${pdfSummary.id}`);
+      logger.error("Failed to link summary to version", { versionId, pdfSummaryId: pdfSummary.id });
+    } else {
+      console.log(`SUMMARY CREATED AND LINKED!`, {
+        versionId,
+        pdfSummaryId: pdfSummary.id,
+        summaryLength: finalSummary.length,
+        linked,
+      });
+      logger.info("Summary created and linked", {
+        versionId,
+        pdfSummaryId: pdfSummary.id,
+        summaryLength: finalSummary.length,
+      });
+    }
 
     if (fullText && fullText.trim().length > 0) {
       try {
@@ -200,6 +277,17 @@ async function checkVersionCompletion(versionId: string): Promise<void> {
           error: chatbotError instanceof Error ? chatbotError.message : String(chatbotError),
         });
       }
+    }
+
+    try {
+      const { detectAndRecordChanges } = await import("./document-change-events");
+      await detectAndRecordChanges(versionId);
+    } catch (changeError) {
+      logger.warn("Failed to detect semantic changes (non-fatal)", {
+        versionId,
+        documentId: version.document_id,
+        error: changeError instanceof Error ? changeError.message : String(changeError),
+      });
     }
   }
 }

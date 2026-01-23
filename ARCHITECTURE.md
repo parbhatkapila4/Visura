@@ -294,6 +294,82 @@ These invariants are enforced at the database level via CHECK constraints and va
 
 ---
 
+## 🧠 Document Memory & Time-Travel Summaries
+
+Visura implements **first-class semantic change history** to enable time-travel queries and explain how documents evolve over time, not just their latest state.
+
+### Why Change Events Exist
+
+Traditional diff-based approaches show *what* changed (text differences) but not *why* it matters or *how* the document's meaning evolved. Semantic change events capture:
+
+- **What changed**: Content additions, removals, modifications
+- **Why it matters**: Policy shifts, risk changes, scope modifications
+- **How confident**: Confidence scores for each classification
+
+### How Change Detection Works
+
+1. **Trigger Point**: After a document version completes successfully (all chunks processed, summary created, pdf_store created)
+2. **Comparison**: Compares current version summary with previous version summary
+3. **Classification**: Uses LLM to analyze semantic changes and classify them into predefined types
+4. **Storage**: Creates immutable `document_change_events` records with:
+   - `from_version` / `to_version`: Version pair
+   - `change_type`: Semantic classification (added, removed, modified, policy_shift, risk_added, etc.)
+   - `summary`: Human-readable explanation
+   - `confidence`: 0.0-1.0 confidence score
+   - `affected_chunks`: Chunk indexes involved
+
+### Change Types
+
+The system classifies changes into 10 semantic types:
+
+- **Content Changes**: `added`, `removed`, `modified`
+- **Policy Changes**: `policy_shift`, `scope_change`
+- **Risk Changes**: `risk_added`, `risk_removed`
+- **Assumption Changes**: `assumption_added`, `assumption_removed`
+- **Clarifications**: `clarification`
+
+### Why Immutability Matters
+
+- **Temporal Queries**: "What changed between version 3 and 7?"
+- **Audit Trail**: Immutable history of document evolution
+- **Semantic Search**: Find documents with specific change types
+- **Confidence Tracking**: Low-confidence events can be flagged for review
+
+### Why Diffs Are Insufficient
+
+- **Text diffs** show character/word changes but not semantic meaning
+- **Chunk diffs** show which chunks changed but not why
+- **Semantic events** explain the *intent* and *impact* of changes
+
+### Idempotency Guarantees
+
+- Change detection runs **exactly once** per version pair
+- `UNIQUE(document_id, from_version, to_version, change_type, summary)` prevents duplicates
+- Safe to re-run without creating duplicate events
+- Non-fatal: failures don't block version completion
+
+### API Access
+
+- `GET /api/documents/[id]/timeline` - Returns chronological change events
+- Auth: Same ownership checks as document summaries
+- Returns: Array of change events with version numbers, types, summaries, confidence
+
+### When Change Detection Runs
+
+- **After**: Version completion (summary + pdf_store created)
+- **Before**: Version marked as fully complete
+- **Async**: Non-blocking, failures don't prevent completion
+- **Idempotent**: Safe to re-run via replay or recovery
+
+### What Is NOT Guaranteed
+
+- Change detection may fail silently (non-fatal, logged)
+- LLM classification may vary slightly between runs (though prompts are deterministic)
+- Confidence scores are estimates, not ground truth
+- Change events are not created for first version (no previous version to compare)
+
+---
+
 ## 🛡️ Operational Guarantees
 
 This section explicitly states what the system guarantees and what it does not.

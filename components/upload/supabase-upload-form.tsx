@@ -50,6 +50,83 @@ export default function SupabaseUploadForm({
     setIsClient(true);
   }, []);
 
+  const pollForSummaryCompletion = async (versionId: string, maxAttempts = 120) => {
+    let attempts = 0;
+    const pollInterval = 2000;
+
+    console.log("🔍 Starting to poll for summary completion", { versionId });
+
+    const poll = async () => {
+      try {
+        attempts++;
+        console.log(`Polling attempt ${attempts}/${maxAttempts}`, { versionId });
+
+        const response = await fetch(`/api/versions/${versionId}/status`);
+        if (!response.ok) {
+          console.error("Status check failed", { status: response.status, versionId });
+          throw new Error(`Failed to check status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Status response", {
+          versionId,
+          isComplete: data.isComplete,
+          pdfSummaryId: data.pdfSummaryId,
+          completedChunks: data.completedChunks,
+          totalChunks: data.totalChunks,
+          incompleteChunks: data.incompleteChunks,
+        });
+
+        if (data.isComplete && data.pdfSummaryId) {
+          setIsLoading(false);
+          toast.dismiss();
+          console.log("Summary ready!", { versionId, pdfSummaryId: data.pdfSummaryId });
+          toast.success("Summary ready!", {
+            description: "Redirecting to your summary...",
+          });
+
+          setTimeout(() => {
+            router.push(`/summaries/${data.pdfSummaryId}`);
+          }, 500);
+          return;
+        }
+
+        const progress = data.totalChunks > 0
+          ? Math.round((data.completedChunks / data.totalChunks) * 100)
+          : 0;
+
+        toast.info(`Processing... ${progress}%`, {
+          description: `Completed ${data.completedChunks} of ${data.totalChunks} chunks`,
+          id: "processing-status",
+          duration: Infinity,
+        });
+
+        if (attempts >= maxAttempts) {
+          setIsLoading(false);
+          toast.dismiss("processing-status");
+          console.warn("Polling timeout", { versionId, attempts });
+          toast.error("Processing is taking longer than expected", {
+            description: "Your summary will be available on the dashboard when ready.",
+          });
+          router.push("/dashboard");
+          return;
+        }
+
+        setTimeout(poll, pollInterval);
+      } catch (error) {
+        console.error("Polling error", error, { versionId, attempts });
+        setIsLoading(false);
+        toast.dismiss("processing-status");
+        toast.error("Error checking status", {
+          description: "Check the dashboard for your summary.",
+        });
+        router.push("/dashboard");
+      }
+    };
+
+    poll();
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -65,9 +142,19 @@ export default function SupabaseUploadForm({
       return;
     }
 
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+
+    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.length === 0 || supabaseAnonKey.length === 0) {
       toast.error("Configuration Error", {
-        description: "Missing Supabase configuration. Please check your environment variables.",
+        description: "Missing or invalid Supabase configuration. Please check your environment variables.",
+      });
+      return;
+    }
+
+    if (!supabaseUrl.startsWith("http://") && !supabaseUrl.startsWith("https://")) {
+      toast.error("Configuration Error", {
+        description: "Invalid Supabase URL format. Must be a valid HTTP/HTTPS URL.",
       });
       return;
     }
@@ -160,6 +247,7 @@ export default function SupabaseUploadForm({
       }
     }
 
+    let versionResult: any = null;
     try {
       console.log("Step 2: Uploading to Supabase Storage...");
       const supabaseResult = await uploadToSupabase(file, user.id);
@@ -184,22 +272,43 @@ export default function SupabaseUploadForm({
         description: "Creating document version and enqueuing AI processing",
       });
 
-      const versionResult = await createVersionedDocumentJob(
-        extractedText,
-        supabaseResult.data.fileName,
-        supabaseResult.data.publicUrl
-      );
+      try {
+        versionResult = await createVersionedDocumentJob(
+          extractedText,
+          supabaseResult.data.fileName,
+          supabaseResult.data.publicUrl
+        );
+        console.log("Version result:", versionResult);
+      } catch (error) {
+        console.error("ERROR in createVersionedDocumentJob:", error);
+        throw error;
+      }
 
-      if (!versionResult.success) {
-        if (versionResult.data?.costLimitExceeded) {
+      if (!versionResult || !versionResult.success) {
+        console.error("Version creation failed:", versionResult);
+        if (versionResult?.data?.costLimitExceeded) {
           toast.error("Cost limit exceeded", {
             description: versionResult.message || "You have exceeded your processing limits. Please try again tomorrow.",
           });
+          setIsLoading(false);
+          return;
         } else {
-          throw new Error(versionResult.message || "Failed to create document version");
+          const errorMsg = versionResult?.message || "Failed to create document version";
+          console.error("Version creation error:", errorMsg);
+          toast.error("Failed to create document", {
+            description: errorMsg,
+          });
+          setIsLoading(false);
+          return;
         }
-        return;
       }
+
+      console.log("Version created successfully:", {
+        versionId: versionResult.data?.versionId,
+        documentId: versionResult.data?.documentId,
+        chunksTotal: versionResult.data?.chunksTotal,
+        chunksToProcess: versionResult.data?.chunksToProcess,
+      });
 
       if (versionResult.data?.unchanged) {
         toast.success("Document already processed!", {
@@ -209,13 +318,14 @@ export default function SupabaseUploadForm({
           formRef.current?.reset();
           router.push(`/summaries/${versionResult.data.pdfSummaryId}`);
         } else {
-          router.push(`/documents/${versionResult.data.documentId}`);
+          formRef.current?.reset();
+          router.push("/dashboard");
         }
         return;
       }
 
       toast.success("Document uploaded successfully!", {
-        description: "Processing in background. You will be notified when complete.",
+        description: "Generating summary... Please wait.",
       });
 
       setResult({
@@ -225,10 +335,31 @@ export default function SupabaseUploadForm({
       });
 
       formRef.current?.reset();
-      router.push("/dashboard");
+
+      if (!versionResult.data?.versionId) {
+        console.error("NO VERSION ID RETURNED!", versionResult);
+        toast.error("Failed to create version", {
+          description: "Version ID was not returned. Please try again.",
+        });
+        setIsLoading(false);
+        router.push("/dashboard");
+        return;
+      }
+
+      console.log("Starting polling for version:", versionResult.data.versionId);
+      setIsLoading(true);
+      toast.info("Processing your document...", {
+        description: "AI is generating your summary. This may take a moment.",
+        duration: 10000,
+      });
+      pollForSummaryCompletion(versionResult.data.versionId);
     } catch (error) {
-      console.error("Upload/processing error:", error);
-      const rawMessage = error instanceof Error ? error.message : "Unknown error";
+      console.error("UPLOAD/PROCESSING ERROR:", error);
+      console.error("Error stack:", error instanceof Error ? error.stack : "No stack");
+      console.error("Version result at error:", versionResult);
+
+      setIsLoading(false);
+      const rawMessage = error instanceof Error ? error.message : String(error);
       const friendlyMessage = /\b402\b|Payment Required/i.test(rawMessage)
         ? "AI summary generation failed due to billing/credits. Please check your LLM provider billing status or API key quota."
         : rawMessage;
@@ -239,12 +370,14 @@ export default function SupabaseUploadForm({
           label: "Close",
           onClick: () => { },
         },
-        duration: 8000,
+        duration: 10000,
       });
 
       router.push("/dashboard");
     } finally {
-      setIsLoading(false);
+      if (!versionResult?.data?.versionId) {
+        setIsLoading(false);
+      }
     }
   };
 

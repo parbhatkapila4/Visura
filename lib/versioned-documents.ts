@@ -235,7 +235,6 @@ export async function updateChunkSummary(
     SET summary = ${summary}, job_id = ${jobId}
     WHERE id = ${chunkId}
       AND summary IS NULL
-      AND reused_from_chunk_id IS NULL
     RETURNING id
   `;
   return result !== undefined;
@@ -277,14 +276,39 @@ export async function linkVersionToSummary(versionId: string, pdfSummaryId: stri
 
 export async function isVersionComplete(versionId: string): Promise<boolean> {
   const sql = await getDbConnection();
-  const [result] = await sql`
+  const [newChunksResult] = await sql`
     SELECT COUNT(*) as incomplete_count
     FROM document_chunks
     WHERE document_version_id = ${versionId}
       AND summary IS NULL
       AND reused_from_chunk_id IS NULL
   `;
-  return Number(result?.incomplete_count || 0) === 0;
+  
+  const [reusedChunksResult] = await sql`
+    SELECT COUNT(*) as incomplete_reused_count
+    FROM document_chunks dc
+    WHERE dc.document_version_id = ${versionId}
+      AND dc.summary IS NULL
+      AND dc.reused_from_chunk_id IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM document_chunks source
+        WHERE source.id = dc.reused_from_chunk_id
+        AND source.summary IS NOT NULL
+      )
+  `;
+  
+  const incompleteNew = Number(newChunksResult?.incomplete_count || 0);
+  const incompleteReused = Number(reusedChunksResult?.incomplete_reused_count || 0);
+  
+  const isComplete = incompleteNew === 0 && incompleteReused === 0;
+  
+  console.log(`isVersionComplete(${versionId}):`, {
+    incompleteNew,
+    incompleteReused,
+    isComplete,
+  });
+  
+  return isComplete;
 }
 
 export async function getIncompleteChunks(versionId: string): Promise<DocumentChunk[]> {
