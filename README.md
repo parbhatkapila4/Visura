@@ -14,28 +14,28 @@
 
 **Transform complex documents into actionable insights in seconds, not hours.**
 
-[Live Demo](https://visura.parbhat.dev/) • [Documentation](ARCHITECTURE.md) • [Features](#-features) • [Quick Start](#-quick-start)
+[Live Demo](https://visura.parbhat.dev/) • [Quick Start](QUICK_START.md) • [Documentation](ARCHITECTURE.md) 
 
 ---
 
 </div>
 
-## 🎯 Executive Summary
+## Executive Summary
 
 **Visura** is a production-ready, enterprise-scale AI document intelligence platform that processes, analyzes, and enables intelligent conversations with documents at scale. Built with **Next.js 15**, **TypeScript**, and **PostgreSQL**, it demonstrates **founding engineer-level** architecture with:
 
-- **💰 Cost-Optimized Processing**: Hash-based chunk reuse saves 50-80% on AI API costs
-- **🔄 Automatic Recovery**: Self-healing system with replay guarantees and crash recovery
-- **📊 Full Observability**: Sentry, OpenTelemetry, business metrics, and database monitoring
-- **⚡ Production Performance**: P50 < 2.5s, P95 < 5s, P99 < 7s for document processing
-- **🛡️ Enterprise Security**: HMAC request signing, distributed rate limiting, input sanitization
-- **🚀 Scalable Architecture**: Serverless-first, horizontal scaling, connection pooling
+- **Cost-Optimized Processing**: Hash-based chunk reuse saves 50-80% on AI API costs
+- **Automatic Recovery**: Self-healing system with replay guarantees and crash recovery
+- **Full Observability**: Sentry, OpenTelemetry, business metrics, and database monitoring
+- **Production Performance**: P50 < 2.5s, P95 < 5s, P99 < 7s for document processing
+- **Enterprise Security**: HMAC request signing, distributed rate limiting, input sanitization
+- **Scalable Architecture**: Serverless-first, horizontal scaling, connection pooling
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🧠 **AI-Powered Document Intelligence**
+### AI-Powered Document Intelligence
 
 | Feature | Capability | Impact |
 |--------|-----------|--------|
@@ -45,7 +45,7 @@
 | **Multi-Language** | Auto-detection (English, Hindi, French, German, Russian) | Global document processing |
 | **Type Classification** | 15+ document types with custom prompts | Optimized summaries per document category |
 
-### 🏗️ **Enterprise Architecture**
+### Enterprise Architecture
 
 | Component | Technology | Why It Matters |
 |-----------|-----------|----------------|
@@ -56,7 +56,7 @@
 | **Automatic Recovery** | Self-healing with replay guarantees | Zero-downtime resilience |
 | **Cost Guardrails** | Daily limits, per-version limits | Prevents runaway costs |
 
-### 👥 **Team Collaboration**
+### Team Collaboration
 
 - **Workspaces**: Role-based access control (Owner, Admin, Member, Viewer)
 - **Real-time Chat**: Team communication within workspaces
@@ -64,7 +64,7 @@
 - **Collaboration Presence**: See who's viewing documents in real-time
 - **Activity Tracking**: Complete audit trail of workspace actions
 
-### 📊 **Analytics & Insights**
+### Analytics & Insights
 
 - **Processing Metrics**: Track documents, success rates, efficiency scores
 - **Performance Monitoring**: P50, P95, P99 latencies for all operations
@@ -72,7 +72,7 @@
 - **Cost Analytics**: Token usage, chunk reuse rates, processing costs
 - **Database Health**: Query performance, connection pool metrics
 
-### 🔐 **Security & Compliance**
+### Security & Compliance
 
 - **Authentication**: Clerk with JWT verification and SSO support
 - **Authorization**: Middleware-protected routes with role-based access
@@ -84,7 +84,7 @@
 
 ---
 
-## 🏛️ Architecture Highlights
+## Architecture Highlights
 
 ### **Production-Ready Design Patterns**
 
@@ -97,11 +97,11 @@ const version = await createVersionedDocumentJob({
 });
 
 // Automatically:
-// ✅ Detects unchanged chunks (hash-based)
-// ✅ Reuses previous summaries (50-80% cost savings)
-// ✅ Processes only new/changed content
-// ✅ Tracks cost metrics per version
-// ✅ Enforces guardrails before processing
+// - Detects unchanged chunks (hash-based)
+// - Reuses previous summaries (50-80% cost savings)
+// - Processes only new/changed content
+// - Tracks cost metrics per version
+// - Enforces guardrails before processing
 ```
 
 ### **Observability Stack**
@@ -127,34 +127,34 @@ import {
 
 ```typescript
 // Self-healing architecture
-// ✅ Automatic detection of stuck versions (>10 min)
-// ✅ Idempotent replay of incomplete chunks
-// ✅ Crash recovery with state preservation
-// ✅ No manual intervention required
-// ✅ Converges to healthy state automatically
+// - Automatic detection of stuck versions (>10 min)
+// - Idempotent replay of incomplete chunks
+// - Crash recovery with state preservation
+// - No manual intervention required
+// - Converges to healthy state automatically
 ```
 
 ---
 
-## 📈 Performance Benchmarks
+## Performance Benchmarks
 
 ### **Production Metrics** (Real-world data)
 
 | Operation | P50 | P95 | P99 | Status |
 |-----------|-----|-----|-----|--------|
-| PDF Upload (10MB) | 1.2s | 2.1s | 3.5s | ✅ |
-| Text Extraction | 450ms | 800ms | 1.2s | ✅ |
-| AI Summary Generation | 2.5s | 4.2s | 6.8s | ✅ |
-| Vector Search (5 chunks) | 180ms | 320ms | 580ms | ✅ |
-| Chat Response | 1.1s | 2.3s | 4.1s | ✅ |
-| Page Load (Dashboard) | 320ms | 580ms | 920ms | ✅ |
+| PDF Upload (10MB) | 1.2s | 2.1s | 3.5s | Pass |
+| Text Extraction | 450ms | 800ms | 1.2s | Pass |
+| AI Summary Generation | 2.5s | 4.2s | 6.8s | Pass |
+| Vector Search (5 chunks) | 180ms | 320ms | 580ms | Pass |
+| Chat Response | 1.1s | 2.3s | 4.1s | Pass |
+| Page Load (Dashboard) | 320ms | 580ms | 920ms | Pass |
 
 ### **Core Web Vitals**
 
-- **LCP** (Largest Contentful Paint): **1.2s** ✅ (Target: < 2.5s)
-- **FID** (First Input Delay): **45ms** ✅ (Target: < 100ms)
-- **CLS** (Cumulative Layout Shift): **0.02** ✅ (Target: < 0.1)
-- **TTFB** (Time to First Byte): **180ms** ✅ (Target: < 600ms)
+- **LCP** (Largest Contentful Paint): **1.2s** (Target: < 2.5s) - Pass
+- **FID** (First Input Delay): **45ms** (Target: < 100ms) - Pass
+- **CLS** (Cumulative Layout Shift): **0.02** (Target: < 0.1) - Pass
+- **TTFB** (Time to First Byte): **180ms** (Target: < 600ms) - Pass
 
 ### **Cost Optimization**
 
@@ -165,7 +165,7 @@ import {
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### **Core Framework**
 - **Next.js 15** (App Router, Server Components, API Routes)
@@ -200,7 +200,7 @@ import {
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### **Prerequisites**
 
@@ -268,7 +268,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed setup instructions.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 visura/
@@ -308,7 +308,7 @@ visura/
 
 ---
 
-## 🎓 Advanced Features
+## Advanced Features
 
 ### **1. Versioned Document Processing**
 
@@ -344,11 +344,11 @@ const version = await createVersionedDocumentJob({
 
 ```typescript
 // Automatic recovery (runs every 5 minutes)
-// ✅ Detects stuck versions (>10 minutes old)
-// ✅ Replays incomplete chunks idempotently
-// ✅ Preserves completed work (no duplication)
-// ✅ Converges to healthy state automatically
-// ✅ Zero manual intervention required
+// - Detects stuck versions (>10 minutes old)
+// - Replays incomplete chunks idempotently
+// - Preserves completed work (no duplication)
+// - Converges to healthy state automatically
+// - Zero manual intervention required
 ```
 
 **Guarantees**:
@@ -365,11 +365,12 @@ const version = await createVersionedDocumentJob({
 
 ```typescript
 // Enforced before any processing begins
-// ✅ Daily token limit per user (default: 100,000 tokens)
-// ✅ Per-version chunk limit (default: 100 chunks)
-// ✅ Atomic checks (no partial state on limit exceeded)
-// ✅ CRITICAL alerts when limits hit
-// ✅ Clear error messages with usage details
+// - Daily token limit per user (default: 500,000 tokens)
+// - Per-version chunk limit (default: 100 chunks)
+// - Atomic checks (no partial state on limit exceeded)
+// - CRITICAL alerts when limits hit
+// - Clear error messages with usage details
+// - Configurable via MAX_TOKENS_PER_USER_PER_DAY env var
 ```
 
 **Impact**:
@@ -434,7 +435,7 @@ import {
 
 ---
 
-## 🔒 Security Architecture
+## Security Architecture
 
 ### **Multi-Layer Security**
 
@@ -451,18 +452,18 @@ Request Flow:
 
 ### **Security Features**
 
-- ✅ **JWT Authentication** with Clerk
-- ✅ **Role-Based Access Control** (RBAC) for workspaces
-- ✅ **Distributed Rate Limiting** (Redis-backed)
-- ✅ **Input Sanitization** (XSS protection)
-- ✅ **SQL Injection Prevention** (parameterized queries only)
-- ✅ **HMAC Request Signing** (internal API security)
-- ✅ **CORS & Security Headers** (CSP, X-Frame-Options)
-- ✅ **Environment Variable Validation** (required vars checked at startup)
+- **JWT Authentication** with Clerk
+- **Role-Based Access Control** (RBAC) for workspaces
+- **Distributed Rate Limiting** (Redis-backed)
+- **Input Sanitization** (XSS protection)
+- **SQL Injection Prevention** (parameterized queries only)
+- **HMAC Request Signing** (internal API security)
+- **CORS & Security Headers** (CSP, X-Frame-Options)
+- **Environment Variable Validation** (required vars checked at startup)
 
 ---
 
-## 📊 Database Schema
+## Database Schema
 
 ### **Core Tables**
 
@@ -482,7 +483,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for complete schema documentation.
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run tests
@@ -504,7 +505,7 @@ npm run format:check     # Prettier check
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 - **[ARCHITECTURE.md](ARCHITECTURE.md)**: Complete system architecture
 - **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution guidelines
@@ -514,7 +515,7 @@ npm run format:check     # Prettier check
 
 ---
 
-## 🚀 Deployment
+## Deployment
 
 ### **Vercel (Recommended)**
 
@@ -533,43 +534,15 @@ Set all required environment variables in Vercel dashboard:
 
 ### **Post-Deployment**
 
-1. ✅ Verify database migrations applied
-2. ✅ Check Sentry for errors
-3. ✅ Monitor Core Web Vitals
-4. ✅ Test critical flows (upload, chat, payment)
-5. ✅ Verify observability endpoints
+1. Verify database migrations applied
+2. Check Sentry for errors
+3. Monitor Core Web Vitals
+4. Test critical flows (upload, chat, payment)
+5. Verify observability endpoints
 
 ---
 
-## 🎯 Roadmap
-
-### **Completed ✅**
-- [x] Versioned document processing with cost optimization
-- [x] Distributed rate limiting with Redis
-- [x] Comprehensive observability stack
-- [x] Vector search with persistent embeddings
-- [x] Database performance monitoring
-- [x] Automatic recovery and replay system
-- [x] Cost guardrails and usage tracking
-- [x] Structured logging throughout
-- [x] HMAC-based internal API security
-- [x] Input sanitization and XSS protection
-
-### **In Progress 🚧**
-- [ ] Streaming AI responses (partial)
-- [ ] Batch document upload
-- [ ] Export to Word/Markdown
-
-### **Planned 📋**
-- [ ] Document comparison feature
-- [ ] Custom AI model fine-tuning
-- [ ] Public API for third-party integrations
-- [ ] On-premise deployment option
-- [ ] Multi-region deployment
-
----
-
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
@@ -595,13 +568,13 @@ git push origin feature/amazing-feature
 
 ---
 
-## 📄 License
+## License
 
 MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-## 👤 Author
+## Author
 
 **Parbhat Kapila**
 
@@ -612,7 +585,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Next.js Team** for the incredible framework
 - **Vercel** for seamless deployment
@@ -624,10 +597,9 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-**⭐ If Visura saves you time, consider giving it a star on GitHub! ⭐**
+**If Visura saves you time, consider giving it a star on GitHub!**
 
 [![GitHub stars](https://img.shields.io/github/stars/parbhatkapila4/Visura?style=social)](https://github.com/parbhatkapila4/Visura)
 
-**Built with ❤️ for developers who value production-ready code**
 
 </div>

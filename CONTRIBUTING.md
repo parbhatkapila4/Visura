@@ -4,7 +4,7 @@ Thank you for your interest in contributing to Visura! This document provides gu
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js 20+ 
@@ -18,7 +18,7 @@ Thank you for your interest in contributing to Visura! This document provides gu
 
 1. **Fork and Clone**
 ```bash
-git clone https://github.com/YOUR_USERNAME/visura.git
+git clone https://github.com/parbhatkapila4/Visura.git
 cd visura
 ```
 
@@ -29,8 +29,9 @@ npm install
 
 3. **Setup Environment**
 ```bash
-# Copy ENV_TEMPLATE.md content to .env.local
-# Fill in your API keys
+# Create .env.local file
+# Add required environment variables (see README.md for full list)
+# Required: DATABASE_URL, CLERK keys, OPENROUTER_API_KEY, etc.
 ```
 
 4. **Run Development Server**
@@ -45,7 +46,7 @@ npm test
 
 ---
 
-## 📝 Development Workflow
+## Development Workflow
 
 ### 1. Create a Branch
 ```bash
@@ -92,7 +93,7 @@ Then create a Pull Request on GitHub.
 
 ---
 
-## 🎨 Code Style
+## Code Style
 
 ### TypeScript
 - Use TypeScript for all new files
@@ -101,7 +102,7 @@ Then create a Pull Request on GitHub.
 - Export types alongside functions
 
 ```typescript
-// ✅ Good
+// Good
 export interface User {
   id: string;
   email: string;
@@ -111,7 +112,7 @@ export const getUser = async (id: string): Promise<User> => {
   return await db.query(...);
 };
 
-// ❌ Avoid
+// Avoid
 export function getUser(id) {
   return db.query(...);
 }
@@ -124,7 +125,7 @@ export function getUser(id) {
 - Use proper TypeScript types for props
 
 ```typescript
-// ✅ Good
+// Good
 interface ButtonProps {
   onClick: () => void;
   children: React.ReactNode;
@@ -135,7 +136,7 @@ export function Button({ onClick, children, variant = 'primary' }: ButtonProps) 
   return <button onClick={onClick}>{children}</button>;
 }
 
-// ❌ Avoid
+// Avoid
 export function Button(props: any) {
   return <button {...props} />;
 }
@@ -149,7 +150,7 @@ export function Button(props: any) {
 
 ---
 
-## 🧪 Testing Guidelines
+## Testing Guidelines
 
 ### What to Test
 1. **Business Logic**: All utility functions
@@ -182,7 +183,7 @@ describe('Feature Name', () => {
 
 ---
 
-## 🐛 Debugging Tips
+## Debugging Tips
 
 ### Common Issues
 
@@ -217,7 +218,7 @@ npm run lint
 
 ---
 
-## 📚 Project Structure
+## Project Structure
 
 ```
 visura/
@@ -237,41 +238,48 @@ visura/
 │   ├── db.ts             # Database connection
 │   ├── validators.ts     # Zod schemas
 │   ├── chatbot.ts        # Chat functions
+│   ├── versioned-documents.ts  # Versioned processing
+│   ├── embeddings.ts     # Vector search
+│   ├── observability.ts  # Monitoring & metrics
 │   └── [service].ts      # Service integrations
+├── actions/               # Server actions
 ├── utils/                 # Shared utilities
+├── migrations/           # Database migrations
 ├── tests/                 # Test files
 └── public/               # Static assets
 ```
 
 ---
 
-## 🎯 Contribution Ideas
+## Contribution Ideas
 
 ### Good First Issues
 - Add more keyboard shortcuts
-- Improve error messages
-- Add loading states
-- Write more tests
-- Fix TypeScript `any` types
-- Improve accessibility
+- Improve error messages and user feedback
+- Add loading states and skeleton screens
+- Write more unit and integration tests
+- Improve accessibility (ARIA labels, keyboard navigation)
+- Add more document type classifications
+- Enhance mobile responsiveness
 
 ### Medium Complexity
-- Add export to Word feature
-- Implement search functionality
+- Add export to Word/Markdown feature
+- Implement document search functionality
 - Add document comparison
-- Build batch upload
+- Build batch document upload
 - Add email notifications
+- Improve observability dashboards
 
 ### Advanced
-- Implement streaming AI responses
-- Add vector search for chat
-- Build background job queue
 - Add OCR for scanned PDFs
-- Multi-language support
+- Document comparison feature
+- Custom AI model fine-tuning
+- Public API for third-party integrations
+- Multi-region deployment
 
 ---
 
-## ✅ Pull Request Checklist
+## Pull Request Checklist
 
 Before submitting:
 
@@ -288,7 +296,7 @@ Before submitting:
 
 ---
 
-## 🤝 Code Review Process
+## Code Review Process
 
 1. **Automated Checks**: Tests, lint, type-check must pass
 2. **Manual Review**: Maintainer reviews code quality
@@ -298,15 +306,15 @@ Before submitting:
 
 ---
 
-## 📞 Getting Help
+## Getting Help
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/visura/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/visura/discussions)
+- **Issues**: [GitHub Issues](https://github.com/parbhatkapila4/Visura/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/parbhatkapila4/Visura/discussions)
 - **Email**: parbhat@parbhat.dev
 
 ---
 
-## 🏆 Recognition
+## Recognition
 
 Contributors will be:
 - Listed in README.md
@@ -315,5 +323,5 @@ Contributors will be:
 
 ---
 
-Thank you for making Visura better! 🎉
+Thank you for making Visura better!
 
