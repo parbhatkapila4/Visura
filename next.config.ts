@@ -9,11 +9,22 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       "@": path.resolve(__dirname, "."),
     };
+    
+    
+    config.resolve.extensions = [
+      ".tsx",
+      ".ts",
+      ".jsx",
+      ".js",
+      ".json",
+      ...(config.resolve.extensions || []),
+    ];
+    
     return config;
   },
 
