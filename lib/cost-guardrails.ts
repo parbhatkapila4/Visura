@@ -4,7 +4,8 @@ import { sendAlert } from "./alerting";
 import { logger } from "./logger";
 
 
-const ESTIMATED_TOKENS_PER_NEW_CHUNK = 1500;
+
+const ESTIMATED_TOKENS_PER_NEW_CHUNK = 550;
 
 export interface CostCheckResult {
   allowed: boolean;
@@ -19,6 +20,7 @@ export interface CostCheckResult {
 
 async function getDailyTokenUsage(userId: string): Promise<number> {
   const sql = await getDbConnection();
+
 
   const [result] = await sql`
     SELECT COALESCE(SUM(dv.new_chunks * ${ESTIMATED_TOKENS_PER_NEW_CHUNK}), 0) as tokens_today
@@ -36,10 +38,12 @@ export async function checkCostGuardrails(
   userId: string,
   newChunksCount: number,
   documentId?: string,
-  versionId?: string
+  versionId?: string,
+  customTokenEstimate?: number
 ): Promise<CostCheckResult> {
+  
   const maxTokensPerDay = parseInt(
-    process.env.MAX_TOKENS_PER_USER_PER_DAY || "100000",
+    process.env.MAX_TOKENS_PER_USER_PER_DAY || "500000",
     10
   );
   const maxNewChunksPerVersion = parseInt(
@@ -87,7 +91,9 @@ export async function checkCostGuardrails(
 
 
   const tokensToday = await getDailyTokenUsage(userId);
-  const estimatedTokensForThisVersion = newChunksCount * ESTIMATED_TOKENS_PER_NEW_CHUNK;
+  const estimatedTokensForThisVersion = customTokenEstimate 
+    ? customTokenEstimate 
+    : newChunksCount * ESTIMATED_TOKENS_PER_NEW_CHUNK;
   const totalAfterThisVersion = tokensToday + estimatedTokensForThisVersion;
 
   if (totalAfterThisVersion > maxTokensPerDay) {

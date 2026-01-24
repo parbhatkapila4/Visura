@@ -14,6 +14,7 @@ export const SendMessageSchema = z.object({
     .string()
     .min(1, "Message cannot be empty")
     .max(5000, "Message too long (max 5000 characters)"),
+  stream: z.boolean().optional(),
 });
 
 export const GetMessagesSchema = z.object({

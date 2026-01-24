@@ -1,5 +1,6 @@
 import { getDbConnection } from "./db";
 import { createHash } from "crypto";
+import { logger } from "./logger";
 
 export interface Document {
   id: string;
@@ -19,6 +20,7 @@ export interface DocumentVersion {
   reused_chunks: number;
   new_chunks: number;
   estimated_tokens_saved: number;
+  output_language: string | null;
   created_at: Date;
 }
 
@@ -119,7 +121,8 @@ export async function createDocumentVersion(
   fullContentHash: string,
   totalChunks: number,
   reusedChunks: number,
-  fileUrl?: string | null
+  fileUrl?: string | null,
+  outputLanguage: string = 'ENGLISH'
 ): Promise<DocumentVersion> {
   const sql = await getDbConnection();
 
@@ -156,7 +159,8 @@ export async function createDocumentVersion(
       total_chunks,
       reused_chunks,
       new_chunks,
-      estimated_tokens_saved
+      estimated_tokens_saved,
+      output_language
     )
     VALUES (
       ${documentId}, 
@@ -166,7 +170,8 @@ export async function createDocumentVersion(
       ${totalChunks},
       ${reusedChunks},
       ${newChunks},
-      ${estimatedTokensSaved}
+      ${estimatedTokensSaved},
+      ${outputLanguage}
     )
     RETURNING *
   `;
@@ -210,8 +215,9 @@ export async function createDocumentChunk(
       RETURNING *
     `;
     return chunk as DocumentChunk;
-  } catch (error: any) {
-    if (error?.code === "23505") {
+  } catch (error: unknown) {
+    const err = error as { code?: string };
+    if (err?.code === "23505") {
       const [existing] = await sql`
         SELECT * FROM document_chunks
         WHERE document_version_id = ${versionId} AND chunk_index = ${chunkIndex}
@@ -302,7 +308,8 @@ export async function isVersionComplete(versionId: string): Promise<boolean> {
   
   const isComplete = incompleteNew === 0 && incompleteReused === 0;
   
-  console.log(`isVersionComplete(${versionId}):`, {
+  logger.info("Version completion check", {
+    versionId,
     incompleteNew,
     incompleteReused,
     isComplete,

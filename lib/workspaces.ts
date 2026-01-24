@@ -1,4 +1,5 @@
 import { getDbConnection } from "./db";
+import { logger } from "./logger";
 
 export interface Workspace {
   id: string;
@@ -34,13 +35,27 @@ export interface DocumentShare {
   updated_at: Date;
 }
 
+export interface CursorPosition {
+  x: number;
+  y: number;
+  line?: number;
+  column?: number;
+}
+
+export interface CommentPosition {
+  x: number;
+  y: number;
+  page?: number;
+  section?: string;
+}
+
 export interface CollaborationSession {
   id: string;
   pdf_summary_id: string;
   user_id: string;
   user_email: string;
   user_name: string | null;
-  cursor_position: any;
+  cursor_position: CursorPosition | null;
   last_seen: Date;
   created_at: Date;
 }
@@ -53,7 +68,7 @@ export interface DocumentComment {
   user_email: string;
   user_name: string | null;
   content: string;
-  position: any;
+  position: CommentPosition | null;
   resolved: boolean;
   parent_comment_id: string | null;
   created_at: Date;
@@ -90,9 +105,8 @@ export async function createWorkspace({
 
   await sql`
     INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description)
-    VALUES (${workspace.id}, ${ownerId}, ${ownerEmail}, ${
-    ownerName || null
-  }, 'workspace_created', ${`Workspace "${name}" was created`})
+    VALUES (${workspace.id}, ${ownerId}, ${ownerEmail}, ${ownerName || null
+    }, 'workspace_created', ${`Workspace "${name}" was created`})
   `;
 
   return workspace;
@@ -178,20 +192,18 @@ export async function inviteWorkspaceMember({
 
   const [member] = await sql`
     INSERT INTO workspace_members (workspace_id, user_id, user_email, user_name, role, status, invited_by)
-    VALUES (${workspaceId}, ${user.id}::text, ${userEmail}, ${
-    userName || user.full_name || null
-  }, ${role}, 'active', ${invitedBy})
+    VALUES (${workspaceId}, ${user.id}::text, ${userEmail}, ${userName || user.full_name || null
+    }, ${role}, 'active', ${invitedBy})
     RETURNING *
   `;
 
   await sql`
     INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description, metadata)
-    VALUES (${workspaceId}, ${invitedBy}, ${invitedByName || null}, ${
-    invitedByName || null
-  }, 'member_invited', ${`${userEmail} was invited as ${role}`}, ${JSON.stringify({
-    invited_user_email: userEmail,
-    role,
-  })})
+    VALUES (${workspaceId}, ${invitedBy}, ${invitedByName || null}, ${invitedByName || null
+    }, 'member_invited', ${`${userEmail} was invited as ${role}`}, ${JSON.stringify({
+      invited_user_email: userEmail,
+      role,
+    })})
   `;
 
   return member;
@@ -245,12 +257,11 @@ export async function removeWorkspaceMember({
 
   await sql`
     INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description, metadata)
-    VALUES (${workspaceId}, ${removedBy}, ${removedByName || null}, ${
-    removedByName || null
-  }, 'member_removed', ${`${member.user_email} was removed from the workspace`}, ${JSON.stringify({
-    removed_user_email: member.user_email,
-    removed_user_id: member.user_id,
-  })})
+    VALUES (${workspaceId}, ${removedBy}, ${removedByName || null}, ${removedByName || null
+    }, 'member_removed', ${`${member.user_email} was removed from the workspace`}, ${JSON.stringify({
+      removed_user_email: member.user_email,
+      removed_user_id: member.user_id,
+    })})
   `;
 
   return { success: true };
@@ -280,7 +291,7 @@ export async function shareDocumentWithWorkspace({
 
     try {
       const [summary] = await sql`SELECT title FROM pdf_summaries WHERE id = ${pdfSummaryId}`;
-      // Get user email from workspace_members table
+
       const [member] = await sql`
         SELECT user_email, user_name FROM workspace_members 
         WHERE workspace_id = ${workspaceId} AND user_id = ${sharedBy}
@@ -290,20 +301,21 @@ export async function shareDocumentWithWorkspace({
       if (member) {
         await sql`
           INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description, metadata)
-          VALUES (${workspaceId}, ${sharedBy}, ${member.user_email}, ${
-          member.user_name || null
-        }, 'document_shared', ${`Document "${
-          summary?.title || "Untitled"
-        }" was shared`}, ${JSON.stringify({ pdf_summary_id: pdfSummaryId })})
+          VALUES (${workspaceId}, ${sharedBy}, ${member.user_email}, ${member.user_name || null
+          }, 'document_shared', ${`Document "${summary?.title || "Untitled"
+          }" was shared`}, ${JSON.stringify({ pdf_summary_id: pdfSummaryId })})
         `;
       }
     } catch (activityError) {
-      console.warn("Failed to log workspace activity:", activityError);
+      logger.warn("Failed to log workspace activity", {
+        error: activityError instanceof Error ? activityError.message : String(activityError),
+        workspaceId,
+      });
     }
 
     return share;
-  } catch (error: any) {
-    const errorMessage = error?.message || String(error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
 
     if (errorMessage.includes("does not exist") || errorMessage.includes("relation")) {
       throw new Error(`Database table not found: ${errorMessage}`);
@@ -353,15 +365,14 @@ export async function updateCollaborationSession({
   userId: string;
   userEmail: string;
   userName?: string;
-  cursorPosition?: any;
+  cursorPosition?: CursorPosition | null;
 }) {
   const sql = await getDbConnection();
 
   const [session] = await sql`
     INSERT INTO collaboration_sessions (pdf_summary_id, user_id, user_email, user_name, cursor_position, last_seen)
-    VALUES (${pdfSummaryId}, ${userId}, ${userEmail}, ${userName || null}, ${
-    cursorPosition ? JSON.stringify(cursorPosition) : null
-  }, CURRENT_TIMESTAMP)
+    VALUES (${pdfSummaryId}, ${userId}, ${userEmail}, ${userName || null}, ${cursorPosition ? JSON.stringify(cursorPosition) : null
+    }, CURRENT_TIMESTAMP)
     ON CONFLICT (pdf_summary_id, user_id)
     DO UPDATE SET 
       cursor_position = ${cursorPosition ? JSON.stringify(cursorPosition) : null},
@@ -411,28 +422,26 @@ export async function addDocumentComment({
   userEmail: string;
   userName?: string;
   content: string;
-  position?: any;
+  position?: CommentPosition | null;
   parentCommentId?: string;
 }) {
   const sql = await getDbConnection();
 
   const [comment] = await sql`
     INSERT INTO document_comments (pdf_summary_id, workspace_id, user_id, user_email, user_name, content, position, parent_comment_id)
-    VALUES (${pdfSummaryId}, ${workspaceId || null}, ${userId}, ${userEmail}, ${
-    userName || null
-  }, ${content}, ${position ? JSON.stringify(position) : null}, ${parentCommentId || null})
+    VALUES (${pdfSummaryId}, ${workspaceId || null}, ${userId}, ${userEmail}, ${userName || null
+    }, ${content}, ${position ? JSON.stringify(position) : null}, ${parentCommentId || null})
     RETURNING *
   `;
 
   if (workspaceId) {
     await sql`
       INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description, metadata)
-      VALUES (${workspaceId}, ${userId}, ${userEmail}, ${
-      userName || null
-    }, 'comment_added', ${`Comment added on document`}, ${JSON.stringify({
-      pdf_summary_id: pdfSummaryId,
-      comment_id: comment.id,
-    })})
+      VALUES (${workspaceId}, ${userId}, ${userEmail}, ${userName || null
+      }, 'comment_added', ${`Comment added on document`}, ${JSON.stringify({
+        pdf_summary_id: pdfSummaryId,
+        comment_id: comment.id,
+      })})
     `;
   }
 
@@ -445,11 +454,10 @@ export async function getDocumentComments(pdfSummaryId: string, workspaceId?: st
   const comments = await sql`
     SELECT * FROM document_comments
     WHERE pdf_summary_id = ${pdfSummaryId}
-      ${
-        workspaceId
-          ? sql`AND (workspace_id = ${workspaceId} OR workspace_id IS NULL)`
-          : sql`AND workspace_id IS NULL`
-      }
+      ${workspaceId
+      ? sql`AND (workspace_id = ${workspaceId} OR workspace_id IS NULL)`
+      : sql`AND workspace_id IS NULL`
+    }
       AND resolved = false
     ORDER BY created_at ASC
   `;
@@ -568,17 +576,19 @@ export async function sendWorkspaceChatMessage({
     try {
       await sql`
         INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description)
-        VALUES (${workspaceId}, ${userId}, ${userEmail}, ${
-        userName || null
-      }, 'chat_message_sent', ${`Sent a chat message`})
+        VALUES (${workspaceId}, ${userId}, ${userEmail}, ${userName || null
+        }, 'chat_message_sent', ${`Sent a chat message`})
       `;
     } catch (activityError) {
-      console.warn("Failed to log chat activity:", activityError);
+      logger.warn("Failed to log chat activity", {
+        error: activityError instanceof Error ? activityError.message : String(activityError),
+        workspaceId,
+      });
     }
 
     return message;
-  } catch (error: any) {
-    const errorMessage = error?.message || String(error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     if (
       errorMessage.includes("does not exist") ||
       errorMessage.includes("relation") ||
@@ -619,8 +629,8 @@ export async function getWorkspaceChatMessages(
     const messages = await query;
 
     return messages.reverse();
-  } catch (error: any) {
-    const errorMessage = error?.message || String(error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     if (
       errorMessage.includes("does not exist") ||
       errorMessage.includes("relation") ||
@@ -644,8 +654,8 @@ export async function getWorkspaceChatMessagesSince(workspaceId: string, since: 
     `;
 
     return messages;
-  } catch (error: any) {
-    const errorMessage = error?.message || String(error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     if (
       errorMessage.includes("does not exist") ||
       errorMessage.includes("relation") ||

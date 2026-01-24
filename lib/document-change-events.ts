@@ -56,8 +56,9 @@ export async function createChangeEvent(
       ON CONFLICT (document_id, from_version, to_version, change_type, summary) DO NOTHING
     `;
     return true;
-  } catch (error: any) {
-    if (error?.code === "23505") {
+  } catch (error: unknown) {
+    const err = error as { code?: string };
+    if (err?.code === "23505") {
       return false;
     }
     throw error;

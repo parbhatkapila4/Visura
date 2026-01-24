@@ -42,7 +42,9 @@ export async function computeDocumentDelta(documentId: string): Promise<string> 
 
   try {
     const deltaSummary = await generateSummaryFromText(
-      `The following sections changed in the new version:\n\n${deltaText}\n\nProvide a concise summary of what changed, focusing on key differences and new information.`
+      `The following sections changed in the new version:\n\n${deltaText}\n\nProvide a concise summary of what changed, focusing on key differences and new information.`,
+      'ENGLISH',
+      { isChunk: false }
     );
     return deltaSummary;
   } catch (error) {

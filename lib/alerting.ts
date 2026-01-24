@@ -1,3 +1,5 @@
+import { logger } from "./logger";
+
 interface AlertContext {
   jobId?: string;
   versionId?: string;
@@ -99,9 +101,21 @@ export async function sendAlert({
     });
 
     if (!response.ok) {
-      console.error(`Alert webhook failed: ${response.status} ${response.statusText}`, payload);
+      const errorText = await response.text().catch(() => 'Unable to read error response');
+      logger.warn("Alert webhook failed", {
+        status: response.status,
+        statusText: response.statusText,
+        errorText,
+        alertType: type,
+        severity,
+        webhookUrl: webhookUrl.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'),
+      });
     }
   } catch (error) {
-    console.error("Alert webhook error:", error, payload);
+    logger.warn("Alert webhook error", {
+      error: error instanceof Error ? error.message : String(error),
+      alertType: type,
+      severity,
+    });
   }
 }

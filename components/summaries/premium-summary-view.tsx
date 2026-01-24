@@ -17,7 +17,6 @@ import {
   ArrowUpRight,
   Check,
   AlertTriangle,
-  RefreshCw,
   Hash,
   Eye,
   BookMarked,
@@ -29,6 +28,7 @@ import {
   Quote,
   Download,
   ExternalLink,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -279,6 +279,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
       isScrollingRef.current = false;
     }, 1000);
   };
+
 
   if (isErrorSummary) {
     return (
@@ -631,6 +632,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 <p className="text-sm font-medium text-white mb-1">Share</p>
                 <p className="text-xs text-[#666]">Copy link</p>
               </div>
+
 
               <DropdownMenu
                 onOpenChange={(open) => {

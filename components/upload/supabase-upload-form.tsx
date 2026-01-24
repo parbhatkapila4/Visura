@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { clientLogger } from "@/lib/client-logger";
 
 const schema = z.object({
   file: z
@@ -54,21 +55,21 @@ export default function SupabaseUploadForm({
     let attempts = 0;
     const pollInterval = 2000;
 
-    console.log("🔍 Starting to poll for summary completion", { versionId });
+    clientLogger.info("Starting to poll for summary completion", { versionId });
 
     const poll = async () => {
       try {
         attempts++;
-        console.log(`Polling attempt ${attempts}/${maxAttempts}`, { versionId });
+        clientLogger.info(`Polling attempt ${attempts}/${maxAttempts}`, { versionId });
 
         const response = await fetch(`/api/versions/${versionId}/status`);
         if (!response.ok) {
-          console.error("Status check failed", { status: response.status, versionId });
+          clientLogger.error("Status check failed", undefined, { status: response.status, versionId });
           throw new Error(`Failed to check status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log("Status response", {
+        clientLogger.info("Status response", {
           versionId,
           isComplete: data.isComplete,
           pdfSummaryId: data.pdfSummaryId,
@@ -80,7 +81,7 @@ export default function SupabaseUploadForm({
         if (data.isComplete && data.pdfSummaryId) {
           setIsLoading(false);
           toast.dismiss();
-          console.log("Summary ready!", { versionId, pdfSummaryId: data.pdfSummaryId });
+          clientLogger.info("Summary ready", { versionId, pdfSummaryId: data.pdfSummaryId });
           toast.success("Summary ready!", {
             description: "Redirecting to your summary...",
           });
@@ -104,9 +105,9 @@ export default function SupabaseUploadForm({
         if (attempts >= maxAttempts) {
           setIsLoading(false);
           toast.dismiss("processing-status");
-          console.warn("Polling timeout", { versionId, attempts });
+          clientLogger.warn("Polling timeout", { versionId, attempts, incompleteChunks: data.incompleteChunks });
           toast.error("Processing is taking longer than expected", {
-            description: "Your summary will be available on the dashboard when ready.",
+            description: `Still processing ${data.incompleteChunks || 0} chunks. Check dashboard for status.`,
           });
           router.push("/dashboard");
           return;
@@ -114,11 +115,12 @@ export default function SupabaseUploadForm({
 
         setTimeout(poll, pollInterval);
       } catch (error) {
-        console.error("Polling error", error, { versionId, attempts });
+        clientLogger.error("Polling error", error, { versionId, attempts });
         setIsLoading(false);
         toast.dismiss("processing-status");
+        const errorMsg = error instanceof Error ? error.message : String(error);
         toast.error("Error checking status", {
-          description: "Check the dashboard for your summary.",
+          description: errorMsg || "Check the dashboard for your summary.",
         });
         router.push("/dashboard");
       }
@@ -130,7 +132,7 @@ export default function SupabaseUploadForm({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Form submit triggered", { user: !!user, isClient, isLoading });
+    clientLogger.info("Form submit triggered", { user: !!user, isClient, isLoading });
 
     if (!user) {
       toast.error("Please sign in to upload files");
@@ -187,14 +189,14 @@ export default function SupabaseUploadForm({
 
     const validation = schema.safeParse({ file });
     if (!validation.success) {
-      console.error("Validation error:", validation.error.issues);
+      clientLogger.error("Validation error", undefined, { issues: validation.error.issues });
       toast.error("Invalid file", {
         description: validation.error.issues[0]?.message || "File validation failed",
       });
       return;
     }
 
-    console.log("✅ File validation passed");
+    clientLogger.info("File validation passed");
 
     const fileTypeLabel = getFileTypeLabel(file);
     setIsLoading(true);
@@ -207,14 +209,14 @@ export default function SupabaseUploadForm({
     let extractionErrorMsg = "";
 
     try {
-      console.log(`Step 1: Extracting text from ${fileTypeLabel}...`);
+      clientLogger.info(`Step 1: Extracting text from ${fileTypeLabel}`);
       extractedText = await extractTextFromDocument(file);
-      console.log("✅ Text extraction completed, length:", extractedText.length);
+      clientLogger.info("Text extraction completed", { length: extractedText.length });
       if (extractedText.length > 0) {
-        console.log("First 300 characters:", extractedText.substring(0, 300));
+        clientLogger.info("Extracted text preview", { preview: extractedText.substring(0, 300) });
       }
     } catch (extractError: any) {
-      console.error("❌ Extraction error:", extractError);
+      clientLogger.error("Extraction error", extractError);
       hadExtractionError = true;
       extractionErrorMsg = extractError.message || "Unknown extraction error";
 
@@ -236,37 +238,63 @@ export default function SupabaseUploadForm({
         extractionErrorMsg.includes("No text found") ||
         extractionErrorMsg.includes("OCR also failed")
       ) {
-        console.log("🖼️ Scanned/image-based document - OCR will be attempted automatically");
+        clientLogger.info("Scanned/image-based document detected - OCR will be attempted automatically");
         toast.info("Scanned document detected", {
           description: "Running OCR to extract text from images...",
         });
         extractedText = "";
       } else {
-        console.log("⚠️ Extraction error - continuing with fallback:", extractionErrorMsg);
+        clientLogger.warn("Extraction error - continuing with fallback", { error: extractionErrorMsg });
         extractedText = "";
       }
     }
 
     let versionResult: any = null;
     try {
-      console.log("Step 2: Uploading to Supabase Storage...");
+      clientLogger.info("Step 2: Uploading to Supabase Storage");
       const supabaseResult = await uploadToSupabase(file, user.id);
 
       if (!supabaseResult.success || !supabaseResult.data) {
         throw new Error(supabaseResult.error || "Upload failed");
       }
 
-      console.log("✅ Upload successful:", supabaseResult.data.fileName);
+      clientLogger.info("Upload successful", { fileName: supabaseResult.data.fileName });
+
 
       if (!extractedText || extractedText.trim().length < 50) {
-        toast.error("Text extraction failed", {
-          description: "Unable to extract sufficient text from document. Please try a different file.",
+        clientLogger.warn("Initial text extraction failed, attempting extraction from uploaded file URL", {
+          extractedTextLength: extractedText?.length || 0,
+          fileUrl: supabaseResult.data.publicUrl,
         });
-        return;
+
+        try {
+          toast.info("Extracting text from uploaded file...", {
+            description: "Attempting alternative extraction method",
+          });
+
+
+          const { extractTextFromDocumentUrl } = await import("@/lib/document-text-extractor");
+          extractedText = await extractTextFromDocumentUrl(
+            supabaseResult.data.publicUrl,
+            supabaseResult.data.fileName
+          );
+
+          if (extractedText && extractedText.trim().length >= 50) {
+            clientLogger.info("Text extraction from URL succeeded", { length: extractedText.length });
+          } else {
+            throw new Error("Text extraction from URL also failed");
+          }
+        } catch (urlExtractError: any) {
+          clientLogger.error("Text extraction from URL also failed", urlExtractError);
+          toast.error("Text extraction failed", {
+            description: "Unable to extract text from document. The file may be scanned, corrupted, or password-protected. Please try a different file.",
+          });
+          setIsLoading(false);
+          return;
+        }
       }
 
-      console.log("Step 3: Creating versioned document job...");
-      console.log("📊 Extracted text length:", extractedText.length);
+      clientLogger.info("Step 3: Creating versioned document job", { extractedTextLength: extractedText.length });
 
       toast.info("Processing document...", {
         description: "Creating document version and enqueuing AI processing",
@@ -276,16 +304,17 @@ export default function SupabaseUploadForm({
         versionResult = await createVersionedDocumentJob(
           extractedText,
           supabaseResult.data.fileName,
-          supabaseResult.data.publicUrl
+          supabaseResult.data.publicUrl,
+          'ENGLISH'
         );
-        console.log("Version result:", versionResult);
+        clientLogger.info("Version result received", { success: versionResult?.success });
       } catch (error) {
-        console.error("ERROR in createVersionedDocumentJob:", error);
+        clientLogger.error("ERROR in createVersionedDocumentJob", error);
         throw error;
       }
 
       if (!versionResult || !versionResult.success) {
-        console.error("Version creation failed:", versionResult);
+        clientLogger.error("Version creation failed", undefined, { versionResult });
         if (versionResult?.data?.costLimitExceeded) {
           toast.error("Cost limit exceeded", {
             description: versionResult.message || "You have exceeded your processing limits. Please try again tomorrow.",
@@ -294,7 +323,7 @@ export default function SupabaseUploadForm({
           return;
         } else {
           const errorMsg = versionResult?.message || "Failed to create document version";
-          console.error("Version creation error:", errorMsg);
+          clientLogger.error("Version creation error", undefined, { errorMsg });
           toast.error("Failed to create document", {
             description: errorMsg,
           });
@@ -303,7 +332,7 @@ export default function SupabaseUploadForm({
         }
       }
 
-      console.log("Version created successfully:", {
+      clientLogger.info("Version created successfully", {
         versionId: versionResult.data?.versionId,
         documentId: versionResult.data?.documentId,
         chunksTotal: versionResult.data?.chunksTotal,
@@ -337,7 +366,7 @@ export default function SupabaseUploadForm({
       formRef.current?.reset();
 
       if (!versionResult.data?.versionId) {
-        console.error("NO VERSION ID RETURNED!", versionResult);
+        clientLogger.error("NO VERSION ID RETURNED", undefined, { versionResult });
         toast.error("Failed to create version", {
           description: "Version ID was not returned. Please try again.",
         });
@@ -346,7 +375,7 @@ export default function SupabaseUploadForm({
         return;
       }
 
-      console.log("Starting polling for version:", versionResult.data.versionId);
+      clientLogger.info("Starting polling for version", { versionId: versionResult.data.versionId });
       setIsLoading(true);
       toast.info("Processing your document...", {
         description: "AI is generating your summary. This may take a moment.",
@@ -354,9 +383,7 @@ export default function SupabaseUploadForm({
       });
       pollForSummaryCompletion(versionResult.data.versionId);
     } catch (error) {
-      console.error("UPLOAD/PROCESSING ERROR:", error);
-      console.error("Error stack:", error instanceof Error ? error.stack : "No stack");
-      console.error("Version result at error:", versionResult);
+      clientLogger.error("UPLOAD/PROCESSING ERROR", error, { versionResult });
 
       setIsLoading(false);
       const rawMessage = error instanceof Error ? error.message : String(error);
@@ -390,7 +417,7 @@ export default function SupabaseUploadForm({
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 sm:px-0">
+    <div className="mx-auto w-full max-w-xl px-4 sm:px-0">
       <UploadFormInput
         ref={formRef}
         onSubmit={handleSubmit}
