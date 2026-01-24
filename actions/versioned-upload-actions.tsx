@@ -15,12 +15,14 @@ import { formatFileNameAsTitle } from "@/utils/format-utils";
 import { checkCostGuardrails } from "@/lib/cost-guardrails";
 import { logger } from "@/lib/logger";
 import { processChunkInternal } from "@/lib/chunk-processor";
+import type { SupportedLanguage } from "@/lib/openai";
 import { getDbConnection } from "@/lib/db";
 
 export async function createVersionedDocumentJob(
   pdfText: string,
   fileName: string,
-  fileUrl: string
+  fileUrl: string,
+  language: SupportedLanguage = 'ENGLISH'
 ) {
   let userId: string | undefined = undefined;
   try {
@@ -78,29 +80,54 @@ export async function createVersionedDocumentJob(
       });
 
       const incompleteChunks = await getIncompleteChunks(latestVersion.id);
-      console.log(`Found ${incompleteChunks.length} incomplete chunks for existing version ${latestVersion.id}`);
+      logger.info("Found incomplete chunks for existing version", {
+        versionId: latestVersion.id,
+        incompleteCount: incompleteChunks.length,
+      });
 
       if (incompleteChunks.length > 0) {
-        console.log(`Processing ${incompleteChunks.length} incomplete chunks for existing version`);
-        const batchSize = 2;
+        logger.info("Processing incomplete chunks for existing version", {
+          versionId: latestVersion.id,
+          incompleteCount: incompleteChunks.length,
+        });
+        const batchSize = parseInt(process.env.CHUNK_BATCH_SIZE || "2", 10);
         let processedCount = 0;
         for (let i = 0; i < incompleteChunks.length; i += batchSize) {
           const batch = incompleteChunks.slice(i, i + batchSize);
-          console.log(`Processing batch ${Math.floor(i / batchSize) + 1} for unchanged version`);
+          logger.info("Processing batch for unchanged version", {
+            versionId: latestVersion.id,
+            batchNumber: Math.floor(i / batchSize) + 1,
+            batchSize: batch.length,
+          });
           const results = await Promise.allSettled(
             batch.map((chunk) => {
-              console.log(`Processing incomplete chunk ${chunk.id}...`);
-              return processChunkInternal(chunk.id, latestVersion.id);
+              logger.info("Processing incomplete chunk", {
+                chunkId: chunk.id,
+                versionId: latestVersion.id,
+              });
+              return processChunkInternal(chunk.id, latestVersion.id, language);
             })
           );
           const succeeded = results.filter((r) => r.status === "fulfilled" && r.value.success).length;
           processedCount += succeeded;
-          console.log(`Batch completed: ${succeeded}/${batch.length} succeeded`);
+          logger.info("Batch completed for unchanged version", {
+            versionId: latestVersion.id,
+            batchNumber: Math.floor(i / batchSize) + 1,
+            succeeded,
+            total: batch.length,
+          });
         }
-        console.log(`All incomplete chunks processed: ${processedCount}/${incompleteChunks.length}`);
+        logger.info("All incomplete chunks processed for unchanged version", {
+          versionId: latestVersion.id,
+          processedCount,
+          total: incompleteChunks.length,
+        });
 
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        console.log("Checking completion for unchanged version after processing...");
+        const completionDelay = parseInt(process.env.COMPLETION_CHECK_DELAY_MS || "2000", 10);
+        await new Promise(resolve => setTimeout(resolve, completionDelay));
+        logger.info("Checking completion for unchanged version after processing", {
+          versionId: latestVersion.id,
+        });
         const { checkVersionCompletion } = await import("@/lib/chunk-processor");
         try {
           await checkVersionCompletion(latestVersion.id);
@@ -111,7 +138,10 @@ export async function createVersionedDocumentJob(
             SELECT pdf_summary_id FROM document_versions WHERE id = ${latestVersion.id}
           `;
           if (finalCheck?.pdf_summary_id) {
-            console.log(`SUMMARY CREATED FOR UNCHANGED VERSION: ${finalCheck.pdf_summary_id}`);
+            logger.info("Summary created for unchanged version", {
+              versionId: latestVersion.id,
+              pdfSummaryId: finalCheck.pdf_summary_id,
+            });
             return {
               success: true,
               message: "Document unchanged, summary now created",
@@ -124,14 +154,19 @@ export async function createVersionedDocumentJob(
               },
             };
           } else {
-            console.log(`Summary not created yet for unchanged version, will be created by polling`);
+            logger.info("Summary not created yet for unchanged version, will be created by polling", {
+              versionId: latestVersion.id,
+            });
           }
         } catch (error) {
-          console.error("Completion check error for unchanged version:", error);
-          logger.error("Completion check failed for unchanged version", error, { versionId: latestVersion.id });
+          logger.error("Completion check failed for unchanged version", error, {
+            versionId: latestVersion.id,
+          });
         }
       } else {
-        console.log(`No incomplete chunks found for unchanged version ${latestVersion.id}`);
+        logger.info("No incomplete chunks found for unchanged version", {
+          versionId: latestVersion.id,
+        });
         const { checkVersionCompletion } = await import("@/lib/chunk-processor");
         await checkVersionCompletion(latestVersion.id);
       }
@@ -154,6 +189,8 @@ export async function createVersionedDocumentJob(
     let reusedChunks = 0;
     const chunksToProcess: string[] = [];
 
+    const totalTextSize = pdfText.length;
+    const avgCharsPerChunk = totalTextSize / totalChunks;
 
     for (const chunk of chunks) {
       const existingChunk = latestVersion
@@ -167,11 +204,16 @@ export async function createVersionedDocumentJob(
 
     const newChunksCount = totalChunks - reusedChunks;
 
+    const estimatedTokensForNewChunks = Math.ceil(
+      (avgCharsPerChunk * newChunksCount) / 4 + (newChunksCount * 300)
+    );
 
     const costCheck = await checkCostGuardrails(
       userId,
       newChunksCount,
-      document.id
+      document.id,
+      undefined,
+      estimatedTokensForNewChunks
     );
 
     if (!costCheck.allowed) {
@@ -194,13 +236,28 @@ export async function createVersionedDocumentJob(
     }
 
 
+    logger.info("Creating document version with language", {
+      documentId: document.id,
+      language,
+      totalChunks,
+      reusedChunks,
+      newChunks: totalChunks - reusedChunks,
+    });
+
     const version = await createDocumentVersion(
       document.id,
       fullContentHash,
       totalChunks,
       reusedChunks,
-      fileUrl
+      fileUrl,
+      language
     );
+
+    logger.info("Document version created", {
+      versionId: version.id,
+      versionNumber: version.version_number,
+      language: version.output_language,
+    });
 
     for (const chunk of chunks) {
       const existingChunk = latestVersion
@@ -222,7 +279,11 @@ export async function createVersionedDocumentJob(
           WHERE id = ${reusedChunk.id}
             AND summary IS NULL
         `;
-        console.log(`Reused chunk ${reusedChunk.id} - summary copied from ${existingChunk.id}`);
+        logger.info("Reused chunk summary", {
+          chunkId: reusedChunk.id,
+          sourceChunkId: existingChunk.id,
+          versionId: version.id,
+        });
       } else {
         const newChunk = await createDocumentChunk(
           version.id,
@@ -236,12 +297,6 @@ export async function createVersionedDocumentJob(
     }
 
     if (chunksToProcess.length > 0) {
-      console.log("STARTING CHUNK PROCESSING", {
-        versionId: version.id,
-        documentId: document.id,
-        totalChunks: chunksToProcess.length,
-        userId,
-      });
       logger.info("Starting chunk processing", {
         versionId: version.id,
         documentId: document.id,
@@ -249,43 +304,73 @@ export async function createVersionedDocumentJob(
         userId,
       });
 
-      const batchSize = 2;
+      const batchSize = parseInt(process.env.CHUNK_BATCH_SIZE || "2", 10);
       let processedCount = 0;
 
       for (let i = 0; i < chunksToProcess.length; i += batchSize) {
         const batch = chunksToProcess.slice(i, i + batchSize);
-        console.log(`Processing batch ${Math.floor(i / batchSize) + 1}`, {
+        logger.info("Processing batch", {
+          versionId: version.id,
+          batchNumber: Math.floor(i / batchSize) + 1,
           batchSize: batch.length,
           chunkIds: batch,
-          versionId: version.id,
         });
 
         try {
           const results = await Promise.allSettled(
             batch.map(async (chunkId) => {
-              console.log(`Processing chunk ${chunkId}...`);
-              const result = await processChunkInternal(chunkId, version.id);
-              console.log(`Chunk ${chunkId} result:`, {
-                success: result.success,
-                skipped: result.skipped,
-                error: result.error,
+              logger.info("Processing chunk", {
+                chunkId,
+                versionId: version.id,
+                language,
               });
-              return result;
+              try {
+                const result = await processChunkInternal(chunkId, version.id, language);
+                logger.info("Chunk processing result", {
+                  chunkId,
+                  versionId: version.id,
+                  success: result.success,
+                  skipped: result.skipped,
+                  error: result.error,
+                });
+                return result;
+              } catch (chunkError) {
+                logger.error("Chunk processing failed", chunkError, {
+                  chunkId,
+                  versionId: version.id,
+                  language,
+                });
+                return {
+                  success: false,
+                  error: chunkError instanceof Error ? chunkError.message : String(chunkError),
+                };
+              }
             })
           );
 
           const succeeded = results.filter((r) => r.status === "fulfilled" && r.value.success).length;
-          processedCount += succeeded;
-          console.log(`Batch completed: ${succeeded}/${batch.length} succeeded`);
+          const failed = results.filter((r) => r.status === "rejected" || (r.status === "fulfilled" && !r.value.success));
 
+          if (failed.length > 0) {
+            logger.error("Some chunks failed in batch", undefined, {
+              versionId: version.id,
+              batchNumber: Math.floor(i / batchSize) + 1,
+              failed: failed.map(r => ({
+                status: r.status,
+                error: r.status === "rejected" ? String(r.reason) : r.value.error,
+              })),
+            });
+          }
+
+          processedCount += succeeded;
           logger.info("Batch processed", {
             versionId: version.id,
             batchNumber: Math.floor(i / batchSize) + 1,
             processed: succeeded,
+            failed: failed.length,
             total: batch.length,
           });
         } catch (error) {
-          console.error("Batch processing error:", error);
           logger.error("Batch processing error", error, {
             versionId: version.id,
             batchNumber: Math.floor(i / batchSize) + 1,
@@ -293,49 +378,85 @@ export async function createVersionedDocumentJob(
         }
       }
 
-      console.log("ALL CHUNKS PROCESSED", {
-        versionId: version.id,
-        totalProcessed: processedCount,
-        totalChunks: chunksToProcess.length,
-      });
       logger.info("All chunks processed", {
         versionId: version.id,
         totalProcessed: processedCount,
         totalChunks: chunksToProcess.length,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      console.log("FINAL completion check after all chunks processed...");
-      const { checkVersionCompletion } = await import("@/lib/chunk-processor");
-      try {
-        await checkVersionCompletion(version.id);
+      const completionDelay = parseInt(process.env.COMPLETION_CHECK_DELAY_MS || "2000", 10);
+      await new Promise(resolve => setTimeout(resolve, completionDelay));
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const sql = await getDbConnection();
-        const [finalCheck] = await sql`
-          SELECT pdf_summary_id FROM document_versions WHERE id = ${version.id}
-        `;
-        if (finalCheck?.pdf_summary_id) {
-          console.log(`SUMMARY EXISTS: ${finalCheck.pdf_summary_id}`);
-        } else {
-          console.log(`Summary NOT created! Checking chunks...`);
-          const [chunkCheck] = await sql`
-            SELECT 
-              COUNT(*) as total,
-              COUNT(*) FILTER (WHERE summary IS NOT NULL) as with_summary,
-              COUNT(*) FILTER (WHERE summary IS NULL AND reused_from_chunk_id IS NULL) as incomplete
-            FROM document_chunks
-            WHERE document_version_id = ${version.id}
+      const { checkVersionCompletion } = await import("@/lib/chunk-processor");
+      const sql = await getDbConnection();
+
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          logger.info(`Final completion check attempt ${attempt}/3`, {
+            versionId: version.id,
+          });
+
+          await checkVersionCompletion(version.id);
+
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const [finalCheck] = await sql`
+            SELECT pdf_summary_id FROM document_versions WHERE id = ${version.id}
           `;
-          console.log(`Chunk status:`, chunkCheck);
+
+          if (finalCheck?.pdf_summary_id) {
+            logger.info("Summary created successfully", {
+              versionId: version.id,
+              pdfSummaryId: finalCheck.pdf_summary_id,
+              attempt,
+            });
+            break;
+          } else {
+            logger.warn(`Summary not created yet (attempt ${attempt}/3), checking chunks`, {
+              versionId: version.id,
+            });
+            const [chunkCheck] = await sql`
+              SELECT 
+                COUNT(*) as total,
+                COUNT(*) FILTER (WHERE summary IS NOT NULL) as with_summary,
+                COUNT(*) FILTER (WHERE summary IS NULL AND reused_from_chunk_id IS NULL) as incomplete_new,
+                COUNT(*) FILTER (WHERE summary IS NULL AND reused_from_chunk_id IS NOT NULL) as incomplete_reused
+              FROM document_chunks
+              WHERE document_version_id = ${version.id}
+            `;
+            logger.info("Chunk status after processing", {
+              versionId: version.id,
+              attempt,
+              total: Number(chunkCheck?.total || 0),
+              withSummary: Number(chunkCheck?.with_summary || 0),
+              incompleteNew: Number(chunkCheck?.incomplete_new || 0),
+              incompleteReused: Number(chunkCheck?.incomplete_reused || 0),
+            });
+
+            if (attempt === 3 && Number(chunkCheck?.with_summary || 0) > 0) {
+              logger.warn("Forcing summary creation with partial chunks", {
+                versionId: version.id,
+                chunksWithSummary: Number(chunkCheck?.with_summary || 0),
+                totalChunks: Number(chunkCheck?.total || 0),
+              });
+              await checkVersionCompletion(version.id);
+            }
+
+            if (attempt < 3) {
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+          }
+        } catch (error) {
+          logger.error(`Final completion check failed (attempt ${attempt}/3)`, error, { versionId: version.id });
+          if (attempt < 3) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
         }
-        console.log("Final completion check done");
-      } catch (error) {
-        console.error("Final completion check error:", error);
-        logger.error("Final completion check failed", error, { versionId: version.id });
       }
     } else {
-      console.log("No chunks to process (all reused)");
+      logger.info("No chunks to process (all reused)", {
+        versionId: version.id,
+        documentId: document.id,
+      });
       const { checkVersionCompletion } = await import("@/lib/chunk-processor");
       await checkVersionCompletion(version.id);
     }
@@ -363,8 +484,11 @@ export async function createVersionedDocumentJob(
     };
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);
-    logger.error("Error creating versioned document", err, { userId, errorMessage });
-    console.error("createVersionedDocumentJob ERROR:", errorMessage, err);
+    logger.error("Error creating versioned document", err, {
+      userId,
+      errorMessage,
+      fileName,
+    });
     return {
       success: false,
       message: `Error: ${errorMessage}`,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRetryableJobs, getStuckJobs, resetStuckJob, resetFailedJobForRetry, getJobById } from "@/lib/jobs";
 import { sendAlert } from "@/lib/alerting";
 import { logger, generateRequestId } from "@/lib/logger";
+import { requireInternalAuth, createInternalRequestOptions } from "@/lib/internal-api-auth";
 
 export const maxDuration = 60;
 
@@ -11,8 +12,13 @@ const PROCESSING_TIMEOUT_MINUTES = 10;
 export async function GET(request: NextRequest) {
   const requestId = generateRequestId();
 
+
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const hasBearerAuth = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+  const hasInternalAuth = await requireInternalAuth(request);
+
+  if (!hasBearerAuth && !hasInternalAuth) {
+    logger.warn("Unauthorized cron job access attempt", { requestId });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -58,12 +64,15 @@ export async function GET(request: NextRequest) {
       ...failedJobs.map(j => j.id)
     ];
 
+    // Use internal API signing for job processing calls
     const processResults = await Promise.allSettled(
       allJobsToProcess.map(async (jobId) => {
+        const body = JSON.stringify({ jobId });
+        const options = createInternalRequestOptions("POST", "/api/jobs/process", body);
         const response = await fetch(`${baseUrl}/api/jobs/process`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ jobId }),
+          ...options,
+          body,
         });
         return { jobId, success: response.ok };
       })

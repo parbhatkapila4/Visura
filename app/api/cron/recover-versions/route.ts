@@ -12,8 +12,14 @@ const STUCK_VERSION_THRESHOLD_MINUTES = 10;
 export async function GET(request: NextRequest) {
   const requestId = generateRequestId();
 
+
+  const { requireInternalAuth } = await import("@/lib/internal-api-auth");
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const hasBearerAuth = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+  const hasInternalAuth = await requireInternalAuth(request);
+
+  if (!hasBearerAuth && !hasInternalAuth) {
+    logger.warn("Unauthorized cron job access attempt", { requestId });
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -67,7 +73,7 @@ export async function GET(request: NextRequest) {
               documentId: version.document_id,
               errorMessage: err.message,
             },
-          }).catch(() => {});
+          }).catch(() => { });
 
           return {
             versionId: version.id,
@@ -82,7 +88,7 @@ export async function GET(request: NextRequest) {
     const succeeded = recoveryResults.filter(
       (r) => r.status === "fulfilled" && r.value.success
     ) as Array<PromiseFulfilledResult<{ success: true; chunksProcessed: number; versionId: string; documentId: string; incompleteChunks: number }>>;
-    
+
     const failed = recoveryResults.filter(
       (r) => r.status === "rejected" || (r.status === "fulfilled" && !r.value.success)
     );

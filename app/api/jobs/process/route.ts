@@ -5,6 +5,7 @@ import { getDbConnection } from "@/lib/db";
 import { savePdfStore } from "@/lib/chatbot";
 import { sendAlert } from "@/lib/alerting";
 import { logger, generateRequestId } from "@/lib/logger";
+import { requireInternalAuth } from "@/lib/internal-api-auth";
 
 export const maxDuration = 60;
 
@@ -16,6 +17,13 @@ export async function POST(request: NextRequest) {
   let heartbeatInterval: NodeJS.Timeout | null = null;
 
   try {
+
+    const isAuthorized = await requireInternalAuth(request);
+    if (!isAuthorized) {
+      logger.warn("Unauthorized internal API access attempt", { requestId });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { jobId } = await request.json();
 
     if (!jobId) {
