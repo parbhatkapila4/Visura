@@ -14,7 +14,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "test:run": "vitest run",
-    "prepare": "husky install || true",
+    "prepare": "node -e \"try { require('husky').install() } catch(e) { console.log('Husky not available, skipping') }\" || exit 0",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
