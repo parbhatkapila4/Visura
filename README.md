@@ -1,10 +1,8 @@
 <div align="center">
 
-![Visura Logo](public/Logo.png)
+<img src="./header.svg" alt="Visura: AI-powered document intelligence for PDFs and pipeline insights" width="920" />
 
-# Visura
-
-### **Enterprise-Grade AI Document Intelligence Platform**
+<br />
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black?logo=next.js&logoColor=white)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -14,7 +12,7 @@
 
 **Transform complex documents into actionable insights in seconds, not hours.**
 
-[Live Demo](https://visura.parbhat.dev/) • [Quick Start](QUICK_START.md) • [Documentation](ARCHITECTURE.md) 
+[Live Demo](https://visura.parbhat.dev/) · [Quick Start](QUICK_START.md) · [Documentation](ARCHITECTURE.md)
 
 ---
 
