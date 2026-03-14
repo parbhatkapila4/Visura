@@ -10,7 +10,6 @@ import {
   Play,
   Pause,
   Zap,
-  ArrowRight,
   Loader2,
 } from "lucide-react";
 
@@ -267,31 +266,23 @@ export default function DemoSection() {
 
   return (
     <section ref={ref} id="demo" className="relative py-24 overflow-hidden bg-black">
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#ff6b00]/40 bg-gradient-to-r from-[#ff6b00]/10 to-[#ff00ff]/10 mb-6 backdrop-blur-sm"
-            whileHover={{
-              scale: 1.05,
-              borderColor: "rgba(255,107,0,0.6)",
-              boxShadow: "0 0 20px rgba(255,107,0,0.2)",
-            }}
-          >
-            <Zap className="w-4 h-4 text-[#ff6b00]" />
-            <span className="text-sm font-semibold text-white/90">Live Demo</span>
-          </motion.div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-5 py-2.5 mb-6">
+            <Zap className="w-4 h-4 text-white/70" />
+            <span className="text-sm font-semibold tracking-wide text-white/90">Live Demo</span>
+          </div>
 
           <h2 className="text-4xl md:text-6xl font-black text-white mb-5 tracking-tight">
-            See the
-            <span className="bg-gradient-to-r from-[#ff6b00] via-[#ff00ff] to-[#00ff88] bg-clip-text text-transparent">
-              {" "}
-              magic{" "}
-            </span>
+            See the{" "}
+            <span className="text-white border-b-2 border-white/40 pb-0.5" style={{ fontFamily: "var(--font-display), ui-serif, Georgia, serif" }}>
+              magic
+            </span>{" "}
             happen
           </h2>
           <p className="text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
@@ -305,10 +296,8 @@ export default function DemoSection() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="relative"
         >
-          <div className="absolute -inset-1 bg-gradient-to-r from-[#ff6b00] via-[#ff00ff] to-[#00ff88] rounded-2xl opacity-20 blur-xl" />
-
-          <div className="relative rounded-2xl overflow-hidden border-2 border-white/10 bg-gradient-to-br from-white/[0.05] via-black/50 to-black backdrop-blur-2xl shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-gradient-to-r from-black/80 via-black/60 to-black/80 backdrop-blur-xl">
+          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-zinc-900/80 backdrop-blur-sm shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-black/40">
               <div className="flex items-center gap-4">
                 <div className="flex gap-2">
                   <div className="w-3 h-3 rounded-full bg-red-400 shadow-sm" />
@@ -321,28 +310,25 @@ export default function DemoSection() {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log("Button clicked, isPlaying:", isPlaying);
                   if (isPlaying) {
                     resetDemo();
                   } else {
                     startDemo();
                   }
                 }}
-                className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] text-white text-sm font-bold shadow-xl overflow-hidden group"
-                whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(255,107,0,0.5)" }}
-                whileTap={{ scale: 0.95 }}
+                className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black text-sm font-semibold shadow-lg hover:bg-white/95 transition-colors"
+                whileTap={{ scale: 0.98 }}
                 type="button"
               >
-                <motion.div className="absolute inset-0 bg-gradient-to-r from-[#ff00ff] to-[#ff6b00] opacity-0 group-hover:opacity-100 transition-opacity" />
                 {isPlaying ? (
                   <>
-                    <Pause className="w-4 h-4 relative z-10" />
-                    <span className="relative z-10">Reset</span>
+                    <Pause className="w-4 h-4" />
+                    <span>Reset</span>
                   </>
                 ) : (
                   <>
-                    <Play className="w-4 h-4 relative z-10" />
-                    <span className="relative z-10">Play Demo</span>
+                    <Play className="w-4 h-4" />
+                    <span>Play Demo</span>
                   </>
                 )}
               </motion.button>
@@ -389,32 +375,6 @@ export default function DemoSection() {
               </div>
             </div>
           </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-center mt-12"
-        >
-          <p className="text-white/50 text-base mb-6">
-            Ready to experience this with your own documents?
-          </p>
-          <motion.a
-            href="/sign-up"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-black font-bold text-base shadow-2xl group"
-            whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(255,107,0,0.4)" }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Try it free
-            <motion.span
-              animate={{ x: [0, 5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="group-hover:translate-x-1 transition-transform"
-            >
-              <ArrowRight className="w-5 h-5" />
-            </motion.span>
-          </motion.a>
         </motion.div>
       </div>
     </section>

@@ -10,42 +10,42 @@ export default function SupportPage() {
 
   const supportCategories = [
     {
-      icon: <User className="w-8 h-8 text-black" />,
+      icon: <User className="w-8 h-8 text-primary" />,
       title: "My Account",
       description: "Manage your account settings, profile information, and personal preferences for document analysis."
     },
     {
-      icon: <CreditCard className="w-8 h-8 text-black" />,
+      icon: <CreditCard className="w-8 h-8 text-primary" />,
       title: "Billing & Subscriptions",
       description: "View your subscription details, billing history, and manage payment methods for Visura services."
     },
     {
-      icon: <Smartphone className="w-8 h-8 text-black" />,
+      icon: <Smartphone className="w-8 h-8 text-primary" />,
       title: "Mobile Access",
       description: "Access your document analysis results and manage files on mobile devices and tablets."
     },
     {
-      icon: <Users className="w-8 h-8 text-black" />,
+      icon: <Users className="w-8 h-8 text-primary" />,
       title: "Team Collaboration",
       description: "Share analysis results, manage team workspaces, and collaborate on document insights."
     },
     {
-      icon: <Settings className="w-8 h-8 text-black" />,
+      icon: <Settings className="w-8 h-8 text-primary" />,
       title: "Account Settings",
       description: "Configure analysis preferences, notification settings, and customize your document processing workflow."
     },
     {
-      icon: <Globe className="w-8 h-8 text-black" />,
+      icon: <Globe className="w-8 h-8 text-primary" />,
       title: "International Support",
       description: "Get help with document analysis in multiple languages and international document formats."
     },
     {
-      icon: <Shield className="w-8 h-8 text-black" />,
+      icon: <Shield className="w-8 h-8 text-primary" />,
       title: "Security & Privacy",
       description: "Learn about document security, data privacy, and how we protect your sensitive information."
     },
     {
-      icon: <BarChart3 className="w-8 h-8 text-black" />,
+      icon: <BarChart3 className="w-8 h-8 text-primary" />,
       title: "Analytics & Reports",
       description: "Understand your analysis results, generate reports, and track document processing performance."
     }
@@ -59,32 +59,32 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-white" onClick={handlePageClick}>
-      <div className="bg-black text-white py-16">
-        <div className="w-full px-6 lg:px-12 xl:px-20">
+    <div className="min-h-screen w-full bg-black" onClick={handlePageClick}>
+      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 pt-6 pb-4">
+        <div className="w-full">
           <div className="flex justify-between items-start mb-8">
             <Link 
               href="/" 
-              className="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm font-medium"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
               Back to Home
             </Link>
-            <div className="bg-yellow-500 text-black px-3 py-1 rounded-full text-sm font-semibold">
+            <div className="rounded-full border border-primary/40 bg-primary/20 px-3 py-1 text-sm font-semibold text-primary">
               This page is under building
             </div>
           </div>
-          <h1 className="text-5xl font-bold mb-6">Support</h1>
-          <p className="text-xl text-gray-300 max-w-3xl">
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">Support</h1>
+          <p className="text-lg sm:text-xl text-zinc-400 max-w-3xl">
             Get help with document analysis, troubleshoot issues, and find answers to your questions.
           </p>
         </div>
       </div>
 
-      <div className="bg-gray-50 py-16 relative overflow-hidden">
-        <div className="w-full px-6 lg:px-12 xl:px-20 text-center relative z-10">
-          <h2 className="text-4xl font-bold text-black mb-4">How can we help you today?</h2>
-          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+      <div className="py-12 sm:py-16 relative overflow-hidden">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 text-center relative z-10">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">How can we help you today?</h2>
+          <p className="text-base sm:text-lg text-zinc-400 mb-8 max-w-2xl mx-auto">
             Find answers to common questions about document analysis, account management, and technical support.
           </p>
           
@@ -95,83 +95,80 @@ export default function SupportPage() {
                 placeholder="Search support articles and guides..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                className="w-full px-4 py-3 border border-white/20 rounded-xl bg-zinc-900/80 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
-            <button className="px-6 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors">
+            <button className="px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-90 transition-opacity">
               Search
             </button>
           </div>
         </div>
-        
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gray-200 rounded-full opacity-20 transform translate-x-32 -translate-y-32"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gray-200 rounded-full opacity-20 transform -translate-x-24 translate-y-24"></div>
       </div>
 
-      <div className="w-full px-6 lg:px-12 xl:px-20 py-16">
+      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-12 sm:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {supportCategories.map((category, index) => (
             <div 
               key={index} 
-              className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow"
+              className="rounded-xl border border-white/10 bg-zinc-900/80 p-6 hover:bg-zinc-900 transition-colors"
             >
               <div className="text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   {category.icon}
                 </div>
-                <h3 className="text-lg font-semibold text-black mb-2">{category.title}</h3>
-                <p className="text-sm text-gray-600">{category.description}</p>
+                <h3 className="text-lg font-semibold text-white mb-2">{category.title}</h3>
+                <p className="text-sm text-zinc-400">{category.description}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="bg-gray-50 py-16">
-        <div className="w-full px-6 lg:px-12 xl:px-20">
-          <h3 className="text-2xl font-bold text-black mb-6">Popular Topics</h3>
+      <div className="py-12 sm:py-16">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
+          <h3 className="text-2xl font-bold text-white mb-6">Popular Topics</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-              <h4 className="font-semibold text-black mb-2">Getting Started with Document Analysis</h4>
-              <p className="text-sm text-gray-600">Learn how to upload and analyze your first document</p>
+            <div className="rounded-xl border border-white/10 bg-zinc-900/80 p-4 hover:bg-zinc-900 transition-colors">
+              <h4 className="font-semibold text-white mb-2">Getting Started with Document Analysis</h4>
+              <p className="text-sm text-zinc-400">Learn how to upload and analyze your first document</p>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-              <h4 className="font-semibold text-black mb-2">Understanding Analysis Results</h4>
-              <p className="text-sm text-gray-600">How to interpret and use your document insights</p>
+            <div className="rounded-xl border border-white/10 bg-zinc-900/80 p-4 hover:bg-zinc-900 transition-colors">
+              <h4 className="font-semibold text-white mb-2">Understanding Analysis Results</h4>
+              <p className="text-sm text-zinc-400">How to interpret and use your document insights</p>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-              <h4 className="font-semibold text-black mb-2">Export and Share Options</h4>
-              <p className="text-sm text-gray-600">Download and share your analysis results</p>
+            <div className="rounded-xl border border-white/10 bg-zinc-900/80 p-4 hover:bg-zinc-900 transition-colors">
+              <h4 className="font-semibold text-white mb-2">Export and Share Options</h4>
+              <p className="text-sm text-zinc-400">Download and share your analysis results</p>
             </div>
           </div>
         </div>
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full relative modal-content">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="rounded-2xl border border-white/10 bg-zinc-900 p-8 max-w-md w-full relative modal-content">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors bg-white bg-opacity-70 rounded-full p-1"
+              className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors rounded-full p-1"
             >
               <X className="w-6 h-6" />
             </button>
             
             <div className="text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-8 h-8 text-black" />
+              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail className="w-8 h-8 text-primary" />
               </div>
               
-              <h3 className="text-2xl font-bold text-black mb-2">Contact Support</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-2xl font-bold text-white mb-2">Contact Support</h3>
+              <p className="text-zinc-400 mb-6">
                 Get in touch with our support team for document analysis help and inquiries
               </p>
               
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <p className="text-sm text-gray-600 mb-2">Email us at:</p>
+              <div className="rounded-xl border border-white/10 bg-zinc-800/80 p-4 mb-6">
+                <p className="text-sm text-zinc-500 mb-2">Email us at:</p>
                 <a 
                   href="mailto:parbhat@parbhat.dev"
-                  className="text-lg font-semibold text-black hover:text-gray-700 transition-colors"
+                  className="text-lg font-semibold text-primary hover:opacity-90 transition-opacity"
                 >
                   parbhat@parbhat.dev
                 </a>
@@ -179,7 +176,7 @@ export default function SupportPage() {
               
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-6 py-2 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
+                className="px-6 py-2 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-90 transition-opacity"
               >
                 Close
               </button>
@@ -189,30 +186,30 @@ export default function SupportPage() {
       )}
 
       {isUnderBuildingModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full relative modal-content">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="rounded-2xl border border-white/10 bg-zinc-900 p-8 max-w-md w-full relative modal-content">
             <button
               onClick={() => setIsUnderBuildingModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors bg-white bg-opacity-70 rounded-full p-1"
+              className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors rounded-full p-1"
             >
               <X className="w-6 h-6" />
             </button>
             
             <div className="text-center">
-              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Settings className="w-8 h-8 text-yellow-600" />
+              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Settings className="w-8 h-8 text-primary" />
               </div>
               
-              <h3 className="text-2xl font-bold text-black mb-2">Page Under Construction</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-2xl font-bold text-white mb-2">Page Under Construction</h3>
+              <p className="text-zinc-400 mb-6">
                 This support page is currently under development. We're working hard to bring you the best experience.
               </p>
               
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <p className="text-sm text-gray-600 mb-2">For immediate support, contact us at:</p>
+              <div className="rounded-xl border border-white/10 bg-zinc-800/80 p-4 mb-6">
+                <p className="text-sm text-zinc-500 mb-2">For immediate support, contact us at:</p>
                 <a 
                   href="mailto:parbhat@parbhat.dev"
-                  className="text-lg font-semibold text-black hover:text-gray-700 transition-colors"
+                  className="text-lg font-semibold text-primary hover:opacity-90 transition-opacity"
                 >
                   parbhat@parbhat.dev
                 </a>
@@ -220,7 +217,7 @@ export default function SupportPage() {
               
               <button
                 onClick={() => setIsUnderBuildingModalOpen(false)}
-                className="px-6 py-2 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
+                className="px-6 py-2 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-90 transition-opacity"
               >
                 Close
               </button>

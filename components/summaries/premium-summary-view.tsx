@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { parseSection, extractSummaryPreview } from "@/utils/summary-helpers";
 import {
@@ -52,6 +53,7 @@ interface PremiumSummaryViewProps {
     summary_text: string;
     created_at: string;
     word_count?: number;
+    status?: string;
   };
 }
 
@@ -73,6 +75,7 @@ const getSectionIcon = (title: string) => {
 };
 
 export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps) {
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState(0);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -81,22 +84,49 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
   const [isLoadingWorkspaces, setIsLoadingWorkspaces] = useState(false);
   const [isAddingToWorkspace, setIsAddingToWorkspace] = useState(false);
   const [workspacesWithDocument, setWorkspacesWithDocument] = useState<Set<string>>(new Set());
+  const [isCompletingSummary, setIsCompletingSummary] = useState(false);
   const hasFetchedWorkspaces = useRef(false);
   const isScrollingRef = useRef(false);
 
+  const summaryText = summary.summary_text ?? "";
+  const isErrorFallback =
+    summaryText.includes("Summary generation failed") ||
+    summaryText.includes("you can still chat with the document");
+  const hasNoContent =
+    !summaryText.trim() ||
+    summary.status === "processing" ||
+    isErrorFallback;
   const isErrorSummary =
-    summary.summary_text.toLowerCase().includes("extraction error") ||
-    summary.summary_text.toLowerCase().includes("object.defineproperty") ||
-    summary.summary_text.toLowerCase().includes("was unable to access") ||
-    summary.summary_text.toLowerCase().includes("i apologize");
+    summaryText.toLowerCase().includes("extraction error") ||
+    summaryText.toLowerCase().includes("object.defineproperty") ||
+    summaryText.toLowerCase().includes("was unable to access") ||
+    summaryText.toLowerCase().includes("i apologize");
 
-  const sections = summary.summary_text
+  const sections = summaryText
     .split("\n#")
     .map((section) => section.trim())
     .filter(Boolean)
     .map(parseSection);
 
-  const preview = extractSummaryPreview(summary.summary_text, summary.title, null);
+  const preview = extractSummaryPreview(summaryText, summary.title, null);
+
+  const handleGenerateSummary = async () => {
+    setIsCompletingSummary(true);
+    try {
+      const res = await fetch(`/api/summaries/${summary.id}/complete`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error || "Failed to generate summary");
+        return;
+      }
+      toast.success("Summary generated");
+      router.refresh();
+    } catch (e) {
+      toast.error("Failed to generate summary");
+    } finally {
+      setIsCompletingSummary(false);
+    }
+  };
 
   useEffect(() => {
     const sectionElements = sections
@@ -319,9 +349,9 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
   }
 
   return (
-    <div className="bg-[#0a0a0a] min-h-[calc(100vh-56px)] pb-12 overflow-x-hidden">
+    <div className="bg-[#0a0a0a] min-h-[calc(100vh-56px)] pb-12 overflow-x-hidden w-full">
       <header className="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-[#1f1f1f]">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 overflow-x-hidden">
+        <div className="w-full px-4 sm:px-6 lg:px-8 overflow-x-hidden">
           <div className="flex items-center justify-between h-14 gap-2">
             <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
               <Link
@@ -378,9 +408,8 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                             className="flex items-center gap-3 p-2 rounded-lg cursor-pointer text-white hover:text-white focus:text-white focus:bg-[#1a1a1a] hover:bg-[#1a1a1a]"
                           >
                             <div
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                added ? "bg-emerald-500/10" : "bg-[#1a1a1a]"
-                              }`}
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${added ? "bg-emerald-500/10" : "bg-[#1a1a1a]"
+                                }`}
                             >
                               {added ? (
                                 <Check className="w-4 h-4 text-emerald-500" />
@@ -409,21 +438,21 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 <Share2 className="w-4 h-4" />
               </Button>
 
-              <Link href={`/chatbot/${summary.id}`}>
-                <Button
-                  size="sm"
-                  className="bg-white text-black hover:bg-[#e5e5e5] h-8 px-2 sm:px-3 sm:ml-2"
-                >
-                  <MessageSquare className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Chat</span>
-                </Button>
-              </Link>
+              <Button
+                size="sm"
+                type="button"
+                className="bg-white text-black hover:bg-[#e5e5e5] h-8 px-2 sm:px-3 sm:ml-2"
+                onClick={() => router.push(`/chatbot/${summary.id}`)}
+              >
+                <MessageSquare className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Chat</span>
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 overflow-x-hidden">
+      <div className="w-full px-4 sm:px-6 lg:px-8 overflow-x-hidden">
         <div className="flex gap-4 sm:gap-8 py-6 sm:py-8">
           <aside className="hidden lg:block w-64 flex-shrink-0">
             <div className="sticky top-20">
@@ -469,11 +498,10 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                       <button
                         key={index}
                         onClick={() => scrollToSection(index)}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
-                          isActive
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${isActive
                             ? "bg-white/5 text-white"
                             : "text-[#666] hover:text-[#999] hover:bg-white/[0.02]"
-                        }`}
+                          }`}
                       >
                         <span className="line-clamp-1">{cleanTitle}</span>
                       </button>
@@ -484,7 +512,28 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
             </div>
           </aside>
 
-          <main className="flex-1 min-w-0 max-w-3xl">
+          <main className="flex-1 min-w-0">
+            {hasNoContent && (
+              <div className="mb-8 p-6 rounded-2xl border border-amber-500/30 bg-amber-500/10">
+                <p className="text-base font-medium text-amber-200 mb-2">
+                  {isErrorFallback ? "Summary couldn’t be generated" : "No summary yet"}
+                </p>
+                <p className="text-sm text-amber-200/80 mb-4">
+                  {isErrorFallback
+                    ? "Click below to build a readable overview from your document so you can read and use chat."
+                    : "This document hasn’t been summarized. Generate one now so you can see sections, insights, and use chat."}
+                </p>
+                <Button
+                  onClick={handleGenerateSummary}
+                  disabled={isCompletingSummary}
+                  className="bg-amber-500 hover:bg-amber-400 text-black font-medium"
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${isCompletingSummary ? "animate-spin" : ""}`} />
+                  {isCompletingSummary ? "Generating…" : "Generate summary"}
+                </Button>
+              </div>
+            )}
+
             <div className="mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-[#1f1f1f]">
               <div className="flex items-center gap-2 text-[#555] text-xs sm:text-sm mb-3 sm:mb-4 flex-wrap">
                 <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -599,28 +648,32 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                     Chat with AI to ask questions about this document
                   </p>
                 </div>
-                <Link href={`/chatbot/${summary.id}`} className="w-full sm:w-auto">
-                  <Button className="bg-white text-black hover:bg-[#e5e5e5] whitespace-nowrap w-full sm:w-auto">
-                    <MessageSquare className="w-4 h-4 mr-2" />
-                    Start Chat
-                    <ArrowUpRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
+                <Button
+                  type="button"
+                  className="bg-white text-black hover:bg-[#e5e5e5] whitespace-nowrap w-full sm:w-auto"
+                  onClick={() => router.push(`/chatbot/${summary.id}`)}
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Start Chat
+                  <ArrowUpRight className="w-4 h-4 ml-2" />
+                </Button>
               </div>
             </div>
           </main>
 
           <aside className="hidden xl:block w-48 flex-shrink-0">
             <div className="sticky top-20 space-y-3">
-              <Link href={`/chatbot/${summary.id}`} className="block">
-                <div className="p-4 rounded-xl bg-[#111111] border border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors cursor-pointer">
-                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mb-3">
-                    <MessageSquare className="w-4 h-4 text-white" />
-                  </div>
-                  <p className="text-sm font-medium text-white mb-1">Ask AI</p>
-                  <p className="text-xs text-[#666]">Chat about this doc</p>
+              <button
+                type="button"
+                onClick={() => router.push(`/chatbot/${summary.id}`)}
+                className="block w-full text-left p-4 rounded-xl bg-[#111111] border border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mb-3">
+                  <MessageSquare className="w-4 h-4 text-white" />
                 </div>
-              </Link>
+                <p className="text-sm font-medium text-white mb-1">Ask AI</p>
+                <p className="text-xs text-[#666]">Chat about this doc</p>
+              </button>
 
               <div
                 onClick={handleShare}
@@ -674,9 +727,8 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                             className="flex items-center gap-3 p-2 rounded-lg cursor-pointer text-white hover:text-white focus:text-white focus:bg-[#1a1a1a] hover:bg-[#1a1a1a]"
                           >
                             <div
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                added ? "bg-emerald-500/10" : "bg-[#1a1a1a]"
-                              }`}
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${added ? "bg-emerald-500/10" : "bg-[#1a1a1a]"
+                                }`}
                             >
                               {added ? (
                                 <Check className="w-4 h-4 text-emerald-500" />
@@ -752,7 +804,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                             duration: 3000,
                           });
                         }
-                      } catch (err) {}
+                      } catch (err) { }
                     }}
                   />
                   <button

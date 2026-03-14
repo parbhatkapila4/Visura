@@ -6,7 +6,7 @@ import { Twitter, Github, Linkedin, Youtube, Mail, MapPin } from "lucide-react";
 
 const footerLinks = {
   product: [
-    { label: "Features", href: "#features" },
+    { label: "Features", href: "/features" },
     { label: "Changelog", href: "/changelog" },
   ],
   company: [

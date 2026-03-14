@@ -456,9 +456,7 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
               </button>
             </div>
             <div className="px-3 py-1.5 rounded-lg bg-[#111] border border-[#1f1f1f] text-[#888] text-sm">
-              {new Date()
-                .toLocaleDateString("en-US", { month: "long", year: "numeric" })
-                .replace("2024", "2025")}
+              {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
             </div>
           </div>
         </div>

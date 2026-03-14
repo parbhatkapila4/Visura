@@ -100,7 +100,7 @@ export default function StarterCheckoutPage() {
                 className="text-lg text-white/70 leading-relaxed max-w-2xl"
               >
                 Starter keeps founders and early hires organised with instant summaries, searchable
-                insights, and export-ready briefs. Scale without spreadsheets—or the enterprise
+                insights, and export-ready briefs. Scale without spreadsheets, or the enterprise
                 price tag.
               </motion.p>
             </div>
@@ -246,7 +246,7 @@ export default function StarterCheckoutPage() {
               </h3>
               <p className="max-w-xl text-sm text-white/60 leading-relaxed">
                 Unlock unlimited documents, collaboration spaces, API access, and priority
-                onboarding. Upgrades are instant—no migration required.
+                onboarding. Upgrades are instant, no migration required.
               </p>
             </div>
             <Link

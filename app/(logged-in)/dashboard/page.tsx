@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { ensureUserExistsInDatabase } from "@/lib/auth-utils";
 import { getUserByEmail, hasReachedUploadLimit } from "@/lib/user";
 
+export const dynamic = "force-dynamic";
+
 interface Summary {
   id: string;
   title: string | null;

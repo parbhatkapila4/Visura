@@ -28,7 +28,18 @@ export const Spotlight = ({
 }: SpotlightProps = {}) => {
   const pathname = usePathname();
 
-  const hiddenRoutes = ["/features", "/shipping"];
+  const hiddenRoutes = [
+    "/",
+    "/features",
+    "/shipping",
+    "/privacy",
+    "/about",
+    "/contact",
+    "/terms",
+    "/docs",
+    "/support",
+    "/cookies",
+  ];
   if (
     hiddenRoutes.includes(pathname) ||
     pathname?.startsWith("/sign-in") ||

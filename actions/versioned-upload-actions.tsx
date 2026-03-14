@@ -4,6 +4,8 @@ import { auth } from "@clerk/nextjs/server";
 import {
   findOrCreateDocument,
   createDocumentVersion,
+  createPlaceholderSummary,
+  linkVersionToSummary,
   chunkText,
   hashContent,
   getLatestVersion,
@@ -39,10 +41,10 @@ export async function createVersionedDocumentJob(
     }
     logger.info("User authenticated", { userId });
 
-    if (!pdfText || pdfText.trim().length < 50) {
+    if (!pdfText || pdfText.trim().length < 10) {
       return {
         success: false,
-        message: "No text content found in PDF",
+        message: "No text content found in document",
         data: null,
       };
     }
@@ -78,6 +80,21 @@ export async function createVersionedDocumentJob(
         documentId: document.id,
         userId,
       });
+
+      let placeholderId: string | null = null;
+      if (!latestVersion.pdf_summary_id) {
+        placeholderId = await createPlaceholderSummary(
+          document.user_id,
+          document.title,
+          latestVersion.file_url ?? fileUrl ?? null,
+          fileName
+        );
+        await linkVersionToSummary(latestVersion.id, placeholderId);
+        logger.info("Placeholder created for unchanged version", {
+          versionId: latestVersion.id,
+          pdfSummaryId: placeholderId,
+        });
+      }
 
       const incompleteChunks = await getIncompleteChunks(latestVersion.id);
       logger.info("Found incomplete chunks for existing version", {
@@ -125,20 +142,27 @@ export async function createVersionedDocumentJob(
 
         const completionDelay = parseInt(process.env.COMPLETION_CHECK_DELAY_MS || "2000", 10);
         await new Promise(resolve => setTimeout(resolve, completionDelay));
-        logger.info("Checking completion for unchanged version after processing", {
-          versionId: latestVersion.id,
-        });
         const { checkVersionCompletion } = await import("@/lib/chunk-processor");
-        try {
-          await checkVersionCompletion(latestVersion.id);
-
-          await new Promise(resolve => setTimeout(resolve, 1000));
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          logger.info("Checking completion for unchanged version after processing", {
+            versionId: latestVersion.id,
+            attempt,
+          });
+          try {
+            await checkVersionCompletion(latestVersion.id);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          } catch (error) {
+            logger.error("Completion check failed for unchanged version", error, {
+              versionId: latestVersion.id,
+              attempt,
+            });
+          }
           const sql = await getDbConnection();
           const [finalCheck] = await sql`
             SELECT pdf_summary_id FROM document_versions WHERE id = ${latestVersion.id}
           `;
           if (finalCheck?.pdf_summary_id) {
-            logger.info("Summary created for unchanged version", {
+            logger.info("Summary ready for unchanged version", {
               versionId: latestVersion.id,
               pdfSummaryId: finalCheck.pdf_summary_id,
             });
@@ -153,23 +177,41 @@ export async function createVersionedDocumentJob(
                 unchanged: true,
               },
             };
-          } else {
-            logger.info("Summary not created yet for unchanged version, will be created by polling", {
-              versionId: latestVersion.id,
-            });
           }
-        } catch (error) {
-          logger.error("Completion check failed for unchanged version", error, {
-            versionId: latestVersion.id,
-          });
+          if (attempt < 3) await new Promise(resolve => setTimeout(resolve, 2000));
         }
+        logger.info("Summary not ready yet for unchanged version - returning placeholder for polling", {
+          versionId: latestVersion.id,
+          pdfSummaryId: placeholderId,
+        });
       } else {
         logger.info("No incomplete chunks found for unchanged version", {
           versionId: latestVersion.id,
         });
         const { checkVersionCompletion } = await import("@/lib/chunk-processor");
-        await checkVersionCompletion(latestVersion.id);
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          try {
+            await checkVersionCompletion(latestVersion.id);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          } catch (error) {
+            logger.error("Completion check failed for unchanged version (no incomplete chunks)", error, {
+              versionId: latestVersion.id,
+            });
+          }
+          const sql = await getDbConnection();
+          const [finalCheck] = await sql`
+            SELECT pdf_summary_id FROM document_versions WHERE id = ${latestVersion.id}
+          `;
+          if (finalCheck?.pdf_summary_id) break;
+          if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 1500));
+        }
       }
+
+      const sql = await getDbConnection();
+      const [finalSummaryId] = await sql`
+        SELECT pdf_summary_id FROM document_versions WHERE id = ${latestVersion.id}
+      `;
+      const pdfSummaryIdToReturn = finalSummaryId?.pdf_summary_id ?? placeholderId;
 
       return {
         success: true,
@@ -178,7 +220,7 @@ export async function createVersionedDocumentJob(
           documentId: document.id,
           versionId: latestVersion.id,
           versionNumber: latestVersion.version_number,
-          pdfSummaryId: null,
+          pdfSummaryId: pdfSummaryIdToReturn,
           unchanged: true,
         },
       };
@@ -252,6 +294,19 @@ export async function createVersionedDocumentJob(
       fileUrl,
       language
     );
+
+    const placeholderSummaryId = await createPlaceholderSummary(
+      document.user_id,
+      document.title,
+      fileUrl ?? null,
+      fileName
+    );
+    await linkVersionToSummary(version.id, placeholderSummaryId);
+    logger.info("Placeholder summary created and linked", {
+      versionId: version.id,
+      pdfSummaryId: placeholderSummaryId,
+      userId: document.user_id,
+    });
 
     logger.info("Document version created", {
       versionId: version.id,

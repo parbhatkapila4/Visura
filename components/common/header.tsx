@@ -1,344 +1,321 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { SignedIn, SignedOut } from "@clerk/clerk-react";
-import PlanBadge from "./plan-badge";
-import UserMenu from "./user-menu";
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
+import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { Menu, X, Sparkles, ArrowRight } from "lucide-react";
+import { useAuth, useUser, useClerk } from "@clerk/nextjs";
+import { cn } from "@/lib/utils";
+import { MenuToggleIcon } from "@/components/menu-toggle-icon";
+import { LogOut } from "lucide-react";
 
-const AnimatedNavLink = ({
-  href,
-  children,
-  onClick,
-}: {
-  href: string;
-  children: React.ReactNode;
-  onClick?: () => void;
-}) => {
-  const pathname = usePathname();
-  const isActive = pathname === href || (href !== "/" && pathname?.startsWith(href));
+const navLinks = [
+  { label: "About", href: "/about" },
+  { label: "Pricing", href: "#pricing" },
+  { label: "Workspace", href: "/workspaces" },
+];
 
-  return (
-    <Link href={href} onClick={onClick}>
-      <motion.span
-        className="relative px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors cursor-pointer group"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        {children}
-        <motion.span
-          className={`absolute bottom-0 left-1/2 h-[2px] bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] rounded-full ${
-            isActive ? "w-1/2" : "w-0"
-          }`}
-          style={{ x: "-50%" }}
-          whileHover={{ width: "50%" }}
-          transition={{ duration: 0.2 }}
-        />
-        <motion.span className="absolute inset-0 rounded-lg bg-white/0 group-hover:bg-white/5 transition-colors" />
-      </motion.span>
-    </Link>
-  );
-};
+const SCROLL_THRESHOLD = 80;
+const SCROLL_SETTLE_MS = 200;
 
-const AnimatedLogo = () => {
-  return (
-    <Link href="/">
-      <motion.div
-        className="flex items-center gap-3 cursor-pointer"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <motion.div className="relative">
-          <motion.div
-            className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#ff6b00] via-[#ff00ff] to-[#ff6b00] p-[2px]"
-            animate={{
-              backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-            style={{ backgroundSize: "200% 200%" }}
-          >
-            <div className="w-full h-full rounded-[10px] bg-black flex items-center justify-center">
-              <motion.span
-                className="text-lg font-black bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] bg-clip-text text-transparent"
-                animate={{ opacity: [0.7, 1, 0.7] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                V
-              </motion.span>
-            </div>
-          </motion.div>
+function useScrollCollapse() {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-          <motion.div
-            className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] opacity-0 blur-lg"
-            animate={{ opacity: [0, 0.4, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-        </motion.div>
+  useEffect(() => {
+    const applyState = () => {
+      settleTimerRef.current = null;
+      const y = typeof window !== "undefined" ? window.scrollY : 0;
+      setIsCollapsed(y > SCROLL_THRESHOLD);
+    };
 
-        <motion.span
-          className="text-xl font-bold text-white hidden sm:block"
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-        >
-          Visura
-        </motion.span>
-      </motion.div>
-    </Link>
-  );
-};
+    const onScroll = () => {
+      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+      settleTimerRef.current = setTimeout(applyState, SCROLL_SETTLE_MS);
+    };
 
-const MobileMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
+    applyState();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    };
+  }, []);
 
-          <motion.div
-            className="fixed top-0 right-0 h-full w-[300px] bg-black/90 backdrop-blur-xl border-l border-white/10 z-50 p-6"
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          >
-            <motion.button
-              onClick={onClose}
-              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white"
-              whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.2)" }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <X className="w-5 h-5" />
-            </motion.button>
-
-            <nav className="mt-16 space-y-2">
-              {[
-                { href: "/features", label: "Features" },
-                { href: "/about", label: "About" },
-                { href: "/changelog", label: "Changelog" },
-              ].map((item, i) => (
-                <motion.div
-                  key={item.href}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                >
-                  <Link href={item.href} onClick={onClose}>
-                    <motion.div
-                      className="flex items-center justify-between px-4 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                      whileHover={{ x: 5 }}
-                    >
-                      <span className="text-lg font-medium">{item.label}</span>
-                      <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100" />
-                    </motion.div>
-                  </Link>
-                </motion.div>
-              ))}
-            </nav>
-
-            <div className="mt-8 space-y-3">
-              <SignedOut>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <Link href="/sign-in" onClick={onClose}>
-                    <motion.button
-                      className="w-full py-3 rounded-xl border border-white/20 text-white font-medium"
-                      whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      Log in
-                    </motion.button>
-                  </Link>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <Link href="/sign-up" onClick={onClose}>
-                    <motion.button
-                      className="w-full py-3 rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] text-white font-medium"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      Sign up free
-                    </motion.button>
-                  </Link>
-                </motion.div>
-              </SignedOut>
-              <SignedIn>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <Link href="/workspaces" onClick={onClose}>
-                    <motion.button
-                      className="w-full py-3 rounded-xl bg-gradient-to-r from-[#ff6b00] to-[#ff00ff] text-white font-medium"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      Workspace
-                    </motion.button>
-                  </Link>
-                </motion.div>
-              </SignedIn>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-};
+  return isCollapsed;
+}
 
 export default function Header() {
   const pathname = usePathname();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const { scrollY } = useScroll();
+  const { isSignedIn } = useAuth();
+  const { user } = useUser();
+  const { signOut } = useClerk();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const isCollapsed = useScrollCollapse();
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    if (userMenuOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [userMenuOpen]);
+
+  const handleLogout = async () => {
+    await signOut();
+    setUserMenuOpen(false);
+  };
+
+  const firstName = user?.firstName ?? "";
+  const userImageUrl = user?.imageUrl ?? "";
 
   const isChatbotPage = pathname?.includes("/chatbot");
   const isHomePage = pathname === "/";
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    setIsScrolled(latest > 50);
-
-    if (latest < lastScrollY && latest > 100) {
-      setIsVisible(false);
-    } else if (latest > lastScrollY) {
-      setIsVisible(true);
-    } else if (latest <= 100) {
-      setIsVisible(true);
-    }
-
-    setLastScrollY(latest);
-
-    if (isMobileMenuOpen && Math.abs(latest - lastScrollY) > 10) {
-      setIsMobileMenuOpen(false);
-    }
-  });
-
   useEffect(() => {
-    setIsMobileMenuOpen(false);
+    setMobileOpen(false);
   }, [pathname]);
 
-  if (!isHomePage || isChatbotPage) {
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  if (isChatbotPage || !isHomePage) {
     return null;
   }
 
   return (
     <>
-      <motion.nav
-        className={`fixed top-0 left-0 right-0 z-50 px-4 transition-all duration-300 bg-black ${
-          isScrolled ? "py-2" : "py-4"
-        }`}
-        initial={{ y: -100 }}
-        animate={{
-          y: isVisible ? 0 : -100,
-          opacity: isVisible ? 1 : 0,
-        }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
+      <header
+        className={cn(
+          "sticky top-0 z-50 w-full transition-all duration-300 ease-out border-b",
+          isCollapsed
+            ? "h-14 bg-black/80 backdrop-blur-md border-white/10"
+            : "h-16 bg-transparent border-transparent"
+        )}
       >
-        <motion.div
-          className={`max-w-6xl mx-auto rounded-2xl transition-all duration-300 ${
-            isScrolled
-              ? "bg-[#0a0a0a] backdrop-blur-xl border-t border-l border-r border-white/10 shadow-2xl shadow-black/50"
-              : isHomePage
-              ? "bg-[#0a0a0a] backdrop-blur-md border-t border-l border-r border-white/5"
-              : "bg-[#0a0a0a] backdrop-blur-xl border-t border-l border-r border-white/10"
-          }`}
-          layout
-        >
-          <div className="px-4 sm:px-6 py-3 grid grid-cols-3 items-center">
-            <div className="flex justify-start">
-              <AnimatedLogo />
-            </div>
+        <nav className="flex h-full w-full items-center justify-between px-6 md:px-8 max-w-7xl mx-auto transition-all duration-300">
+          <Link
+            href="/"
+            className={cn(
+              "flex items-center gap-2 text-white font-bold tracking-tight hover:text-white/90 transition-all duration-300",
+              isCollapsed ? "text-lg" : "text-xl"
+            )}
+          >
+            <img
+              src="/Visura-favicon-New.png"
+              alt=""
+              className={cn("shrink-0 object-contain", isCollapsed ? "size-6" : "size-8")}
+              width={isCollapsed ? 24 : 32}
+              height={isCollapsed ? 24 : 32}
+            />
+            Visura
+          </Link>
 
-            <div className="hidden md:flex items-center justify-center gap-1">
-              <AnimatedNavLink href="/features">Features</AnimatedNavLink>
-              <AnimatedNavLink href="/about">About</AnimatedNavLink>
-              <AnimatedNavLink href="/changelog">Changelog</AnimatedNavLink>
-            </div>
-
-            <div className="hidden md:flex items-center justify-end gap-3">
-              <SignedOut>
-                <Link href="/sign-in">
-                  <motion.button
-                    className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Log in
-                  </motion.button>
-                </Link>
-                <Link href="/sign-up">
-                  <motion.button
-                    className="relative px-5 py-2 text-sm font-semibold text-white rounded-full overflow-hidden group"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-[#ff6b00] to-[#ff00ff]"
-                      whileHover={{
-                        backgroundPosition: ["0% 50%", "100% 50%"],
-                      }}
-                      transition={{ duration: 0.5 }}
-                    />
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
-                      initial={{ x: "-100%" }}
-                      whileHover={{ x: "100%" }}
-                      transition={{ duration: 0.5 }}
-                    />
-                    <span className="relative z-10">Sign up</span>
-                  </motion.button>
-                </Link>
-              </SignedOut>
-
-              <SignedIn>
-                <Link href="/workspaces">
-                  <motion.button
-                    className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-all"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Workspace
-                  </motion.button>
-                </Link>
-                <PlanBadge />
-                <UserMenu />
-              </SignedIn>
-            </div>
-
-            <div className="md:hidden flex justify-end col-start-3">
-              <motion.button
-                className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white"
-                onClick={() => setIsMobileMenuOpen(true)}
-                whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.15)" }}
-                whileTap={{ scale: 0.9 }}
+          <div className="hidden md:flex items-center gap-8">
+            {navLinks.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="text-sm font-medium text-white hover:text-white/80 transition-colors"
               >
-                <Menu className="w-5 h-5" />
-              </motion.button>
+                {link.label}
+              </Link>
+            ))}
+            <div className="flex items-center gap-3">
+              {isSignedIn ? (
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setUserMenuOpen((o) => !o)}
+                    className="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 pl-1.5 pr-3 py-1.5 hover:bg-white/10 transition-colors"
+                    aria-expanded={userMenuOpen}
+                    aria-haspopup="true"
+                  >
+                    {userImageUrl ? (
+                      <Image
+                        src={userImageUrl}
+                        alt={firstName ? `${firstName}'s profile` : "Profile"}
+                        width={28}
+                        height={28}
+                        className="rounded-full object-cover shrink-0"
+                      />
+                    ) : (
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/30 text-white text-xs font-semibold">
+                        {firstName ? firstName.charAt(0).toUpperCase() : user?.emailAddresses?.[0]?.emailAddress?.charAt(0).toUpperCase() ?? "U"}
+                      </span>
+                    )}
+                    {firstName ? (
+                      <span className="text-sm font-medium text-white truncate max-w-[100px]">{firstName}</span>
+                    ) : (
+                      <span className="text-sm font-medium text-white truncate max-w-[120px]">
+                        {user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] ?? "Account"}
+                      </span>
+                    )}
+                  </button>
+                  <AnimatePresence>
+                    {userMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                        transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                        className="absolute right-0 mt-3 w-56 overflow-hidden rounded-2xl border border-white/[0.08] bg-zinc-900/95 backdrop-blur-xl shadow-[0_16px_48px_-8px_rgba(0,0,0,0.7)] z-50"
+                      >
+                        <div className="px-4 py-3 border-b border-white/[0.06]">
+                          <p className="text-xs font-medium text-zinc-500 truncate">
+                            {user?.emailAddresses?.[0]?.emailAddress ?? ""}
+                          </p>
+                        </div>
+                        <div className="p-1.5">
+                          <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-300 hover:bg-red-500/10 hover:text-red-400 transition-all duration-150"
+                          >
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.06] group-hover:bg-red-500/15 transition-colors duration-150">
+                              <LogOut className="w-4 h-4 text-zinc-400 group-hover:text-red-400 transition-colors duration-150" />
+                            </div>
+                            Log out
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <>
+                  <Link
+                    href="/sign-in"
+                    prefetch={false}
+                    className="rounded-md border border-zinc-500 bg-zinc-800/80 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700/80 hover:border-zinc-400 transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/sign-up"
+                    prefetch={false}
+                    className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-black hover:bg-gray-200 transition-colors"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
           </div>
-        </motion.div>
-      </motion.nav>
 
-      <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+          <button
+            type="button"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden p-2 rounded-md text-white hover:bg-white/10 transition-colors"
+            aria-label="Toggle menu"
+          >
+            <MenuToggleIcon
+              open={mobileOpen}
+              className="size-6"
+              duration={300}
+            />
+          </button>
+        </nav>
+      </header>
 
-      <div className={`${isScrolled ? "h-16" : "h-20"} transition-all duration-300`} />
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 bg-[#0f0f0f] md:hidden"
+          >
+            <div className="flex flex-col h-full pt-20 px-6 pb-8">
+              <div className="flex flex-col gap-1">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "py-3 text-base font-medium text-white hover:text-white/80"
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+              <div className="flex flex-col gap-3 mt-8">
+                {isSignedIn ? (
+                  <>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 rounded-xl border border-white/20 bg-white/5 px-4 py-3"
+                    >
+                      {userImageUrl ? (
+                        <Image
+                          src={userImageUrl}
+                          alt={firstName ? `${firstName}'s profile` : "Profile"}
+                          width={40}
+                          height={40}
+                          className="rounded-full object-cover shrink-0"
+                        />
+                      ) : (
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/30 text-white text-sm font-semibold">
+                          {firstName ? firstName.charAt(0).toUpperCase() : user?.emailAddresses?.[0]?.emailAddress?.charAt(0).toUpperCase() ?? "U"}
+                        </span>
+                      )}
+                      <span className="text-sm font-medium text-white">
+                        {firstName || user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] || "Account"}
+                      </span>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        handleLogout();
+                      }}
+                      className="flex items-center gap-3 rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-left text-sm font-medium text-white"
+                    >
+                      <LogOut className="w-5 h-5 text-zinc-400 shrink-0" />
+                      Log out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/sign-in"
+                      prefetch={false}
+                      onClick={() => setMobileOpen(false)}
+                      className="rounded-md border border-zinc-500 bg-zinc-800/80 px-4 py-3 text-center text-sm font-medium text-white"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/sign-up"
+                      prefetch={false}
+                      onClick={() => setMobileOpen(false)}
+                      className="rounded-full bg-white px-5 py-3 text-center text-sm font-semibold text-black"
+                    >
+                      Get Started
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

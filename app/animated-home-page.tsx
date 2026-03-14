@@ -1,13 +1,14 @@
 "use client";
-import HeroSection from "@/components/home/hero-section";
-import FeaturesSection from "@/components/home/features-section";
+import { HeroSection } from "@/components/hero-odyssey";
+import CombinedFeaturedSection from "@/components/combined-featured-section";
 import DemoSection from "@/components/home/demo-section";
-import TestimonialsSection from "@/components/home/testimonials-section";
+import BuiltForProfessionalsSection from "@/components/home/built-for-professionals-section";
 import PricingSection from "@/components/home/pricing-section";
-import CTASection from "@/components/home/cta-section";
-import FooterSection from "@/components/home/footer-section";
+import CTAWithVerticalMarquee from "@/components/ui/cta-with-text-marquee";
+import { Component as FlickeringFooter } from "@/components/ui/flickering-footer";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { motion, useScroll } from "framer-motion";
 
 interface AnimatedHomePageProps {
   showSuccessMessage?: boolean;
@@ -18,6 +19,8 @@ export default function AnimatedHomePage({
   showSuccessMessage = false,
   showCancelMessage = false,
 }: AnimatedHomePageProps) {
+  const { scrollYProgress } = useScroll();
+
   useEffect(() => {
     if (showSuccessMessage) {
       toast.success("Payment Successful!", {
@@ -34,22 +37,29 @@ export default function AnimatedHomePage({
   }, [showSuccessMessage, showCancelMessage]);
 
   return (
-    <main
-      className="relative"
-      style={{
-        transform: "translateZ(0)",
-        willChange: "scroll-position",
-        backfaceVisibility: "hidden",
-        WebkitBackfaceVisibility: "hidden",
-      }}
-    >
-      <HeroSection />
-      <FeaturesSection />
-      <DemoSection />
-      <TestimonialsSection />
-      <PricingSection />
-      <CTASection />
-      <FooterSection />
-    </main>
+    <div className="relative bg-black min-h-screen" style={{ backgroundColor: "#000000" }}>
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-white/20 origin-left z-[100]"
+        style={{ scaleX: scrollYProgress }}
+      />
+      <main
+        className="relative bg-black flex flex-col gap-y-32 md:gap-y-40 lg:gap-y-48"
+        style={{
+          backgroundColor: "#000000",
+          transform: "translateZ(0)",
+          willChange: "scroll-position",
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
+        }}
+      >
+        <HeroSection />
+        <CombinedFeaturedSection />
+        <DemoSection />
+        <BuiltForProfessionalsSection />
+        <PricingSection />
+        <CTAWithVerticalMarquee />
+        <FlickeringFooter />
+      </main>
+    </div>
   );
 }

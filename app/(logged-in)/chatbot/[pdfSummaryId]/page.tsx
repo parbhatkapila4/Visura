@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import ChatbotClient from "@/components/chatbot/chatbot-client";
+import { ChatbotAnimatedView } from "@/components/chatbot/chatbot-animated-view";
 import { findSummaryById } from "@/lib/summaries";
 import { getPdfStoreBySummaryId } from "@/lib/chatbot";
 import { auth } from "@clerk/nextjs/server";
@@ -60,7 +60,7 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
         <header className="h-14 flex-shrink-0 border-b border-[#1a1a1a] bg-[#0a0a0a] flex items-center">
           <div className="h-full px-4 flex items-center justify-between w-full">
             <Link
-              href={`/summaries/${pdfSummaryId}`}
+              href="/chatbot"
               className="flex items-center gap-2 text-[#666] hover:text-white transition-colors group"
             >
               <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
@@ -85,7 +85,7 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
                   </div>
                 }
               >
-                <ChatbotClient
+                <ChatbotAnimatedView
                   pdfSummaryId={pdfSummaryId}
                   pdfStoreId={pdfStore.id}
                   pdfTitle={summary.title || summary.file_name}

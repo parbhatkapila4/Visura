@@ -2,7 +2,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef, Suspense } from "react";
 import Link from "next/link";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Float, MeshDistortMaterial, Environment, Sphere } from "@react-three/drei";
 import * as THREE from "three";
@@ -133,7 +132,7 @@ const GlowingButton = ({
   primary?: boolean;
 }) => {
   return (
-    <Link href={href}>
+    <Link href={href} prefetch={href.startsWith("/sign-") ? false : undefined}>
       <motion.button
         className={`relative px-8 py-4 text-lg font-semibold rounded-full overflow-hidden ${
           primary ? "bg-white text-black" : "bg-transparent text-white border border-white/30"
@@ -340,18 +339,10 @@ export default function HeroSection() {
               transition={{ duration: 0.8, delay: 1.8 }}
               className="flex flex-col sm:flex-row items-center gap-4"
             >
-              <SignedOut>
-                <GlowingButton href="/sign-up" primary>
-                  Start Free
-                </GlowingButton>
-                <GlowingButton href="#demo">See it work</GlowingButton>
-              </SignedOut>
-              <SignedIn>
-                <GlowingButton href="/upload" primary>
-                  Upload Now
-                </GlowingButton>
-                <GlowingButton href="/dashboard">Dashboard</GlowingButton>
-              </SignedIn>
+              <GlowingButton href="/sign-up" primary>
+                Start Free
+              </GlowingButton>
+              <GlowingButton href="#demo">See it work</GlowingButton>
             </motion.div>
 
             <motion.div

@@ -21,26 +21,30 @@ export async function GET(
         dv.pdf_summary_id,
         dv.document_id,
         d.user_id,
+        ps.status as summary_status,
         COUNT(dc.id) FILTER (WHERE dc.summary IS NULL AND dc.reused_from_chunk_id IS NULL) as incomplete_chunks,
         COUNT(dc.id) as total_chunks,
         COUNT(dc.id) FILTER (WHERE dc.summary IS NOT NULL) as completed_chunks
       FROM document_versions dv
       JOIN documents d ON dv.document_id = d.id
+      LEFT JOIN pdf_summaries ps ON dv.pdf_summary_id = ps.id
       LEFT JOIN document_chunks dc ON dv.id = dc.document_version_id
       WHERE dv.id = ${versionId}
         AND d.user_id = ${userId}
-      GROUP BY dv.id, dv.pdf_summary_id, dv.document_id, d.user_id
+      GROUP BY dv.id, dv.pdf_summary_id, dv.document_id, d.user_id, ps.status
     `;
 
     if (!version) {
       return NextResponse.json({ error: "Version not found" }, { status: 404 });
     }
 
+    const isComplete = version.pdf_summary_id !== null && version.summary_status === 'completed';
+
     return NextResponse.json({
       versionId: version.id,
       documentId: version.document_id,
       pdfSummaryId: version.pdf_summary_id,
-      isComplete: version.pdf_summary_id !== null,
+      isComplete,
       incompleteChunks: Number(version.incomplete_chunks || 0),
       totalChunks: Number(version.total_chunks || 0),
       completedChunks: Number(version.completed_chunks || 0),

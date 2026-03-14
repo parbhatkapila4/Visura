@@ -364,12 +364,25 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
       SELECT pdf_summary_id FROM document_versions WHERE id = ${versionId}
     `;
 
+    let existingPlaceholderId: string | null = null;
     if (versionCheck?.pdf_summary_id) {
-      logger.info("Version already has summary - skipping", {
-        versionId,
-        pdfSummaryId: versionCheck.pdf_summary_id
-      });
-      return;
+      const [summaryRow] = await sql`
+        SELECT id, status FROM pdf_summaries WHERE id = ${versionCheck.pdf_summary_id}
+      `;
+      if (summaryRow?.status === 'completed') {
+        logger.info("Version already has completed summary - skipping", {
+          versionId,
+          pdfSummaryId: versionCheck.pdf_summary_id
+        });
+        return;
+      }
+      if (summaryRow?.status === 'processing') {
+        existingPlaceholderId = summaryRow.id as string;
+        logger.info("Updating placeholder summary with final content", {
+          versionId,
+          pdfSummaryId: existingPlaceholderId
+        });
+      }
     }
 
     const complete = await isVersionComplete(versionId);
@@ -400,8 +413,9 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
     });
 
     const hasEnoughChunks = totalChunks > 0 && chunksWithSummary >= Math.max(1, Math.ceil(totalChunks * 0.5));
+    const canProceed = complete || hasEnoughChunks || existingPlaceholderId !== null;
 
-    if (!complete && !hasEnoughChunks) {
+    if (!canProceed) {
       logger.info("Version not complete yet - waiting for more chunks", {
         versionId,
         chunksWithSummary,
@@ -432,12 +446,7 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
       return;
     }
 
-    if (version?.pdf_summary_id) {
-      logger.info("Version already has summary", { versionId, pdfSummaryId: version.pdf_summary_id });
-      return;
-    }
-
-    logger.info("Creating final summary for version", { versionId });
+    logger.info("Creating final summary for version", { versionId, isPlaceholderUpdate: !!existingPlaceholderId });
 
     const allChunks = await getChunksForVersion(versionId);
     logger.info("Chunk status for version", {
@@ -448,6 +457,7 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
     });
 
     const sortedChunks = allChunks.sort((a, b) => a.chunk_index - b.chunk_index);
+    const fullText = sortedChunks.map((chunk) => chunk.text).join("\n\n");
     const chunkSummaries = sortedChunks
       .map((chunk) => chunk.summary)
       .filter((s): s is string => s !== null && s !== undefined && s.trim().length > 0);
@@ -460,54 +470,41 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
       completionRatio: allChunks.length > 0 ? `${Math.round((chunkSummaries.length / allChunks.length) * 100)}%` : '0%',
     });
 
-    if (chunkSummaries.length === 0) {
-      logger.error("CRITICAL: No valid chunk summaries - cannot create final summary", undefined, {
+    let finalSummary: string;
+    if (chunkSummaries.length > 0) {
+      finalSummary = deduplicateAndMergeSections(chunkSummaries);
+    } else {
+      logger.warn("No chunk summaries - generating summary from full document text", {
         versionId,
         totalChunks: allChunks.length,
-        chunkDetails: sortedChunks.map(c => ({
-          index: c.chunk_index,
-          hasSummary: !!c.summary,
-          summaryLength: c.summary?.length || 0,
-          summaryPreview: c.summary?.substring(0, 50) || 'null/empty',
-          reusedFrom: c.reused_from_chunk_id,
-        })),
+        fullTextLength: fullText.length,
       });
-      return;
+      if (fullText.trim().length > 0) {
+        try {
+          finalSummary = await generateSummaryFromText(fullText, 'ENGLISH', { isChunk: false });
+          logger.info("Fallback summary generated from raw text", { versionId, summaryLength: finalSummary?.length ?? 0 });
+        } catch (fallbackError) {
+          logger.error("Fallback summary generation failed", fallbackError, { versionId });
+          const wordCount = fullText.trim().split(/\s+/).length;
+          const excerptLen = Math.min(fullText.length, 15000);
+          const paragraphs = fullText.slice(0, excerptLen).split(/\n\n+/).filter((p) => p.trim().length > 0).slice(0, 40);
+          const readable = paragraphs.join("\n\n");
+          finalSummary = `### Document overview\n\nThis document has ${wordCount} words. Below is an excerpt so you can read and use chat.\n\n---\n\n${readable}${fullText.length > excerptLen ? "\n\n[... document continues in chat ...]" : ""}`;
+        }
+      } else {
+        finalSummary = "### Document summary\n\nThis document has no extractable text content (e.g. image-only or empty). You can still use chat if content is added later.";
+      }
     }
 
-    const finalSummary = deduplicateAndMergeSections(chunkSummaries);
+    if (!finalSummary || finalSummary.trim().length === 0) {
+      finalSummary = "### Document summary\n\nSummary could not be generated. The document may be empty or in an unsupported format.";
+    }
 
-    const fullText = sortedChunks.map((chunk) => chunk.text).join("\n\n");
-
-    logger.info("Final summary created", {
+    logger.info("Final summary ready", {
       versionId,
       summaryLength: finalSummary.length,
       fullTextLength: fullText.length,
     });
-
-    if (!finalSummary || finalSummary.trim().length === 0) {
-      logger.error("CRITICAL: Cannot create summary - no valid chunk summaries", undefined, {
-        versionId,
-        totalChunks: allChunks.length,
-        chunksWithSummary: allChunks.filter(c => c.summary).length,
-        chunkSummariesCount: chunkSummaries.length,
-        chunkDetails: sortedChunks.map(c => ({
-          index: c.chunk_index,
-          hasSummary: !!c.summary,
-          summaryLength: c.summary?.length || 0,
-          summaryPreview: c.summary?.substring(0, 50) || 'null/empty',
-          reusedFrom: c.reused_from_chunk_id,
-        })),
-      });
-
-      if (allChunks.length > 0 && allChunks.filter(c => c.summary).length === 0) {
-        logger.error("CRITICAL: All chunks processed but none have summaries - processing may have failed", undefined, {
-          versionId,
-          totalChunks: allChunks.length,
-        });
-      }
-      return;
-    }
 
     try {
       const [documentInfo] = await sql`
@@ -525,96 +522,116 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
         return;
       }
 
-      logger.info("Inserting summary into pdf_summaries", {
-        versionId,
-        userId: documentInfo.user_id,
-        title: documentInfo.title,
-        summaryLength: finalSummary.length,
-        fileUrl: version.file_url,
-      });
-
       let fileName = '';
       if (version.file_url) {
         try {
           const urlParts = version.file_url.split('/');
           fileName = urlParts[urlParts.length - 1] || '';
-          // Remove query params if any
           fileName = fileName.split('?')[0];
         } catch (e) {
           logger.warn("Could not extract file name from URL", { fileUrl: version.file_url });
         }
       }
 
-      let pdfSummary;
-      try {
-        [pdfSummary] = await sql`
-        INSERT INTO pdf_summaries (
-          user_id, original_file_url, summary_text, title, file_name, status
-        )
-        VALUES (
-          ${documentInfo.user_id},
-          ${version.file_url || ''},
-          ${finalSummary},
-          ${documentInfo.title || 'Untitled Document'},
-          ${fileName},
-          'completed'
-        )
-        RETURNING id
-      `;
-      } catch (insertError) {
-        logger.error("CRITICAL: Failed to insert summary into pdf_summaries", insertError, {
+      let pdfSummary: { id: string };
+      if (existingPlaceholderId) {
+        logger.info("Updating placeholder summary in pdf_summaries", {
           versionId,
-          userId: documentInfo.user_id,
+          pdfSummaryId: existingPlaceholderId,
           summaryLength: finalSummary.length,
-          errorMessage: insertError instanceof Error ? insertError.message : String(insertError),
         });
-        throw insertError;
-      }
-
-      if (!pdfSummary || !pdfSummary.id) {
-        logger.error("CRITICAL: Failed to create pdf_summary - no ID returned from INSERT", undefined, {
-          versionId,
-          userId: documentInfo.user_id,
-          insertResult: pdfSummary,
-        });
-        return;
-      }
-
-      logger.info("Summary inserted successfully into pdf_summaries", {
-        versionId,
-        pdfSummaryId: pdfSummary.id,
-        userId: documentInfo.user_id,
-        summaryLength: finalSummary.length,
-      });
-
-      const linked = await linkVersionToSummary(versionId, pdfSummary.id);
-
-      if (!linked) {
-        logger.error("CRITICAL: Failed to link summary to version - summary exists but not linked", undefined, {
+        try {
+          await sql`
+            UPDATE pdf_summaries
+            SET summary_text = ${finalSummary},
+                original_file_url = ${version.file_url || ''},
+                title = ${documentInfo.title || 'Untitled Document'},
+                file_name = ${fileName},
+                status = 'completed'
+            WHERE id = ${existingPlaceholderId}
+          `;
+          pdfSummary = { id: existingPlaceholderId };
+        } catch (updateError) {
+          logger.error("CRITICAL: Failed to update placeholder summary", updateError, {
+            versionId,
+            pdfSummaryId: existingPlaceholderId,
+          });
+          throw updateError;
+        }
+        logger.info("Placeholder summary updated successfully", {
           versionId,
           pdfSummaryId: pdfSummary.id,
           userId: documentInfo.user_id,
         });
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const retryLinked = await linkVersionToSummary(versionId, pdfSummary.id);
-        if (retryLinked) {
-          logger.info("Successfully linked summary on retry", {
+      } else {
+        logger.info("Inserting summary into pdf_summaries", {
+          versionId,
+          userId: documentInfo.user_id,
+          title: documentInfo.title,
+          summaryLength: finalSummary.length,
+          fileUrl: version.file_url,
+        });
+        try {
+          const [inserted] = await sql`
+            INSERT INTO pdf_summaries (
+              user_id, original_file_url, summary_text, title, file_name, status
+            )
+            VALUES (
+              ${documentInfo.user_id},
+              ${version.file_url || ''},
+              ${finalSummary},
+              ${documentInfo.title || 'Untitled Document'},
+              ${fileName},
+              'completed'
+            )
+            RETURNING id
+          `;
+          pdfSummary = { id: String((inserted as { id: string }).id) };
+        } catch (insertError) {
+          logger.error("CRITICAL: Failed to insert summary into pdf_summaries", insertError, {
+            versionId,
+            userId: documentInfo.user_id,
+            summaryLength: finalSummary.length,
+            errorMessage: insertError instanceof Error ? insertError.message : String(insertError),
+          });
+          throw insertError;
+        }
+
+        if (!pdfSummary || !pdfSummary.id) {
+          logger.error("CRITICAL: Failed to create pdf_summary - no ID returned from INSERT", undefined, {
+            versionId,
+            userId: documentInfo.user_id,
+            insertResult: pdfSummary,
+          });
+          return;
+        }
+
+        logger.info("Summary inserted successfully into pdf_summaries", {
+          versionId,
+          pdfSummaryId: pdfSummary.id,
+          userId: documentInfo.user_id,
+          summaryLength: finalSummary.length,
+        });
+
+        const linked = await linkVersionToSummary(versionId, pdfSummary.id);
+        if (!linked) {
+          logger.error("CRITICAL: Failed to link summary to version", undefined, {
             versionId,
             pdfSummaryId: pdfSummary.id,
           });
+          await new Promise(resolve => setTimeout(resolve, 500));
+          const retryLinked = await linkVersionToSummary(versionId, pdfSummary.id);
+          if (retryLinked) {
+            logger.info("Successfully linked summary on retry", { versionId, pdfSummaryId: pdfSummary.id });
+          }
         } else {
-          logger.error("CRITICAL: Retry linking also failed", undefined, {
+          logger.info("Summary created and linked successfully", {
             versionId,
             pdfSummaryId: pdfSummary.id,
+            summaryLength: finalSummary.length,
+            userId: documentInfo.user_id,
           });
         }
-      } else {
-        logger.info("Summary created and linked successfully", {
-          versionId,
-          pdfSummaryId: pdfSummary.id,
-          summaryLength: finalSummary.length,
-          userId: documentInfo.user_id,
-        });
       }
 
       if (fullText && fullText.trim().length > 0) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -23,13 +24,13 @@ import {
   List,
   TrendingUp,
   Activity,
-  Home,
   X,
   LucideIcon,
 } from "lucide-react";
 import DeleteButton from "@/components/summaries/delete-button";
 import DownloadSummaryButtonDashboard from "@/components/summaries/download-summary-button-dashboard";
 import AnalyticsDashboard from "@/components/dashboard/analytics-dashboard";
+import { SidebarWithContent } from "@/components/sidebar-component";
 import { extractSummaryPreview } from "@/utils/summary-helpers";
 import { formatFileName } from "@/lib/utils";
 
@@ -404,12 +405,21 @@ export default function DashboardClient({
   userPlan,
   hasReachedLimit,
 }: DashboardClientProps) {
+  const searchParams = useSearchParams();
+  const viewParam = searchParams.get("view");
+
   const [summaries, setSummaries] = useState(initialSummaries);
   const [activeView, setActiveView] = useState<"grid" | "list">("grid");
-  const [activeTab, setActiveTab] = useState<"documents" | "analytics">("documents");
+  const [activeTab, setActiveTab] = useState<"documents" | "analytics">(
+    viewParam === "analytics" ? "analytics" : "documents"
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { user } = useUser();
+
+  useEffect(() => {
+    if (viewParam === "analytics") setActiveTab("analytics");
+  }, [viewParam]);
 
   const filteredSummaries = summaries.filter(
     (s) =>
@@ -431,65 +441,9 @@ export default function DashboardClient({
   ).length;
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center">
-      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-[#1f1f1f] w-full">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full">
-          <div className="flex items-center justify-between h-14">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/"
-                className="flex items-center gap-2 text-[#666] hover:text-white transition-colors"
-              >
-                <Home className="w-4 h-4" />
-                <span className="text-sm hidden sm:block">Home</span>
-              </Link>
-              <span className="text-[#333]">/</span>
-              <h1 className="text-sm font-medium text-white">Dashboard</h1>
-            </div>
-
-            <div className="hidden md:flex items-center">
-              <button
-                onClick={() => setIsSearchOpen(true)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#111] border border-[#1f1f1f] hover:border-[#333] transition-colors min-w-[240px]"
-              >
-                <Search className="w-3.5 h-3.5 text-[#555]" />
-                <span className="text-sm text-[#555]">Search...</span>
-                <div className="ml-auto flex items-center gap-0.5">
-                  <kbd className="px-1.5 py-0.5 rounded bg-[#1a1a1a] text-[10px] text-[#555] font-mono">
-                    ⌘
-                  </kbd>
-                  <kbd className="px-1.5 py-0.5 rounded bg-[#1a1a1a] text-[10px] text-[#555] font-mono">
-                    K
-                  </kbd>
-                </div>
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {userPlan === "pro" && (
-                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#111] border border-[#1f1f1f]">
-                  <Crown className="w-3 h-3 text-amber-500" />
-                  <span className="text-xs text-[#888]">Pro</span>
-                </div>
-              )}
-
-              <Link
-                href={hasReachedLimit ? "#" : "/upload"}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  hasReachedLimit
-                    ? "bg-[#1a1a1a] text-[#555] cursor-not-allowed"
-                    : "bg-white text-black hover:bg-[#e5e5e5]"
-                }`}
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:block">New</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <AnimatePresence>
+    <SidebarWithContent>
+      <div className="min-h-screen w-full flex flex-col items-center">
+        <AnimatePresence>
         {isSearchOpen && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -683,8 +637,9 @@ export default function DashboardClient({
         )}
       </main>
 
-      <KeyboardShortcuts onSearchOpen={() => setIsSearchOpen(true)} />
-    </div>
+        <KeyboardShortcuts onSearchOpen={() => setIsSearchOpen(true)} />
+      </div>
+    </SidebarWithContent>
   );
 }
 

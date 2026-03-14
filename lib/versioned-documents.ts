@@ -77,6 +77,15 @@ export function chunkText(text: string, chunkSize: number = 1000): Array<{ text:
     });
   }
 
+  if (chunks.length === 0) {
+    const fallbackText = text.trim() || "(No extractable text)";
+    chunks.push({
+      text: fallbackText,
+      hash: hashContent(fallbackText),
+      index: 0,
+    });
+  }
+
   return chunks;
 }
 
@@ -278,6 +287,22 @@ export async function linkVersionToSummary(versionId: string, pdfSummaryId: stri
     RETURNING id
   `;
   return result !== undefined;
+}
+
+export async function createPlaceholderSummary(
+  userId: string,
+  title: string,
+  fileUrl: string | null,
+  fileName: string
+): Promise<string> {
+  const sql = await getDbConnection();
+  const [row] = await sql`
+    INSERT INTO pdf_summaries (user_id, original_file_url, summary_text, title, file_name, status)
+    VALUES (${userId}, ${fileUrl || ''}, '', ${title || 'Untitled Document'}, ${fileName || ''}, 'processing')
+    RETURNING id
+  `;
+  if (!row?.id) throw new Error("Failed to create placeholder summary");
+  return row.id as string;
 }
 
 export async function isVersionComplete(versionId: string): Promise<boolean> {

@@ -24,7 +24,7 @@ const sellingPoints = [
   {
     icon: Zap,
     title: "Rapid execution",
-    copy: "Upload to actionable insight in under 45 seconds—every time.",
+    copy: "Upload to actionable insight in under 45 seconds, every time.",
   },
 ];
 

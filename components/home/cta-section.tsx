@@ -16,7 +16,7 @@ export default function CtaSection() {
   const rotate = useTransform(scrollYProgress, [0, 1], [0, 10]);
 
   return (
-    <section ref={ref} className="relative py-32 overflow-hidden scroll-optimized">
+    <section ref={ref} className="relative py-32 overflow-hidden bg-black scroll-optimized" style={{ backgroundColor: "#000000" }}>
       <div
         className="absolute inset-0 bg-gradient-to-br from-[#ff6b00] via-[#ff00ff] to-[#ff6b00] bg-[length:400%_400%] animate-gradient"
         style={{

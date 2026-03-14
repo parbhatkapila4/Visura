@@ -8,7 +8,7 @@ export default function ChangelogPage() {
   const updates = [
     {
       version: "v2.5.0",
-      date: "January 2026",
+      date: "March 2026",
       type: "feature",
       title: "Workspace Collaboration & Performance",
       description: "Major release focused on real-time collaboration, performance, and reliability.",
@@ -23,7 +23,7 @@ export default function ChangelogPage() {
     },
     {
       version: "v2.1.0",
-      date: "October 2025",
+      date: "March 2026",
       type: "feature",
       title: "Current Platform Features",
       description: "All the features currently available in Visura",
@@ -39,7 +39,7 @@ export default function ChangelogPage() {
     },
     {
       version: "v1.5.0",
-      date: "July 2025",
+      date: "March 2026",
       type: "feature",
       title: "Initial Release & Core Features",
       description: "First major release with core document analysis capabilities",

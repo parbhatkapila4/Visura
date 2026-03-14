@@ -340,16 +340,25 @@ export default function SupabaseUploadForm({
       });
 
       if (versionResult.data?.unchanged) {
-        toast.success("Document already processed!", {
-          description: "Using existing version",
-        });
         if (versionResult.data.pdfSummaryId) {
+          toast.success("Document already processed!", {
+            description: "Taking you to your summary.",
+          });
           formRef.current?.reset();
           router.push(`/summaries/${versionResult.data.pdfSummaryId}`);
-        } else {
-          formRef.current?.reset();
-          router.push("/dashboard");
+          return;
         }
+        if (versionResult.data?.versionId) {
+          toast.success("Document uploaded!", {
+            description: "Generating summary... Please wait.",
+          });
+          formRef.current?.reset();
+          setIsLoading(true);
+          pollForSummaryCompletion(versionResult.data.versionId);
+          return;
+        }
+        formRef.current?.reset();
+        router.push("/dashboard");
         return;
       }
 

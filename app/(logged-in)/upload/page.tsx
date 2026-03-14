@@ -20,8 +20,8 @@ export default async function UploadPage() {
   );
 
   return (
-    <div className="bg-[#0a0a0a] relative w-full flex flex-col items-center">
-      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-[#1f1f1f] w-full">
+    <div className="relative z-10 w-full min-h-screen flex flex-col items-center bg-[#0a0a0a]">
+      <header className="sticky top-0 shrink-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-[#1f1f1f] w-full">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-4">
@@ -47,9 +47,9 @@ export default async function UploadPage() {
         </div>
       </header>
 
-      <div className="relative w-full bg-[#0a0a0a] flex flex-col items-center">
+      <div className="relative w-full flex-1 min-h-0 bg-[#0a0a0a] flex flex-col items-center">
         <BackgroundLines className="fixed inset-0 top-14 w-full h-[calc(100vh-56px)] pointer-events-none bg-transparent">{null}</BackgroundLines>
-        <div className="relative z-10 w-full px-4 py-12 pb-20 flex flex-col items-center" style={{ minHeight: 'calc(100vh - 56px)' }}>
+        <div className="relative z-10 w-full px-4 py-12 pb-20 flex flex-col items-center">
           <div className="w-full max-w-xl mx-auto">
             <div className="mb-10">
             <UploadHeader />

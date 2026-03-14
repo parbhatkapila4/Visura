@@ -1,18 +1,10 @@
-import { currentUser } from "@clerk/nextjs/server";
-import { ensureUserExistsInDatabase } from "@/lib/auth-utils";
-import AnimatedHomePage from "./animated-home-page";
+import HomeClient from "./home-client";
 
 type HomeProps = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default async function Home({ searchParams }: HomeProps) {
-  const user = await currentUser();
-
-  if (user) {
-    await ensureUserExistsInDatabase();
-  }
-
   const params = await searchParams;
   const paymentStatus = params.payment;
   const showSuccessMessage = paymentStatus === "success";
@@ -22,13 +14,14 @@ export default async function Home({ searchParams }: HomeProps) {
     <div
       className="relative w-full min-h-screen bg-black overflow-x-hidden"
       style={{
+        backgroundColor: "#000000",
         transform: "translateZ(0)",
         willChange: "scroll-position",
         backfaceVisibility: "hidden",
         WebkitBackfaceVisibility: "hidden",
       }}
     >
-      <AnimatedHomePage
+      <HomeClient
         showSuccessMessage={showSuccessMessage}
         showCancelMessage={showCancelMessage}
       />

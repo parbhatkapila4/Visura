@@ -9,6 +9,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-display: var(--font-display), ui-serif, Georgia, serif;
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -58,6 +59,111 @@
       opacity: 0.4;
     }
   }
+
+  @keyframes animation-path {
+    0% {
+      offset-distance: 0%;
+    }
+
+    100% {
+      offset-distance: 100%;
+    }
+  }
+
+  @keyframes scaleUp {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(-100%);
+    }
+  }
+
+  @keyframes marquee-vertical {
+    from {
+      transform: translateY(0);
+    }
+
+    to {
+      transform: translateY(-100%);
+    }
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@keyframes marquee-vertical-custom {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes fade-in-up-custom {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical-custom var(--duration, 30s) linear infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg,
+      rgb(26 26 26) 0%,
+      rgb(38 38 38) 45%,
+      rgb(45 45 45) 50%,
+      rgb(38 38 38) 55%,
+      rgb(26 26 26) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up-custom 0.8s ease-out forwards;
 }
 
 :root {
@@ -144,6 +250,7 @@
   }
 
   @media (max-width: 768px) {
+
     html,
     body {
       overflow-x: hidden;
@@ -159,13 +266,13 @@
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
     will-change: scroll-position;
-    background-color: #0a0a0a !important;
+    background-color: #000000 !important;
   }
 
   body {
-    @apply bg-background text-foreground;
-    background: var(--background);
-    background-color: #0a0a0a !important;
+    @apply text-foreground;
+    background: #000000 !important;
+    background-color: #000000 !important;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
     backface-visibility: hidden;
@@ -222,11 +329,9 @@
   }
 
   .btn-primary {
-    background: linear-gradient(
-      135deg,
-      var(--primary),
-      oklch(from var(--primary) calc(l + 0.1) c h)
-    );
+    background: linear-gradient(135deg,
+        var(--primary),
+        oklch(from var(--primary) calc(l + 0.1) c h));
     border: none;
     box-shadow: 0 4px 14px 0 rgba(var(--primary) / 0.39);
     transition: all 0.3s ease;
@@ -269,6 +374,7 @@
 }
 
 @keyframes gradient-x {
+
   0%,
   100% {
     background-size: 200% 100%;
@@ -488,16 +594,17 @@
     justify-content: center;
   }
 
-  .mobile-space-y-4 > * + * {
+  .mobile-space-y-4>*+* {
     margin-top: 1rem;
   }
 
-  .mobile-space-y-2 > * + * {
+  .mobile-space-y-2>*+* {
     margin-top: 0.5rem;
   }
 }
 
 @media (max-width: 768px) {
+
   button,
   .btn,
   [role="button"] {
@@ -538,4 +645,19 @@ div[class*="development"] {
   height: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
+}
+
+[data-clerk-portal-root] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+[data-clerk-theme] [role="dialog"],
+[data-clerk-element="modal"] {
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  position: fixed !important;
 }
