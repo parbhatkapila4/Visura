@@ -19,6 +19,7 @@ import { logger } from "@/lib/logger";
 import { processChunkInternal } from "@/lib/chunk-processor";
 import type { SupportedLanguage } from "@/lib/openai";
 import { getDbConnection } from "@/lib/db";
+import { logProcessingEvent } from "@/lib/processing-events";
 
 export async function createVersionedDocumentJob(
   pdfText: string,
@@ -27,6 +28,7 @@ export async function createVersionedDocumentJob(
   language: SupportedLanguage = 'ENGLISH'
 ) {
   let userId: string | undefined = undefined;
+  let versionIdForEvents: string | null = null;
   try {
     logger.info("createVersionedDocumentJob called", { fileName, textLength: pdfText.length });
     const authResult = await auth();
@@ -294,6 +296,27 @@ export async function createVersionedDocumentJob(
       fileUrl,
       language
     );
+    versionIdForEvents = version.id;
+
+    void logProcessingEvent({ versionId: version.id, type: "upload_started", message: "Version created" });
+    void logProcessingEvent({ versionId: version.id, type: "chunking_started", message: "Chunking started" });
+    void logProcessingEvent({
+      versionId: version.id,
+      type: "chunking_completed",
+      message: "Chunking completed",
+      metadata: { chunk_count: chunks.length },
+    });
+    void logProcessingEvent({
+      versionId: version.id,
+      type: "hash_diff_started",
+      message: "Comparing chunk hashes to previous version",
+    });
+    void logProcessingEvent({
+      versionId: version.id,
+      type: "reuse_calculated",
+      message: "Reuse calculated",
+      metadata: { reused: reusedChunks, new: newChunksCount, total: totalChunks },
+    });
 
     const placeholderSummaryId = await createPlaceholderSummary(
       document.user_id,
@@ -352,6 +375,11 @@ export async function createVersionedDocumentJob(
     }
 
     if (chunksToProcess.length > 0) {
+      void logProcessingEvent({
+        versionId: version.id,
+        type: "llm_processing_started",
+        message: "LLM processing started",
+      });
       logger.info("Starting chunk processing", {
         versionId: version.id,
         documentId: document.id,
@@ -539,6 +567,14 @@ export async function createVersionedDocumentJob(
     };
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);
+    if (versionIdForEvents) {
+      void logProcessingEvent({
+        versionId: versionIdForEvents,
+        type: "version_failed",
+        message: "Processing failed",
+        metadata: { error: errorMessage },
+      });
+    }
     logger.error("Error creating versioned document", err, {
       userId,
       errorMessage,

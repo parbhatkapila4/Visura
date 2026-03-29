@@ -1,12 +1,25 @@
-import { logger } from "./logger";
-export function enforceWordLimits(summary: string): string {
+import {
+  CHUNK_SUMMARY_BUDGET,
+  getSummaryProcessingBudget,
+  type SummaryProcessingBudget,
+} from "./summary-length-config";
+
+export function enforceWordLimits(
+  summary: string,
+  estimatedPages: number,
+  options?: { isChunk?: boolean; budget?: SummaryProcessingBudget }
+): string {
+  const resolved: SummaryProcessingBudget =
+    options?.budget ??
+    (options?.isChunk ? CHUNK_SUMMARY_BUDGET : getSummaryProcessingBudget(estimatedPages));
+
   const lines = summary.split('\n');
   const processedLines: string[] = [];
   let totalWords = 0;
-  const MAX_TOTAL_WORDS = 10000;
-  const MAX_BULLET_WORDS = 100; 
-  const MAX_BULLETS_PER_SECTION = 50;
-  const MAX_SECTIONS = 15;
+  const MAX_TOTAL_WORDS = resolved.maxTotalWords;
+  const MAX_BULLET_WORDS = resolved.maxBulletWords;
+  const MAX_BULLETS_PER_SECTION = resolved.maxBulletsPerSection;
+  const MAX_SECTIONS = resolved.maxSections;
 
   let currentSection: string[] = [];
   let bulletCount = 0;
@@ -75,7 +88,9 @@ export function enforceWordLimits(summary: string): string {
   return result.trim();
 }
 
-export function enforceSummaryStructure(summary: string, isShortDocument: boolean): string {
+export function enforceSummaryStructure(summary: string, estimatedPages: number): string {
+  const { maxSections } = getSummaryProcessingBudget(estimatedPages);
+
   const sections: Array<{ title: string; content: string; index: number }> = [];
   const seenHeaders = new Set<string>();
 
@@ -98,7 +113,7 @@ export function enforceSummaryStructure(summary: string, isShortDocument: boolea
         });
       }
 
-      if (seenHeaders.has(headerTitle)) {
+      if (seenHeaders.has(headerTitle) || sections.length >= maxSections) {
         currentSection = null;
         continue;
       }
@@ -113,7 +128,7 @@ export function enforceSummaryStructure(summary: string, isShortDocument: boolea
     }
   }
 
-  if (currentSection) {
+  if (currentSection && sections.length < maxSections) {
     sections.push({
       title: currentSection.title,
       content: currentSection.content.join('\n').trim(),
@@ -121,7 +136,21 @@ export function enforceSummaryStructure(summary: string, isShortDocument: boolea
     });
   }
 
-  const uniqueSections = sections.slice(0, 5);
+  const uniqueSections = sections.slice(0, maxSections);
+
+  const uniqueTitlesLower = uniqueSections.map((s) => s.title.toLowerCase());
+  const usesExecutivePromptShape =
+    uniqueTitlesLower.some((t) => t.includes("executive summary")) ||
+    uniqueTitlesLower.some((t) => t.includes("key points") || t.includes("findings")) ||
+    uniqueTitlesLower.some((t) => t.includes("important details") || t.includes("specifications")) ||
+    uniqueTitlesLower.some((t) => t.includes("risks & concerns") || t.includes("critical risks")) ||
+    uniqueTitlesLower.some((t) => t.includes("action items") || t.includes("recommendations") || t.includes("action"));
+
+  if (usesExecutivePromptShape) {
+    return uniqueSections
+      .map((s) => `### ${s.title}\n\n${s.content}`)
+      .join("\n\n");
+  }
 
   const expectedSections = [
     'TL;DR',
@@ -150,18 +179,24 @@ export function enforceSummaryStructure(summary: string, isShortDocument: boolea
   }
 
   if (finalSections.length === 0 && uniqueSections.length > 0) {
-    return uniqueSections.slice(0, 5).map(s => `### ${s.title}\n\n${s.content}`).join('\n\n');
+    return uniqueSections.slice(0, maxSections).map(s => `### ${s.title}\n\n${s.content}`).join('\n\n');
   }
 
   return finalSections.join('\n\n');
 }
 
-export function validateSummary(summary: string, detectedLanguage: string, documentType: string): {
+export function validateSummary(
+  summary: string,
+  detectedLanguage: string,
+  documentType: string,
+  options?: { isChunk?: boolean }
+): {
   isValid: boolean;
   errors: string[];
 } {
   const errors: string[] = [];
   const lowerSummary = summary.toLowerCase();
+  const isChunk = options?.isChunk ?? false;
 
 
   const badPhrases = [
@@ -187,21 +222,27 @@ export function validateSummary(summary: string, detectedLanguage: string, docum
     }
   }
 
- 
+
   if (detectedLanguage === 'ENGLISH') {
     const wordCount = summary.split(/\s+/).filter(w => w.length > 0).length;
-    
-    if (wordCount < 500) {
+
+    if (!isChunk && wordCount < 500) {
       errors.push(`Summary is too short - should be at least 500 words for comprehensive summaries (${wordCount})`);
     }
-    
-    if (wordCount > 10000) {
-      errors.push(`Summary exceeds 10000 words (${wordCount})`);
+    if (isChunk && wordCount < 40) {
+      errors.push(`Chunk summary is too short (${wordCount} words)`);
+    }
+
+    if (wordCount > 12000) {
+      errors.push(`Summary exceeds 12000 words (${wordCount})`);
     }
   } else {
     const estimatedWords = Math.ceil(summary.length / 4);
-    if (estimatedWords < 400) {
+    if (!isChunk && estimatedWords < 400) {
       errors.push(`Summary is too short - should be at least 400 words estimated (${estimatedWords})`);
+    }
+    if (isChunk && estimatedWords < 40) {
+      errors.push(`Chunk summary is too short (${estimatedWords} words estimated)`);
     }
     if (estimatedWords > 12000) {
       errors.push(`Summary exceeds estimated word limit (${estimatedWords} words estimated)`);

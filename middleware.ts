@@ -30,6 +30,10 @@ function stripRedirectUrlOnAuth(req: Request): NextResponse | null {
 }
 
 export default clerkMiddleware(async (auth, req) => {
+  if (req.nextUrl.pathname === "/api/spline-scene") {
+    return NextResponse.next();
+  }
+
   const stripped = stripRedirectUrlOnAuth(req);
   if (stripped) return stripped;
 

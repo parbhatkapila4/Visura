@@ -19,10 +19,11 @@ interface UploadFormInputProps {
   isLoading: boolean;
   hasReachedLimit: boolean;
   uploadLimit: number;
+  hideInlineProcessing?: boolean;
 }
 
 export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>(
-  ({ onSubmit, isLoading, hasReachedLimit, uploadLimit }, ref) => {
+  ({ onSubmit, isLoading, hasReachedLimit, uploadLimit, hideInlineProcessing }, ref) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const processingRef = useRef<HTMLDivElement>(null);
@@ -32,7 +33,7 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
       if (isLoading && processingRef.current) {
         try {
           processingRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-        } catch {}
+        } catch { }
       }
     }, [isLoading]);
 
@@ -116,8 +117,8 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
               isDragging
                 ? "border-white bg-white/5"
                 : selectedFile
-                ? "border-emerald-500/50 bg-emerald-500/5"
-                : "border-[#2a2a2a] bg-transparent hover:border-[#3a3a3a] hover:bg-white/5",
+                  ? "border-emerald-500/50 bg-emerald-500/5"
+                  : "border-[#2a2a2a] bg-transparent hover:border-[#3a3a3a] hover:bg-white/5",
               (isLoading || hasReachedLimit) && "opacity-50 cursor-not-allowed"
             )}
           >
@@ -267,7 +268,7 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
           </div>
         </div>
 
-        {isLoading && (
+        {isLoading && !hideInlineProcessing && (
           <div ref={processingRef} className="mt-8">
             <div className="p-6 rounded-xl bg-transparent backdrop-blur-sm border border-[#1f1f1f]">
               <div className="flex items-center justify-between mb-4">

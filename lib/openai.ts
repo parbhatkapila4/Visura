@@ -7,6 +7,11 @@ import { classifyDocument, type DocumentClassification } from "@/lib/document-cl
 import { detectDocumentLanguage, type SupportedLanguage, LANGUAGE_NAMES } from "@/lib/document-language";
 import { getTypeSpecificPrompt } from "@/lib/summary-prompts";
 import { enforceSummaryStructure, enforceWordLimits, validateSummary } from "@/lib/summary-post-processing";
+import {
+  estimatePagesFromTextLength,
+  getSummaryFinalWordCap,
+  getSummaryMaxOutputTokens,
+} from "@/lib/summary-length-config";
 
 export type { DocumentClassification, SupportedLanguage };
 export { classifyDocument, detectDocumentLanguage, LANGUAGE_NAMES };
@@ -194,7 +199,7 @@ export async function generateSummaryFromText(
       throw new Error("Text content too short to generate summary");
     }
 
-    const estimatedPages = Math.ceil(pdfText.length / 1900);
+    const estimatedPages = estimatePagesFromTextLength(pdfText.length);
     const isShortDocument = estimatedPages <= 15;
 
     logger.info("Document length estimated", {
@@ -253,7 +258,7 @@ export async function generateSummaryFromText(
         "ai_summary_generation",
         async () => {
           const temperature = 0.3;
-          const maxTokens = isChunk ? 800 : 4000;
+          const maxTokens = getSummaryMaxOutputTokens(estimatedPages, isChunk);
 
           return await openrouterChatCompletion({
             model: "anthropic/claude-3.5-haiku",
@@ -495,7 +500,9 @@ Create a comprehensive, detailed, and purely informative summary now. Output lan
       }
     }
 
-    const validation = validateSummary(summary, detectedLanguage, classification.type);
+    const validation = validateSummary(summary, detectedLanguage, classification.type, {
+      isChunk,
+    });
     if (!validation.isValid) {
       logger.error("Summary validation failed", undefined, {
         errors: validation.errors,
@@ -533,9 +540,9 @@ Create a comprehensive, detailed, and purely informative summary now. Output lan
       }
     }
 
-    let cleanedSummary = enforceSummaryStructure(summary, isShortDocument);
+    let cleanedSummary = enforceSummaryStructure(summary, estimatedPages);
 
-    cleanedSummary = enforceWordLimits(cleanedSummary);
+    cleanedSummary = enforceWordLimits(cleanedSummary, estimatedPages, { isChunk });
 
     let finalWordCount: number;
     if (language === 'ENGLISH') {
@@ -551,7 +558,7 @@ Create a comprehensive, detailed, and purely informative summary now. Output lan
     });
 
 
-    const maxWords = 800;
+    const maxWords = getSummaryFinalWordCap(estimatedPages, isChunk);
 
     if (finalWordCount > maxWords) {
       logger.warn(`Summary exceeds ${maxWords} words after processing, truncating`, {

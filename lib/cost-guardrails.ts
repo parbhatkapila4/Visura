@@ -1,11 +1,10 @@
 import { getDbConnection } from "./db";
-import { ESTIMATED_TOKENS_PER_CHUNK } from "./versioned-documents";
 import { sendAlert } from "./alerting";
 import { logger } from "./logger";
 
-
-
 const ESTIMATED_TOKENS_PER_NEW_CHUNK = 550;
+
+const ESTIMATED_COST_PER_1M_TOKENS = 2.0;
 
 export interface CostCheckResult {
   allowed: boolean;
@@ -43,17 +42,17 @@ export async function checkCostGuardrails(
 ): Promise<CostCheckResult> {
   
   const maxTokensPerDay = parseInt(
-    process.env.MAX_TOKENS_PER_USER_PER_DAY || "500000",
+    process.env.MAX_TOKENS_PER_USER_PER_DAY || "2000000",
     10
   );
   const maxNewChunksPerVersion = parseInt(
-    process.env.MAX_NEW_CHUNKS_PER_VERSION || "100",
+    process.env.MAX_NEW_CHUNKS_PER_VERSION || "0",
     10
   );
 
 
-  if (newChunksCount > maxNewChunksPerVersion) {
-    const reason = `New chunks (${newChunksCount}) exceeds per-version limit (${maxNewChunksPerVersion})`;
+  if (maxNewChunksPerVersion > 0 && newChunksCount > maxNewChunksPerVersion) {
+    const reason = "This document is too large to process in one go right now. Please split it into smaller parts and upload again.";
 
     logger.error("Cost guardrail: per-version limit exceeded", undefined, {
       userId,
@@ -96,8 +95,54 @@ export async function checkCostGuardrails(
     : newChunksCount * ESTIMATED_TOKENS_PER_NEW_CHUNK;
   const totalAfterThisVersion = tokensToday + estimatedTokensForThisVersion;
 
-  if (totalAfterThisVersion > maxTokensPerDay) {
-    const reason = `Daily token limit would be exceeded: ${totalAfterThisVersion} > ${maxTokensPerDay} (current: ${tokensToday}, this version: ${estimatedTokensForThisVersion})`;
+  const maxEstimatedCostPerDay = parseFloat(
+    process.env.MAX_ESTIMATED_COST_PER_USER_PER_DAY || "0"
+  );
+  const estimatedCostToday = (tokensToday / 1_000_000) * ESTIMATED_COST_PER_1M_TOKENS;
+  const estimatedCostThisVersion = (estimatedTokensForThisVersion / 1_000_000) * ESTIMATED_COST_PER_1M_TOKENS;
+  const estimatedCostAfter = estimatedCostToday + estimatedCostThisVersion;
+
+  if (Number.isFinite(maxEstimatedCostPerDay) && maxEstimatedCostPerDay > 0 && estimatedCostAfter > maxEstimatedCostPerDay) {
+    const reason = "You've reached today's AI processing budget. Please try again later.";
+
+    logger.error("Cost guardrail: estimated daily cost exceeded", undefined, {
+      userId,
+      documentId,
+      versionId,
+      estimatedCostToday,
+      estimatedCostThisVersion,
+      estimatedCostAfter,
+      maxEstimatedCostPerDay,
+    });
+
+    sendAlert({
+      severity: "critical",
+      type: "cost_limit_exceeded",
+      message: `Cost limit exceeded: ${reason}`,
+      context: {
+        userId,
+        documentId,
+        versionId,
+        limitType: "estimated_daily_cost",
+        estimatedCostAfter,
+        maxEstimatedCostPerDay,
+      },
+    }).catch(() => { });
+
+    return {
+      allowed: false,
+      reason,
+      currentUsage: {
+        tokensToday,
+        maxTokensPerDay,
+        newChunksInVersion: newChunksCount,
+        maxNewChunksPerVersion,
+      },
+    };
+  }
+
+  if (maxTokensPerDay > 0 && totalAfterThisVersion > maxTokensPerDay) {
+    const reason = "You've reached today's processing limit. Please try again tomorrow.";
 
     logger.error("Cost guardrail: daily limit exceeded", undefined, {
       userId,

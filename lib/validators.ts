@@ -21,6 +21,17 @@ export const GetMessagesSchema = z.object({
   sessionId: z.string().uuid("Invalid session ID format"),
 });
 
+export const SourceItemSchema = z.object({
+  page: z.number().nullable(),
+  snippet: z.string(),
+  chunk_id: z.string().uuid().nullable(),
+});
+export type SourceItem = z.infer<typeof SourceItemSchema>;
+export const ChatResponseWithSourcesSchema = z.object({
+  answer: z.string(),
+  sources: z.array(SourceItemSchema),
+});
+
 export const DeleteSessionSchema = z.object({
   sessionId: z.string().uuid("Invalid session ID format"),
 });

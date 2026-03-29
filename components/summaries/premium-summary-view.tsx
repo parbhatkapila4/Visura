@@ -30,6 +30,9 @@ import {
   Download,
   ExternalLink,
   RefreshCw,
+  BarChart3,
+  List,
+  Network,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -440,6 +443,50 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
 
               <Button
                 size="sm"
+                variant="ghost"
+                className="text-[#888] hover:text-white hover:bg-[#1a1a1a] h-8 w-8 p-0"
+                asChild
+              >
+                <Link href={`/summaries/${summary.id}/insights`} title="Processing insights">
+                  <BarChart3 className="w-4 h-4" />
+                </Link>
+              </Button>
+
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-[#888] hover:text-white hover:bg-[#1a1a1a] h-8 w-8 p-0"
+                asChild
+              >
+                <Link href={`/summaries/${summary.id}/ai-insights`} title="AI Insights">
+                  <Sparkles className="w-4 h-4" />
+                </Link>
+              </Button>
+
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-[#888] hover:text-white hover:bg-[#1a1a1a] h-8 w-8 p-0"
+                asChild
+              >
+                <Link href={`/summaries/${summary.id}/sections`} title="Sections">
+                  <List className="w-4 h-4" />
+                </Link>
+              </Button>
+
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-[#888] hover:text-white hover:bg-[#1a1a1a] h-8 w-8 p-0"
+                asChild
+              >
+                <Link href={`/summaries/${summary.id}/graph`} title="Knowledge graph">
+                  <Network className="w-4 h-4" />
+                </Link>
+              </Button>
+
+              <Button
+                size="sm"
                 type="button"
                 className="bg-white text-black hover:bg-[#e5e5e5] h-8 px-2 sm:px-3 sm:ml-2"
                 onClick={() => router.push(`/chatbot/${summary.id}`)}
@@ -499,8 +546,8 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                         key={index}
                         onClick={() => scrollToSection(index)}
                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${isActive
-                            ? "bg-white/5 text-white"
-                            : "text-[#666] hover:text-[#999] hover:bg-white/[0.02]"
+                          ? "bg-white/5 text-white"
+                          : "text-[#666] hover:text-[#999] hover:bg-white/[0.02]"
                           }`}
                       >
                         <span className="line-clamp-1">{cleanTitle}</span>
@@ -686,6 +733,49 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 <p className="text-xs text-[#666]">Copy link</p>
               </div>
 
+              <Link
+                href={`/summaries/${summary.id}/insights`}
+                className="block p-4 rounded-xl bg-[#111111] border border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors"
+              >
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mb-3">
+                  <BarChart3 className="w-4 h-4 text-[#888]" />
+                </div>
+                <p className="text-sm font-medium text-white mb-1">Processing insights</p>
+                <p className="text-xs text-[#666]">View timeline &amp; metrics</p>
+              </Link>
+
+              <Link
+                href={`/summaries/${summary.id}/ai-insights`}
+                className="block p-4 rounded-xl bg-[#111111] border border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors"
+              >
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mb-3">
+                  <Sparkles className="w-4 h-4 text-[#888]" />
+                </div>
+                <p className="text-sm font-medium text-white mb-1">AI Insights</p>
+                <p className="text-xs text-[#666]">Key insights, risks, highlights</p>
+              </Link>
+
+              <Link
+                href={`/summaries/${summary.id}/sections`}
+                className="block p-4 rounded-xl bg-[#111111] border border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors"
+              >
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mb-3">
+                  <List className="w-4 h-4 text-[#888]" />
+                </div>
+                <p className="text-sm font-medium text-white mb-1">Sections</p>
+                <p className="text-xs text-[#666]">Document structure</p>
+              </Link>
+
+              <Link
+                href={`/summaries/${summary.id}/graph`}
+                className="block p-4 rounded-xl bg-[#111111] border border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors"
+              >
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mb-3">
+                  <Network className="w-4 h-4 text-[#888]" />
+                </div>
+                <p className="text-sm font-medium text-white mb-1">Knowledge graph</p>
+                <p className="text-xs text-[#666]">Nodes &amp; relationships</p>
+              </Link>
 
               <DropdownMenu
                 onOpenChange={(open) => {

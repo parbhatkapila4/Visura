@@ -1,0 +1,2 @@
+ALTER TABLE pdf_qa_messages
+ADD COLUMN IF NOT EXISTS sources JSONB DEFAULT '[]';

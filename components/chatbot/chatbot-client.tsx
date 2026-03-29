@@ -20,12 +20,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { DocumentReference } from "@/lib/document-reference";
+import { DOCUMENT_VIEWER_GO_TO_EVENT } from "@/lib/document-reference";
+export interface ChatMessageSource {
+  page?: number | null;
+  snippet?: string;
+  chunk_id?: string | null;
+  document_version_id?: string;
+  pdf_summary_id?: string;
+}
 
 interface Message {
   id: string;
   message_type: "user" | "assistant";
   message_content: string;
   created_at: string;
+  sources?: ChatMessageSource[];
 }
 
 interface Session {
@@ -41,9 +51,33 @@ interface ChatbotClientProps {
   pdfSummaryId: string;
   pdfStoreId: string;
   pdfTitle: string;
+  onSelectReference?: (ref: DocumentReference) => void;
 }
 
-export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: ChatbotClientProps) {
+const SNIPPET_MAX_LENGTH = 250;
+
+function sourceToReference(source: ChatMessageSource): DocumentReference {
+  return {
+    document_version_id: source.document_version_id ?? "",
+    page: source.page ?? null,
+    snippet: source.snippet ?? "",
+    pdf_summary_id: source.pdf_summary_id ?? null,
+    chunk_id: source.chunk_id ?? null,
+  };
+}
+
+function truncateSnippet(text: string, maxLen: number = SNIPPET_MAX_LENGTH): string {
+  const t = (text ?? "").trim();
+  if (t.length <= maxLen) return t;
+  return t.slice(0, maxLen).trim() + "…";
+}
+
+export default function ChatbotClient({
+  pdfSummaryId,
+  pdfStoreId,
+  pdfTitle,
+  onSelectReference,
+}: ChatbotClientProps) {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -157,7 +191,7 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
     try {
       const response = await fetch(`/api/chatbot/messages?sessionId=${sessionId}`);
       const data = await response.json();
-      if (response.ok) setMessages(data.messages || []);
+      if (response.ok) setMessages(data.messages ?? []);
     } catch (error) {
       console.error("Error loading messages:", error);
     }
@@ -531,45 +565,95 @@ export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: Ch
                             {message.message_type === "user" ? "You" : "AI Assistant"}
                           </p>
                           {message.message_type === "assistant" ? (
-                            <div className="prose prose-sm max-w-none prose-invert">
-                              <ReactMarkdown
-                                components={{
-                                  p: ({ children }) => (
-                                    <p className="mb-3 last:mb-0 text-[#ccc] text-[15px] leading-relaxed">
-                                      {children}
-                                    </p>
-                                  ),
-                                  ul: ({ children }) => (
-                                    <ul className="list-disc pl-5 mb-3 space-y-1.5 text-[#ccc]">
-                                      {children}
-                                    </ul>
-                                  ),
-                                  ol: ({ children }) => (
-                                    <ol className="list-decimal pl-5 mb-3 space-y-1.5 text-[#ccc]">
-                                      {children}
-                                    </ol>
-                                  ),
-                                  li: ({ children }) => (
-                                    <li className="text-[#ccc] text-[15px]">{children}</li>
-                                  ),
-                                  strong: ({ children }) => (
-                                    <strong className="font-semibold text-white">{children}</strong>
-                                  ),
-                                  code: ({ children }) => (
-                                    <code className="bg-[#1a1a1a] px-1.5 py-0.5 rounded text-sm font-mono text-emerald-400">
-                                      {children}
-                                    </code>
-                                  ),
-                                  pre: ({ children }) => (
-                                    <pre className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-4 overflow-x-auto my-3">
-                                      {children}
-                                    </pre>
-                                  ),
-                                }}
-                              >
-                                {message.message_content}
-                              </ReactMarkdown>
-                            </div>
+                            <>
+                              <div className="prose prose-sm max-w-none prose-invert">
+                                <ReactMarkdown
+                                  components={{
+                                    p: ({ children }) => (
+                                      <p className="mb-3 last:mb-0 text-[#ccc] text-[15px] leading-relaxed">
+                                        {children}
+                                      </p>
+                                    ),
+                                    ul: ({ children }) => (
+                                      <ul className="list-disc pl-5 mb-3 space-y-1.5 text-[#ccc]">
+                                        {children}
+                                      </ul>
+                                    ),
+                                    ol: ({ children }) => (
+                                      <ol className="list-decimal pl-5 mb-3 space-y-1.5 text-[#ccc]">
+                                        {children}
+                                      </ol>
+                                    ),
+                                    li: ({ children }) => (
+                                      <li className="text-[#ccc] text-[15px]">{children}</li>
+                                    ),
+                                    strong: ({ children }) => (
+                                      <strong className="font-semibold text-white">{children}</strong>
+                                    ),
+                                    code: ({ children }) => (
+                                      <code className="bg-[#1a1a1a] px-1.5 py-0.5 rounded text-sm font-mono text-emerald-400">
+                                        {children}
+                                      </code>
+                                    ),
+                                    pre: ({ children }) => (
+                                      <pre className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg p-4 overflow-x-auto my-3">
+                                        {children}
+                                      </pre>
+                                    ),
+                                  }}
+                                >
+                                  {message.message_content}
+                                </ReactMarkdown>
+                              </div>
+                              {message.sources && message.sources.length > 0 && (
+                                <div className="mt-4 pt-3 border-t border-[#252525]">
+                                  <p className="text-[11px] text-[#555] uppercase tracking-wider font-medium mb-2">
+                                    Sources
+                                  </p>
+                                  <ul className="space-y-2">
+                                    {message.sources.map((source, idx) => {
+                                      const ref = sourceToReference(source);
+                                      const handleView = () => {
+                                        if (onSelectReference) onSelectReference(ref);
+                                        else
+                                          window.dispatchEvent(
+                                            new CustomEvent(DOCUMENT_VIEWER_GO_TO_EVENT, {
+                                              detail: ref,
+                                            })
+                                          );
+                                      };
+                                      const pageLabel =
+                                        source.page != null ? `Page ${source.page}` : null;
+                                      const snippetText = truncateSnippet(
+                                        source.snippet ?? ""
+                                      );
+                                      return (
+                                        <li
+                                          key={idx}
+                                          className="text-sm text-[#888] bg-[#111] border border-[#1f1f1f] rounded-lg px-3 py-2"
+                                        >
+                                          {pageLabel && (
+                                            <span className="text-[#666] text-xs mr-2">
+                                              {pageLabel}
+                                            </span>
+                                          )}
+                                          <p className="text-[#999] leading-relaxed mt-0.5">
+                                            {snippetText}
+                                          </p>
+                                          <button
+                                            type="button"
+                                            onClick={handleView}
+                                            className="mt-2 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                                          >
+                                            View in document
+                                          </button>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                </div>
+                              )}
+                            </>
                           ) : (
                             <p className="text-[15px] text-white leading-relaxed">
                               {message.message_content}

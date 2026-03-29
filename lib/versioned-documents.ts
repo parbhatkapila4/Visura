@@ -36,6 +36,8 @@ export interface DocumentChunk {
   reused_from_chunk_id: string | null;
   job_id: string | null;
   created_at: Date;
+  start_page?: number | null;
+  end_page?: number | null;
 }
 
 export function hashContent(content: string): string {
@@ -211,16 +213,18 @@ export async function createDocumentChunk(
   chunkIndex: number,
   chunkHash: string,
   text: string,
-  reusedFromChunkId: string | null = null
+  reusedFromChunkId: string | null = null,
+  startPage: number | null = null,
+  endPage: number | null = null
 ): Promise<DocumentChunk> {
   const sql = await getDbConnection();
 
   try {
     const [chunk] = await sql`
       INSERT INTO document_chunks (
-        document_version_id, chunk_index, chunk_hash, text, reused_from_chunk_id
+        document_version_id, chunk_index, chunk_hash, text, reused_from_chunk_id, start_page, end_page
       )
-      VALUES (${versionId}, ${chunkIndex}, ${chunkHash}, ${text}, ${reusedFromChunkId})
+      VALUES (${versionId}, ${chunkIndex}, ${chunkHash}, ${text}, ${reusedFromChunkId}, ${startPage ?? null}, ${endPage ?? null})
       RETURNING *
     `;
     return chunk as DocumentChunk;
@@ -314,7 +318,7 @@ export async function isVersionComplete(versionId: string): Promise<boolean> {
       AND summary IS NULL
       AND reused_from_chunk_id IS NULL
   `;
-  
+
   const [reusedChunksResult] = await sql`
     SELECT COUNT(*) as incomplete_reused_count
     FROM document_chunks dc
@@ -327,19 +331,19 @@ export async function isVersionComplete(versionId: string): Promise<boolean> {
         AND source.summary IS NOT NULL
       )
   `;
-  
+
   const incompleteNew = Number(newChunksResult?.incomplete_count || 0);
   const incompleteReused = Number(reusedChunksResult?.incomplete_reused_count || 0);
-  
+
   const isComplete = incompleteNew === 0 && incompleteReused === 0;
-  
+
   logger.info("Version completion check", {
     versionId,
     incompleteNew,
     incompleteReused,
     isComplete,
   });
-  
+
   return isComplete;
 }
 
@@ -363,6 +367,13 @@ export async function getVersionById(versionId: string): Promise<DocumentVersion
   return (version as DocumentVersion) || null;
 }
 
+export async function getVersionIdByPdfSummaryId(pdfSummaryId: string): Promise<string | null> {
+  const sql = await getDbConnection();
+  const [row] = await sql`
+    SELECT id FROM document_versions WHERE pdf_summary_id = ${pdfSummaryId} LIMIT 1
+  `;
+  return (row?.id as string) ?? null;
+}
 
 export async function getIncompleteVersionsOlderThan(
   thresholdMinutes: number,

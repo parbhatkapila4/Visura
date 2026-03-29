@@ -1,7 +1,4 @@
-/* Basically, this is a migration readme for getting idea about our schema */
-
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 CREATE TABLE IF NOT EXISTS workspaces (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
@@ -11,7 +8,6 @@ CREATE TABLE IF NOT EXISTS workspaces (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE TABLE IF NOT EXISTS workspace_members (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
@@ -26,7 +22,6 @@ CREATE TABLE IF NOT EXISTS workspace_members (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(workspace_id, user_id)
 );
-
 CREATE TABLE IF NOT EXISTS document_shares (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     pdf_summary_id UUID NOT NULL REFERENCES pdf_summaries(id) ON DELETE CASCADE,
@@ -37,7 +32,6 @@ CREATE TABLE IF NOT EXISTS document_shares (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(pdf_summary_id, workspace_id)
 );
-
 CREATE TABLE IF NOT EXISTS collaboration_sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     pdf_summary_id UUID NOT NULL REFERENCES pdf_summaries(id) ON DELETE CASCADE,
@@ -49,7 +43,6 @@ CREATE TABLE IF NOT EXISTS collaboration_sessions (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(pdf_summary_id, user_id)
 );
-
 CREATE TABLE IF NOT EXISTS document_comments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     pdf_summary_id UUID NOT NULL REFERENCES pdf_summaries(id) ON DELETE CASCADE,
@@ -64,7 +57,6 @@ CREATE TABLE IF NOT EXISTS document_comments (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE TABLE IF NOT EXISTS workspace_activities (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
@@ -76,7 +68,6 @@ CREATE TABLE IF NOT EXISTS workspace_activities (
     metadata JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-
 CREATE INDEX IF NOT EXISTS idx_workspaces_owner_id ON workspaces(owner_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_members_workspace_id ON workspace_members(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_members_user_id ON workspace_members(user_id);
@@ -88,28 +79,15 @@ CREATE INDEX IF NOT EXISTS idx_document_comments_pdf_summary_id ON document_comm
 CREATE INDEX IF NOT EXISTS idx_document_comments_workspace_id ON document_comments(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_activities_workspace_id ON workspace_activities(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_activities_created_at ON workspace_activities(created_at DESC);
-
 DROP TRIGGER IF EXISTS update_workspaces_updated_at ON workspaces;
-CREATE TRIGGER update_workspaces_updated_at
-BEFORE UPDATE ON workspaces
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
-
+CREATE TRIGGER update_workspaces_updated_at BEFORE
+UPDATE ON workspaces FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 DROP TRIGGER IF EXISTS update_workspace_members_updated_at ON workspace_members;
-CREATE TRIGGER update_workspace_members_updated_at
-BEFORE UPDATE ON workspace_members
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
-
+CREATE TRIGGER update_workspace_members_updated_at BEFORE
+UPDATE ON workspace_members FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 DROP TRIGGER IF EXISTS update_document_shares_updated_at ON document_shares;
-CREATE TRIGGER update_document_shares_updated_at
-BEFORE UPDATE ON document_shares
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
-
+CREATE TRIGGER update_document_shares_updated_at BEFORE
+UPDATE ON document_shares FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 DROP TRIGGER IF EXISTS update_document_comments_updated_at ON document_comments;
-CREATE TRIGGER update_document_comments_updated_at
-BEFORE UPDATE ON document_comments
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
-
+CREATE TRIGGER update_document_comments_updated_at BEFORE
+UPDATE ON document_comments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

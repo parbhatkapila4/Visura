@@ -1,21 +1,48 @@
 import type { NextConfig } from "next";
 import path from "path";
 
+
+const splineReactSpline = path.join(
+  __dirname,
+  "node_modules",
+  "@splinetool",
+  "react-spline",
+  "dist",
+  "react-spline.js"
+);
+const splineRuntime = path.join(
+  __dirname,
+  "node_modules",
+  "@splinetool",
+  "runtime",
+  "build",
+  "runtime.js"
+);
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  transpilePackages: ["@splinetool/react-spline", "@splinetool/runtime"],
+  turbopack: {
+    resolveAlias: {
+      "@splinetool/react-spline": splineReactSpline,
+      "@splinetool/runtime": splineRuntime,
+    },
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: true,
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       "@": path.resolve(__dirname, "."),
+      "@splinetool/react-spline": splineReactSpline,
+      "@splinetool/runtime": splineRuntime,
     };
-    
-    
+
+
     config.resolve.extensions = [
       ".tsx",
       ".ts",
@@ -24,7 +51,7 @@ const nextConfig: NextConfig = {
       ".json",
       ...(config.resolve.extensions || []),
     ];
-    
+
     return config;
   },
 

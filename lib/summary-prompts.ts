@@ -254,5 +254,13 @@ Provide recommendation: Approve, Revise, or Reject, with reasoning based on feas
         if (isChunk) {
                 return basePrompt;
         }
-        return typeSpecificPrompts[docType] || basePrompt;
+
+        const body = typeSpecificPrompts[docType] || basePrompt;
+        if (estimatedPages <= 55) {
+                return body;
+        }
+
+        return `${body}
+
+LONG DOCUMENT NOTE (roughly ${estimatedPages}+ estimated pages from text length): This is a large work. Add more bullets and sub-themes in **Key Points** and **Important Details**, and use **Key Takeaways** to reflect breadth across the *entire* document—not a short recap. Preserve concrete names, dates, figures, and chapter- or part-level themes where they appear in the source.`;
 }

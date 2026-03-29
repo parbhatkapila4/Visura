@@ -1,3 +1,4 @@
+import LandingHeroSpline from "@/components/landing-hero-spline";
 import HomeClient from "./home-client";
 
 type HomeProps = {
@@ -11,20 +12,17 @@ export default async function Home({ searchParams }: HomeProps) {
   const showCancelMessage = paymentStatus === "cancelled";
 
   return (
-    <div
-      className="relative w-full min-h-screen bg-black overflow-x-hidden"
-      style={{
-        backgroundColor: "#000000",
-        transform: "translateZ(0)",
-        willChange: "scroll-position",
-        backfaceVisibility: "hidden",
-        WebkitBackfaceVisibility: "hidden",
-      }}
-    >
-      <HomeClient
-        showSuccessMessage={showSuccessMessage}
-        showCancelMessage={showCancelMessage}
-      />
+    <div className="relative w-full flex-1 bg-black overflow-x-hidden">
+      <LandingHeroSpline />
+      <div
+        className="relative z-10 w-full bg-black"
+        style={{ position: "relative", zIndex: 10, backgroundColor: "#000000" }}
+      >
+        <HomeClient
+          showSuccessMessage={showSuccessMessage}
+          showCancelMessage={showCancelMessage}
+        />
+      </div>
     </div>
   );
 }

@@ -17,12 +17,16 @@ import {
   Target,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import type { DocumentReference } from "@/lib/document-reference";
+import { DOCUMENT_VIEWER_GO_TO_EVENT } from "@/lib/document-reference";
+import type { ChatMessageSource } from "./chatbot-client";
 
 interface Message {
   id: string;
   message_type: "user" | "assistant";
   message_content: string;
   created_at: string;
+  sources?: ChatMessageSource[];
 }
 
 interface Session {
@@ -44,6 +48,25 @@ interface ChatbotAnimatedViewProps {
   pdfSummaryId: string;
   pdfStoreId: string;
   pdfTitle: string;
+  onSelectReference?: (ref: DocumentReference) => void;
+}
+
+const SNIPPET_MAX_LEN = 250;
+
+function sourceToRef(s: ChatMessageSource): DocumentReference {
+  return {
+    document_version_id: s.document_version_id ?? "",
+    page: s.page ?? null,
+    snippet: s.snippet ?? "",
+    pdf_summary_id: s.pdf_summary_id ?? null,
+    chunk_id: s.chunk_id ?? null,
+  };
+}
+
+function truncateSnippet(text: string, max: number = SNIPPET_MAX_LEN): string {
+  const t = (text ?? "").trim();
+  if (t.length <= max) return t;
+  return t.slice(0, max).trim() + "…";
 }
 
 function useAutoResizeTextarea(minHeight: number, maxHeight?: number) {
@@ -98,6 +121,7 @@ export function ChatbotAnimatedView({
   pdfSummaryId,
   pdfStoreId,
   pdfTitle,
+  onSelectReference,
 }: ChatbotAnimatedViewProps) {
   const [value, setValue] = useState("");
   const [attachments, setAttachments] = useState<string[]>([]);
@@ -316,258 +340,301 @@ export function ChatbotAnimatedView({
 
       <div className="flex-1 w-full flex flex-col items-center justify-center min-h-0 relative z-10">
         <div className="w-full max-w-2xl flex flex-col flex-1 min-h-0">
-        <motion.div
-          className="relative flex flex-col flex-1 min-h-0 space-y-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
-          {showWelcome ? (
-            <>
-              <div className="text-center space-y-3 flex-shrink-0">
-                <motion.h1
-                  className="text-3xl font-medium tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white/90 to-white/40 pb-1"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.5 }}
-                >
-                  How can I help today?
-                </motion.h1>
-                <motion.div
-                  className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto max-w-xs"
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ width: "100%", opacity: 1 }}
-                  transition={{ delay: 0.5, duration: 0.8 }}
-                />
-                <motion.p
-                  className="text-sm text-white/40"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  Type a command or ask about &quot;{pdfTitle}&quot;
-                </motion.p>
-              </div>
-            </>
-          ) : (
-            <div
-              ref={messagesContainerRef}
-              className="flex-1 overflow-y-auto min-h-0 rounded-2xl border border-white/[0.05] bg-white/[0.02] backdrop-blur-sm p-4"
-            >
-              <div className="space-y-6 max-w-3xl mx-auto">
-                {messages.map((message) => (
-                  <div key={message.id} className="flex gap-4">
-                    <div
-                      className={cn(
-                        "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
-                        message.message_type === "user"
-                          ? "bg-white"
-                          : "bg-white/[0.08] border border-white/10"
-                      )}
-                    >
-                      {message.message_type === "user" ? (
-                        <User className="w-4 h-4 text-black" />
-                      ) : (
-                        <Sparkles className="w-4 h-4 text-white/80" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0 pt-0.5">
-                      <p className="text-[11px] text-white/50 mb-1.5 uppercase tracking-wider">
-                        {message.message_type === "user" ? "You" : "Visura"}
-                      </p>
-                      {message.message_type === "assistant" ? (
-                        <div className="prose prose-sm max-w-none prose-invert">
-                          <ReactMarkdown
-                            components={{
-                              p: ({ children }) => <p className="mb-3 last:mb-0 text-white/90 text-[15px] leading-relaxed">{children}</p>,
-                              ul: ({ children }) => <ul className="list-disc pl-5 mb-3 space-y-1.5 text-white/90">{children}</ul>,
-                              ol: ({ children }) => <ol className="list-decimal pl-5 mb-3 space-y-1.5 text-white/90">{children}</ol>,
-                              li: ({ children }) => <li className="text-[15px]">{children}</li>,
-                              strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
-                              code: ({ children }) => <code className="bg-white/10 px-1.5 py-0.5 rounded text-sm font-mono text-white/90">{children}</code>,
-                              pre: ({ children }) => <pre className="bg-black/30 border border-white/10 rounded-lg p-4 overflow-x-auto my-3">{children}</pre>,
-                            }}
-                          >
-                            {message.message_content}
-                          </ReactMarkdown>
-                        </div>
-                      ) : (
-                        <p className="text-[15px] text-white/90 leading-relaxed">{message.message_content}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {isLoading && (
-                  <div className="flex gap-4">
-                    <div className="w-8 h-8 rounded-lg bg-white/[0.08] border border-white/10 flex items-center justify-center">
-                      <Sparkles className="w-4 h-4 text-white/70" />
-                    </div>
-                    <div className="flex-1 pt-1">
-                      <p className="text-[11px] text-white/50 mb-1.5 uppercase tracking-wider">Visura</p>
-                      <div className="flex items-center gap-2 text-sm text-white/70">
-                        <span>Thinking</span>
-                        <TypingDots />
+          <motion.div
+            className="relative flex flex-col flex-1 min-h-0 space-y-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            {showWelcome ? (
+              <>
+                <div className="text-center space-y-3 flex-shrink-0">
+                  <motion.h1
+                    className="text-3xl font-medium tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white/90 to-white/40 pb-1"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                  >
+                    How can I help today?
+                  </motion.h1>
+                  <motion.div
+                    className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto max-w-xs"
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: "100%", opacity: 1 }}
+                    transition={{ delay: 0.5, duration: 0.8 }}
+                  />
+                  <motion.p
+                    className="text-sm text-white/40"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    Type a command or ask about &quot;{pdfTitle}&quot;
+                  </motion.p>
+                </div>
+              </>
+            ) : (
+              <div
+                ref={messagesContainerRef}
+                className="flex-1 overflow-y-auto min-h-0 rounded-2xl border border-white/[0.05] bg-white/[0.02] backdrop-blur-sm p-4"
+              >
+                <div className="space-y-6 max-w-3xl mx-auto">
+                  {messages.map((message) => (
+                    <div key={message.id} className="flex gap-4">
+                      <div
+                        className={cn(
+                          "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
+                          message.message_type === "user"
+                            ? "bg-white"
+                            : "bg-white/[0.08] border border-white/10"
+                        )}
+                      >
+                        {message.message_type === "user" ? (
+                          <User className="w-4 h-4 text-black" />
+                        ) : (
+                          <Sparkles className="w-4 h-4 text-white/80" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0 pt-0.5">
+                        <p className="text-[11px] text-white/50 mb-1.5 uppercase tracking-wider">
+                          {message.message_type === "user" ? "You" : "Visura"}
+                        </p>
+                        {message.message_type === "assistant" ? (
+                          <>
+                            <div className="prose prose-sm max-w-none prose-invert">
+                              <ReactMarkdown
+                                components={{
+                                  p: ({ children }) => <p className="mb-3 last:mb-0 text-white/90 text-[15px] leading-relaxed">{children}</p>,
+                                  ul: ({ children }) => <ul className="list-disc pl-5 mb-3 space-y-1.5 text-white/90">{children}</ul>,
+                                  ol: ({ children }) => <ol className="list-decimal pl-5 mb-3 space-y-1.5 text-white/90">{children}</ol>,
+                                  li: ({ children }) => <li className="text-[15px]">{children}</li>,
+                                  strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                                  code: ({ children }) => <code className="bg-white/10 px-1.5 py-0.5 rounded text-sm font-mono text-white/90">{children}</code>,
+                                  pre: ({ children }) => <pre className="bg-black/30 border border-white/10 rounded-lg p-4 overflow-x-auto my-3">{children}</pre>,
+                                }}
+                              >
+                                {message.message_content}
+                              </ReactMarkdown>
+                            </div>
+                            {message.sources && message.sources.length > 0 && (
+                              <div className="mt-4 pt-3 border-t border-white/10">
+                                <p className="text-[11px] text-white/50 uppercase tracking-wider font-medium mb-2">
+                                  Sources
+                                </p>
+                                <ul className="space-y-2">
+                                  {message.sources.map((source, idx) => {
+                                    const ref = sourceToRef(source);
+                                    const handleView = () => {
+                                      if (onSelectReference) onSelectReference(ref);
+                                      else
+                                        window.dispatchEvent(
+                                          new CustomEvent(DOCUMENT_VIEWER_GO_TO_EVENT, {
+                                            detail: ref,
+                                          })
+                                        );
+                                    };
+                                    const pageLabel = source.page != null ? `Page ${source.page}` : null;
+                                    const snippetText = truncateSnippet(source.snippet ?? "");
+                                    return (
+                                      <li
+                                        key={idx}
+                                        className="text-sm text-white/70 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2"
+                                      >
+                                        {pageLabel && (
+                                          <span className="text-white/50 text-xs mr-2">{pageLabel}</span>
+                                        )}
+                                        <p className="text-white/80 leading-relaxed mt-0.5">{snippetText}</p>
+                                        <button
+                                          type="button"
+                                          onClick={handleView}
+                                          className="mt-2 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                                        >
+                                          View in document
+                                        </button>
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <p className="text-[15px] text-white/90 leading-relaxed">{message.message_content}</p>
+                        )}
                       </div>
                     </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
+                  ))}
+                  {isLoading && (
+                    <div className="flex gap-4">
+                      <div className="w-8 h-8 rounded-lg bg-white/[0.08] border border-white/10 flex items-center justify-center">
+                        <Sparkles className="w-4 h-4 text-white/70" />
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <p className="text-[11px] text-white/50 mb-1.5 uppercase tracking-wider">Visura</p>
+                        <div className="flex items-center gap-2 text-sm text-white/70">
+                          <span>Thinking</span>
+                          <TypingDots />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <motion.div
-            className="relative backdrop-blur-2xl bg-white/[0.02] rounded-2xl border border-white/[0.05] shadow-2xl flex-shrink-0"
-            initial={{ scale: 0.98 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.1 }}
-          >
-            <AnimatePresence>
-              {showCommandPalette && (
-                <motion.div
-                  ref={commandPaletteRef}
-                  className="absolute left-4 right-4 bottom-full mb-2 backdrop-blur-xl bg-black/90 rounded-lg z-50 shadow-lg border border-white/10 overflow-hidden"
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 5 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  <div className="py-1 bg-black/95">
-                    {documentCommands.map((cmd, index) => (
+            <motion.div
+              className="relative backdrop-blur-2xl bg-white/[0.02] rounded-2xl border border-white/[0.05] shadow-2xl flex-shrink-0"
+              initial={{ scale: 0.98 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <AnimatePresence>
+                {showCommandPalette && (
+                  <motion.div
+                    ref={commandPaletteRef}
+                    className="absolute left-4 right-4 bottom-full mb-2 backdrop-blur-xl bg-black/90 rounded-lg z-50 shadow-lg border border-white/10 overflow-hidden"
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 5 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <div className="py-1 bg-black/95">
+                      {documentCommands.map((cmd, index) => (
+                        <motion.div
+                          key={cmd.label}
+                          className={cn(
+                            "flex items-center gap-2 px-3 py-2 text-xs transition-colors cursor-pointer",
+                            activeSuggestion === index ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5"
+                          )}
+                          onClick={() => selectCommand(index)}
+                        >
+                          <div className="w-5 h-5 flex items-center justify-center text-white/60">{cmd.icon}</div>
+                          <div className="font-medium">{cmd.label}</div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="p-4">
+                <textarea
+                  ref={textareaRef}
+                  value={value}
+                  onChange={(e) => {
+                    setValue(e.target.value);
+                    adjustHeight();
+                  }}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => setInputFocused(true)}
+                  onBlur={() => setInputFocused(false)}
+                  placeholder={`Ask about "${pdfTitle}"...`}
+                  disabled={isLoading}
+                  className={cn(
+                    "w-full px-4 py-3 resize-none bg-transparent border-none text-white/90 text-sm focus:outline-none placeholder:text-white/20 min-h-[60px]"
+                  )}
+                  style={{ overflow: "hidden" }}
+                  rows={1}
+                />
+              </div>
+
+              <AnimatePresence>
+                {attachments.length > 0 && (
+                  <motion.div
+                    className="px-4 pb-3 flex gap-2 flex-wrap"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                  >
+                    {attachments.map((file, index) => (
                       <motion.div
-                        key={cmd.label}
-                        className={cn(
-                          "flex items-center gap-2 px-3 py-2 text-xs transition-colors cursor-pointer",
-                          activeSuggestion === index ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5"
-                        )}
-                        onClick={() => selectCommand(index)}
+                        key={index}
+                        className="flex items-center gap-2 text-xs bg-white/[0.03] py-1.5 px-3 rounded-lg text-white/70"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
                       >
-                        <div className="w-5 h-5 flex items-center justify-center text-white/60">{cmd.icon}</div>
-                        <div className="font-medium">{cmd.label}</div>
+                        <span>{file}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(index)}
+                          className="text-white/40 hover:text-white transition-colors"
+                        >
+                          <XIcon className="w-3 h-3" />
+                        </button>
                       </motion.div>
                     ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="p-4">
-              <textarea
-                ref={textareaRef}
-                value={value}
-                onChange={(e) => {
-                  setValue(e.target.value);
-                  adjustHeight();
-                }}
-                onKeyDown={handleKeyDown}
-                onFocus={() => setInputFocused(true)}
-                onBlur={() => setInputFocused(false)}
-                placeholder={`Ask about "${pdfTitle}"...`}
-                disabled={isLoading}
-                className={cn(
-                  "w-full px-4 py-3 resize-none bg-transparent border-none text-white/90 text-sm focus:outline-none placeholder:text-white/20 min-h-[60px]"
+                  </motion.div>
                 )}
-                style={{ overflow: "hidden" }}
-                rows={1}
-              />
-            </div>
+              </AnimatePresence>
 
-            <AnimatePresence>
-              {attachments.length > 0 && (
-                <motion.div
-                  className="px-4 pb-3 flex gap-2 flex-wrap"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                >
-                  {attachments.map((file, index) => (
-                    <motion.div
-                      key={index}
-                      className="flex items-center gap-2 text-xs bg-white/[0.03] py-1.5 px-3 rounded-lg text-white/70"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                    >
-                      <span>{file}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeAttachment(index)}
-                        className="text-white/40 hover:text-white transition-colors"
-                      >
-                        <XIcon className="w-3 h-3" />
-                      </button>
-                    </motion.div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="p-4 border-t border-white/[0.05] flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
+              <div className="p-4 border-t border-white/[0.05] flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <motion.button
+                    type="button"
+                    onClick={handleAttachFile}
+                    whileTap={{ scale: 0.94 }}
+                    className="p-2 text-white/40 hover:text-white/90 rounded-lg transition-colors"
+                  >
+                    <Paperclip className="w-4 h-4" />
+                  </motion.button>
+                  <motion.button
+                    type="button"
+                    data-command-button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowCommandPalette((p) => !p);
+                    }}
+                    whileTap={{ scale: 0.94 }}
+                    className={cn(
+                      "p-2 text-white/40 hover:text-white/90 rounded-lg transition-colors",
+                      showCommandPalette && "bg-white/10 text-white/90"
+                    )}
+                  >
+                    <Command className="w-4 h-4" />
+                  </motion.button>
+                </div>
                 <motion.button
                   type="button"
-                  onClick={handleAttachFile}
-                  whileTap={{ scale: 0.94 }}
-                  className="p-2 text-white/40 hover:text-white/90 rounded-lg transition-colors"
-                >
-                  <Paperclip className="w-4 h-4" />
-                </motion.button>
-                <motion.button
-                  type="button"
-                  data-command-button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowCommandPalette((p) => !p);
-                  }}
-                  whileTap={{ scale: 0.94 }}
+                  onClick={() => sendMessage()}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  disabled={isLoading || !value.trim()}
                   className={cn(
-                    "p-2 text-white/40 hover:text-white/90 rounded-lg transition-colors",
-                    showCommandPalette && "bg-white/10 text-white/90"
+                    "px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2",
+                    value.trim()
+                      ? "bg-white text-[#0A0A0B] shadow-lg shadow-white/10"
+                      : "bg-white/[0.05] text-white/40"
                   )}
                 >
-                  <Command className="w-4 h-4" />
+                  {isLoading ? (
+                    <LoaderIcon className="w-4 h-4 animate-[spin_2s_linear_infinite]" />
+                  ) : (
+                    <SendIcon className="w-4 h-4" />
+                  )}
+                  <span>Send</span>
                 </motion.button>
               </div>
-              <motion.button
-                type="button"
-                onClick={() => sendMessage()}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                disabled={isLoading || !value.trim()}
-                className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2",
-                  value.trim()
-                    ? "bg-white text-[#0A0A0B] shadow-lg shadow-white/10"
-                    : "bg-white/[0.05] text-white/40"
-                )}
-              >
-                {isLoading ? (
-                  <LoaderIcon className="w-4 h-4 animate-[spin_2s_linear_infinite]" />
-                ) : (
-                  <SendIcon className="w-4 h-4" />
-                )}
-                <span>Send</span>
-              </motion.button>
+            </motion.div>
+
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {documentCommands.map((cmd, index) => (
+                <motion.button
+                  key={cmd.label}
+                  type="button"
+                  onClick={() => sendMessage(cmd.prompt)}
+                  className="flex items-center gap-2 px-3 py-2 bg-white/[0.02] hover:bg-white/[0.05] rounded-lg text-sm text-white/60 hover:text-white/90 transition-all"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  {cmd.icon}
+                  <span>{cmd.label}</span>
+                </motion.button>
+              ))}
             </div>
           </motion.div>
-
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {documentCommands.map((cmd, index) => (
-              <motion.button
-                key={cmd.label}
-                type="button"
-                onClick={() => sendMessage(cmd.prompt)}
-                className="flex items-center gap-2 px-3 py-2 bg-white/[0.02] hover:bg-white/[0.05] rounded-lg text-sm text-white/60 hover:text-white/90 transition-all"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                {cmd.icon}
-                <span>{cmd.label}</span>
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
         </div>
       </div>
 

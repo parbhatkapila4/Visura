@@ -1,4 +1,5 @@
 import { getDbConnection } from "./db";
+import { getVersionIdByPdfSummaryId } from "./versioned-documents";
 
 export async function savePdfStore({
   pdfSummaryId,
@@ -99,7 +100,7 @@ export async function getQASessionById(sessionId: string, userId: string) {
   try {
     const sql = await getDbConnection();
     const [session] = await sql`
-      SELECT qas.*, ps.full_text_content, pss.title, pss.file_name
+      SELECT qas.*, ps.full_text_content, ps.pdf_summary_id, pss.title, pss.file_name
       FROM pdf_qa_sessions qas
       JOIN pdf_stores ps ON qas.pdf_store_id = ps.id
       JOIN pdf_summaries pss ON ps.pdf_summary_id = pss.id
@@ -110,6 +111,17 @@ export async function getQASessionById(sessionId: string, userId: string) {
     console.error("Error fetching QA session:", error);
     return null;
   }
+}
+
+export async function getSessionDocumentRef(
+  sessionId: string,
+  userId: string
+): Promise<{ pdf_summary_id: string | null; document_version_id: string | null }> {
+  const session = await getQASessionById(sessionId, userId);
+  const pdfSummaryId = (session as { pdf_summary_id?: string } | null)?.pdf_summary_id ?? null;
+  if (!pdfSummaryId) return { pdf_summary_id: null, document_version_id: null };
+  const documentVersionId = await getVersionIdByPdfSummaryId(pdfSummaryId);
+  return { pdf_summary_id: pdfSummaryId, document_version_id: documentVersionId ?? null };
 }
 
 export async function updateQASessionName(
@@ -150,17 +162,20 @@ export async function saveQAMessage({
   sessionId,
   messageType,
   messageContent,
+  sources,
 }: {
   sessionId: string;
   messageType: "user" | "assistant";
   messageContent: string;
+  sources?: Array<{ page: number | null; snippet: string; chunk_id: string | null }>;
 }) {
   try {
     const sql = await getDbConnection();
+    const sourcesJson = JSON.stringify(sources ?? []);
     const result = await sql`
-      INSERT INTO pdf_qa_messages(session_id, message_type, message_content)
-      VALUES(${sessionId}, ${messageType}, ${messageContent})
-      RETURNING id, message_type, message_content, created_at
+      INSERT INTO pdf_qa_messages(session_id, message_type, message_content, sources)
+      VALUES(${sessionId}, ${messageType}, ${messageContent}, ${sourcesJson}::jsonb)
+      RETURNING id, message_type, message_content, sources, created_at
     `;
 
     await sql`

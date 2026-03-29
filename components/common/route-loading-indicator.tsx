@@ -5,6 +5,8 @@ import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
+const ROUTE_LOADING_READY_SELECTOR = "[data-route-loading-ready='true']";
+
 export default function RouteLoadingIndicator() {
   const pathname = usePathname();
   const [isNavigating, setIsNavigating] = useState(false);
@@ -51,6 +53,48 @@ export default function RouteLoadingIndicator() {
     if (!isNavigating) return;
     const timeout = setTimeout(() => setIsNavigating(false), 8000);
     return () => clearTimeout(timeout);
+  }, [isNavigating]);
+
+  useEffect(() => {
+    if (!isNavigating || typeof document === "undefined") return;
+
+    const html = document.documentElement;
+    const body = document.body;
+    const previousHtmlOverflow = html.style.overflow;
+    const previousBodyOverflow = body.style.overflow;
+
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+
+    return () => {
+      html.style.overflow = previousHtmlOverflow;
+      body.style.overflow = previousBodyOverflow;
+    };
+  }, [isNavigating]);
+
+  useEffect(() => {
+    if (!isNavigating || typeof document === "undefined") return;
+
+    const hideLoaderIfRouteSkeletonReady = () => {
+      if (document.querySelector(ROUTE_LOADING_READY_SELECTOR)) {
+        setIsNavigating(false);
+      }
+    };
+
+    hideLoaderIfRouteSkeletonReady();
+
+    const observer = new MutationObserver(() => {
+      hideLoaderIfRouteSkeletonReady();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-route-loading-ready"],
+    });
+
+    return () => observer.disconnect();
   }, [isNavigating]);
 
   if (!mounted || typeof document === "undefined") return null;

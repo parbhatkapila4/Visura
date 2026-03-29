@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Source_Sans_3 as FontSans, Fraunces as FontDisplay } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/common/header";
+import AppChrome from "@/components/common/app-chrome";
 import RouteLoadingIndicator from "@/components/common/route-loading-indicator";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
@@ -54,11 +54,11 @@ export default function RootLayout({
         }}
       >
         <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" afterSignOutUrl="/">
-          <div className="relative w-full flex flex-col bg-black antialiased" style={{ margin: 0, padding: 0, backgroundColor: "#000000" }}>
-            <Header />
-            <main className="w-full relative z-10 bg-black flex flex-col items-center" style={{ backgroundColor: "#000000" }}>
-              {children}
-            </main>
+          <div
+            className="relative w-full flex min-h-dvh flex-col bg-black antialiased"
+            style={{ margin: 0, padding: 0, backgroundColor: "#000000" }}
+          >
+            <AppChrome>{children}</AppChrome>
           </div>
           <RouteLoadingIndicator />
           <Toaster position="top-center" richColors closeButton duration={3000} />

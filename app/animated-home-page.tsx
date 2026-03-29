@@ -1,5 +1,4 @@
 "use client";
-import { HeroSection } from "@/components/hero-odyssey";
 import CombinedFeaturedSection from "@/components/combined-featured-section";
 import DemoSection from "@/components/home/demo-section";
 import BuiltForProfessionalsSection from "@/components/home/built-for-professionals-section";
@@ -52,7 +51,6 @@ export default function AnimatedHomePage({
           WebkitBackfaceVisibility: "hidden",
         }}
       >
-        <HeroSection />
         <CombinedFeaturedSection />
         <DemoSection />
         <BuiltForProfessionalsSection />

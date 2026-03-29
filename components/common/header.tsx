@@ -10,11 +10,10 @@ import { cn } from "@/lib/utils";
 import { MenuToggleIcon } from "@/components/menu-toggle-icon";
 import { LogOut } from "lucide-react";
 
-const navLinks = [
+const baseNavLinks = [
   { label: "About", href: "/about" },
   { label: "Pricing", href: "#pricing" },
-  { label: "Workspace", href: "/workspaces" },
-];
+] as const;
 
 const SCROLL_THRESHOLD = 80;
 const SCROLL_SETTLE_MS = 200;
@@ -96,23 +95,43 @@ export default function Header() {
     return null;
   }
 
+  const primaryNavLinks = [
+    ...baseNavLinks,
+    isSignedIn
+      ? { label: "Dashboard", href: "/dashboard" as const }
+      : { label: "Features", href: "/features" as const },
+  ];
+
   return (
     <>
       <header
         className={cn(
-          "sticky top-0 z-50 w-full transition-all duration-300 ease-out border-b",
+          "sticky top-0 z-[500] w-full shrink-0 transition-all duration-300 ease-out border-b",
           isCollapsed
-            ? "h-14 bg-black/80 backdrop-blur-md border-white/10"
-            : "h-16 bg-transparent border-transparent"
+            ? "h-14 bg-black/90 backdrop-blur-md border-white/10"
+            : "h-16 border-transparent bg-black/70 backdrop-blur-md"
         )}
+        style={{ position: "sticky", top: 0, zIndex: 600 }}
       >
-        <nav className="flex h-full w-full items-center justify-between px-6 md:px-8 max-w-7xl mx-auto transition-all duration-300">
+        <nav
+          className="mx-auto flex h-full w-full max-w-7xl items-center justify-between px-6 transition-all duration-300 md:px-8"
+          style={{
+            display: "flex",
+            width: "100%",
+            maxWidth: "80rem",
+            marginLeft: "auto",
+            marginRight: "auto",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           <Link
             href="/"
             className={cn(
               "flex items-center gap-2 text-white font-bold tracking-tight hover:text-white/90 transition-all duration-300",
               isCollapsed ? "text-lg" : "text-xl"
             )}
+            style={{ color: "#fafafa", textDecoration: "none" }}
           >
             <img
               src="/Visura-favicon-New.png"
@@ -124,12 +143,16 @@ export default function Header() {
             Visura
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
+          <div
+            className="home-nav-desktop hidden md:flex items-center gap-8"
+            style={{ alignItems: "center", columnGap: "2rem" }}
+          >
+            {primaryNavLinks.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
                 className="text-sm font-medium text-white hover:text-white/80 transition-colors"
+                style={{ color: "#e5e5e5", textDecoration: "none", fontSize: "0.875rem" }}
               >
                 {link.label}
               </Link>
@@ -179,11 +202,19 @@ export default function Header() {
                             {user?.emailAddresses?.[0]?.emailAddress ?? ""}
                           </p>
                         </div>
-                        <div className="p-1.5">
+                        <div className="flex flex-col gap-0.5 p-1.5">
+                          <Link
+                            href="/workspaces"
+                            prefetch={false}
+                            onClick={() => setUserMenuOpen(false)}
+                            className="rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.06] hover:text-white"
+                          >
+                            Workspace
+                          </Link>
                           <button
                             type="button"
                             onClick={handleLogout}
-                            className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-300 hover:bg-red-500/10 hover:text-red-400 transition-all duration-150"
+                            className="group mt-0.5 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-300 hover:bg-red-500/10 hover:text-red-400 transition-all duration-150"
                           >
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.06] group-hover:bg-red-500/15 transition-colors duration-150">
                               <LogOut className="w-4 h-4 text-zinc-400 group-hover:text-red-400 transition-colors duration-150" />
@@ -201,6 +232,14 @@ export default function Header() {
                     href="/sign-in"
                     prefetch={false}
                     className="rounded-md border border-zinc-500 bg-zinc-800/80 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700/80 hover:border-zinc-400 transition-colors"
+                    style={{
+                      color: "#fafafa",
+                      textDecoration: "none",
+                      border: "1px solid #71717a",
+                      borderRadius: "0.375rem",
+                      padding: "0.5rem 1rem",
+                      fontSize: "0.875rem",
+                    }}
                   >
                     Sign In
                   </Link>
@@ -208,6 +247,15 @@ export default function Header() {
                     href="/sign-up"
                     prefetch={false}
                     className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-black hover:bg-gray-200 transition-colors"
+                    style={{
+                      color: "#0a0a0a",
+                      textDecoration: "none",
+                      backgroundColor: "#fff",
+                      borderRadius: "9999px",
+                      padding: "0.5rem 1.25rem",
+                      fontSize: "0.875rem",
+                      fontWeight: 600,
+                    }}
                   >
                     Get Started
                   </Link>
@@ -241,7 +289,7 @@ export default function Header() {
           >
             <div className="flex flex-col h-full pt-20 px-6 pb-8">
               <div className="flex flex-col gap-1">
-                {navLinks.map((link) => (
+                {primaryNavLinks.map((link) => (
                   <Link
                     key={link.label}
                     href={link.href}
@@ -257,27 +305,21 @@ export default function Header() {
               <div className="flex flex-col gap-3 mt-8">
                 {isSignedIn ? (
                   <>
-                    <Link
-                      href="/dashboard"
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-3 rounded-xl border border-white/20 bg-white/5 px-4 py-3"
-                    >
-                      {userImageUrl ? (
-                        <Image
-                          src={userImageUrl}
-                          alt={firstName ? `${firstName}'s profile` : "Profile"}
-                          width={40}
-                          height={40}
-                          className="rounded-full object-cover shrink-0"
-                        />
-                      ) : (
-                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/30 text-white text-sm font-semibold">
-                          {firstName ? firstName.charAt(0).toUpperCase() : user?.emailAddresses?.[0]?.emailAddress?.charAt(0).toUpperCase() ?? "U"}
-                        </span>
-                      )}
-                      <span className="text-sm font-medium text-white">
+                    <div className="rounded-xl border border-white/20 bg-white/5 px-4 py-3">
+                      <p className="text-xs font-medium text-zinc-500 truncate">
+                        {user?.emailAddresses?.[0]?.emailAddress ?? ""}
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-white">
                         {firstName || user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] || "Account"}
-                      </span>
+                      </p>
+                    </div>
+                    <Link
+                      href="/workspaces"
+                      prefetch={false}
+                      onClick={() => setMobileOpen(false)}
+                      className="rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-sm font-medium text-white hover:bg-white/10"
+                    >
+                      Workspace
                     </Link>
                     <button
                       type="button"

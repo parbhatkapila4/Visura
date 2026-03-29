@@ -9,9 +9,43 @@ import { generateSummaryFromText, type SupportedLanguage } from "./openai";
 import { sendAlert } from "./alerting";
 import { logger } from "./logger";
 import { measurePerformance } from "./performance-monitor";
+import { logProcessingEvent } from "./processing-events";
+import { estimatePagesFromTextLength, getSummaryProcessingBudget } from "./summary-length-config";
 
+const MERGE_SECTION_ORDER: string[] = [
+  "executive summary",
+  "overview",
+  "tldr",
+  "key points",
+  "findings",
+  "important details",
+  "specifications",
+  "key numbers",
+  "financial",
+  "rights & obligations",
+  "risks",
+  "concerns",
+  "liabilit",
+  "action items",
+  "recommendations",
+  "key takeaways",
+  "insights",
+  "additional information",
+  "evidence",
+  "signals",
+  "gaps",
+  "recommendation",
+  "bottom line",
+  "conclusion",
+];
 
-function deduplicateAndMergeSections(chunkSummaries: string[]): string {
+function mergeSectionSortKey(title: string): number {
+  const t = title.toLowerCase().trim();
+  const idx = MERGE_SECTION_ORDER.findIndex((k) => t.includes(k));
+  return idx === -1 ? 800 : idx;
+}
+
+function deduplicateAndMergeSections(chunkSummaries: string[], fullTextCharLength: number): string {
   if (chunkSummaries.length === 0) return "";
 
 
@@ -117,44 +151,19 @@ function deduplicateAndMergeSections(chunkSummaries: string[]): string {
   }
 
 
-  const expectedSections = [
-    { key: 'executive summary', title: 'Executive Summary' },
-    { key: 'key insights', title: 'Key Insights' },
-    { key: 'evidence & signals', title: 'Evidence & Signals' },
-    { key: 'risks & gaps', title: 'Risks & Gaps' },
-    { key: 'action', title: 'Action' },
-  ];
+  const estimatedPages = estimatePagesFromTextLength(Math.max(fullTextCharLength, 1));
+  const { maxSections } = getSummaryProcessingBudget(estimatedPages);
 
-  const finalSections: string[] = [];
+  const sorted = [...mergedSections].sort((a, b) => {
+    const d = mergeSectionSortKey(a.title) - mergeSectionSortKey(b.title);
+    if (d !== 0) return d;
+    return a.title.localeCompare(b.title);
+  });
 
-  for (const expected of expectedSections) {
-    const found = mergedSections.find(s =>
-      s.title.toLowerCase().includes(expected.key) ||
-      expected.key.includes(s.title.toLowerCase())
-    );
-
-    if (found) {
-      finalSections.push(`### ${expected.title}\n\n${found.content}`);
-    }
-  }
-
-  if (finalSections.length < 5) {
-    const usedTitles = new Set(finalSections.map(s => {
-      const match = s.match(/^###\s+(.+)$/m);
-      return match ? match[1].toLowerCase() : '';
-    }));
-
-    for (const section of mergedSections) {
-      if (finalSections.length >= 5) break;
-      const normalized = section.title.toLowerCase();
-      if (!usedTitles.has(normalized)) {
-        finalSections.push(`### ${section.title}\n\n${section.content}`);
-        usedTitles.add(normalized);
-      }
-    }
-  }
-
-  return finalSections.slice(0, 5).join('\n\n');
+  return sorted
+    .slice(0, maxSections)
+    .map((s) => `### ${s.title}\n\n${s.content}`)
+    .join("\n\n");
 }
 
 export interface ProcessChunkResult {
@@ -438,7 +447,7 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
     logger.info("Proceeding to create summary", { versionId, chunksWithSummary, totalChunks });
 
     const [version] = await sql`
-      SELECT document_id, pdf_summary_id, file_url FROM document_versions WHERE id = ${versionId}
+      SELECT document_id, pdf_summary_id, file_url, created_at FROM document_versions WHERE id = ${versionId}
     `;
 
     if (!version) {
@@ -472,7 +481,7 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
 
     let finalSummary: string;
     if (chunkSummaries.length > 0) {
-      finalSummary = deduplicateAndMergeSections(chunkSummaries);
+      finalSummary = deduplicateAndMergeSections(chunkSummaries, fullText.length);
     } else {
       logger.warn("No chunk summaries - generating summary from full document text", {
         versionId,
@@ -635,6 +644,11 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
       }
 
       if (fullText && fullText.trim().length > 0) {
+        void logProcessingEvent({
+          versionId,
+          type: "embeddings_started",
+          message: "Preparing context for chat",
+        });
         try {
           const { savePdfStore } = await import("./chatbot");
           await savePdfStore({
@@ -643,6 +657,11 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
             fullTextContent: fullText,
           });
           logger.info("PDF store created for chat", { versionId, pdfSummaryId: pdfSummary.id });
+          void logProcessingEvent({
+            versionId,
+            type: "indexing_started",
+            message: "Storing full text for chat",
+          });
         } catch (chatbotError) {
           logger.warn("Failed to create PDF store for chat (non-fatal)", {
             versionId,
@@ -668,6 +687,62 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
         pdfSummaryId: pdfSummary.id,
         userId: documentInfo.user_id,
       });
+      const versionCreatedAt = version?.created_at != null ? new Date(version.created_at as string | Date).getTime() : null;
+      const durationMs = versionCreatedAt != null ? Math.round(Date.now() - versionCreatedAt) : undefined;
+      void logProcessingEvent({
+        versionId,
+        type: "version_completed",
+        message: "Version completed",
+        metadata: durationMs != null ? { duration_ms: durationMs } : undefined,
+      });
+
+      void (async () => {
+        try {
+          const { generateAndStoreDocumentSections } = await import("./document-sections");
+          await generateAndStoreDocumentSections(versionId);
+        } catch (sectionError) {
+          logger.warn("Section detection failed (non-fatal)", {
+            versionId,
+            error: sectionError instanceof Error ? sectionError.message : String(sectionError),
+          });
+        }
+      })();
+
+      void (async () => {
+        try {
+          const { generateAndStoreDocumentInsights } = await import("./document-insights");
+          await generateAndStoreDocumentInsights(versionId);
+        } catch (insightsError) {
+          logger.warn("Insight extraction failed (non-fatal)", {
+            versionId,
+            error: insightsError instanceof Error ? insightsError.message : String(insightsError),
+          });
+        }
+      })();
+
+      void (async () => {
+        try {
+          const { generateAndStoreDocumentGraph } = await import("./document-graph");
+          await generateAndStoreDocumentGraph(versionId);
+        } catch (graphError) {
+          logger.warn("Graph extraction failed (non-fatal)", {
+            versionId,
+            error: graphError instanceof Error ? graphError.message : String(graphError),
+          });
+        }
+      })();
+
+      void (async () => {
+        try {
+          const { populateChunkEmbeddingsForVersion } = await import("./document-chunk-embeddings");
+          await populateChunkEmbeddingsForVersion(versionId);
+        } catch (embedError) {
+          logger.warn("Chunk embedding population failed (non-fatal)", {
+            versionId,
+            error: embedError instanceof Error ? embedError.message : String(embedError),
+          });
+        }
+      })();
     } catch (error) {
       logger.error("CRITICAL: Error in summary creation process", error, {
         versionId,

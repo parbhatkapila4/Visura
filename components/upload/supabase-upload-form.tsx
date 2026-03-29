@@ -2,6 +2,12 @@
 
 import { createVersionedDocumentJob } from "@/actions/versioned-upload-actions";
 import UploadFormInput from "@/components/upload/upload-form-input";
+import {
+  ProcessingPipeline,
+  createInitialPipelineSteps,
+  type PipelineStep,
+  type PipelineStepStatus,
+} from "@/components/upload/processing-pipeline";
 import { uploadToSupabase } from "@/lib/supabase";
 import {
   extractTextFromDocument,
@@ -9,8 +15,7 @@ import {
   getFileTypeLabel,
 } from "@/lib/document-extractor";
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-import { useRef, useState, useEffect } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { clientLogger } from "@/lib/client-logger";
@@ -25,15 +30,127 @@ const schema = z.object({
     ),
 });
 
-interface UploadResult {
-  success: boolean;
-  message: string;
-  data: any;
-}
-
 interface SupabaseUploadFormProps {
   hasReachedLimit: boolean;
   uploadLimit: number;
+}
+
+const STEP_UPLOAD = 0;
+const STEP_EXTRACT = 1;
+const STEP_CHUNK = 2;
+const STEP_EMBED = 3;
+const STEP_FINALIZE = 7;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+function waitForNextPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => resolve());
+  });
+}
+
+function toUserFriendlyProcessingError(message?: string | null): string {
+  const msg = (message || "").trim();
+  const lower = msg.toLowerCase();
+
+  if (!msg) return "Something went wrong while processing your document. Please try again.";
+
+  if (lower.includes("exceeds per-version limit") || lower.includes("new chunks")) {
+    return "This document is too large to process in one go. Please split it into smaller files and upload again.";
+  }
+  if (lower.includes("daily token limit") || lower.includes("processing limit")) {
+    return "You've reached today's processing limit. Please try again later.";
+  }
+  if (lower.includes("estimated cost") || lower.includes("cost limit") || lower.includes("budget")) {
+    return "You've reached today's AI processing budget. Please try again later.";
+  }
+  if (/\b402\b|payment required|billing|credits|quota/i.test(msg)) {
+    return "AI processing could not start because billing or API credits are unavailable.";
+  }
+
+  return msg;
+}
+
+async function ensureMinimumStepDuration(startedAt: number, minMs: number): Promise<void> {
+  const elapsed = Date.now() - startedAt;
+  if (elapsed < minMs) {
+    await sleep(minMs - elapsed);
+  }
+}
+
+type VersionStatusSnapshot = {
+  completedChunks: number;
+  totalChunks: number;
+  incompleteChunks: number;
+  isComplete: boolean;
+  pdfSummaryId: string | null;
+};
+
+async function pollForSummary(
+  versionId: string,
+  options?: {
+    maxAttempts?: number;
+    pollIntervalMs?: number;
+    onProgress?: (snapshot: VersionStatusSnapshot) => void;
+  }
+): Promise<
+  | { ok: true; pdfSummaryId: string }
+  | { ok: false; kind: "timeout" | "http" | "network"; message: string }
+> {
+  const maxAttempts = options?.maxAttempts ?? 120;
+  const pollIntervalMs = options?.pollIntervalMs ?? 2000;
+  const onProgress = options?.onProgress;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetch(`/api/versions/${versionId}/status`);
+      if (!response.ok) {
+        return {
+          ok: false,
+          kind: "http",
+          message: `Couldn't verify processing status (${response.status}). Try again.`,
+        };
+      }
+      const data = (await response.json()) as {
+        isComplete?: boolean;
+        pdfSummaryId?: string | null;
+        completedChunks?: number;
+        totalChunks?: number;
+        incompleteChunks?: number;
+      };
+      const snapshot: VersionStatusSnapshot = {
+        completedChunks: Number(data.completedChunks ?? 0),
+        totalChunks: Number(data.totalChunks ?? 0),
+        incompleteChunks: Number(data.incompleteChunks ?? 0),
+        isComplete: Boolean(data.isComplete),
+        pdfSummaryId: data.pdfSummaryId != null ? String(data.pdfSummaryId) : null,
+      };
+      onProgress?.(snapshot);
+
+      if (snapshot.isComplete && snapshot.pdfSummaryId) {
+        return { ok: true, pdfSummaryId: snapshot.pdfSummaryId };
+      }
+    } catch (e) {
+      clientLogger.error("Polling error", e, { versionId, attempt });
+      return {
+        ok: false,
+        kind: "network",
+        message:
+          e instanceof Error
+            ? e.message
+            : "Network error while checking status. Try again.",
+      };
+    }
+    await sleep(pollIntervalMs);
+  }
+  return {
+    ok: false,
+    kind: "timeout",
+    message:
+      "Processing is taking longer than expected. You can try again or check the dashboard later.",
+  };
 }
 
 export default function SupabaseUploadForm({
@@ -42,92 +159,95 @@ export default function SupabaseUploadForm({
 }: SupabaseUploadFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<UploadResult | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [showPipeline, setShowPipeline] = useState(false);
+  const [pipelineSteps, setPipelineSteps] = useState<PipelineStep[]>(() =>
+    createInitialPipelineSteps()
+  );
+  const [pipelineError, setPipelineError] = useState<string | null>(null);
+  const [pipelineComplete, setPipelineComplete] = useState(false);
+  const [pipelinePdfSummaryId, setPipelinePdfSummaryId] = useState<string | null>(null);
+  const [pipelineStartedAtMs, setPipelineStartedAtMs] = useState<number | null>(null);
+  const [pipelineInitialEstimateMs, setPipelineInitialEstimateMs] = useState<number | null>(null);
+  const [pipelineChunkProgress, setPipelineChunkProgress] = useState<{
+    completed: number;
+    total: number;
+  } | null>(null);
+
   const { user } = useUser();
-  const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const pollForSummaryCompletion = async (versionId: string, maxAttempts = 120) => {
-    let attempts = 0;
-    const pollInterval = 2000;
+  const updateStep = useCallback((idx: number, status: PipelineStepStatus) => {
+    setPipelineSteps((prev) =>
+      prev.map((s, i) => (i === idx ? { ...s, status } : s))
+    );
+  }, []);
 
-    clientLogger.info("Starting to poll for summary completion", { versionId });
+  const activateStep = useCallback(
+    async (idx: number) => {
+      updateStep(idx, "active");
+      await waitForNextPaint();
+      return Date.now();
+    },
+    [updateStep]
+  );
 
-    const poll = async () => {
-      try {
-        attempts++;
-        clientLogger.info(`Polling attempt ${attempts}/${maxAttempts}`, { versionId });
+  const completeStep = useCallback(
+    async (idx: number, startedAt: number, minMs: number) => {
+      await ensureMinimumStepDuration(startedAt, minMs);
+      updateStep(idx, "completed");
+      await waitForNextPaint();
+    },
+    [updateStep]
+  );
 
-        const response = await fetch(`/api/versions/${versionId}/status`);
-        if (!response.ok) {
-          clientLogger.error("Status check failed", undefined, { status: response.status, versionId });
-          throw new Error(`Failed to check status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        clientLogger.info("Status response", {
-          versionId,
-          isComplete: data.isComplete,
-          pdfSummaryId: data.pdfSummaryId,
-          completedChunks: data.completedChunks,
-          totalChunks: data.totalChunks,
-          incompleteChunks: data.incompleteChunks,
-        });
-
-        if (data.isComplete && data.pdfSummaryId) {
-          setIsLoading(false);
-          toast.dismiss();
-          clientLogger.info("Summary ready", { versionId, pdfSummaryId: data.pdfSummaryId });
-          toast.success("Summary ready!", {
-            description: "Redirecting to your summary...",
-          });
-
-          setTimeout(() => {
-            router.push(`/summaries/${data.pdfSummaryId}`);
-          }, 500);
-          return;
-        }
-
-        const progress = data.totalChunks > 0
-          ? Math.round((data.completedChunks / data.totalChunks) * 100)
-          : 0;
-
-        toast.info(`Processing... ${progress}%`, {
-          description: `Completed ${data.completedChunks} of ${data.totalChunks} chunks`,
-          id: "processing-status",
-          duration: Infinity,
-        });
-
-        if (attempts >= maxAttempts) {
-          setIsLoading(false);
-          toast.dismiss("processing-status");
-          clientLogger.warn("Polling timeout", { versionId, attempts, incompleteChunks: data.incompleteChunks });
-          toast.error("Processing is taking longer than expected", {
-            description: `Still processing ${data.incompleteChunks || 0} chunks. Check dashboard for status.`,
-          });
-          router.push("/dashboard");
-          return;
-        }
-
-        setTimeout(poll, pollInterval);
-      } catch (error) {
-        clientLogger.error("Polling error", error, { versionId, attempts });
-        setIsLoading(false);
-        toast.dismiss("processing-status");
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        toast.error("Error checking status", {
-          description: errorMsg || "Check the dashboard for your summary.",
-        });
-        router.push("/dashboard");
+  const simulateRemainingSteps = useCallback(
+    async (startIdx: number, baseMs: number) => {
+      for (let i = startIdx; i <= 6; i++) {
+        const startedAt = await activateStep(i);
+        await sleep(baseMs + Math.random() * Math.max(100, baseMs * 0.35));
+        await completeStep(i, startedAt, baseMs);
       }
-    };
+    },
+    [activateStep, completeStep]
+  );
 
-    poll();
-  };
+  const handlePipelineRetry = useCallback(() => {
+    setShowPipeline(false);
+    setPipelineSteps(createInitialPipelineSteps());
+    setPipelineError(null);
+    setPipelineComplete(false);
+    setPipelinePdfSummaryId(null);
+    setIsLoading(false);
+    setPipelineStartedAtMs(null);
+    setPipelineInitialEstimateMs(null);
+    setPipelineChunkProgress(null);
+    formRef.current?.reset();
+  }, []);
+
+  const estimateMsFromFile = useCallback((file: File) => {
+    const sizeMb = file.size / (1024 * 1024);
+    const seconds = Math.min(
+      50 * 60,
+      Math.max(90, 45 + sizeMb * 14 + (sizeMb > 25 ? (sizeMb - 25) * 6 : 0))
+    );
+    return Math.round(seconds * 1000);
+  }, []);
+
+  const estimateMsFromWorkload = useCallback(
+    (file: File, workload?: { chunksToProcess?: number | null; chunksTotal?: number | null }) => {
+      const sizeMb = file.size / (1024 * 1024);
+      const chunks = Math.max(0, Number(workload?.chunksToProcess ?? workload?.chunksTotal ?? 0) || 0);
+      const baseSec = 75 + Math.min(220, sizeMb * 4);
+      const chunkSec = chunks > 0 ? Math.min(42 * 60, chunks * 18) : 0;
+      const seconds = Math.min(55 * 60, Math.max(90, baseSec + chunkSec));
+      return Math.round(seconds * 1000);
+    },
+    []
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -167,7 +287,7 @@ export default function SupabaseUploadForm({
     if (!file || file.size === 0) {
       const formElement = e.currentTarget;
       const fileInput = formElement.querySelector('input[type="file"]') as HTMLInputElement;
-      if (fileInput && fileInput.files && fileInput.files.length > 0) {
+      if (fileInput?.files?.length) {
         file = fileInput.files[0];
       }
     }
@@ -199,221 +319,259 @@ export default function SupabaseUploadForm({
     clientLogger.info("File validation passed");
 
     const fileTypeLabel = getFileTypeLabel(file);
+    toast.dismiss();
+    setShowPipeline(true);
+    setPipelineSteps(createInitialPipelineSteps());
+    setPipelineError(null);
+    setPipelineComplete(false);
+    setPipelinePdfSummaryId(null);
+    const startedAt = Date.now();
+    setPipelineStartedAtMs(startedAt);
+    setPipelineInitialEstimateMs(estimateMsFromFile(file));
+    setPipelineChunkProgress(null);
     setIsLoading(true);
-    toast.info(`Processing ${fileTypeLabel}...`, {
-      description: "Extracting text and uploading to Supabase",
-    });
 
     let extractedText = "";
-    let hadExtractionError = false;
-    let extractionErrorMsg = "";
+    let storageUploadComplete = false;
 
     try {
+      const extractStartedAt = await activateStep(STEP_EXTRACT);
       clientLogger.info(`Step 1: Extracting text from ${fileTypeLabel}`);
-      extractedText = await extractTextFromDocument(file);
-      clientLogger.info("Text extraction completed", { length: extractedText.length });
-      if (extractedText.length > 0) {
-        clientLogger.info("Extracted text preview", { preview: extractedText.substring(0, 300) });
-      }
-    } catch (extractError: any) {
-      clientLogger.error("Extraction error", extractError);
-      hadExtractionError = true;
-      extractionErrorMsg = extractError.message || "Unknown extraction error";
+      try {
+        extractedText = await extractTextFromDocument(file);
+        clientLogger.info("Text extraction completed", { length: extractedText.length });
+      } catch (extractError: unknown) {
+        clientLogger.error("Extraction error", extractError);
+        const extractionErrorMsg =
+          extractError instanceof Error ? extractError.message : String(extractError);
 
-      if (
-        extractionErrorMsg.includes("password-protected") ||
-        extractionErrorMsg.includes("encrypted")
-      ) {
-        toast.warning("Password-Protected Document", {
-          description: "Text extraction limited. Proceeding with file upload and basic summary.",
-        });
-        extractedText = "";
-      } else if (extractionErrorMsg.includes("corrupted")) {
-        toast.warning("File may be corrupted", {
-          description: "Proceeding with upload. Some features may be limited.",
-        });
-        extractedText = "";
-      } else if (
-        extractionErrorMsg.includes("Scanned document") ||
-        extractionErrorMsg.includes("No text found") ||
-        extractionErrorMsg.includes("OCR also failed")
-      ) {
-        clientLogger.info("Scanned/image-based document detected - OCR will be attempted automatically");
-        toast.info("Scanned document detected", {
-          description: "Running OCR to extract text from images...",
-        });
-        extractedText = "";
-      } else {
-        clientLogger.warn("Extraction error - continuing with fallback", { error: extractionErrorMsg });
-        extractedText = "";
+        if (
+          extractionErrorMsg.includes("password-protected") ||
+          extractionErrorMsg.includes("encrypted")
+        ) {
+          toast.warning("Password-Protected Document", {
+            description: "Text extraction limited. Proceeding with file upload and basic summary.",
+          });
+          extractedText = "";
+        } else if (extractionErrorMsg.includes("corrupted")) {
+          toast.warning("File may be corrupted", {
+            description: "Proceeding with upload. Some features may be limited.",
+          });
+          extractedText = "";
+        } else if (
+          extractionErrorMsg.includes("Scanned document") ||
+          extractionErrorMsg.includes("No text found") ||
+          extractionErrorMsg.includes("OCR also failed")
+        ) {
+          clientLogger.info("Scanned/image-based document detected");
+          toast.info("Scanned document detected", {
+            description: "Running OCR to extract text from images...",
+          });
+          extractedText = "";
+        } else {
+          clientLogger.warn("Extraction error - continuing with fallback", {
+            error: extractionErrorMsg,
+          });
+          extractedText = "";
+        }
       }
-    }
+      await completeStep(STEP_EXTRACT, extractStartedAt, 700);
 
-    let versionResult: any = null;
-    try {
+      const uploadStartedAt = await activateStep(STEP_UPLOAD);
       clientLogger.info("Step 2: Uploading to Supabase Storage");
       const supabaseResult = await uploadToSupabase(file, user.id);
 
       if (!supabaseResult.success || !supabaseResult.data) {
-        throw new Error(supabaseResult.error || "Upload failed");
+        updateStep(STEP_UPLOAD, "error");
+        setPipelineError(supabaseResult.error || "Upload failed. Check your connection and try again.");
+        setIsLoading(false);
+        return;
       }
-
       clientLogger.info("Upload successful", { fileName: supabaseResult.data.fileName });
-
+      await completeStep(STEP_UPLOAD, uploadStartedAt, 700);
+      storageUploadComplete = true;
 
       if (!extractedText || extractedText.trim().length < 50) {
-        clientLogger.warn("Initial text extraction failed, attempting extraction from uploaded file URL", {
-          extractedTextLength: extractedText?.length || 0,
-          fileUrl: supabaseResult.data.publicUrl,
+        clientLogger.warn("Initial text extraction thin, trying URL extraction", {
+          extractedTextLength: extractedText?.length ?? 0,
         });
-
+        const retryExtractStartedAt = await activateStep(STEP_EXTRACT);
         try {
-          toast.info("Extracting text from uploaded file...", {
-            description: "Attempting alternative extraction method",
-          });
-
-
           const { extractTextFromDocumentUrl } = await import("@/lib/document-text-extractor");
           extractedText = await extractTextFromDocumentUrl(
             supabaseResult.data.publicUrl,
             supabaseResult.data.fileName
           );
-
-          if (extractedText && extractedText.trim().length >= 50) {
-            clientLogger.info("Text extraction from URL succeeded", { length: extractedText.length });
-          } else {
+          if (!extractedText || extractedText.trim().length < 50) {
             throw new Error("Text extraction from URL also failed");
           }
-        } catch (urlExtractError: any) {
-          clientLogger.error("Text extraction from URL also failed", urlExtractError);
-          toast.error("Text extraction failed", {
-            description: "Unable to extract text from document. The file may be scanned, corrupted, or password-protected. Please try a different file.",
-          });
+          clientLogger.info("Text extraction from URL succeeded", { length: extractedText.length });
+        } catch (urlExtractError: unknown) {
+          clientLogger.error("Text extraction from URL failed", urlExtractError);
+          updateStep(STEP_EXTRACT, "error");
+          setPipelineError(
+            "Unable to extract text from this document. It may be scanned, corrupted, or password-protected. Try a different file."
+          );
           setIsLoading(false);
           return;
         }
+        await completeStep(STEP_EXTRACT, retryExtractStartedAt, 650);
       }
 
-      clientLogger.info("Step 3: Creating versioned document job", { extractedTextLength: extractedText.length });
-
-      toast.info("Processing document...", {
-        description: "Creating document version and enqueuing AI processing",
+      clientLogger.info("Step 3: Creating versioned document job", {
+        extractedTextLength: extractedText.length,
       });
+      const chunkStartedAt = await activateStep(STEP_CHUNK);
 
+      let versionResult: Awaited<ReturnType<typeof createVersionedDocumentJob>>;
       try {
         versionResult = await createVersionedDocumentJob(
           extractedText,
           supabaseResult.data.fileName,
           supabaseResult.data.publicUrl,
-          'ENGLISH'
+          "ENGLISH"
         );
         clientLogger.info("Version result received", { success: versionResult?.success });
-      } catch (error) {
-        clientLogger.error("ERROR in createVersionedDocumentJob", error);
-        throw error;
+      } catch (jobError: unknown) {
+        clientLogger.error("createVersionedDocumentJob threw", jobError);
+        updateStep(STEP_CHUNK, "error");
+        const msg =
+          jobError instanceof Error ? jobError.message : "Failed to start document processing.";
+        setPipelineError(toUserFriendlyProcessingError(msg));
+        setIsLoading(false);
+        return;
       }
 
-      if (!versionResult || !versionResult.success) {
+      if (!versionResult?.success) {
         clientLogger.error("Version creation failed", undefined, { versionResult });
-        if (versionResult?.data?.costLimitExceeded) {
-          toast.error("Cost limit exceeded", {
-            description: versionResult.message || "You have exceeded your processing limits. Please try again tomorrow.",
-          });
-          setIsLoading(false);
-          return;
+        updateStep(STEP_CHUNK, "error");
+        const data = versionResult?.data as { costLimitExceeded?: boolean } | undefined;
+        if (data?.costLimitExceeded) {
+          setPipelineError(toUserFriendlyProcessingError(versionResult.message));
         } else {
-          const errorMsg = versionResult?.message || "Failed to create document version";
-          clientLogger.error("Version creation error", undefined, { errorMsg });
-          toast.error("Failed to create document", {
-            description: errorMsg,
-          });
-          setIsLoading(false);
-          return;
+          setPipelineError(
+            toUserFriendlyProcessingError(versionResult?.message || "Failed to create document version. Try again.")
+          );
         }
+        setIsLoading(false);
+        return;
       }
 
       clientLogger.info("Version created successfully", {
         versionId: versionResult.data?.versionId,
         documentId: versionResult.data?.documentId,
-        chunksTotal: versionResult.data?.chunksTotal,
-        chunksToProcess: versionResult.data?.chunksToProcess,
+        unchanged: versionResult.data?.unchanged,
       });
+      await completeStep(STEP_CHUNK, chunkStartedAt, 850);
 
-      if (versionResult.data?.unchanged) {
-        if (versionResult.data.pdfSummaryId) {
-          toast.success("Document already processed!", {
-            description: "Taking you to your summary.",
-          });
-          formRef.current?.reset();
-          router.push(`/summaries/${versionResult.data.pdfSummaryId}`);
-          return;
-        }
-        if (versionResult.data?.versionId) {
-          toast.success("Document uploaded!", {
-            description: "Generating summary... Please wait.",
-          });
-          formRef.current?.reset();
-          setIsLoading(true);
-          pollForSummaryCompletion(versionResult.data.versionId);
-          return;
-        }
+      const vWorkload = versionResult.data as {
+        chunksTotal?: number | null;
+        chunksToProcess?: number | null;
+      };
+      setPipelineInitialEstimateMs(estimateMsFromWorkload(file, vWorkload));
+
+      const vData = versionResult.data as {
+        versionId?: string;
+        pdfSummaryId?: string;
+        unchanged?: boolean;
+      };
+
+      if (vData.unchanged && vData.pdfSummaryId) {
+        await simulateRemainingSteps(STEP_EMBED, 250);
+        const finalizeStartedAt = await activateStep(STEP_FINALIZE);
+        await completeStep(STEP_FINALIZE, finalizeStartedAt, 700);
+        setPipelinePdfSummaryId(
+          vData.pdfSummaryId != null ? String(vData.pdfSummaryId) : null
+        );
+        setPipelineComplete(true);
+        setIsLoading(false);
         formRef.current?.reset();
-        router.push("/dashboard");
         return;
       }
 
-      toast.success("Document uploaded successfully!", {
-        description: "Generating summary... Please wait.",
-      });
+      if (vData.unchanged && vData.versionId) {
+        await simulateRemainingSteps(STEP_EMBED, 180);
+        const finalizeStartedAt = await activateStep(STEP_FINALIZE);
+        clientLogger.info("Polling for unchanged version", { versionId: vData.versionId });
+        const pollResult = await pollForSummary(vData.versionId, {
+          onProgress: (s) => {
+            if (s.totalChunks > 0) {
+              setPipelineChunkProgress({
+                completed: s.completedChunks,
+                total: s.totalChunks,
+              });
+            }
+          },
+        });
+        if (pollResult.ok) {
+          await completeStep(STEP_FINALIZE, finalizeStartedAt, 700);
+          setPipelinePdfSummaryId(String(pollResult.pdfSummaryId));
+          setPipelineComplete(true);
+          setPipelineChunkProgress(null);
+        } else {
+          updateStep(STEP_FINALIZE, "error");
+          setPipelineError(pollResult.message);
+          setPipelineChunkProgress(null);
+        }
+        setIsLoading(false);
+        formRef.current?.reset();
+        return;
+      }
 
-      setResult({
-        success: true,
-        message: "Document version created",
-        data: versionResult.data,
+      if (vData.unchanged && !vData.versionId && !vData.pdfSummaryId) {
+        updateStep(STEP_FINALIZE, "error");
+        setPipelineError("Could not resume this document. Try uploading again.");
+        setIsLoading(false);
+        formRef.current?.reset();
+        return;
+      }
+
+      await simulateRemainingSteps(STEP_EMBED, 750);
+
+      const versionId = vData.versionId;
+      if (!versionId) {
+        updateStep(STEP_FINALIZE, "error");
+        setPipelineError("No version ID returned. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+
+      const finalizeStartedAt = await activateStep(STEP_FINALIZE);
+      clientLogger.info("Polling for summary", { versionId });
+      const pollResult = await pollForSummary(versionId, {
+        onProgress: (s) => {
+          if (s.totalChunks > 0) {
+            setPipelineChunkProgress({
+              completed: s.completedChunks,
+              total: s.totalChunks,
+            });
+          }
+        },
       });
+      if (pollResult.ok) {
+        await completeStep(STEP_FINALIZE, finalizeStartedAt, 700);
+        setPipelinePdfSummaryId(String(pollResult.pdfSummaryId));
+        setPipelineComplete(true);
+        setPipelineChunkProgress(null);
+      } else {
+        updateStep(STEP_FINALIZE, "error");
+        setPipelineError(pollResult.message);
+        setPipelineChunkProgress(null);
+      }
 
       formRef.current?.reset();
-
-      if (!versionResult.data?.versionId) {
-        clientLogger.error("NO VERSION ID RETURNED", undefined, { versionResult });
-        toast.error("Failed to create version", {
-          description: "Version ID was not returned. Please try again.",
-        });
-        setIsLoading(false);
-        router.push("/dashboard");
-        return;
-      }
-
-      clientLogger.info("Starting polling for version", { versionId: versionResult.data.versionId });
-      setIsLoading(true);
-      toast.info("Processing your document...", {
-        description: "AI is generating your summary. This may take a moment.",
-        duration: 10000,
-      });
-      pollForSummaryCompletion(versionResult.data.versionId);
-    } catch (error) {
-      clientLogger.error("UPLOAD/PROCESSING ERROR", error, { versionResult });
-
-      setIsLoading(false);
+    } catch (error: unknown) {
+      clientLogger.error("UPLOAD/PROCESSING ERROR", error);
       const rawMessage = error instanceof Error ? error.message : String(error);
-      const friendlyMessage = /\b402\b|Payment Required/i.test(rawMessage)
-        ? "AI summary generation failed due to billing/credits. Please check your LLM provider billing status or API key quota."
-        : rawMessage;
+      const friendly = toUserFriendlyProcessingError(rawMessage);
 
-      toast.error("Processing failed", {
-        description: friendlyMessage,
-        action: {
-          label: "Close",
-          onClick: () => { },
-        },
-        duration: 10000,
-      });
-
-      router.push("/dashboard");
-    } finally {
-      if (!versionResult?.data?.versionId) {
-        setIsLoading(false);
+      if (storageUploadComplete) {
+        updateStep(STEP_FINALIZE, "error");
+      } else {
+        updateStep(STEP_UPLOAD, "error");
       }
+      setPipelineError(friendly);
+      setIsLoading(false);
     }
   };
 
@@ -427,13 +585,31 @@ export default function SupabaseUploadForm({
 
   return (
     <div className="mx-auto w-full max-w-xl px-4 sm:px-0">
-      <UploadFormInput
-        ref={formRef}
-        onSubmit={handleSubmit}
-        isLoading={isLoading}
-        hasReachedLimit={hasReachedLimit}
-        uploadLimit={uploadLimit}
-      />
+      {showPipeline ? (
+        <ProcessingPipeline
+          steps={pipelineSteps}
+          errorMessage={pipelineError}
+          onRetry={handlePipelineRetry}
+          isComplete={pipelineComplete}
+          summaryHref={
+            pipelinePdfSummaryId
+              ? `/summaries/${encodeURIComponent(pipelinePdfSummaryId)}`
+              : null
+          }
+          startedAtMs={pipelineStartedAtMs}
+          initialEstimateMs={pipelineInitialEstimateMs}
+          chunkProgress={pipelineChunkProgress}
+        />
+      ) : (
+        <UploadFormInput
+          ref={formRef}
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
+          hasReachedLimit={hasReachedLimit}
+          uploadLimit={uploadLimit}
+          hideInlineProcessing
+        />
+      )}
     </div>
   );
 }

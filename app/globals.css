@@ -661,3 +661,15 @@ div[class*="development"] {
   margin: 0 !important;
   position: fixed !important;
 }
+
+@media (min-width: 768px) {
+  .home-nav-desktop {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .home-nav-desktop {
+    display: none !important;
+  }
+}
