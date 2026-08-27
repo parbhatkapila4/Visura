@@ -15,7 +15,7 @@ export async function replayVersion(versionId: string): Promise<{
 
   const incomplete = await getIncompleteChunks(versionId);
   const totalChunks = version.total_chunks;
-  const language = (version.output_language || 'ENGLISH') as SupportedLanguage;
+  const language = (version.output_language || "ENGLISH") as SupportedLanguage;
 
   if (incomplete.length === 0) {
     return {
@@ -43,7 +43,6 @@ export async function replayVersion(versionId: string): Promise<{
   };
 }
 
-
 export async function replayIncompleteChunks(versionId: string): Promise<{
   versionId: string;
   incompleteChunks: number;
@@ -53,8 +52,8 @@ export async function replayIncompleteChunks(versionId: string): Promise<{
   if (!version) {
     throw new Error(`Version ${versionId} not found`);
   }
-  
-  const language = (version.output_language || 'ENGLISH') as SupportedLanguage;
+
+  const language = (version.output_language || "ENGLISH") as SupportedLanguage;
   const incomplete = await getIncompleteChunks(versionId);
 
   if (incomplete.length === 0) {

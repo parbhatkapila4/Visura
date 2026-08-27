@@ -55,15 +55,17 @@ export async function GET(
       ORDER BY type ASC, created_at ASC
     `;
 
-    const insights: ContentInsightItem[] = (rows as Array<{
-      id: string;
-      type: string;
-      title: string;
-      description: string;
-      confidence: number | string;
-      page: number | null;
-      source_text: string | null;
-    }>).map((r) => ({
+    const insights: ContentInsightItem[] = (
+      rows as Array<{
+        id: string;
+        type: string;
+        title: string;
+        description: string;
+        confidence: number | string;
+        page: number | null;
+        source_text: string | null;
+      }>
+    ).map((r) => ({
       id: r.id,
       type: r.type as DocumentInsightType,
       title: r.title,

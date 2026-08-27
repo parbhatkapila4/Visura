@@ -2,9 +2,11 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { logger } from "./logger";
 
-
 export class InMemoryRateLimiter {
-  constructor(public requests: number, public windowMs: number) { }
+  constructor(
+    public requests: number,
+    public windowMs: number
+  ) {}
 
   async limit(identifier: string): Promise<{ success: boolean; remaining: number; reset: number }> {
     const now = Date.now();
@@ -32,12 +34,10 @@ export class InMemoryRateLimiter {
   }
 }
 
-
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL || "",
   token: process.env.UPSTASH_REDIS_REST_TOKEN || "",
 });
-
 
 let useUpstash = true;
 if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
@@ -48,7 +48,6 @@ if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN
   });
 }
 
-
 interface RateLimitStore {
   [key: string]: {
     count: number;
@@ -58,17 +57,23 @@ interface RateLimitStore {
 
 const inMemoryStore: RateLimitStore = {};
 
+/** Clears in-memory counters (for tests and dev resets). */
+export function resetInMemoryRateLimitStore(): void {
+  for (const key of Object.keys(inMemoryStore)) {
+    delete inMemoryStore[key];
+  }
+}
 
 export function createRateLimiter(requests: number, window: string) {
   if (useUpstash) {
-
     const upstashWindow = convertWindowToUpstashFormat(window);
-
-
 
     return new Ratelimit({
       redis,
-      limiter: Ratelimit.slidingWindow(requests, upstashWindow as `${number} ${"s" | "m" | "h" | "d"}`),
+      limiter: Ratelimit.slidingWindow(
+        requests,
+        upstashWindow as `${number} ${"s" | "m" | "h" | "d"}`
+      ),
       analytics: true,
       prefix: "@visura/ratelimit",
     });
@@ -78,7 +83,6 @@ export function createRateLimiter(requests: number, window: string) {
   }
 }
 
-
 function convertWindowToUpstashFormat(window: string): string {
   const match = window.match(/^(\d+)([smhd])$/);
   if (!match) {
@@ -87,7 +91,6 @@ function convertWindowToUpstashFormat(window: string): string {
 
   const value = match[1];
   const unit = match[2];
-
 
   return `${value} ${unit}`;
 }
@@ -115,12 +118,10 @@ function parseWindowToMs(window: string): number {
   }
 }
 
-
 export const chatbotRateLimit = createRateLimiter(10, "1m");
 export const uploadRateLimit = createRateLimiter(5, "1h");
 export const summaryRateLimit = createRateLimiter(20, "1h");
 export const generalAPIRateLimit = createRateLimiter(100, "1m");
-
 
 export async function checkRateLimit(
   limiter: Ratelimit | InMemoryRateLimiter,
@@ -130,7 +131,6 @@ export async function checkRateLimit(
     let result: { success: boolean; remaining: number; reset: number };
 
     if (limiter instanceof Ratelimit) {
-
       const upstashResult = await limiter.limit(identifier);
       result = {
         success: upstashResult.success,
@@ -138,12 +138,20 @@ export async function checkRateLimit(
         reset: upstashResult.reset,
       };
     } else {
-
       result = await limiter.limit(identifier);
     }
 
     if (!result.success) {
       const resetDate = new Date(result.reset);
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "X-RateLimit-Remaining": String(result.remaining),
+        "X-RateLimit-Reset": String(result.reset),
+        "Retry-After": String(Math.ceil((result.reset - Date.now()) / 1000)),
+      };
+      if (limiter instanceof InMemoryRateLimiter) {
+        headers["X-RateLimit-Limit"] = String(limiter.requests);
+      }
 
       return {
         allowed: false,
@@ -156,12 +164,7 @@ export async function checkRateLimit(
           }),
           {
             status: 429,
-            headers: {
-              "Content-Type": "application/json",
-              "X-RateLimit-Remaining": String(result.remaining),
-              "X-RateLimit-Reset": String(result.reset),
-              "Retry-After": String(Math.ceil((result.reset - Date.now()) / 1000)),
-            },
+            headers,
           }
         ),
       };
@@ -181,16 +184,12 @@ export async function getRateLimitStatus(
 ): Promise<{ remaining: number; reset: number }> {
   try {
     if (limiter instanceof Ratelimit) {
-
-
-
       const result = await limiter.limit(identifier);
       return {
         remaining: result.remaining,
         reset: result.reset,
       };
     } else {
-
       const entry = inMemoryStore[identifier];
       const requests = (limiter as InMemoryRateLimiter)["requests"];
       const windowMs = (limiter as InMemoryRateLimiter)["windowMs"];
@@ -216,7 +215,9 @@ export async function getRateLimitStatus(
   }
 }
 
-export async function getRateLimitForUser(userId: string): Promise<Ratelimit | InMemoryRateLimiter> {
+export async function getRateLimitForUser(
+  userId: string
+): Promise<Ratelimit | InMemoryRateLimiter> {
   return chatbotRateLimit;
 }
 

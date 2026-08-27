@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 import path from "path";
 
-
 const splineReactSpline = path.join(
   __dirname,
   "node_modules",
@@ -41,7 +40,6 @@ const nextConfig: NextConfig = {
       "@splinetool/react-spline": splineReactSpline,
       "@splinetool/runtime": splineRuntime,
     };
-
 
     config.resolve.extensions = [
       ".tsx",

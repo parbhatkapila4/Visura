@@ -20,9 +20,7 @@ export async function GET(request: NextRequest) {
     const timeWindow = searchParams.get("timeWindow");
     const tagKey = searchParams.get("tagKey");
 
-    const timeWindowMs = timeWindow
-      ? parseInt(timeWindow, 10) * 1000
-      : 60 * 60 * 1000;
+    const timeWindowMs = timeWindow ? parseInt(timeWindow, 10) * 1000 : 60 * 60 * 1000;
 
     if (metricName) {
       if (tagKey) {
@@ -53,9 +51,6 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     logger.error("Error fetching metrics", error);
-    return NextResponse.json(
-      { error: "Failed to fetch metrics" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch metrics" }, { status: 500 });
   }
 }

@@ -165,7 +165,7 @@ export default function DownloadSummaryButtonDashboard({
     doc.line(margin, yPos, pageWidth - margin, yPos);
     yPos += 8;
 
-    let cleanText = cleanMarkdown(text);
+    const cleanText = cleanMarkdown(text);
 
     const sections = cleanText.split(/\n(?=##\s+)/);
 

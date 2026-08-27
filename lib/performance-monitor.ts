@@ -10,11 +10,7 @@ interface Metric {
 const metrics: Metric[] = [];
 const MAX_METRICS = 10000;
 
-export function recordMetric(
-  name: string,
-  value: number,
-  tags?: Record<string, string>
-): void {
+export function recordMetric(name: string, value: number, tags?: Record<string, string>): void {
   metrics.push({
     name,
     value,
@@ -83,9 +79,7 @@ export function getMetricStats(
   const now = Date.now();
   const cutoff = now - timeWindowMs;
 
-  const relevantMetrics = metrics.filter(
-    (m) => m.name === name && m.timestamp >= cutoff
-  );
+  const relevantMetrics = metrics.filter((m) => m.name === name && m.timestamp >= cutoff);
 
   const values = relevantMetrics.map((m) => m.value);
   return calculatePercentiles(values);
@@ -107,9 +101,7 @@ export function getMetricStatsByTags(
   const now = Date.now();
   const cutoff = now - timeWindowMs;
 
-  const relevantMetrics = metrics.filter(
-    (m) => m.name === name && m.timestamp >= cutoff
-  );
+  const relevantMetrics = metrics.filter((m) => m.name === name && m.timestamp >= cutoff);
 
   const grouped: Record<string, number[]> = {};
 

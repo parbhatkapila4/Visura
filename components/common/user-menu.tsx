@@ -6,6 +6,7 @@ import { LogOut, User, Building2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { clearLogoutLoaderPending, dispatchLogoutLoaderStart } from "@/lib/logout-loader-events";
 
 export default function UserMenu() {
   const { user } = useUser();
@@ -36,7 +37,12 @@ export default function UserMenu() {
   const userEmail = user.emailAddresses?.[0]?.emailAddress || "";
 
   const handleLogout = async () => {
-    await signOut();
+    try {
+      dispatchLogoutLoaderStart();
+      await signOut({ redirectUrl: `${window.location.origin}/` });
+    } catch {
+      clearLogoutLoaderPending();
+    }
     setIsOpen(false);
   };
 

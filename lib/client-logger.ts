@@ -1,4 +1,3 @@
-
 export interface ClientLogContext {
   [key: string]: unknown;
 }
@@ -29,10 +28,10 @@ class ClientLogger {
       ...context,
       ...(error instanceof Error
         ? {
-          errorMessage: error.message,
-          errorStack: error.stack,
-          errorName: error.name,
-        }
+            errorMessage: error.message,
+            errorStack: error.stack,
+            errorName: error.name,
+          }
         : error
           ? { error: String(error) }
           : {}),

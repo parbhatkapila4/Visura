@@ -17,4 +17,3 @@ export function verifyCheckoutSignature(params: {
     .digest("hex");
   return digest === params.signature;
 }
-

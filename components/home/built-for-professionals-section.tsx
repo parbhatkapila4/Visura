@@ -64,10 +64,7 @@ const itemVariants = {
 
 export default function BuiltForProfessionalsSection() {
   return (
-    <section
-      className="w-full py-20 md:py-24 bg-black"
-      style={{ backgroundColor: "#000000" }}
-    >
+    <section className="w-full py-20 md:py-24 bg-black" style={{ backgroundColor: "#000000" }}>
       <div className="w-full max-w-7xl mx-auto px-6 md:px-10 lg:px-12">
         <motion.div
           className="text-center mb-20 md:mb-28"
@@ -94,12 +91,7 @@ export default function BuiltForProfessionalsSection() {
           viewport={{ once: true }}
           className="mb-10 md:mb-14"
         >
-          <BlogPostCard
-            variant="featured"
-            theme="dark"
-            href="#"
-            {...featuredPost}
-          />
+          <BlogPostCard variant="featured" theme="dark" href="#" {...featuredPost} />
         </motion.div>
 
         <motion.div

@@ -74,7 +74,6 @@ export async function getTimelineForDocument(documentId: string): Promise<Change
   return events as ChangeEvent[];
 }
 
-
 export async function computeSemanticChanges(
   documentId: string,
   fromVersion: DocumentVersion,
@@ -101,9 +100,7 @@ export async function computeSemanticChanges(
       return [];
     }
 
-    const changedChunks = toChunks.filter(
-      (chunk) => !chunk.reused_from_chunk_id && chunk.summary
-    );
+    const changedChunks = toChunks.filter((chunk) => !chunk.reused_from_chunk_id && chunk.summary);
     const affectedChunkIndexes = changedChunks.map((chunk) => chunk.chunk_index);
 
     if (affectedChunkIndexes.length === 0) {
@@ -143,7 +140,8 @@ Return ONLY valid JSON array, no markdown, no explanation:
       messages: [
         {
           role: "system",
-          content: "You are a document change analysis system. Always return valid JSON arrays only, no markdown formatting.",
+          content:
+            "You are a document change analysis system. Always return valid JSON arrays only, no markdown formatting.",
         },
         {
           role: "user",
@@ -214,7 +212,6 @@ Return ONLY valid JSON array, no markdown, no explanation:
   }
 }
 
-
 export async function detectAndRecordChanges(versionId: string): Promise<void> {
   const sql = await getDbConnection();
   const [version] = await sql`
@@ -244,11 +241,7 @@ export async function detectAndRecordChanges(versionId: string): Promise<void> {
 
   const fromVersion = previousVersion as DocumentVersion;
 
-  const changes = await computeSemanticChanges(
-    toVersion.document_id,
-    fromVersion,
-    toVersion
-  );
+  const changes = await computeSemanticChanges(toVersion.document_id, fromVersion, toVersion);
 
   for (const change of changes) {
     await createChangeEvent(

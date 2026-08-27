@@ -4,17 +4,29 @@ const generateDocumentTypeDescription = (title: string, summaryText: string): st
   const textLower = summaryText?.toLowerCase() || "";
 
   // Check for invoice/billing documents
-  if (titleLower.includes("invoice") || titleLower.includes("bill") || titleLower.includes("receipt")) {
+  if (
+    titleLower.includes("invoice") ||
+    titleLower.includes("bill") ||
+    titleLower.includes("receipt")
+  ) {
     return "Financial invoice or billing document with transaction details";
   }
 
   // Check for profile/resume documents
-  if (titleLower.includes("profile") || titleLower.includes("resume") || titleLower.includes("cv")) {
+  if (
+    titleLower.includes("profile") ||
+    titleLower.includes("resume") ||
+    titleLower.includes("cv")
+  ) {
     return "Personal or professional profile document";
   }
 
   // Check for contract/agreement documents
-  if (titleLower.includes("contract") || titleLower.includes("agreement") || titleLower.includes("terms")) {
+  if (
+    titleLower.includes("contract") ||
+    titleLower.includes("agreement") ||
+    titleLower.includes("terms")
+  ) {
     return "Legal contract or agreement document";
   }
 
@@ -29,32 +41,56 @@ const generateDocumentTypeDescription = (title: string, summaryText: string): st
   }
 
   // Check for book/document titles
-  if (titleLower.includes("book") || textLower.includes("chapter") || textLower.includes("author")) {
+  if (
+    titleLower.includes("book") ||
+    textLower.includes("chapter") ||
+    textLower.includes("author")
+  ) {
     return "Book or literary document";
   }
 
   // Check for manual/guide documents
-  if (titleLower.includes("manual") || titleLower.includes("guide") || titleLower.includes("instruction")) {
+  if (
+    titleLower.includes("manual") ||
+    titleLower.includes("guide") ||
+    titleLower.includes("instruction")
+  ) {
     return "Instructional manual or guide document";
   }
 
   // Check for letter/email documents
-  if (titleLower.includes("letter") || titleLower.includes("email") || titleLower.includes("mail")) {
+  if (
+    titleLower.includes("letter") ||
+    titleLower.includes("email") ||
+    titleLower.includes("mail")
+  ) {
     return "Correspondence letter or email document";
   }
 
   // Check for presentation documents
-  if (titleLower.includes("presentation") || titleLower.includes("slides") || titleLower.includes("ppt")) {
+  if (
+    titleLower.includes("presentation") ||
+    titleLower.includes("slides") ||
+    titleLower.includes("ppt")
+  ) {
     return "Presentation or slideshow document";
   }
 
   // Check for certificate documents
-  if (titleLower.includes("certificate") || titleLower.includes("diploma") || titleLower.includes("degree")) {
+  if (
+    titleLower.includes("certificate") ||
+    titleLower.includes("diploma") ||
+    titleLower.includes("degree")
+  ) {
     return "Certificate or academic document";
   }
 
   // Check for medical documents
-  if (titleLower.includes("medical") || titleLower.includes("health") || titleLower.includes("prescription")) {
+  if (
+    titleLower.includes("medical") ||
+    titleLower.includes("health") ||
+    titleLower.includes("prescription")
+  ) {
     return "Medical or healthcare document";
   }
 
@@ -64,7 +100,11 @@ const generateDocumentTypeDescription = (title: string, summaryText: string): st
   }
 
   // Check for business documents
-  if (titleLower.includes("business") || titleLower.includes("company") || titleLower.includes("corporate")) {
+  if (
+    titleLower.includes("business") ||
+    titleLower.includes("company") ||
+    titleLower.includes("corporate")
+  ) {
     return "Business or corporate document";
   }
 
@@ -165,6 +205,30 @@ export const extractSummaryPreview = (
     };
   }
 
+  const extractKeyPointsFromMarkdown = (text: string): string[] => {
+    const patterns: RegExp[] = [
+      /##\s*Key Points\s*\n([\s\S]*?)(?=\n##\s|\n#\s[^\n]|\n\*\*[A-Za-z]|\n\n\n|$)/i,
+      /\*\*Key Points:\*\*\s*\n([\s\S]*?)(?=\n##|\n\*\*[A-Za-z]|\n#\s|$)/i,
+    ];
+    for (const re of patterns) {
+      const block = text.match(re);
+      if (!block?.[1]) continue;
+      const out: string[] = [];
+      for (const line of block[1].split("\n")) {
+        const t = line.trim();
+        if (/^[-*•]\s+/.test(t)) {
+          out.push(t.replace(/^[-*•]\s+/, "").trim());
+        }
+      }
+      if (out.length) return out.slice(0, 20);
+    }
+    return [];
+  };
+
+  const inlineDocumentType =
+    summaryText.match(/\*\*Document Type:\*\*\s*([^\n\r]+)/i)?.[1]?.trim() ??
+    summaryText.match(/^\s*Document Type:\s*([^\n\r]+)/im)?.[1]?.trim();
+
   const sections = summaryText
     .split("\n#")
     .map((section) => section.trim())
@@ -172,7 +236,7 @@ export const extractSummaryPreview = (
 
   const titleSection = sections[0] || "";
   const titleMatch = titleSection.match(/^#\s*(.+)/);
-  const extractedTitle = titleMatch ? titleMatch[1].trim() : (title || "Document Summary");
+  const extractedTitle = titleMatch ? titleMatch[1].trim() : title || "Document Summary";
   const docTitle = title || extractedTitle;
   const docFileName = fileName || "";
 
@@ -209,7 +273,7 @@ export const extractSummaryPreview = (
     executiveSummary = generateDocumentTypeDescription(docTitle, searchText);
   }
 
-  let documentType = "Document";
+  let documentType = inlineDocumentType || "Document";
   const overviewSection = sections.find((section) => section.includes("Document Overview"));
   if (overviewSection) {
     const typeMatch = overviewSection.match(/📄\s*Type:\s*(.+)/);
@@ -218,7 +282,7 @@ export const extractSummaryPreview = (
     }
   }
 
-  const keyPoints: string[] = [];
+  const keyPoints: string[] = [...extractKeyPointsFromMarkdown(summaryText)];
 
   const executiveSection = sections.find((section) => section.includes("Executive Summary"));
   if (executiveSection) {
@@ -230,7 +294,7 @@ export const extractSummaryPreview = (
         (trimmedLine.includes("🚀") || trimmedLine.includes("⭐") || trimmedLine.includes("🔗"))
       ) {
         const cleanPoint = trimmedLine.replace(/^•\s*[🚀⭐🔗]\s*/, "").trim();
-        if (cleanPoint && keyPoints.length < 3) {
+        if (cleanPoint && keyPoints.length < 20) {
           keyPoints.push(cleanPoint);
         }
       }
@@ -242,8 +306,12 @@ export const extractSummaryPreview = (
       const lines = section.split("\n");
       lines.forEach((line) => {
         const trimmedLine = line.trim();
-        if (trimmedLine.startsWith("•") && keyPoints.length < 3) {
-          const cleanPoint = trimmedLine.replace(/^•\s*/, "").trim();
+        const isBullet = trimmedLine.startsWith("•") || /^[-*]\s+/.test(trimmedLine);
+        if (isBullet && keyPoints.length < 20) {
+          const cleanPoint = trimmedLine
+            .replace(/^•\s*/, "")
+            .replace(/^[-*]\s+/, "")
+            .trim();
           if (cleanPoint && cleanPoint.length > 10) {
             keyPoints.push(cleanPoint);
           }
@@ -253,7 +321,7 @@ export const extractSummaryPreview = (
   }
 
   if (keyPoints.length === 0 && sections.length > 1) {
-    for (let i = 1; i < sections.length && keyPoints.length < 3; i++) {
+    for (let i = 1; i < sections.length && keyPoints.length < 20; i++) {
       const lines = sections[i]
         .split("\n")
         .map((line) => line.trim())

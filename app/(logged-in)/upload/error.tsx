@@ -36,7 +36,8 @@ export default function UploadError({
 
           <h2 className="text-xl font-bold text-white mb-2 tracking-tight">Upload failed</h2>
           <p className="text-sm text-zinc-400 mb-8 leading-relaxed">
-            Something went wrong with the upload. The file might be too large or in an unsupported format.
+            Something went wrong with the upload. The file might be too large or in an unsupported
+            format.
           </p>
 
           {process.env.NODE_ENV === "development" && error.message && (

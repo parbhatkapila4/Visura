@@ -25,9 +25,6 @@ export async function POST(
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
     logger.error("Workspace analyze error", err, { workspaceId: (await params).workspaceId });
-    return NextResponse.json(
-      { error: "Analysis failed", details: err.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Analysis failed", details: err.message }, { status: 500 });
   }
 }

@@ -105,7 +105,8 @@ export async function createWorkspace({
 
   await sql`
     INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description)
-    VALUES (${workspace.id}, ${ownerId}, ${ownerEmail}, ${ownerName || null
+    VALUES (${workspace.id}, ${ownerId}, ${ownerEmail}, ${
+      ownerName || null
     }, 'workspace_created', ${`Workspace "${name}" was created`})
   `;
 
@@ -192,14 +193,16 @@ export async function inviteWorkspaceMember({
 
   const [member] = await sql`
     INSERT INTO workspace_members (workspace_id, user_id, user_email, user_name, role, status, invited_by)
-    VALUES (${workspaceId}, ${user.id}::text, ${userEmail}, ${userName || user.full_name || null
+    VALUES (${workspaceId}, ${user.id}::text, ${userEmail}, ${
+      userName || user.full_name || null
     }, ${role}, 'active', ${invitedBy})
     RETURNING *
   `;
 
   await sql`
     INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description, metadata)
-    VALUES (${workspaceId}, ${invitedBy}, ${invitedByName || null}, ${invitedByName || null
+    VALUES (${workspaceId}, ${invitedBy}, ${invitedByName || null}, ${
+      invitedByName || null
     }, 'member_invited', ${`${userEmail} was invited as ${role}`}, ${JSON.stringify({
       invited_user_email: userEmail,
       role,
@@ -257,11 +260,14 @@ export async function removeWorkspaceMember({
 
   await sql`
     INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description, metadata)
-    VALUES (${workspaceId}, ${removedBy}, ${removedByName || null}, ${removedByName || null
-    }, 'member_removed', ${`${member.user_email} was removed from the workspace`}, ${JSON.stringify({
-      removed_user_email: member.user_email,
-      removed_user_id: member.user_id,
-    })})
+    VALUES (${workspaceId}, ${removedBy}, ${removedByName || null}, ${
+      removedByName || null
+    }, 'member_removed', ${`${member.user_email} was removed from the workspace`}, ${JSON.stringify(
+      {
+        removed_user_email: member.user_email,
+        removed_user_id: member.user_id,
+      }
+    )})
   `;
 
   return { success: true };
@@ -301,8 +307,10 @@ export async function shareDocumentWithWorkspace({
       if (member) {
         await sql`
           INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description, metadata)
-          VALUES (${workspaceId}, ${sharedBy}, ${member.user_email}, ${member.user_name || null
-          }, 'document_shared', ${`Document "${summary?.title || "Untitled"
+          VALUES (${workspaceId}, ${sharedBy}, ${member.user_email}, ${
+            member.user_name || null
+          }, 'document_shared', ${`Document "${
+            summary?.title || "Untitled"
           }" was shared`}, ${JSON.stringify({ pdf_summary_id: pdfSummaryId })})
         `;
       }
@@ -371,7 +379,8 @@ export async function updateCollaborationSession({
 
   const [session] = await sql`
     INSERT INTO collaboration_sessions (pdf_summary_id, user_id, user_email, user_name, cursor_position, last_seen)
-    VALUES (${pdfSummaryId}, ${userId}, ${userEmail}, ${userName || null}, ${cursorPosition ? JSON.stringify(cursorPosition) : null
+    VALUES (${pdfSummaryId}, ${userId}, ${userEmail}, ${userName || null}, ${
+      cursorPosition ? JSON.stringify(cursorPosition) : null
     }, CURRENT_TIMESTAMP)
     ON CONFLICT (pdf_summary_id, user_id)
     DO UPDATE SET 
@@ -429,7 +438,8 @@ export async function addDocumentComment({
 
   const [comment] = await sql`
     INSERT INTO document_comments (pdf_summary_id, workspace_id, user_id, user_email, user_name, content, position, parent_comment_id)
-    VALUES (${pdfSummaryId}, ${workspaceId || null}, ${userId}, ${userEmail}, ${userName || null
+    VALUES (${pdfSummaryId}, ${workspaceId || null}, ${userId}, ${userEmail}, ${
+      userName || null
     }, ${content}, ${position ? JSON.stringify(position) : null}, ${parentCommentId || null})
     RETURNING *
   `;
@@ -437,7 +447,8 @@ export async function addDocumentComment({
   if (workspaceId) {
     await sql`
       INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description, metadata)
-      VALUES (${workspaceId}, ${userId}, ${userEmail}, ${userName || null
+      VALUES (${workspaceId}, ${userId}, ${userEmail}, ${
+        userName || null
       }, 'comment_added', ${`Comment added on document`}, ${JSON.stringify({
         pdf_summary_id: pdfSummaryId,
         comment_id: comment.id,
@@ -454,10 +465,11 @@ export async function getDocumentComments(pdfSummaryId: string, workspaceId?: st
   const comments = await sql`
     SELECT * FROM document_comments
     WHERE pdf_summary_id = ${pdfSummaryId}
-      ${workspaceId
-      ? sql`AND (workspace_id = ${workspaceId} OR workspace_id IS NULL)`
-      : sql`AND workspace_id IS NULL`
-    }
+      ${
+        workspaceId
+          ? sql`AND (workspace_id = ${workspaceId} OR workspace_id IS NULL)`
+          : sql`AND workspace_id IS NULL`
+      }
       AND resolved = false
     ORDER BY created_at ASC
   `;
@@ -576,7 +588,8 @@ export async function sendWorkspaceChatMessage({
     try {
       await sql`
         INSERT INTO workspace_activities (workspace_id, user_id, user_email, user_name, action_type, action_description)
-        VALUES (${workspaceId}, ${userId}, ${userEmail}, ${userName || null
+        VALUES (${workspaceId}, ${userId}, ${userEmail}, ${
+          userName || null
         }, 'chat_message_sent', ${`Sent a chat message`})
       `;
     } catch (activityError) {

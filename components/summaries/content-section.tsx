@@ -49,7 +49,7 @@ export default function ContentSection({ title, points }: { title: string; point
           let cardClasses =
             "group relative bg-linear-to-br from-gray-200/[0.08] to-gray-400/[0.03] p-4 rounded-2xl border border-gray-500/10 hover:shadow-lg transition-all";
           let emojiClasses = "text-lg lg:text-xl shrink-0 pt-1";
-          let textClasses = "text-lg lg:text-xl text-muted-foreground/90 leading-relaxed";
+          const textClasses = "text-lg lg:text-xl text-muted-foreground/90 leading-relaxed";
 
           if (isActionItem) {
             cardClasses =

@@ -18,7 +18,10 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { InsightsResponse, InsightsEvent } from "@/app/api/documents/[id]/versions/[versionId]/insights/route";
+import type {
+  InsightsResponse,
+  InsightsEvent,
+} from "@/app/api/documents/[id]/versions/[versionId]/insights/route";
 
 const EVENT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   upload_started: Upload,
@@ -67,14 +70,17 @@ interface ProcessingInsightsViewProps {
   data: InsightsResponse;
 }
 
-export function ProcessingInsightsView({ summaryId, summaryTitle, data }: ProcessingInsightsViewProps) {
+export function ProcessingInsightsView({
+  summaryId,
+  summaryTitle,
+  data,
+}: ProcessingInsightsViewProps) {
   const { version, events, metrics } = data;
-  const status =
-    events.some((e) => e.event_type === "version_completed")
-      ? "Completed"
-      : events.some((e) => e.event_type === "version_failed")
-        ? "Failed"
-        : "Processing";
+  const status = events.some((e) => e.event_type === "version_completed")
+    ? "Completed"
+    : events.some((e) => e.event_type === "version_failed")
+      ? "Failed"
+      : "Processing";
 
   const statusColor =
     status === "Completed"
@@ -87,7 +93,9 @@ export function ProcessingInsightsView({ summaryId, summaryTitle, data }: Proces
     <div className="bg-[#0a0a0a] min-h-screen text-white">
       <div className="max-w-4xl mx-auto px-6 sm:px-8 py-10 space-y-10">
         <section>
-          <h2 className="text-sm font-semibold text-[#888] uppercase tracking-wider mb-5">Version overview</h2>
+          <h2 className="text-sm font-semibold text-[#888] uppercase tracking-wider mb-5">
+            Version overview
+          </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="p-5 rounded-xl bg-[#111] border border-[#1f1f1f]">
               <div className="flex items-center gap-2 mb-3">
@@ -96,7 +104,9 @@ export function ProcessingInsightsView({ summaryId, summaryTitle, data }: Proces
                 </div>
               </div>
               <p className="text-[11px] text-[#555] uppercase tracking-wider mb-1">Status</p>
-              <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-md border ${statusColor}`}>
+              <span
+                className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-md border ${statusColor}`}
+              >
                 {status}
               </span>
             </div>
@@ -117,7 +127,9 @@ export function ProcessingInsightsView({ summaryId, summaryTitle, data }: Proces
               </div>
               <p className="text-[11px] text-[#555] uppercase tracking-wider mb-1">Chunks</p>
               <p className="text-sm font-medium text-white">{version.total_chunks} total</p>
-              <p className="text-xs text-[#666] mt-0.5">{version.reused_chunks} reused · {version.new_chunks} new</p>
+              <p className="text-xs text-[#666] mt-0.5">
+                {version.reused_chunks} reused · {version.new_chunks} new
+              </p>
             </div>
             <div className="p-5 rounded-xl bg-[#111] border border-[#1f1f1f]">
               <div className="flex items-center gap-2 mb-3">
@@ -126,13 +138,17 @@ export function ProcessingInsightsView({ summaryId, summaryTitle, data }: Proces
                 </div>
               </div>
               <p className="text-[11px] text-[#555] uppercase tracking-wider mb-1">Duration</p>
-              <p className="text-sm font-medium text-white">{formatDuration(metrics.processingDurationMs)}</p>
+              <p className="text-sm font-medium text-white">
+                {formatDuration(metrics.processingDurationMs)}
+              </p>
             </div>
           </div>
         </section>
 
         <section>
-          <h2 className="text-sm font-semibold text-[#888] uppercase tracking-wider mb-5">Processing timeline</h2>
+          <h2 className="text-sm font-semibold text-[#888] uppercase tracking-wider mb-5">
+            Processing timeline
+          </h2>
           <div className="rounded-xl bg-[#111] border border-[#1f1f1f] p-6">
             {events.length === 0 ? (
               <p className="text-[#666] text-sm py-6 text-center">No events recorded.</p>
@@ -147,7 +163,9 @@ export function ProcessingInsightsView({ summaryId, summaryTitle, data }: Proces
         </section>
 
         <section>
-          <h2 className="text-sm font-semibold text-[#888] uppercase tracking-wider mb-5">Efficiency</h2>
+          <h2 className="text-sm font-semibold text-[#888] uppercase tracking-wider mb-5">
+            Efficiency
+          </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <StatBlock
               icon={<RefreshCw className="w-4 h-4 text-emerald-400" />}
@@ -220,11 +238,7 @@ function TimelineItem({ event, isLast }: { event: InsightsEvent; isLast: boolean
     : isFailed
       ? "border-red-500/40 bg-red-500/10"
       : "border-[#333] bg-[#161616]";
-  const iconColor = isCompleted
-    ? "text-emerald-400"
-    : isFailed
-      ? "text-red-400"
-      : "text-[#888]";
+  const iconColor = isCompleted ? "text-emerald-400" : isFailed ? "text-red-400" : "text-[#888]";
 
   return (
     <li className="relative flex gap-5 pb-8 last:pb-0">
@@ -234,11 +248,15 @@ function TimelineItem({ event, isLast }: { event: InsightsEvent; isLast: boolean
           aria-hidden
         />
       )}
-      <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${iconRingColor}`}>
+      <div
+        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${iconRingColor}`}
+      >
         <Icon className={`h-3.5 w-3.5 ${iconColor}`} />
       </div>
       <div className="min-w-0 flex-1 pt-0.5">
-        <p className="text-sm font-medium text-white leading-tight">{eventLabel(event.event_type)}</p>
+        <p className="text-sm font-medium text-white leading-tight">
+          {eventLabel(event.event_type)}
+        </p>
         {event.message && (
           <p className="text-sm text-[#888] mt-1 leading-relaxed">{event.message}</p>
         )}

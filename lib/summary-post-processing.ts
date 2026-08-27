@@ -13,7 +13,7 @@ export function enforceWordLimits(
     options?.budget ??
     (options?.isChunk ? CHUNK_SUMMARY_BUDGET : getSummaryProcessingBudget(estimatedPages));
 
-  const lines = summary.split('\n');
+  const lines = summary.split("\n");
   const processedLines: string[] = [];
   let totalWords = 0;
   const MAX_TOTAL_WORDS = resolved.maxTotalWords;
@@ -37,7 +37,7 @@ export function enforceWordLimits(
       currentSection = [];
       bulletCount = 0;
       sectionCount++;
-    } else if (line.trim().startsWith('-') || line.trim().startsWith('•')) {
+    } else if (line.trim().startsWith("-") || line.trim().startsWith("•")) {
       if (sectionCount >= MAX_SECTIONS) {
         break;
       }
@@ -45,9 +45,12 @@ export function enforceWordLimits(
       const wordCount = words.length;
 
       if (wordCount > MAX_BULLET_WORDS) {
-        const truncated = words.slice(0, MAX_BULLET_WORDS).join(' ');
-        const bulletPrefix = line.trim().match(/^[-•]\s*/)?.[0] || '- ';
-        if (bulletCount < MAX_BULLETS_PER_SECTION && totalWords + MAX_BULLET_WORDS <= MAX_TOTAL_WORDS) {
+        const truncated = words.slice(0, MAX_BULLET_WORDS).join(" ");
+        const bulletPrefix = line.trim().match(/^[-•]\s*/)?.[0] || "- ";
+        if (
+          bulletCount < MAX_BULLETS_PER_SECTION &&
+          totalWords + MAX_BULLET_WORDS <= MAX_TOTAL_WORDS
+        ) {
           currentSection.push(bulletPrefix + truncated);
           bulletCount++;
           totalWords += MAX_BULLET_WORDS;
@@ -59,10 +62,14 @@ export function enforceWordLimits(
           totalWords += wordCount;
         }
       }
-    } else if (line.trim().length > 0 && !line.trim().startsWith('#')) {
+    } else if (line.trim().length > 0 && !line.trim().startsWith("#")) {
       const words = line.trim().split(/\s+/);
       const wordCount = words.length;
-      if (wordCount <= MAX_BULLET_WORDS && totalWords + wordCount <= MAX_TOTAL_WORDS && sectionCount < MAX_SECTIONS) {
+      if (
+        wordCount <= MAX_BULLET_WORDS &&
+        totalWords + wordCount <= MAX_TOTAL_WORDS &&
+        sectionCount < MAX_SECTIONS
+      ) {
         currentSection.push(line);
         totalWords += wordCount;
       }
@@ -77,12 +84,12 @@ export function enforceWordLimits(
     processedLines.push(...currentSection);
   }
 
-  let result = processedLines.join('\n');
-  const finalWordCount = result.split(/\s+/).filter(w => w.length > 0).length;
+  let result = processedLines.join("\n");
+  const finalWordCount = result.split(/\s+/).filter((w) => w.length > 0).length;
 
   if (finalWordCount > MAX_TOTAL_WORDS) {
-    const words = result.split(/\s+/).filter(w => w.length > 0);
-    result = words.slice(0, MAX_TOTAL_WORDS).join(' ');
+    const words = result.split(/\s+/).filter((w) => w.length > 0);
+    result = words.slice(0, MAX_TOTAL_WORDS).join(" ");
   }
 
   return result.trim();
@@ -94,7 +101,7 @@ export function enforceSummaryStructure(summary: string, estimatedPages: number)
   const sections: Array<{ title: string; content: string; index: number }> = [];
   const seenHeaders = new Set<string>();
 
-  const lines = summary.split('\n');
+  const lines = summary.split("\n");
   let currentSection: { title: string; content: string[] } | null = null;
   let sectionIndex = 0;
 
@@ -108,7 +115,7 @@ export function enforceSummaryStructure(summary: string, estimatedPages: number)
       if (currentSection) {
         sections.push({
           title: currentSection.title,
-          content: currentSection.content.join('\n').trim(),
+          content: currentSection.content.join("\n").trim(),
           index: sectionIndex++,
         });
       }
@@ -131,7 +138,7 @@ export function enforceSummaryStructure(summary: string, estimatedPages: number)
   if (currentSection && sections.length < maxSections) {
     sections.push({
       title: currentSection.title,
-      content: currentSection.content.join('\n').trim(),
+      content: currentSection.content.join("\n").trim(),
       index: sectionIndex++,
     });
   }
@@ -142,35 +149,47 @@ export function enforceSummaryStructure(summary: string, estimatedPages: number)
   const usesExecutivePromptShape =
     uniqueTitlesLower.some((t) => t.includes("executive summary")) ||
     uniqueTitlesLower.some((t) => t.includes("key points") || t.includes("findings")) ||
-    uniqueTitlesLower.some((t) => t.includes("important details") || t.includes("specifications")) ||
+    uniqueTitlesLower.some(
+      (t) => t.includes("important details") || t.includes("specifications")
+    ) ||
     uniqueTitlesLower.some((t) => t.includes("risks & concerns") || t.includes("critical risks")) ||
-    uniqueTitlesLower.some((t) => t.includes("action items") || t.includes("recommendations") || t.includes("action"));
+    uniqueTitlesLower.some(
+      (t) => t.includes("action items") || t.includes("recommendations") || t.includes("action")
+    );
 
   if (usesExecutivePromptShape) {
-    return uniqueSections
-      .map((s) => `### ${s.title}\n\n${s.content}`)
-      .join("\n\n");
+    return uniqueSections.map((s) => `### ${s.title}\n\n${s.content}`).join("\n\n");
   }
 
   const expectedSections = [
-    'TL;DR',
-    'Key Numbers',
-    'Critical Risks',
-    'Action Items',
-    'Bottom Line'
+    "TL;DR",
+    "Key Numbers",
+    "Critical Risks",
+    "Action Items",
+    "Bottom Line",
   ];
 
   const finalSections: string[] = [];
 
   for (const expected of expectedSections) {
-    const found = uniqueSections.find(s =>
-      s.title.toLowerCase().includes(expected.toLowerCase()) ||
-      expected.toLowerCase().includes(s.title.toLowerCase()) ||
-      (expected === 'TL;DR' && (s.title.toLowerCase().includes('summary') || s.title.toLowerCase().includes('tldr'))) ||
-      (expected === 'Key Numbers' && (s.title.toLowerCase().includes('numbers') || s.title.toLowerCase().includes('data') || s.title.toLowerCase().includes('metrics'))) ||
-      (expected === 'Critical Risks' && (s.title.toLowerCase().includes('risk') || s.title.toLowerCase().includes('warning'))) ||
-      (expected === 'Action Items' && (s.title.toLowerCase().includes('action') || s.title.toLowerCase().includes('next'))) ||
-      (expected === 'Bottom Line' && (s.title.toLowerCase().includes('bottom') || s.title.toLowerCase().includes('verdict') || s.title.toLowerCase().includes('conclusion')))
+    const found = uniqueSections.find(
+      (s) =>
+        s.title.toLowerCase().includes(expected.toLowerCase()) ||
+        expected.toLowerCase().includes(s.title.toLowerCase()) ||
+        (expected === "TL;DR" &&
+          (s.title.toLowerCase().includes("summary") || s.title.toLowerCase().includes("tldr"))) ||
+        (expected === "Key Numbers" &&
+          (s.title.toLowerCase().includes("numbers") ||
+            s.title.toLowerCase().includes("data") ||
+            s.title.toLowerCase().includes("metrics"))) ||
+        (expected === "Critical Risks" &&
+          (s.title.toLowerCase().includes("risk") || s.title.toLowerCase().includes("warning"))) ||
+        (expected === "Action Items" &&
+          (s.title.toLowerCase().includes("action") || s.title.toLowerCase().includes("next"))) ||
+        (expected === "Bottom Line" &&
+          (s.title.toLowerCase().includes("bottom") ||
+            s.title.toLowerCase().includes("verdict") ||
+            s.title.toLowerCase().includes("conclusion")))
     );
 
     if (found) {
@@ -179,10 +198,13 @@ export function enforceSummaryStructure(summary: string, estimatedPages: number)
   }
 
   if (finalSections.length === 0 && uniqueSections.length > 0) {
-    return uniqueSections.slice(0, maxSections).map(s => `### ${s.title}\n\n${s.content}`).join('\n\n');
+    return uniqueSections
+      .slice(0, maxSections)
+      .map((s) => `### ${s.title}\n\n${s.content}`)
+      .join("\n\n");
   }
 
-  return finalSections.join('\n\n');
+  return finalSections.join("\n\n");
 }
 
 export function validateSummary(
@@ -197,7 +219,6 @@ export function validateSummary(
   const errors: string[] = [];
   const lowerSummary = summary.toLowerCase();
   const isChunk = options?.isChunk ?? false;
-
 
   const badPhrases = [
     "i cannot access",
@@ -215,19 +236,20 @@ export function validateSummary(
     "consult legal counsel",
   ];
 
-  if (detectedLanguage === 'ENGLISH') {
-    const hasBadPhrase = badPhrases.some(phrase => lowerSummary.includes(phrase));
+  if (detectedLanguage === "ENGLISH") {
+    const hasBadPhrase = badPhrases.some((phrase) => lowerSummary.includes(phrase));
     if (hasBadPhrase) {
       errors.push("Summary contains generic/unhelpful phrases");
     }
   }
 
-
-  if (detectedLanguage === 'ENGLISH') {
-    const wordCount = summary.split(/\s+/).filter(w => w.length > 0).length;
+  if (detectedLanguage === "ENGLISH") {
+    const wordCount = summary.split(/\s+/).filter((w) => w.length > 0).length;
 
     if (!isChunk && wordCount < 500) {
-      errors.push(`Summary is too short - should be at least 500 words for comprehensive summaries (${wordCount})`);
+      errors.push(
+        `Summary is too short - should be at least 500 words for comprehensive summaries (${wordCount})`
+      );
     }
     if (isChunk && wordCount < 40) {
       errors.push(`Chunk summary is too short (${wordCount} words)`);
@@ -239,7 +261,9 @@ export function validateSummary(
   } else {
     const estimatedWords = Math.ceil(summary.length / 4);
     if (!isChunk && estimatedWords < 400) {
-      errors.push(`Summary is too short - should be at least 400 words estimated (${estimatedWords})`);
+      errors.push(
+        `Summary is too short - should be at least 400 words estimated (${estimatedWords})`
+      );
     }
     if (isChunk && estimatedWords < 40) {
       errors.push(`Chunk summary is too short (${estimatedWords} words estimated)`);

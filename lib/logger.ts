@@ -38,18 +38,15 @@ export function generateRequestId(): string {
   return crypto.randomUUID();
 }
 
-
 function createChildLogger(context: LogContext = {}) {
   return baseLogger.child(context);
 }
 
 export const logger = {
-
   info: (message: string, context?: LogContext) => {
     const child = createChildLogger(context);
     child.info(message);
   },
-
 
   warn: (message: string, context?: LogContext) => {
     const child = createChildLogger(context);
@@ -62,10 +59,10 @@ export const logger = {
       ...context,
       ...(error instanceof Error
         ? {
-          errorMessage: error.message,
-          errorStack: error.stack,
-          errorName: error.name,
-        }
+            errorMessage: error.message,
+            errorStack: error.stack,
+            errorName: error.name,
+          }
         : error
           ? { error: String(error) }
           : {}),

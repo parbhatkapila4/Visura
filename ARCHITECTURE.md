@@ -142,6 +142,7 @@ User                Client              Server              AI Service        Da
 ```
 
 **Key Points:**
+
 - **Single Upload Path**: All uploads use `createVersionedDocumentJob()` from `actions/versioned-upload-actions.tsx`
 - **Async Processing**: Chunk processing happens in background via `/api/jobs/process-chunk`
 - **Cost Guardrails**: Enforced before version creation (prevents partial state)
@@ -272,6 +273,7 @@ Visura implements a **Processing Cost Ledger** to make document intelligence eco
 ### Why Chunk Reuse Exists
 
 When documents are versioned (e.g., updated contracts, revised reports), most content remains unchanged. Reprocessing unchanged content wastes:
+
 - **AI API costs** (tokens consumed)
 - **Processing time** (user wait time)
 - **Compute resources** (serverless function invocations)
@@ -310,7 +312,7 @@ Visura implements **first-class semantic change history** to enable time-travel 
 
 ### Why Change Events Exist
 
-Traditional diff-based approaches show *what* changed (text differences) but not *why* it matters or *how* the document's meaning evolved. Semantic change events capture:
+Traditional diff-based approaches show _what_ changed (text differences) but not _why_ it matters or _how_ the document's meaning evolved. Semantic change events capture:
 
 - **What changed**: Content additions, removals, modifications
 - **Why it matters**: Policy shifts, risk changes, scope modifications
@@ -349,7 +351,7 @@ The system classifies changes into 10 semantic types:
 
 - **Text diffs** show character/word changes but not semantic meaning
 - **Chunk diffs** show which chunks changed but not why
-- **Semantic events** explain the *intent* and *impact* of changes
+- **Semantic events** explain the _intent_ and _impact_ of changes
 
 ### Idempotency Guarantees
 
@@ -387,6 +389,7 @@ This section explicitly states what the system guarantees and what it does not.
 ### Replay Guarantees
 
 **What Is Guaranteed:**
+
 - Any document version can be safely replayed after crashes, retries, or manual re-runs
 - Replay converges to the same final state regardless of failure point
 - No duplicate chunks created (UNIQUE constraint on `document_version_id, chunk_index`)
@@ -394,12 +397,14 @@ This section explicitly states what the system guarantees and what it does not.
 - Replay is idempotent: safe to run N times with same result
 
 **How It Works:**
+
 - Chunk processing checks `summary IS NULL AND reused_from_chunk_id IS NULL` before processing
 - All updates use atomic WHERE clauses that check current state
 - Replay endpoint (`/api/documents/[id]/versions/[versionId]/replay`) processes only incomplete chunks
 - Completed chunks are never reprocessed
 
 **What Is NOT Guaranteed:**
+
 - Replay does not fix corrupted data (if corruption occurs, manual intervention required)
 - Replay does not bypass AI provider rate limits
 - Replay does not guarantee processing order (chunks may process out of order)
@@ -407,18 +412,21 @@ This section explicitly states what the system guarantees and what it does not.
 ### Crash Guarantees
 
 **What Is Guaranteed:**
+
 - Partial progress is preserved: completed chunks remain valid after crash
 - System can resume processing from crash point
 - No data corruption from partial writes (atomic operations)
 - Chunk state is always valid (either complete or incomplete, never corrupted)
 
 **How It Works:**
+
 - Each chunk is processed independently (no cross-chunk dependencies)
 - Updates are atomic: `UPDATE ... WHERE summary IS NULL` only updates if condition met
 - Version completion check is idempotent: only creates final summary if `pdf_summary_id IS NULL`
 - Stuck job recovery automatically resets jobs stuck in processing >10 minutes
 
 **What Is NOT Guaranteed:**
+
 - Crash during initial version creation may leave version in inconsistent state (requires retry)
 - Crash during chunk creation may require manual cleanup (UNIQUE constraint prevents duplicates)
 - Crash does not preserve in-flight AI responses (must be regenerated)
@@ -426,6 +434,7 @@ This section explicitly states what the system guarantees and what it does not.
 ### Automatic Recovery Guarantees
 
 **What Is Guaranteed:**
+
 - Incomplete document versions automatically self-heal without operator intervention
 - Versions with incomplete chunks older than 10 minutes are automatically recovered
 - Recovery uses direct function calls (no HTTP self-calls) - works even if routing is down
@@ -434,6 +443,7 @@ This section explicitly states what the system guarantees and what it does not.
 - System converges to complete state automatically
 
 **How It Works:**
+
 - **Cron Job**: `/api/cron/recover-versions` runs every 5 minutes
 - **Detection**: Finds `document_versions` where:
   - `pdf_summary_id IS NULL` (not yet complete)
@@ -447,18 +457,21 @@ This section explicitly states what the system guarantees and what it does not.
 - **Alerting**: CRITICAL alert only if recovery attempt fails (no alert for successful recovery)
 
 **What Auto-Heals:**
+
 - Chunk processing failures (serverless timeouts, AI provider errors)
 - Network interruptions during chunk processing
 - Concurrent processing race conditions
 - Stuck versions from crashes or retries
 
 **What Requires Manual Intervention:**
+
 - Corrupted chunk data (invalid text, malformed summaries)
 - Database constraint violations (requires data fix)
 - Orphaned chunks with missing source summaries (requires data fix)
 - Versions stuck due to cost guardrails (user must wait or reduce document size)
 
 **Recovery Loop:**
+
 1. Cron detects incomplete version (age > 10 minutes)
 2. Calls `replayIncompleteChunks()` directly
 3. For each incomplete chunk: `processChunkInternal()` (idempotent)
@@ -468,6 +481,7 @@ This section explicitly states what the system guarantees and what it does not.
 7. System converges to healthy state
 
 **Convergence Guarantee:**
+
 - Every incomplete version will eventually be recovered (within 5-15 minutes of becoming stuck)
 - No manual replay required for transient failures
 - System self-heals from crashes, timeouts, and network issues
@@ -476,36 +490,42 @@ This section explicitly states what the system guarantees and what it does not.
 ### Idempotency Guarantees
 
 **What Is Guaranteed:**
+
 - Chunk processing is idempotent: same input → same output, safe to retry
 - Version creation is idempotent: same document hash → same version (or existing version returned)
 - Summary updates are idempotent: only update if `summary IS NULL`
 - Final summary creation is idempotent: only create if `pdf_summary_id IS NULL`
 
 **How It Works:**
+
 - All database operations use WHERE clauses that check current state
 - Early returns prevent duplicate processing
 - UNIQUE constraints prevent duplicate records
 - Deterministic processing: same inputs always produce same outputs
 
 **What Is NOT Guaranteed:**
+
 - AI provider responses may vary slightly (though deterministic prompts minimize this)
 - Concurrent processing may result in duplicate AI calls (but only one summary is stored)
 
 ### Cost Guarantees
 
 **What Is Guaranteed:**
+
 - Unchanged chunks are never reprocessed (hash-based matching)
 - Cost metrics are tracked per version (`total_chunks`, `reused_chunks`, `new_chunks`, `estimated_tokens_saved`)
 - Cost grows sub-linearly with version count (due to chunk reuse)
 - Cost is observable: all metrics stored in database
 
 **How It Works:**
+
 - Chunk reuse: hash-based matching identifies unchanged chunks
 - Cost tracking: computed during version creation, immutable per version
 - Reuse rate: typically 50-80% for versioned documents
 - Cost envelope: documented in `/docs/SCALE_AND_COST.md`
 
 **What Is NOT Guaranteed:**
+
 - Cost is not token-accurate (uses estimates: `ESTIMATED_TOKENS_PER_CHUNK = 1000`)
 - Cost does not account for AI provider rate limits or pricing changes
 - Cost does not include infrastructure costs (database, serverless functions)
@@ -513,6 +533,7 @@ This section explicitly states what the system guarantees and what it does not.
 ### Cost Guardrails
 
 **What Is Guaranteed:**
+
 - Cost limits are enforced **before** version creation (prevents partial state)
 - Limits are checked atomically (no race conditions)
 - Exceeding limits blocks job creation and sends CRITICAL alerts
@@ -520,6 +541,7 @@ This section explicitly states what the system guarantees and what it does not.
 - Per-version chunk limits prevent oversized documents
 
 **How It Works:**
+
 - **Daily Token Limit**: `MAX_TOKENS_PER_USER_PER_DAY` (default: 500,000 tokens)
   - Calculated as: `SUM(new_chunks × 1500)` for all versions created today
   - Checked before creating any new version
@@ -535,6 +557,7 @@ This section explicitly states what the system guarantees and what it does not.
   - Alert type: `cost_limit_exceeded`
 
 **What Happens When Limits Are Hit:**
+
 1. Version creation is **blocked** (no database writes occur)
 2. CRITICAL alert sent to `ALERT_WEBHOOK_URL` with full context
 3. Error returned to caller with clear message and usage details
@@ -542,10 +565,12 @@ This section explicitly states what the system guarantees and what it does not.
 5. User must wait until next day (for daily limit) or reduce document size (for per-version limit)
 
 **Configuration:**
+
 - `MAX_TOKENS_PER_USER_PER_DAY`: Maximum estimated tokens per user per day (default: 500,000)
 - `MAX_NEW_CHUNKS_PER_VERSION`: Maximum new chunks per document version (default: 100)
 
 **What Is NOT Guaranteed:**
+
 - Limits are not enforced for replay operations (replay is recovery, not new work)
 - Limits do not account for actual token usage (uses estimates: 1500 tokens per new chunk)
 - Limits do not prevent concurrent requests from same user (last-write-wins for daily limit)
@@ -564,12 +589,14 @@ This section explicitly states what the system guarantees and what it does not.
 ### Operational Safety
 
 **Safe Operations:**
+
 - Replay any version (idempotent, no side effects)
 - Retry failed chunks (idempotent, no duplicates)
 - Query incomplete work (read-only, no side effects)
 - Monitor cost metrics (read-only, no side effects)
 
 **Unsafe Operations:**
+
 - Manually modifying chunk summaries (breaks idempotency)
 - Deleting chunks (breaks referential integrity)
 - Modifying version numbers (breaks versioning logic)
@@ -584,34 +611,40 @@ This section explicitly states what the system guarantees and what it does not.
 Visura includes a comprehensive observability system designed for production operations:
 
 **Error Tracking (Sentry)**
+
 - Automatic error capture with context
 - Performance monitoring (transaction tracing)
 - Release tracking and source maps
 - Optional: Requires `NEXT_PUBLIC_SENTRY_DSN`
 
 **Distributed Tracing (OpenTelemetry)**
+
 - Request tracing across services
 - Performance bottleneck identification
 - Optional: Requires `OTEL_EXPORTER_OTLP_ENDPOINT`
 
 **Business Metrics**
+
 - User engagement tracking
 - Feature usage analytics
 - Conversion funnel metrics
 - Accessible via `/api/observability/metrics`
 
 **Performance Metrics**
+
 - P50, P95, P99 latencies for all operations
 - Operation counts and error rates
 - Accessible via `/api/metrics`
 
 **Database Monitoring**
+
 - Query performance tracking
 - Slow query detection (>1 second)
 - Connection pool metrics
 - Health checks via `/api/observability/database`
 
 **Structured Logging**
+
 - Pino-based structured logging (server-side)
 - Client-side logger for browser components
 - Context-aware logging with request IDs
@@ -675,18 +708,21 @@ The system includes webhook-based alerting for production incidents. Alerts are 
 ### What an Operator Is Expected to Do When Alerted
 
 **CRITICAL: System Not Ready**
+
 1. Check `/api/ready` endpoint for details
 2. Query stuck versions: `SELECT * FROM document_versions WHERE ...` (see OPERATOR_QUERIES.sql)
 3. Replay stuck versions: `POST /api/documents/{id}/versions/{versionId}/replay`
 4. Investigate root cause (database issues, AI provider down, etc.)
 
 **CRITICAL: Job Processing Failed**
+
 1. Check job status: Query `summary_jobs` table
 2. Review error message in alert context
 3. If transient: Wait for retry cron (runs every 5 minutes)
 4. If persistent: Investigate AI provider status, network issues
 
 **CRITICAL: Job Retry Exhausted**
+
 1. Job has failed 3 times and will not auto-retry
 2. Manual intervention required:
    - Review error logs
@@ -695,12 +731,14 @@ The system includes webhook-based alerting for production incidents. Alerts are 
    - Consider increasing `max_retries` if issue is transient
 
 **CRITICAL: Health Check Failed**
+
 1. Immediate investigation required
 2. Check database connectivity
 3. Verify schema migrations applied
 4. Check Vercel deployment status
 
 **WARNING: Replay Failed**
+
 1. Review error message in alert context
 2. Check version/chunk state in database
 3. Verify document/version exists and is accessible
@@ -788,6 +826,7 @@ Server:
 ### Multi-Layer Security
 
 **Authentication Flow:**
+
 ```
 User → Clerk (OAuth) → JWT Token → Middleware → Protected Route
                                       │
@@ -797,12 +836,14 @@ User → Clerk (OAuth) → JWT Token → Middleware → Protected Route
 ```
 
 **API Protection Layers:**
+
 ```
 Request → Rate Limit → Auth Check → Validation → Business Logic → Response
            (Upstash)    (Clerk)      (Zod)        (TypeScript)
 ```
 
 **Security Features:**
+
 - **JWT Authentication**: Clerk-managed sessions
 - **Distributed Rate Limiting**: Redis-backed, prevents abuse
 - **Input Sanitization**: XSS protection, SQL injection prevention
@@ -817,21 +858,25 @@ Request → Rate Limit → Auth Check → Validation → Business Logic → Resp
 ## Performance Optimizations
 
 ### 1. Client-Side PDF Processing
+
 - **Why**: Vercel serverless functions have 50MB body limit
 - **How**: Process in browser with pdf.js before upload
 - **Result**: Handles PDFs up to 50MB
 
 ### 2. Streaming Responses (TODO)
+
 - **Why**: Better UX, feels instant
 - **How**: OpenRouter streaming API
 - **Result**: TTFB < 100ms vs 2-5s for full response
 
 ### 3. Database Connection Pooling
+
 - **Why**: Serverless functions create new connections
 - **How**: Neon serverless driver with connection pooling
 - **Result**: Reduced connection overhead by 80%
 
 ### 4. Image Optimization
+
 - **Why**: Faster page loads, better Core Web Vitals
 - **How**: Next.js Image component + AVIF/WebP
 - **Result**: 60% smaller images
@@ -873,12 +918,12 @@ Vercel Edge Network (CDN)
 
 ### Current Metrics (Production)
 
-| Operation | P50 | P95 | P99 |
-|-----------|-----|-----|-----|
-| PDF Upload (10MB) | 1.2s | 2.1s | 3.5s |
-| Text Extraction | 450ms | 800ms | 1.2s |
-| Summary Generation | 2.5s | 4.2s | 6.8s |
-| Chat Response | 1.1s | 2.3s | 4.1s |
+| Operation             | P50   | P95   | P99   |
+| --------------------- | ----- | ----- | ----- |
+| PDF Upload (10MB)     | 1.2s  | 2.1s  | 3.5s  |
+| Text Extraction       | 450ms | 800ms | 1.2s  |
+| Summary Generation    | 2.5s  | 4.2s  | 6.8s  |
+| Chat Response         | 1.1s  | 2.3s  | 4.1s  |
 | Page Load (Dashboard) | 320ms | 580ms | 920ms |
 
 ### Core Web Vitals
@@ -893,15 +938,18 @@ Vercel Edge Network (CDN)
 ## State Management
 
 ### Client State
+
 - **React useState**: Component-level state
 - **React useRef**: Non-re-rendering state (rate limit guards)
 - **URL State**: Search params for filters
 
 ### Server State
+
 - **Database**: Source of truth
 - **No global state library**: Keeps bundle small
 
 ### Caching Strategy
+
 - **Next.js**: Static pages cached at edge
 - **Redis (Upstash)**: AI responses, classifications, embeddings
 - **Database**: Persistent embeddings storage (85%+ cache hit rate)
@@ -937,21 +985,25 @@ Vercel Edge Network (CDN)
 ## External Service Dependencies
 
 ### Critical (App won't work without these)
+
 - Supabase (Database)
 - Clerk (Authentication)
 - OpenRouter (AI processing)
 - UploadThing (File storage)
 
 ### Important (Major features disabled)
+
 - Stripe (Payment processing)
 
 ### Optional (Nice-to-have)
+
 - Sentry (Error tracking)
 - Upstash Redis (Rate limiting & caching)
 - PostHog (Analytics)
 - Resend (Email notifications)
 
 ### Fallback Strategy
+
 ```typescript
 // Example: Graceful degradation
 try {
@@ -968,6 +1020,7 @@ try {
 ## Build & Deploy Process
 
 ### Development
+
 ```bash
 npm run dev        # Start dev server (localhost:3000)
 npm run test       # Run tests in watch mode
@@ -975,6 +1028,7 @@ npm run lint       # Check for code issues
 ```
 
 ### Pre-deployment Checks
+
 ```bash
 npm run test:run       # All tests must pass
 npm run type-check     # TypeScript compilation
@@ -983,6 +1037,7 @@ npm run build          # Production build
 ```
 
 ### Deployment (Vercel)
+
 ```bash
 # Automatic on git push to main
 vercel --prod
@@ -994,6 +1049,7 @@ vercel deploy --prod
 ```
 
 ### Post-deployment Verification
+
 1. Check Sentry for new errors
 2. Verify Core Web Vitals in Vercel Analytics
 3. Test critical flows (upload, chat, payment)
@@ -1004,6 +1060,7 @@ vercel deploy --prod
 ## Future Architecture Improvements
 
 ### Completed
+
 1. Distributed rate limiting with Redis
 2. Background job queue with automatic recovery
 3. Streaming AI responses
@@ -1014,12 +1071,14 @@ vercel deploy --prod
 8. Automatic recovery and replay system
 
 ### Medium Term
+
 1. Add CDN for static assets
 2. Implement multi-region deployment
 3. Add real-time collaboration features
 4. Build mobile app (React Native)
 
 ### Long Term
+
 1. Microservices for heavy processing
 2. Custom AI model fine-tuned for documents
 3. On-premise deployment option
@@ -1030,24 +1089,28 @@ vercel deploy --prod
 ## Technology Decisions
 
 ### Why Next.js 15?
+
 - **App Router**: Better DX, faster page transitions
 - **Server Components**: Reduced client bundle, better SEO
 - **API Routes**: Co-located backend logic
 - **Edge Runtime**: Faster responses globally
 
 ### Why Supabase?
+
 - **PostgreSQL**: Robust, proven, SQL
 - **Real-time**: Potential for live features
 - **Storage**: Built-in file storage
 - **Cost**: $25/month vs $100+ for alternatives
 
 ### Why Clerk?
+
 - **DX**: Easiest setup, great docs
 - **Features**: Social login, MFA, user management
 - **Webhooks**: Reliable database sync
 - **Cost**: Free tier generous, scales predictably
 
 ### Why OpenRouter vs Direct OpenAI?
+
 - **Flexibility**: Access to multiple models
 - **Cost**: Often cheaper than direct
 - **Fallback**: Can switch models if one is down
@@ -1109,6 +1172,7 @@ vercel deploy --prod
 ---
 
 This architecture is designed for:
+
 - **Scalability**: Serverless scales automatically, handles millions of documents
 - **Cost-efficiency**: Pay only for what you use, 50-80% savings on versioned docs
 - **Reliability**: Automatic recovery, crash-safe, idempotent operations
@@ -1128,4 +1192,3 @@ This architecture is designed for:
 - **[docs/OPERATOR_QUERIES.sql](docs/OPERATOR_QUERIES.sql)**: SQL queries for operators
 - **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution guidelines
 - **[README.md](README.md)**: Project overview and features
-

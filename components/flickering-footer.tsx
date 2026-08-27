@@ -12,16 +12,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-
 export const getRGBA = (
   cssColor: React.CSSProperties["color"],
-  fallback: string = "rgba(180, 180, 180)",
+  fallback: string = "rgba(180, 180, 180)"
 ): string => {
   if (typeof window === "undefined") return fallback;
   if (!cssColor) return fallback;
 
   try {
-
     if (typeof cssColor === "string" && cssColor.startsWith("var(")) {
       const element = document.createElement("div");
       element.style.color = cssColor;
@@ -38,16 +36,12 @@ export const getRGBA = (
   }
 };
 
-
 export const colorWithOpacity = (color: string, opacity: number): string => {
   if (!color.startsWith("rgb")) return color;
   return Color.formatRGBA(Color.alpha(Color.parse(color), opacity));
 };
 
-
-
 export const focusInput = [
-
   "focus:ring-2",
 
   "focus:ring-blue-200 focus:dark:ring-blue-700/30",
@@ -55,19 +49,13 @@ export const focusInput = [
   "focus:border-blue-500 focus:dark:border-blue-700",
 ];
 
-
-
 export const focusRing = [
-
   "outline outline-offset-2 outline-0 focus-visible:outline-2",
 
   "outline-blue-500 dark:outline-blue-500",
 ];
 
-
-
 export const hasErrorInput = [
-
   "ring-2",
 
   "border-red-500 dark:border-red-700",
@@ -112,14 +100,7 @@ export const Icons = {
       className={cn("size-4", className)}
     >
       <g>
-        <rect
-          x="3"
-          y="0.863281"
-          width="40"
-          height="40"
-          rx="20"
-          fill="url(#paint0_linear_1_4900)"
-        />
+        <rect x="3" y="0.863281" width="40" height="40" rx="20" fill="url(#paint0_linear_1_4900)" />
         <g>
           <rect
             x="6.15784"
@@ -183,14 +164,7 @@ export const Icons = {
       className={cn("size-4", className)}
     >
       <g>
-        <rect
-          x="3"
-          y="0.863281"
-          width="40"
-          height="40"
-          rx="20"
-          fill="url(#paint0_linear_1_2018)"
-        />
+        <rect x="3" y="0.863281" width="40" height="40" rx="20" fill="url(#paint0_linear_1_2018)" />
         <g>
           <rect
             x="6.1579"
@@ -254,14 +228,7 @@ export const Icons = {
       className={className}
     >
       <g>
-        <rect
-          x="3"
-          y="0.863281"
-          width="40"
-          height="40"
-          rx="20"
-          fill="url(#paint0_linear_1_4905)"
-        />
+        <rect x="3" y="0.863281" width="40" height="40" rx="20" fill="url(#paint0_linear_1_4905)" />
         <path
           fillRule="evenodd"
           clipRule="evenodd"
@@ -309,14 +276,7 @@ export const Icons = {
       className={className}
     >
       <g>
-        <rect
-          x="3"
-          y="0.863281"
-          width="40"
-          height="40"
-          rx="20"
-          fill="url(#paint0_linear_1_2028)"
-        />
+        <rect x="3" y="0.863281" width="40" height="40" rx="20" fill="url(#paint0_linear_1_2028)" />
         <path
           fillRule="evenodd"
           clipRule="evenodd"
@@ -364,14 +324,7 @@ export const Icons = {
       className={cn("size-4", className)}
     >
       <g>
-        <rect
-          x="3"
-          y="0.863281"
-          width="40"
-          height="40"
-          rx="20"
-          fill="url(#paint0_linear_1_4914)"
-        />
+        <rect x="3" y="0.863281" width="40" height="40" rx="20" fill="url(#paint0_linear_1_4914)" />
         <path
           d="M30.6146 31.3062L31.2991 33.4127L33.5139 33.4127L31.7221 34.7145L32.4065 36.821L30.6146 35.5191L28.8228 36.821L29.5072 34.7145L27.7153 33.4127L29.9302 33.4127L30.6146 31.3062Z"
           fill="url(#paint1_linear_1_4914)"
@@ -584,14 +537,7 @@ export const Icons = {
       className={cn("size-4", className)}
     >
       <g>
-        <rect
-          x="3"
-          y="0.863281"
-          width="40"
-          height="40"
-          rx="20"
-          fill="url(#paint0_linear_1_2046)"
-        />
+        <rect x="3" y="0.863281" width="40" height="40" rx="20" fill="url(#paint0_linear_1_2046)" />
         <path
           d="M30.6146 31.3062L31.2991 33.4127L33.5139 33.4127L31.7221 34.7145L32.4065 36.821L30.6146 35.5191L28.8228 36.821L29.5072 34.7145L27.7153 33.4127L29.9302 33.4127L30.6146 31.3062Z"
           fill="url(#paint1_linear_1_2046)"
@@ -828,7 +774,6 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
   const [isInView, setIsInView] = useState(false);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
-
   const memoizedColor = useMemo(() => {
     return getRGBA(color);
   }, [color]);
@@ -841,17 +786,15 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
       cols: number,
       rows: number,
       squares: Float32Array,
-      dpr: number,
+      dpr: number
     ) => {
       ctx.clearRect(0, 0, width, height);
-
 
       const maskCanvas = document.createElement("canvas");
       maskCanvas.width = width;
       maskCanvas.height = height;
       const maskCtx = maskCanvas.getContext("2d", { willReadFrequently: true });
       if (!maskCtx) return;
-
 
       if (text) {
         maskCtx.save();
@@ -864,7 +807,6 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
         maskCtx.restore();
       }
 
-
       for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
           const x = i * (squareSize + gridGap) * dpr;
@@ -872,27 +814,18 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
           const squareWidth = squareSize * dpr;
           const squareHeight = squareSize * dpr;
 
-          const maskData = maskCtx.getImageData(
-            x,
-            y,
-            squareWidth,
-            squareHeight,
-          ).data;
-          const hasText = maskData.some(
-            (value, index) => index % 4 === 0 && value > 0,
-          );
+          const maskData = maskCtx.getImageData(x, y, squareWidth, squareHeight).data;
+          const hasText = maskData.some((value, index) => index % 4 === 0 && value > 0);
 
           const opacity = squares[i * rows + j];
-          const finalOpacity = hasText
-            ? Math.min(1, opacity * 3 + 0.4)
-            : opacity;
+          const finalOpacity = hasText ? Math.min(1, opacity * 3 + 0.4) : opacity;
 
           ctx.fillStyle = colorWithOpacity(memoizedColor, finalOpacity);
           ctx.fillRect(x, y, squareWidth, squareHeight);
         }
       }
     },
-    [memoizedColor, squareSize, gridGap, text, fontSize, fontWeight],
+    [memoizedColor, squareSize, gridGap, text, fontSize, fontWeight]
   );
 
   const setupCanvas = useCallback(
@@ -912,7 +845,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
 
       return { cols, rows, squares, dpr };
     },
-    [squareSize, gridGap, maxOpacity],
+    [squareSize, gridGap, maxOpacity]
   );
 
   const updateSquares = useCallback(
@@ -923,7 +856,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
         }
       }
     },
-    [flickerChance, maxOpacity],
+    [flickerChance, maxOpacity]
   );
 
   useEffect(() => {
@@ -961,7 +894,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
         gridParams.cols,
         gridParams.rows,
         gridParams.squares,
-        gridParams.dpr,
+        gridParams.dpr
       );
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -976,7 +909,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
       ([entry]) => {
         setIsInView(entry.isIntersecting);
       },
-      { threshold: 0 },
+      { threshold: 0 }
     );
 
     intersectionObserver.observe(canvas);
@@ -993,11 +926,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
   }, [setupCanvas, updateSquares, drawGrid, width, height, isInView]);
 
   return (
-    <div
-      ref={containerRef}
-      className={cn(`h-full w-full ${className}`)}
-      {...props}
-    >
+    <div ref={containerRef} className={cn(`h-full w-full ${className}`)} {...props}>
       <canvas
         ref={canvasRef}
         className="pointer-events-none"
@@ -1014,18 +943,14 @@ export function useMediaQuery(query: string) {
   const [value, setValue] = useState(false);
 
   useEffect(() => {
-
     function checkQuery() {
       const result = window.matchMedia(query);
       setValue(result.matches);
     }
 
-
     checkQuery();
 
-
     window.addEventListener("resize", checkQuery);
-
 
     const mediaQuery = window.matchMedia(query);
     mediaQuery.addEventListener("change", checkQuery);
@@ -1047,12 +972,7 @@ export const Highlight = ({
   className?: string;
 }) => {
   return (
-    <span
-      className={cn(
-        "p-1 py-0.5 font-medium dark:font-semibold text-secondary",
-        className,
-      )}
-    >
+    <span className={cn("p-1 py-0.5 font-medium dark:font-semibold text-secondary", className)}>
       {children}
     </span>
   );
@@ -1153,9 +1073,7 @@ export const Component = () => {
           <div className="flex flex-col items-start justify-start md:flex-row md:items-center md:justify-between gap-y-5 lg:pl-10">
             {siteConfig.footerLinks.map((column, columnIndex) => (
               <ul key={columnIndex} className="flex flex-col gap-y-2">
-                <li className="mb-2 text-sm font-semibold text-primary">
-                  {column.title}
-                </li>
+                <li className="mb-2 text-sm font-semibold text-primary">{column.title}</li>
                 {column.links.map((link) => (
                   <li
                     key={link.id}

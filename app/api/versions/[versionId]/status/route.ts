@@ -38,7 +38,7 @@ export async function GET(
       return NextResponse.json({ error: "Version not found" }, { status: 404 });
     }
 
-    const isComplete = version.pdf_summary_id !== null && version.summary_status === 'completed';
+    const isComplete = version.pdf_summary_id !== null && version.summary_status === "completed";
 
     return NextResponse.json({
       versionId: version.id,

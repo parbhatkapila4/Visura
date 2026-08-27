@@ -129,8 +129,8 @@ export default function PricingPage() {
                       plan.popular
                         ? "bg-blue-600 hover:bg-blue-700 text-white"
                         : plan.price === "Custom"
-                        ? "bg-gray-600 hover:bg-gray-700 text-white"
-                        : "bg-gray-900 hover:bg-gray-800 text-white"
+                          ? "bg-gray-600 hover:bg-gray-700 text-white"
+                          : "bg-gray-900 hover:bg-gray-800 text-white"
                     }`}
                   >
                     {plan.cta}

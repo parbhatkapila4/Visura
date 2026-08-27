@@ -58,21 +58,19 @@ export async function GET(
 
     const nodeIds = new Set((nodeRows as { node_id: string }[]).map((r) => r.node_id));
 
-    const nodes = (nodeRows as { node_id: string; type: string; label: string | null; metadata: unknown }[]).map(
-      (r) => ({
-        id: r.node_id,
-        type: r.type as GraphNodeType,
-        label: r.label ?? null,
-        metadata:
-          r.metadata && typeof r.metadata === "object" && r.metadata !== null
-            ? (r.metadata as Record<string, unknown>)
-            : {},
-      })
-    );
+    const nodes = (
+      nodeRows as { node_id: string; type: string; label: string | null; metadata: unknown }[]
+    ).map((r) => ({
+      id: r.node_id,
+      type: r.type as GraphNodeType,
+      label: r.label ?? null,
+      metadata:
+        r.metadata && typeof r.metadata === "object" && r.metadata !== null
+          ? (r.metadata as Record<string, unknown>)
+          : {},
+    }));
 
-    const edges = (
-      edgeRows as { from_node_id: string; to_node_id: string; relation: string }[]
-    )
+    const edges = (edgeRows as { from_node_id: string; to_node_id: string; relation: string }[])
       .filter((e) => nodeIds.has(e.from_node_id) && nodeIds.has(e.to_node_id))
       .map((e) => ({
         from: e.from_node_id,

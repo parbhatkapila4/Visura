@@ -444,198 +444,206 @@ export default function DashboardClient({
     <SidebarWithContent>
       <div className="min-h-screen w-full flex flex-col items-center">
         <AnimatePresence>
-        {isSearchOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-start justify-center pt-[20vh] px-4 bg-black/60 backdrop-blur-sm"
-            onClick={() => setIsSearchOpen(false)}
-          >
+          {isSearchOpen && (
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="w-full max-w-lg bg-[#111] rounded-lg border border-[#1f1f1f] shadow-2xl overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-start justify-center pt-[20vh] px-4 bg-black/60 backdrop-blur-sm"
+              onClick={() => setIsSearchOpen(false)}
             >
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-[#1f1f1f]">
-                <Search className="w-4 h-4 text-[#555]" />
-                <input
-                  type="text"
-                  placeholder="Search documents..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 bg-transparent text-white placeholder-[#555] outline-none text-sm"
-                  autoFocus
-                />
-                <button
-                  onClick={() => setIsSearchOpen(false)}
-                  className="p-1 rounded hover:bg-[#1f1f1f] text-[#555] hover:text-white transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="max-h-[320px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {filteredSummaries.length === 0 ? (
-                  <div className="py-12 text-center text-[#555] text-sm">No documents found</div>
-                ) : (
-                  filteredSummaries.slice(0, 6).map((summary) => (
-                    <div
-                      key={summary.id}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#1a1a1a] cursor-pointer transition-colors"
-                      onClick={() => {
-                        setIsSearchOpen(false);
-                        window.location.href = `/summaries/${summary.id}`;
-                      }}
-                    >
-                      <div className="w-8 h-8 rounded-md bg-[#1a1a1a] border border-[#252525] flex items-center justify-center">
-                        <FileText className="w-4 h-4 text-[#666]" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-white truncate">{summary.title || "Untitled"}</p>
-                        <p className="text-xs text-[#555]">
-                          {formatDistanceToNow(new Date(summary.created_at), { addSuffix: true })}
-                        </p>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-[#333]" />
-                    </div>
-                  ))
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6 w-full">
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-white mb-1">
-            Welcome back{user?.firstName ? `, ${user.firstName}` : ""}
-          </h2>
-          <p className="text-[#666] text-sm">Here's an overview of your documents</p>
-        </div>
-
-        <div className="mb-6">
-          <PremiumStatsGrid
-            totalDocs={summaries.length}
-            thisWeek={thisWeekCount}
-            completed={completedCount}
-            available={
-              userPlan === "pro" ? "unlimited" : Math.max(0, uploadLimit - summaries.length)
-            }
-            userPlan={userPlan}
-            uploadLimit={uploadLimit}
-          />
-        </div>
-
-        {userPlan === "basic" && summaries.length >= uploadLimit * 0.7 && (
-          <div className="mb-6">
-            <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] p-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] border border-[#252525] flex items-center justify-center">
-                    <Crown className="w-5 h-5 text-amber-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">
-                      {summaries.length}/{uploadLimit} documents used
-                    </p>
-                    <p className="text-xs text-[#666]">Upgrade to Pro for unlimited access</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="w-32 h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#666] rounded-full"
-                      style={{ width: `${(summaries.length / uploadLimit) * 100}%` }}
-                    />
-                  </div>
-                  <Link
-                    href="/checkout"
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-black text-sm font-medium hover:bg-[#e5e5e5] transition-colors"
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="w-full max-w-lg bg-[#111] rounded-lg border border-[#1f1f1f] shadow-2xl overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-[#1f1f1f]">
+                  <Search className="w-4 h-4 text-[#555]" />
+                  <input
+                    type="text"
+                    placeholder="Search documents..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1 bg-transparent text-white placeholder-[#555] outline-none text-sm"
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => setIsSearchOpen(false)}
+                    className="p-1 rounded hover:bg-[#1f1f1f] text-[#555] hover:text-white transition-colors"
                   >
-                    Upgrade
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </Link>
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="max-h-[320px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                  {filteredSummaries.length === 0 ? (
+                    <div className="py-12 text-center text-[#555] text-sm">No documents found</div>
+                  ) : (
+                    filteredSummaries.slice(0, 6).map((summary) => (
+                      <div
+                        key={summary.id}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#1a1a1a] cursor-pointer transition-colors"
+                        onClick={() => {
+                          setIsSearchOpen(false);
+                          window.location.href = `/summaries/${summary.id}`;
+                        }}
+                      >
+                        <div className="w-8 h-8 rounded-md bg-[#1a1a1a] border border-[#252525] flex items-center justify-center">
+                          <FileText className="w-4 h-4 text-[#666]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-white truncate">
+                            {summary.title || "Untitled"}
+                          </p>
+                          <p className="text-xs text-[#555]">
+                            {formatDistanceToNow(new Date(summary.created_at), { addSuffix: true })}
+                          </p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-[#333]" />
+                      </div>
+                    ))
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <main className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6 w-full">
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold text-white mb-1">
+              Welcome back{user?.firstName ? `, ${user.firstName}` : ""}
+            </h2>
+            <p className="text-[#666] text-sm">Here's an overview of your documents</p>
+          </div>
+
+          <div className="mb-6">
+            <PremiumStatsGrid
+              totalDocs={summaries.length}
+              thisWeek={thisWeekCount}
+              completed={completedCount}
+              available={
+                userPlan === "pro" ? "unlimited" : Math.max(0, uploadLimit - summaries.length)
+              }
+              userPlan={userPlan}
+              uploadLimit={uploadLimit}
+            />
+          </div>
+
+          {userPlan === "basic" && summaries.length >= uploadLimit * 0.7 && (
+            <div className="mb-6">
+              <div className="bg-[#111111] rounded-xl border border-[#1f1f1f] p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] border border-[#252525] flex items-center justify-center">
+                      <Crown className="w-5 h-5 text-amber-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">
+                        {summaries.length}/{uploadLimit} documents used
+                      </p>
+                      <p className="text-xs text-[#666]">Upgrade to Pro for unlimited access</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="w-32 h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[#666] rounded-full"
+                        style={{ width: `${(summaries.length / uploadLimit) * 100}%` }}
+                      />
+                    </div>
+                    <Link
+                      href="/checkout"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-black text-sm font-medium hover:bg-[#e5e5e5] transition-colors"
+                    >
+                      Upgrade
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-1 p-0.5 rounded-lg bg-[#111] border border-[#1f1f1f]">
-            {[
-              { id: "documents", label: "Documents", icon: Folder },
-              { id: "analytics", label: "Analytics", icon: BarChart3 },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as "documents" | "analytics")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${
-                  activeTab === tab.id ? "bg-[#1a1a1a] text-white" : "text-[#666] hover:text-white"
-                }`}
-              >
-                <tab.icon className="w-3.5 h-3.5" />
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {activeTab === "documents" && (
-            <div className="hidden md:flex items-center gap-1 p-0.5 rounded-lg bg-[#111] border border-[#1f1f1f]">
-              <button
-                onClick={() => setActiveView("grid")}
-                className={`p-1.5 rounded-md transition-colors ${
-                  activeView === "grid" ? "bg-[#1a1a1a] text-white" : "text-[#555] hover:text-white"
-                }`}
-              >
-                <Grid3X3 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setActiveView("list")}
-                className={`p-1.5 rounded-md transition-colors ${
-                  activeView === "list" ? "bg-[#1a1a1a] text-white" : "text-[#555] hover:text-white"
-                }`}
-              >
-                <List className="w-4 h-4" />
-              </button>
             </div>
           )}
-        </div>
 
-        {activeTab === "documents" ? (
-          <div>
-            {summaries.length === 0 ? (
-              <EmptyState />
-            ) : (
-              <div
-                className={`grid gap-3 ${
-                  activeView === "grid"
-                    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                    : "grid-cols-1"
-                }`}
-              >
-                {filteredSummaries.map((summary, index) => (
-                  <PremiumSummaryCard
-                    key={summary.id}
-                    summary={summary}
-                    index={index}
-                    onDelete={() => handleDelete(summary.id)}
-                    isLarge={activeView === "grid" && index === 0 && filteredSummaries.length > 2}
-                    userPlan={userPlan}
-                  />
-                ))}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-[#111] border border-[#1f1f1f]">
+              {[
+                { id: "documents", label: "Documents", icon: Folder },
+                { id: "analytics", label: "Analytics", icon: BarChart3 },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as "documents" | "analytics")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors ${
+                    activeTab === tab.id
+                      ? "bg-[#1a1a1a] text-white"
+                      : "text-[#666] hover:text-white"
+                  }`}
+                >
+                  <tab.icon className="w-3.5 h-3.5" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {activeTab === "documents" && (
+              <div className="hidden md:flex items-center gap-1 p-0.5 rounded-lg bg-[#111] border border-[#1f1f1f]">
+                <button
+                  onClick={() => setActiveView("grid")}
+                  className={`p-1.5 rounded-md transition-colors ${
+                    activeView === "grid"
+                      ? "bg-[#1a1a1a] text-white"
+                      : "text-[#555] hover:text-white"
+                  }`}
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setActiveView("list")}
+                  className={`p-1.5 rounded-md transition-colors ${
+                    activeView === "list"
+                      ? "bg-[#1a1a1a] text-white"
+                      : "text-[#555] hover:text-white"
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                </button>
               </div>
             )}
           </div>
-        ) : (
-          <div>{user?.id && <AnalyticsDashboard userId={user.id} />}</div>
-        )}
-      </main>
+
+          {activeTab === "documents" ? (
+            <div>
+              {summaries.length === 0 ? (
+                <EmptyState />
+              ) : (
+                <div
+                  className={`grid gap-3 ${
+                    activeView === "grid"
+                      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                      : "grid-cols-1"
+                  }`}
+                >
+                  {filteredSummaries.map((summary, index) => (
+                    <PremiumSummaryCard
+                      key={summary.id}
+                      summary={summary}
+                      index={index}
+                      onDelete={() => handleDelete(summary.id)}
+                      isLarge={activeView === "grid" && index === 0 && filteredSummaries.length > 2}
+                      userPlan={userPlan}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div>{user?.id && <AnalyticsDashboard userId={user.id} />}</div>
+          )}
+        </main>
 
         <KeyboardShortcuts onSearchOpen={() => setIsSearchOpen(true)} />
       </div>

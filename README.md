@@ -35,24 +35,24 @@
 
 ### AI-Powered Document Intelligence
 
-| Feature | Capability | Impact |
-|--------|-----------|--------|
-| **Smart Summarization** | Gemini 2.5 Flash with type-specific prompts | 30-second summaries from 100+ page documents |
-| **Vector Search** | Persistent embeddings with cosine similarity | 5x faster context retrieval, 60% cost reduction |
-| **Document Chat** | Context-aware conversations with memory | Natural language Q&A from document content |
-| **Multi-Language** | Auto-detection (English, Hindi, French, German, Russian) | Global document processing |
-| **Type Classification** | 15+ document types with custom prompts | Optimized summaries per document category |
+| Feature                 | Capability                                               | Impact                                          |
+| ----------------------- | -------------------------------------------------------- | ----------------------------------------------- |
+| **Smart Summarization** | Gemini 2.5 Flash with type-specific prompts              | 30-second summaries from 100+ page documents    |
+| **Vector Search**       | Persistent embeddings with cosine similarity             | 5x faster context retrieval, 60% cost reduction |
+| **Document Chat**       | Context-aware conversations with memory                  | Natural language Q&A from document content      |
+| **Multi-Language**      | Auto-detection (English, Hindi, French, German, Russian) | Global document processing                      |
+| **Type Classification** | 15+ document types with custom prompts                   | Optimized summaries per document category       |
 
 ### Enterprise Architecture
 
-| Component | Technology | Why It Matters |
-|-----------|-----------|----------------|
-| **Versioned Processing** | Hash-based chunking with reuse | 50-80% cost savings on document updates |
-| **Distributed Rate Limiting** | Upstash Redis with in-memory fallback | Prevents abuse, scales globally |
-| **Observability Stack** | Sentry + OpenTelemetry + Custom Metrics | Full visibility into production systems |
-| **Database Monitoring** | Query tracking, slow query detection | Proactive performance optimization |
-| **Automatic Recovery** | Self-healing with replay guarantees | Zero-downtime resilience |
-| **Cost Guardrails** | Daily limits, per-version limits | Prevents runaway costs |
+| Component                     | Technology                              | Why It Matters                          |
+| ----------------------------- | --------------------------------------- | --------------------------------------- |
+| **Versioned Processing**      | Hash-based chunking with reuse          | 50-80% cost savings on document updates |
+| **Distributed Rate Limiting** | Upstash Redis with in-memory fallback   | Prevents abuse, scales globally         |
+| **Observability Stack**       | Sentry + OpenTelemetry + Custom Metrics | Full visibility into production systems |
+| **Database Monitoring**       | Query tracking, slow query detection    | Proactive performance optimization      |
+| **Automatic Recovery**        | Self-healing with replay guarantees     | Zero-downtime resilience                |
+| **Cost Guardrails**           | Daily limits, per-version limits        | Prevents runaway costs                  |
 
 ### Team Collaboration
 
@@ -91,7 +91,7 @@
 const version = await createVersionedDocumentJob({
   text: documentText,
   fileName: "contract.pdf",
-  fileUrl: storageUrl
+  fileUrl: storageUrl,
 });
 
 // Automatically:
@@ -106,11 +106,11 @@ const version = await createVersionedDocumentJob({
 
 ```typescript
 // Comprehensive monitoring built-in
-import { 
-  trackUserEngagement, 
+import {
+  trackUserEngagement,
   trackFeatureUsage,
   captureException,
-  measurePerformance 
+  measurePerformance,
 } from "@/lib/observability";
 
 // Automatic tracking:
@@ -138,14 +138,14 @@ import {
 
 ### **Production Metrics** (Real-world data)
 
-| Operation | P50 | P95 | P99 | Status |
-|-----------|-----|-----|-----|--------|
-| PDF Upload (10MB) | 1.2s | 2.1s | 3.5s | Pass |
-| Text Extraction | 450ms | 800ms | 1.2s | Pass |
-| AI Summary Generation | 2.5s | 4.2s | 6.8s | Pass |
-| Vector Search (5 chunks) | 180ms | 320ms | 580ms | Pass |
-| Chat Response | 1.1s | 2.3s | 4.1s | Pass |
-| Page Load (Dashboard) | 320ms | 580ms | 920ms | Pass |
+| Operation                | P50   | P95   | P99   | Status |
+| ------------------------ | ----- | ----- | ----- | ------ |
+| PDF Upload (10MB)        | 1.2s  | 2.1s  | 3.5s  | Pass   |
+| Text Extraction          | 450ms | 800ms | 1.2s  | Pass   |
+| AI Summary Generation    | 2.5s  | 4.2s  | 6.8s  | Pass   |
+| Vector Search (5 chunks) | 180ms | 320ms | 580ms | Pass   |
+| Chat Response            | 1.1s  | 2.3s  | 4.1s  | Pass   |
+| Page Load (Dashboard)    | 320ms | 580ms | 920ms | Pass   |
 
 ### **Core Web Vitals**
 
@@ -166,33 +166,39 @@ import {
 ## Tech Stack
 
 ### **Core Framework**
+
 - **Next.js 15** (App Router, Server Components, API Routes)
 - **React 19** (Server Components, Concurrent Features)
 - **TypeScript 5** (Strict mode, full type safety)
 
 ### **Backend & Infrastructure**
+
 - **Neon PostgreSQL** (Serverless Postgres with connection pooling)
 - **Supabase** (Storage, Auth webhooks)
 - **Upstash Redis** (Distributed rate limiting, caching)
 - **Vercel** (Edge network, serverless functions)
 
 ### **AI & ML**
+
 - **OpenRouter** (Multi-model AI gateway: Gemini 2.5 Flash, Claude, GPT-4)
 - **Vector Search** (OpenRouter embeddings, persistent storage)
 - **LangChain** (Orchestration, chunking, retrieval)
 
 ### **Security & Auth**
+
 - **Clerk** (Authentication, SSO, user management)
 - **HMAC Signing** (Internal API security)
 - **Zod** (Runtime validation, type safety)
 
 ### **Observability**
+
 - **Sentry** (Error tracking, performance monitoring)
 - **OpenTelemetry** (Distributed tracing)
 - **Custom Metrics** (Business metrics, performance tracking)
 - **Pino** (Structured logging)
 
 ### **Payments & Integrations**
+
 - **Razorpay** (Multi-currency payment processing)
 - **UploadThing** (File uploads, CDN distribution)
 
@@ -318,7 +324,7 @@ visura/
 // Automatic chunk reuse detection
 const version = await createVersionedDocumentJob({
   text: updatedDocumentText,
-  fileName: "contract_v2.pdf"
+  fileName: "contract_v2.pdf",
 });
 
 // System automatically:
@@ -329,7 +335,8 @@ const version = await createVersionedDocumentJob({
 // 5. Tracks cost metrics: reused_chunks, new_chunks, estimated_tokens_saved
 ```
 
-**Impact**: 
+**Impact**:
+
 - **50-80% cost reduction** on document updates
 - **3x faster processing** for versioned documents
 - **Full observability** of cost metrics per version
@@ -350,6 +357,7 @@ const version = await createVersionedDocumentJob({
 ```
 
 **Guarantees**:
+
 - **Idempotent**: Safe to replay N times
 - **Crash-safe**: Partial progress preserved
 - **Automatic**: Self-healing within 5-15 minutes
@@ -372,6 +380,7 @@ const version = await createVersionedDocumentJob({
 ```
 
 **Impact**:
+
 - **Prevents cost overruns** before processing starts
 - **Observable usage** with daily tracking
 - **Configurable limits** via environment variables
@@ -386,7 +395,7 @@ const version = await createVersionedDocumentJob({
 // Automatic embedding caching
 const embedding = await getOrCreateEmbedding({
   text: documentChunk,
-  model: "text-embedding-3-small"
+  model: "text-embedding-3-small",
 });
 
 // System automatically:
@@ -397,6 +406,7 @@ const embedding = await getOrCreateEmbedding({
 ```
 
 **Impact**:
+
 - **5x faster** context retrieval
 - **60% cost reduction** on embedding generation
 - **85%+ cache hit rate** in production
@@ -409,11 +419,11 @@ const embedding = await getOrCreateEmbedding({
 
 ```typescript
 // Built-in observability
-import { 
-  captureException,      // Sentry error tracking
-  trackUserEngagement,    // Business metrics
-  trackFeatureUsage,      // Feature analytics
-  measurePerformance      // Performance tracking
+import {
+  captureException, // Sentry error tracking
+  trackUserEngagement, // Business metrics
+  trackFeatureUsage, // Feature analytics
+  measurePerformance, // Performance tracking
 } from "@/lib/observability";
 
 // Automatic tracking:
@@ -424,6 +434,7 @@ import {
 ```
 
 **Features**:
+
 - **Error Tracking**: Sentry integration with context
 - **Distributed Tracing**: OpenTelemetry support
 - **Business Metrics**: User engagement, feature usage
@@ -497,6 +508,7 @@ npm run format:check     # Prettier check
 ```
 
 **Test Coverage**:
+
 - Unit tests for utilities and validators
 - Integration tests for API endpoints
 - Component tests for React components
@@ -528,6 +540,7 @@ vercel --prod
 ### **Environment Variables**
 
 Set all required environment variables in Vercel dashboard:
+
 - Database, Auth, AI, Storage, Redis, Observability, Security secrets
 
 ### **Post-Deployment**
@@ -545,6 +558,7 @@ Set all required environment variables in Vercel dashboard:
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 **Quick Start**:
+
 ```bash
 # Fork and clone
 git clone https://github.com/your-username/Visura.git
@@ -598,6 +612,5 @@ MIT License - see [LICENSE](LICENSE) for details.
 **If Visura saves you time, consider giving it a star on GitHub!**
 
 [![GitHub stars](https://img.shields.io/github/stars/parbhatkapila4/Visura?style=social)](https://github.com/parbhatkapila4/Visura)
-
 
 </div>

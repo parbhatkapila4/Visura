@@ -494,8 +494,8 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                             analytics.successRate >= 95
                               ? "Excellent"
                               : analytics.successRate >= 80
-                              ? "Good"
-                              : "Needs improvement"
+                                ? "Good"
+                                : "Needs improvement"
                           } processing reliability`
                         : "No documents processed yet"}
                     </p>
@@ -565,8 +565,8 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                             analytics.monthOverMonthGrowth > 0
                               ? "text-emerald-400"
                               : analytics.monthOverMonthGrowth < 0
-                              ? "text-red-400"
-                              : "text-white"
+                                ? "text-red-400"
+                                : "text-white"
                           }`}
                         >
                           {analytics.monthOverMonthGrowth !== 0
@@ -580,8 +580,8 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                         {analytics.monthOverMonthGrowth > 0
                           ? "Increasing processing activity"
                           : analytics.monthOverMonthGrowth < 0
-                          ? "Decreasing processing activity"
-                          : "Stable processing activity"}
+                            ? "Decreasing processing activity"
+                            : "Stable processing activity"}
                       </div>
                     </div>
                   </div>
@@ -648,8 +648,8 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                             {analytics.docsThisWeek > 0
                               ? (analytics.docsThisWeek / 7).toFixed(1)
                               : analytics.docsThisMonth > 0
-                              ? (analytics.docsThisMonth / 30).toFixed(1)
-                              : "0"}
+                                ? (analytics.docsThisMonth / 30).toFixed(1)
+                                : "0"}
                           </span>
                           <span className="text-xs text-[#666]">docs/day</span>
                         </div>
@@ -657,8 +657,8 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                           {analytics.docsThisWeek > 0
                             ? "Average daily processing this week"
                             : analytics.docsThisMonth > 0
-                            ? "Average daily processing this month"
-                            : "No recent activity"}
+                              ? "Average daily processing this month"
+                              : "No recent activity"}
                         </p>
                       </div>
 
@@ -696,8 +696,8 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                           {analytics.avgWordsPerDocument > 1000
                             ? "Large documents - complex processing"
                             : analytics.avgWordsPerDocument > 500
-                            ? "Medium documents - standard processing"
-                            : "Small documents - quick processing"}
+                              ? "Medium documents - standard processing"
+                              : "Small documents - quick processing"}
                         </p>
                       </div>
                     </div>
@@ -736,8 +736,8 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                                 ? "High"
                                 : "Moderate"
                               : analytics.totalDocuments > 5
-                              ? "Moderate"
-                              : "Building"}
+                                ? "Moderate"
+                                : "Building"}
                           </span>
                         </div>
                         <p className="text-xs text-[#555]">
@@ -854,14 +854,14 @@ export default function AnalyticsDashboard({ userId }: { userId: string }) {
                     {timeFilter === "weekly"
                       ? filteredStats.totalTimeSaved.toFixed(1)
                       : filteredStats.totalTimeSaved >= 24
-                      ? `${(filteredStats.totalTimeSaved / 24).toFixed(1)}`
-                      : `${filteredStats.totalTimeSaved.toFixed(1)}`}
+                        ? `${(filteredStats.totalTimeSaved / 24).toFixed(1)}`
+                        : `${filteredStats.totalTimeSaved.toFixed(1)}`}
                     <span className="text-2xl text-[#666] ml-1">
                       {timeFilter === "weekly"
                         ? "hrs"
                         : filteredStats.totalTimeSaved >= 24
-                        ? "days"
-                        : "hrs"}
+                          ? "days"
+                          : "hrs"}
                     </span>
                   </p>
                 </div>

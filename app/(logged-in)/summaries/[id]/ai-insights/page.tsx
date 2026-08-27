@@ -31,7 +31,11 @@ export default async function SummaryAiInsightsPage(props: { params: Promise<{ i
       <SummaryPageWrapper>
         <div className="min-h-[60vh] flex flex-col items-center justify-center px-4">
           <p className="text-[#888] text-center mb-4">No version data for this summary.</p>
-          <Button variant="outline" asChild className="border-[#333] text-[#888] hover:bg-[#1a1a1a]">
+          <Button
+            variant="outline"
+            asChild
+            className="border-[#333] text-[#888] hover:bg-[#1a1a1a]"
+          >
             <Link href={`/summaries/${summaryId}`}>
               <ChevronLeft className="w-4 h-4 mr-2" />
               Back to summary
@@ -64,7 +68,11 @@ export default async function SummaryAiInsightsPage(props: { params: Promise<{ i
           <p className="text-[#888] text-center mb-4">
             {res.status === 404 ? "Version not found." : "Failed to load AI insights."}
           </p>
-          <Button variant="outline" asChild className="border-[#333] text-[#888] hover:bg-[#1a1a1a]">
+          <Button
+            variant="outline"
+            asChild
+            className="border-[#333] text-[#888] hover:bg-[#1a1a1a]"
+          >
             <Link href={`/summaries/${summaryId}`}>
               <ChevronLeft className="w-4 h-4 mr-2" />
               Back to summary

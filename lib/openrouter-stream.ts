@@ -1,4 +1,3 @@
-
 import { logger } from "./logger";
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY!;
@@ -18,16 +17,10 @@ interface StreamChatCompletionOptions {
   max_tokens?: number;
 }
 
-
 export async function openrouterStreamChatCompletion(
   options: StreamChatCompletionOptions
 ): Promise<ReadableStream<Uint8Array>> {
-  const {
-    model = "openai/gpt-4o-mini",
-    messages,
-    temperature = 0.7,
-    max_tokens,
-  } = options;
+  const { model = "openai/gpt-4o-mini", messages, temperature = 0.7, max_tokens } = options;
 
   if (!OPENROUTER_API_KEY) {
     throw new Error("OPENROUTER_API_KEY is not configured");
@@ -104,7 +97,6 @@ export async function openrouterStreamChatCompletion(
                     controller.enqueue(encoder.encode(content));
                   }
                 } catch (parseError) {
-
                   logger.warn("Failed to parse streaming chunk", {
                     line: line.substring(0, 100),
                     error: parseError instanceof Error ? parseError.message : String(parseError),

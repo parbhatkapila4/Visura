@@ -66,7 +66,7 @@ export async function GET(
         isComplete: complete,
         hasSummary: version.pdf_summary_id !== null,
       },
-      chunks: chunks.map(c => ({
+      chunks: chunks.map((c) => ({
         id: c.id,
         index: c.chunk_index,
         hasSummary: c.has_summary,
@@ -78,16 +78,19 @@ export async function GET(
       })),
       summary: {
         totalChunks: chunks.length,
-        chunksWithSummary: chunks.filter(c => c.has_summary).length,
-        chunksWithoutSummary: chunks.filter(c => !c.has_summary).length,
-        reusedChunks: chunks.filter(c => c.is_reused).length,
-        newChunks: chunks.filter(c => !c.is_reused).length,
+        chunksWithSummary: chunks.filter((c) => c.has_summary).length,
+        chunksWithoutSummary: chunks.filter((c) => !c.has_summary).length,
+        reusedChunks: chunks.filter((c) => c.is_reused).length,
+        newChunks: chunks.filter((c) => !c.is_reused).length,
       },
     });
   } catch (error) {
     console.error("Debug version error:", error);
     return NextResponse.json(
-      { error: "Internal server error", details: error instanceof Error ? error.message : String(error) },
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

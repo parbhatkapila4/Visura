@@ -57,10 +57,16 @@ export async function generateAndStoreDocumentInsights(versionId: string): Promi
   try {
     const chunks = await getChunksForVersion(versionId);
     const sorted = [...chunks].sort((a, b) => a.chunk_index - b.chunk_index);
-    const fullText = sorted.map((c) => c.text).join("\n\n").trim();
+    const fullText = sorted
+      .map((c) => c.text)
+      .join("\n\n")
+      .trim();
 
     if (!fullText || fullText.length < 100) {
-      logger.info("Document too short for insight extraction", { versionId, length: fullText.length });
+      logger.info("Document too short for insight extraction", {
+        versionId,
+        length: fullText.length,
+      });
       await deleteInsightsForVersion(versionId);
       return;
     }
@@ -110,7 +116,10 @@ ${fullText.slice(0, EXCERPT_LENGTH)}
       max_tokens: 4096,
     });
 
-    const jsonStr = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+    const jsonStr = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```\s*$/i, "")
+      .trim();
     let parsed: { insights?: unknown[] };
     try {
       parsed = JSON.parse(jsonStr) as { insights?: unknown[] };
@@ -125,14 +134,17 @@ ${fullText.slice(0, EXCERPT_LENGTH)}
 
     const rawList = Array.isArray(parsed?.insights) ? parsed.insights : [];
     const insights: DocumentInsightInput[] = rawList
-      .filter(
-        (item): item is Record<string, unknown> =>
-          item !== null && typeof item === "object"
-      )
+      .filter((item): item is Record<string, unknown> => item !== null && typeof item === "object")
       .map((item) => ({
         type: coerceType(item.type),
-        title: String(item.title ?? "").trim().slice(0, 500) || "Untitled",
-        description: String(item.description ?? "").trim().slice(0, 5000) || "",
+        title:
+          String(item.title ?? "")
+            .trim()
+            .slice(0, 500) || "Untitled",
+        description:
+          String(item.description ?? "")
+            .trim()
+            .slice(0, 5000) || "",
         confidence: clampConfidence(item.confidence),
         page:
           typeof item.page === "number" && !Number.isNaN(item.page) && item.page >= 1

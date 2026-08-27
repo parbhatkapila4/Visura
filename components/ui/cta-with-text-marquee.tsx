@@ -23,7 +23,9 @@ function VerticalMarquee({
 
   useEffect(() => {
     if (onItemsRef && containerRef.current) {
-      const items = Array.from(containerRef.current.querySelectorAll(".marquee-item")) as HTMLElement[];
+      const items = Array.from(
+        containerRef.current.querySelectorAll(".marquee-item")
+      ) as HTMLElement[];
       onItemsRef(items);
     }
   }, [onItemsRef]);
@@ -104,7 +106,8 @@ export default function CTAWithVerticalMarquee() {
               Get Started in Minutes
             </h2>
             <p className="text-lg md:text-xl text-gray-400 leading-relaxed animate-fade-in-up [animation-delay:400ms]">
-              Start getting more from your documents. Try Visura free for 14 days, no credit card required.
+              Start getting more from your documents. Try Visura free for 14 days, no credit card
+              required.
             </p>
             <div className="flex flex-wrap gap-4 animate-fade-in-up [animation-delay:600ms]">
               <a
@@ -115,10 +118,10 @@ export default function CTAWithVerticalMarquee() {
                   "&body=" +
                   encodeURIComponent(
                     "Hello,\n\n" +
-                    "I've been looking at Visura and would like to discuss it further with you. " +
-                    "I'm interested in learning more about the product and exploring how it could work for my use case, whether that's document intelligence for my team, integration with our workflow, or something else.\n\n" +
-                    "Could we find a time to connect? I'm happy to share more context about what I'm looking for and hear your thoughts.\n\n" +
-                    "Best regards,"
+                      "I've been looking at Visura and would like to discuss it further with you. " +
+                      "I'm interested in learning more about the product and exploring how it could work for my use case, whether that's document intelligence for my team, integration with our workflow, or something else.\n\n" +
+                      "Could we find a time to connect? I'm happy to share more context about what I'm looking for and hear your thoughts.\n\n" +
+                      "Best regards,"
                   )
                 }
                 className="group relative px-6 py-3 bg-white text-black rounded-md font-medium overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg inline-flex"

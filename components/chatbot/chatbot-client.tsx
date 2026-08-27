@@ -56,6 +56,81 @@ interface ChatbotClientProps {
 
 const SNIPPET_MAX_LENGTH = 250;
 
+const CHATBOT_QUICK_PROMPT_SETS = [
+  [
+    {
+      label: "Get fresh perspectives on tricky problems",
+      prompt:
+        "Give me fresh perspectives and insights on the key problems discussed in this document",
+    },
+    {
+      label: "Brainstorm creative ideas",
+      prompt: "Help me brainstorm creative ideas based on this document",
+    },
+    {
+      label: "Rewrite message for maximum impact",
+      prompt: "Help me rewrite the key messages from this document for maximum impact",
+    },
+    { label: "Summarize key points", prompt: "Summarize the key points from this document" },
+  ],
+  [
+    {
+      label: "Explain this like I'm 5",
+      prompt:
+        "Explain the main concepts from this document in very simple terms, like I'm 5 years old",
+    },
+    {
+      label: "Find action items",
+      prompt: "What are the actionable items or next steps mentioned in this document?",
+    },
+    {
+      label: "Compare and contrast",
+      prompt:
+        "Identify and compare the different viewpoints or arguments presented in this document",
+    },
+    {
+      label: "Create a study guide",
+      prompt: "Create a comprehensive study guide based on this document",
+    },
+  ],
+  [
+    {
+      label: "Generate quiz questions",
+      prompt: "Generate 10 quiz questions with answers based on this document",
+    },
+    {
+      label: "Extract key quotes",
+      prompt: "Extract the most important and impactful quotes from this document",
+    },
+    {
+      label: "Identify gaps or weaknesses",
+      prompt: "What are the potential gaps, weaknesses, or missing information in this document?",
+    },
+    {
+      label: "Create an outline",
+      prompt: "Create a detailed outline of the structure and main points of this document",
+    },
+  ],
+  [
+    {
+      label: "What's the main argument?",
+      prompt: "What is the central argument or thesis of this document?",
+    },
+    {
+      label: "List all definitions",
+      prompt: "List and explain all key terms and definitions mentioned in this document",
+    },
+    {
+      label: "Suggest related topics",
+      prompt: "Based on this document, what related topics should I explore next?",
+    },
+    {
+      label: "Write an executive summary",
+      prompt: "Write a professional executive summary of this document",
+    },
+  ],
+] as const;
+
 function sourceToReference(source: ChatMessageSource): DocumentReference {
   return {
     document_version_id: source.document_version_id ?? "",
@@ -85,6 +160,7 @@ export default function ChatbotClient({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [promptSetIndex, setPromptSetIndex] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -104,16 +180,6 @@ export default function ChatbotClient({
       window.removeEventListener("chatbot-new-chat", handler);
     };
   }, []);
-
-  if (!pdfStoreId) {
-    return (
-      <div className="flex items-center justify-center h-full w-full bg-[#0a0a0a]">
-        <div className="text-center">
-          <p className="text-white">Invalid document store ID</p>
-        </div>
-      </div>
-    );
-  }
 
   const loadSessions = async () => {
     try {
@@ -137,6 +203,27 @@ export default function ChatbotClient({
       setError(error instanceof Error ? error.message : "Failed to load chat sessions");
     } finally {
       setIsLoadingSessions(false);
+    }
+  };
+
+  const loadMessages = async (sessionId: string) => {
+    try {
+      const response = await fetch(`/api/chatbot/messages?sessionId=${sessionId}`);
+      const data = await response.json();
+      if (response.ok) setMessages(data.messages ?? []);
+    } catch (error) {
+      console.error("Error loading messages:", error);
+    }
+  };
+
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      const container = messagesContainerRef.current;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+        });
+      });
     }
   };
 
@@ -175,27 +262,6 @@ export default function ChatbotClient({
   useEffect(() => {
     if (messages.length > 0) scrollToBottom();
   }, [messages]);
-
-  const scrollToBottom = () => {
-    if (messagesContainerRef.current) {
-      const container = messagesContainerRef.current;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
-        });
-      });
-    }
-  };
-
-  const loadMessages = async (sessionId: string) => {
-    try {
-      const response = await fetch(`/api/chatbot/messages?sessionId=${sessionId}`);
-      const data = await response.json();
-      if (response.ok) setMessages(data.messages ?? []);
-    } catch (error) {
-      console.error("Error loading messages:", error);
-    }
-  };
 
   const generateSessionName = (message: string): string => {
     const cleanMessage = message
@@ -309,88 +375,11 @@ export default function ChatbotClient({
 
   const currentSession = sessions.find((s) => s.id === currentSessionId);
 
-  const allPromptSets = [
-    [
-      {
-        label: "Get fresh perspectives on tricky problems",
-        prompt:
-          "Give me fresh perspectives and insights on the key problems discussed in this document",
-      },
-      {
-        label: "Brainstorm creative ideas",
-        prompt: "Help me brainstorm creative ideas based on this document",
-      },
-      {
-        label: "Rewrite message for maximum impact",
-        prompt: "Help me rewrite the key messages from this document for maximum impact",
-      },
-      { label: "Summarize key points", prompt: "Summarize the key points from this document" },
-    ],
-    [
-      {
-        label: "Explain this like I'm 5",
-        prompt:
-          "Explain the main concepts from this document in very simple terms, like I'm 5 years old",
-      },
-      {
-        label: "Find action items",
-        prompt: "What are the actionable items or next steps mentioned in this document?",
-      },
-      {
-        label: "Compare and contrast",
-        prompt:
-          "Identify and compare the different viewpoints or arguments presented in this document",
-      },
-      {
-        label: "Create a study guide",
-        prompt: "Create a comprehensive study guide based on this document",
-      },
-    ],
-    [
-      {
-        label: "Generate quiz questions",
-        prompt: "Generate 10 quiz questions with answers based on this document",
-      },
-      {
-        label: "Extract key quotes",
-        prompt: "Extract the most important and impactful quotes from this document",
-      },
-      {
-        label: "Identify gaps or weaknesses",
-        prompt: "What are the potential gaps, weaknesses, or missing information in this document?",
-      },
-      {
-        label: "Create an outline",
-        prompt: "Create a detailed outline of the structure and main points of this document",
-      },
-    ],
-    [
-      {
-        label: "What's the main argument?",
-        prompt: "What is the central argument or thesis of this document?",
-      },
-      {
-        label: "List all definitions",
-        prompt: "List and explain all key terms and definitions mentioned in this document",
-      },
-      {
-        label: "Suggest related topics",
-        prompt: "Based on this document, what related topics should I explore next?",
-      },
-      {
-        label: "Write an executive summary",
-        prompt: "Write a professional executive summary of this document",
-      },
-    ],
-  ];
-
-  const [promptSetIndex, setPromptSetIndex] = useState(0);
-
   const refreshPrompts = () => {
-    setPromptSetIndex((prev) => (prev + 1) % allPromptSets.length);
+    setPromptSetIndex((prev) => (prev + 1) % CHATBOT_QUICK_PROMPT_SETS.length);
   };
 
-  const quickActions = allPromptSets[promptSetIndex];
+  const quickActions = CHATBOT_QUICK_PROMPT_SETS[promptSetIndex];
 
   if (error) {
     return (
@@ -427,6 +416,16 @@ export default function ChatbotClient({
     isLoadingSessions,
     error,
   });
+
+  if (!pdfStoreId) {
+    return (
+      <div className="flex items-center justify-center h-full w-full bg-[#0a0a0a]">
+        <div className="text-center">
+          <p className="text-white">Invalid document store ID</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -588,7 +587,9 @@ export default function ChatbotClient({
                                       <li className="text-[#ccc] text-[15px]">{children}</li>
                                     ),
                                     strong: ({ children }) => (
-                                      <strong className="font-semibold text-white">{children}</strong>
+                                      <strong className="font-semibold text-white">
+                                        {children}
+                                      </strong>
                                     ),
                                     code: ({ children }) => (
                                       <code className="bg-[#1a1a1a] px-1.5 py-0.5 rounded text-sm font-mono text-emerald-400">
@@ -624,9 +625,7 @@ export default function ChatbotClient({
                                       };
                                       const pageLabel =
                                         source.page != null ? `Page ${source.page}` : null;
-                                      const snippetText = truncateSnippet(
-                                        source.snippet ?? ""
-                                      );
+                                      const snippetText = truncateSnippet(source.snippet ?? "");
                                       return (
                                         <li
                                           key={idx}

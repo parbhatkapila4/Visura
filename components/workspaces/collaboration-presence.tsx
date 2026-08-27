@@ -15,9 +15,7 @@ interface CollaborationPresenceProps {
   pdfSummaryId: string;
 }
 
-export default function CollaborationPresence({
-  pdfSummaryId,
-}: CollaborationPresenceProps) {
+export default function CollaborationPresence({ pdfSummaryId }: CollaborationPresenceProps) {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
 
   useEffect(() => {

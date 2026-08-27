@@ -37,14 +37,19 @@ export async function GET(
       ORDER BY ds.created_at DESC
     `;
 
-    const documents = (rows as { pdf_summary_id: string; title: string | null; file_name: string | null; document_id: string | null }[]).map(
-      (r) => ({
-        pdf_summary_id: r.pdf_summary_id,
-        document_id: r.document_id ?? "",
-        title: r.title ?? "Untitled",
-        file_name: r.file_name ?? undefined,
-      })
-    );
+    const documents = (
+      rows as {
+        pdf_summary_id: string;
+        title: string | null;
+        file_name: string | null;
+        document_id: string | null;
+      }[]
+    ).map((r) => ({
+      pdf_summary_id: r.pdf_summary_id,
+      document_id: r.document_id ?? "",
+      title: r.title ?? "Untitled",
+      file_name: r.file_name ?? undefined,
+    }));
 
     return NextResponse.json({ documents });
   } catch (error) {

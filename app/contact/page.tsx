@@ -69,7 +69,9 @@ export default function ContactPage() {
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(260px,340px)_minmax(0,1fr)] gap-10 lg:gap-14 xl:gap-20">
               <div className="space-y-8 lg:space-y-10">
                 <div>
-                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">Let's collaborate</h2>
+                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
+                    Let's collaborate
+                  </h2>
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
                       <Mail className="w-5 h-5 text-primary" />
@@ -214,10 +216,11 @@ export default function ContactPage() {
                     <button
                       type="submit"
                       disabled={!isFormValid}
-                      className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all group ${isFormValid
+                      className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all group ${
+                        isFormValid
                           ? "bg-primary text-primary-foreground hover:opacity-90"
                           : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
-                        }`}
+                      }`}
                     >
                       Submit
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

@@ -6,11 +6,7 @@ export default function AccountPage() {
   return (
     <SidebarWithContent>
       <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0a0a] p-4">
-        <UserProfile
-          appearance={clerkAppearance}
-          routing="path"
-          path="/account"
-        />
+        <UserProfile appearance={clerkAppearance} routing="path" path="/account" />
       </div>
     </SidebarWithContent>
   );

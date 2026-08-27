@@ -17,7 +17,10 @@ export async function GET(request: NextRequest) {
     const chunkId = searchParams.get("chunk_id");
 
     if (insightId && chunkId) {
-      return NextResponse.json({ error: "Provide either insight_id or chunk_id, not both" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Provide either insight_id or chunk_id, not both" },
+        { status: 400 }
+      );
     }
     if (!insightId && !chunkId) {
       return NextResponse.json({ error: "Provide insight_id or chunk_id" }, { status: 400 });
@@ -36,7 +39,12 @@ export async function GET(request: NextRequest) {
       if (!row) {
         return NextResponse.json({ error: "Insight not found or access denied" }, { status: 404 });
       }
-      const r = row as { document_version_id: string; page: number | null; source_text: string | null; pdf_summary_id: string | null };
+      const r = row as {
+        document_version_id: string;
+        page: number | null;
+        source_text: string | null;
+        pdf_summary_id: string | null;
+      };
       const ref: DocumentReference = {
         document_version_id: r.document_version_id,
         page: r.page != null ? Number(r.page) : null,
@@ -68,7 +76,7 @@ export async function GET(request: NextRequest) {
     const page =
       r.start_page != null && r.end_page != null
         ? Math.round((r.start_page + r.end_page) / 2)
-        : r.start_page ?? r.end_page ?? null;
+        : (r.start_page ?? r.end_page ?? null);
     const ref: DocumentReference = {
       document_version_id: r.document_version_id,
       page: page != null ? Number(page) : null,

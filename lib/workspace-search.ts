@@ -1,5 +1,4 @@
 import { getDbConnection } from "./db";
-import { getVersionIdByPdfSummaryId } from "./versioned-documents";
 import { getOrCreateEmbedding } from "./embeddings-storage";
 import { cosineSimilarity } from "./embeddings";
 import {
@@ -50,9 +49,21 @@ export async function resolveWorkspaceVersions(
     WHERE dv.pdf_summary_id = ANY(${summaryIds})
   `;
 
-  const bySummary = new Map<string, { version_id: string; document_id: string; title: string | null }>();
-  for (const r of versionRows as { version_id: string; document_id: string; pdf_summary_id: string; title: string | null }[]) {
-    bySummary.set(r.pdf_summary_id, { version_id: r.version_id, document_id: r.document_id, title: r.title });
+  const bySummary = new Map<
+    string,
+    { version_id: string; document_id: string; title: string | null }
+  >();
+  for (const r of versionRows as {
+    version_id: string;
+    document_id: string;
+    pdf_summary_id: string;
+    title: string | null;
+  }[]) {
+    bySummary.set(r.pdf_summary_id, {
+      version_id: r.version_id,
+      document_id: r.document_id,
+      title: r.title,
+    });
   }
 
   return summaryIds
@@ -96,11 +107,21 @@ export async function searchWorkspaceChunks(
     WHERE id = ANY(${chunkIds})
   `;
   const chunkMap = new Map(
-    (chunkRows as { id: string; text: string; start_page: number | null; end_page: number | null }[]).map((c) => [
+    (
+      chunkRows as {
+        id: string;
+        text: string;
+        start_page: number | null;
+        end_page: number | null;
+      }[]
+    ).map((c) => [
       c.id,
       {
         text: c.text ?? "",
-        page: c.start_page != null && c.end_page != null ? Math.round((c.start_page + c.end_page) / 2) : c.start_page ?? c.end_page ?? null,
+        page:
+          c.start_page != null && c.end_page != null
+            ? Math.round((c.start_page + c.end_page) / 2)
+            : (c.start_page ?? c.end_page ?? null),
       },
     ])
   );

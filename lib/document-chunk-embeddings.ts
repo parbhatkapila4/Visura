@@ -15,7 +15,11 @@ export async function populateChunkEmbeddingsForVersion(versionId: string): Prom
     const texts = sorted.map((c) => c.text);
     const embeddings = await getOrCreateEmbeddingsBatch(texts, DEFAULT_MODEL);
     if (embeddings.length !== sorted.length) {
-      logger.warn("Chunk embedding count mismatch", { versionId, chunks: sorted.length, embeddings: embeddings.length });
+      logger.warn("Chunk embedding count mismatch", {
+        versionId,
+        chunks: sorted.length,
+        embeddings: embeddings.length,
+      });
       return;
     }
 
@@ -54,13 +58,15 @@ export async function getChunkEmbeddingsByVersionIds(
     WHERE document_version_id = ANY(${versionIds})
       AND model = ${DEFAULT_MODEL}
   `;
-  return (rows as { document_version_id: string; document_chunk_id: string; embedding: unknown }[]).map(
-    (r) => ({
-      document_version_id: r.document_version_id,
-      document_chunk_id: r.document_chunk_id,
-      embedding: Array.isArray(r.embedding) ? (r.embedding as number[]) : JSON.parse(String(r.embedding ?? "[]")),
-    })
-  );
+  return (
+    rows as { document_version_id: string; document_chunk_id: string; embedding: unknown }[]
+  ).map((r) => ({
+    document_version_id: r.document_version_id,
+    document_chunk_id: r.document_chunk_id,
+    embedding: Array.isArray(r.embedding)
+      ? (r.embedding as number[])
+      : JSON.parse(String(r.embedding ?? "[]")),
+  }));
 }
 
 export function truncateSnippet(text: string, maxLen: number = SNIPPET_MAX_LEN): string {

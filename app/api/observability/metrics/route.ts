@@ -29,7 +29,10 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    const metrics = getBusinessMetrics(name || undefined, Object.keys(tags).length > 0 ? tags : undefined);
+    const metrics = getBusinessMetrics(
+      name || undefined,
+      Object.keys(tags).length > 0 ? tags : undefined
+    );
 
     return NextResponse.json({
       metrics,
@@ -37,9 +40,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     logger.error("Error fetching observability metrics", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

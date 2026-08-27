@@ -53,7 +53,6 @@ export async function getJobById(jobId: string): Promise<Job | null> {
   return (job as Job) || null;
 }
 
-
 export async function claimJob(jobId: string): Promise<Job | null> {
   const sql = await getDbConnection();
 
@@ -94,7 +93,6 @@ export async function markJobFailed(jobId: string, error: Error): Promise<void> 
   `;
 }
 
-
 export async function getRetryableJobs(limit: number = 20): Promise<Job[]> {
   const sql = await getDbConnection();
   const jobs = await sql`
@@ -108,8 +106,10 @@ export async function getRetryableJobs(limit: number = 20): Promise<Job[]> {
   return jobs as Job[];
 }
 
-
-export async function getStuckJobs(timeoutMinutes: number = 10, limit: number = 20): Promise<Job[]> {
+export async function getStuckJobs(
+  timeoutMinutes: number = 10,
+  limit: number = 20
+): Promise<Job[]> {
   const sql = await getDbConnection();
   const jobs = await sql`
     SELECT * FROM summary_jobs
@@ -120,7 +120,6 @@ export async function getStuckJobs(timeoutMinutes: number = 10, limit: number = 
   `;
   return jobs as Job[];
 }
-
 
 export async function resetStuckJob(jobId: string): Promise<void> {
   const sql = await getDbConnection();
@@ -137,7 +136,6 @@ export async function resetStuckJob(jobId: string): Promise<void> {
   `;
 }
 
-
 export async function resetFailedJobForRetry(jobId: string): Promise<void> {
   const sql = await getDbConnection();
   await sql`
@@ -152,7 +150,6 @@ export async function resetFailedJobForRetry(jobId: string): Promise<void> {
       AND retry_count < max_retries
   `;
 }
-
 
 export async function updateJobHeartbeat(jobId: string): Promise<void> {
   const sql = await getDbConnection();

@@ -1,4 +1,3 @@
-
 export {
   chatbotRateLimit,
   uploadRateLimit,
@@ -10,4 +9,5 @@ export {
   trackRateLimitHit,
   getRateLimitMetrics,
   InMemoryRateLimiter,
+  resetInMemoryRateLimitStore,
 } from "./rate-limit-distributed";

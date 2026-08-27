@@ -27,8 +27,8 @@ export async function createSummaryJobAction(
       title,
     });
 
-
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ||
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
     fetch(`${baseUrl}/api/jobs/process`, {
@@ -37,7 +37,6 @@ export async function createSummaryJobAction(
       body: JSON.stringify({ jobId }),
     }).catch((err) => {
       console.error("Failed to trigger job processing:", err);
-
     });
 
     return {

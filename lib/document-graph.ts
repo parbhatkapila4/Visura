@@ -39,13 +39,16 @@ export interface GraphPayload {
 const EXCERPT_LENGTH = 15000;
 
 function sanitizeNodeId(s: unknown): string {
-  const raw = String(s ?? "").trim().slice(0, 250);
-  const slug = raw
-    .toLowerCase()
-    .replace(/\s+/g, "_")
-    .replace(/[^a-z0-9_]/g, "")
-    .replace(/_+/g, "_")
-    .replace(/^_|_$/g, "") || "node";
+  const raw = String(s ?? "")
+    .trim()
+    .slice(0, 250);
+  const slug =
+    raw
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_]/g, "")
+      .replace(/_+/g, "_")
+      .replace(/^_|_$/g, "") || "node";
   return slug || "node";
 }
 
@@ -73,10 +76,16 @@ export async function generateAndStoreDocumentGraph(versionId: string): Promise<
   try {
     const chunks = await getChunksForVersion(versionId);
     const sorted = [...chunks].sort((a, b) => a.chunk_index - b.chunk_index);
-    const fullText = sorted.map((c) => c.text).join("\n\n").trim();
+    const fullText = sorted
+      .map((c) => c.text)
+      .join("\n\n")
+      .trim();
 
     if (!fullText || fullText.length < 100) {
-      logger.info("Document too short for graph extraction", { versionId, length: fullText.length });
+      logger.info("Document too short for graph extraction", {
+        versionId,
+        length: fullText.length,
+      });
       await clearGraphForVersion(versionId);
       return;
     }
@@ -129,7 +138,10 @@ ${fullText.slice(0, EXCERPT_LENGTH)}
       max_tokens: 4096,
     });
 
-    const jsonStr = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+    const jsonStr = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```\s*$/i, "")
+      .trim();
     let parsed: { nodes?: unknown[]; edges?: unknown[] };
     try {
       parsed = JSON.parse(jsonStr) as { nodes?: unknown[]; edges?: unknown[] };
@@ -197,7 +209,11 @@ ${fullText.slice(0, EXCERPT_LENGTH)}
         VALUES (${versionId}, ${edge.from_node_id}, ${edge.to_node_id}, ${edge.relation}, ${JSON.stringify(edge.metadata ?? {})})
       `;
     }
-    logger.info("Document graph stored", { versionId, nodeCount: nodes.length, edgeCount: edges.length });
+    logger.info("Document graph stored", {
+      versionId,
+      nodeCount: nodes.length,
+      edgeCount: edges.length,
+    });
   } catch (error) {
     logger.warn("Graph extraction failed (non-fatal)", {
       versionId,

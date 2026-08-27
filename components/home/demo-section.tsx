@@ -135,8 +135,8 @@ const ProcessingStage = ({ icon: Icon, label, isActive, isComplete, index }: any
         isActive
           ? "bg-gradient-to-r from-[#ff6b00]/20 to-[#ff00ff]/20 border-2 border-[#ff6b00]/40 shadow-lg"
           : isComplete
-          ? "bg-emerald-500/10 border-2 border-emerald-500/30"
-          : "bg-white/5 border border-white/10"
+            ? "bg-emerald-500/10 border-2 border-emerald-500/30"
+            : "bg-white/5 border border-white/10"
       }`}
       animate={
         isActive
@@ -171,8 +171,8 @@ const ProcessingStage = ({ icon: Icon, label, isActive, isComplete, index }: any
           isComplete
             ? "bg-emerald-500/20 border-2 border-emerald-400/50"
             : isActive
-            ? "bg-gradient-to-br from-[#ff6b00]/30 to-[#ff00ff]/30 border-2 border-[#ff6b00]/50"
-            : "bg-white/5 border border-white/10"
+              ? "bg-gradient-to-br from-[#ff6b00]/30 to-[#ff00ff]/30 border-2 border-[#ff6b00]/50"
+              : "bg-white/5 border border-white/10"
         }`}
       >
         {isComplete ? (
@@ -280,7 +280,10 @@ export default function DemoSection() {
 
           <h2 className="text-4xl md:text-6xl font-black text-white mb-5 tracking-tight">
             See the{" "}
-            <span className="text-white border-b-2 border-white/40 pb-0.5" style={{ fontFamily: "var(--font-display), ui-serif, Georgia, serif" }}>
+            <span
+              className="text-white border-b-2 border-white/40 pb-0.5"
+              style={{ fontFamily: "var(--font-display), ui-serif, Georgia, serif" }}
+            >
               magic
             </span>{" "}
             happen

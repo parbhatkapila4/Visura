@@ -68,15 +68,23 @@ export default function SummaryLoading() {
                   <div className={`h-3 w-24 rounded ${sk}`} />
                 </div>
 
-                <div className={`h-9 sm:h-10 md:h-11 w-full max-w-4xl rounded-lg mb-3 sm:mb-4 ${sk}`} />
+                <div
+                  className={`h-9 sm:h-10 md:h-11 w-full max-w-4xl rounded-lg mb-3 sm:mb-4 ${sk}`}
+                />
                 <div className={`h-5 sm:h-6 w-full max-w-2xl rounded mb-4 sm:mb-6 ${sk}`} />
 
                 <div className="space-y-2">
                   <div className={`h-2 w-24 rounded ${sk}`} />
                   <div className="flex flex-wrap gap-2">
-                    <div className={`h-7 w-32 rounded-full border border-[#1f1f1f] bg-[#111] ${sk}`} />
-                    <div className={`h-7 w-40 rounded-full border border-[#1f1f1f] bg-[#111] ${sk}`} />
-                    <div className={`h-7 w-28 rounded-full border border-[#1f1f1f] bg-[#111] ${sk}`} />
+                    <div
+                      className={`h-7 w-32 rounded-full border border-[#1f1f1f] bg-[#111] ${sk}`}
+                    />
+                    <div
+                      className={`h-7 w-40 rounded-full border border-[#1f1f1f] bg-[#111] ${sk}`}
+                    />
+                    <div
+                      className={`h-7 w-28 rounded-full border border-[#1f1f1f] bg-[#111] ${sk}`}
+                    />
                   </div>
                 </div>
               </div>
@@ -112,10 +120,7 @@ export default function SummaryLoading() {
             <aside className="hidden xl:block w-48 flex-shrink-0">
               <div className="sticky top-20 space-y-3">
                 {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="p-4 rounded-xl bg-[#111111] border border-[#1f1f1f]"
-                  >
+                  <div key={i} className="p-4 rounded-xl bg-[#111111] border border-[#1f1f1f]">
                     <div className={`w-8 h-8 rounded-lg mb-3 ${sk}`} />
                     <div className={`h-4 w-16 rounded mb-1 ${sk}`} />
                     <div className={`h-3 w-20 rounded ${sk}`} />

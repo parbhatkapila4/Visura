@@ -11,8 +11,8 @@ export default function SpotlightNewDemo() {
           Spotlight <br /> which is not overused.
         </h1>
         <p className="mt-4 font-normal text-base text-neutral-300 max-w-lg text-center mx-auto">
-          A subtle yet effective spotlight effect, because the previous version
-          is used a bit too much these days.
+          A subtle yet effective spotlight effect, because the previous version is used a bit too
+          much these days.
         </p>
       </div>
     </div>

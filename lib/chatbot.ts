@@ -24,10 +24,7 @@ export async function savePdfStore({
   }
 }
 
-export async function getPdfStoreBySummaryId(
-  pdfSummaryId: string,
-  userId: string
-) {
+export async function getPdfStoreBySummaryId(pdfSummaryId: string, userId: string) {
   try {
     const sql = await getDbConnection();
     const [result] = await sql`
@@ -78,10 +75,7 @@ export async function createQASession({
   }
 }
 
-export async function getQASessionsByPdfStore(
-  pdfStoreId: string,
-  userId: string
-) {
+export async function getQASessionsByPdfStore(pdfStoreId: string, userId: string) {
   try {
     const sql = await getDbConnection();
     const sessions = await sql`
@@ -124,11 +118,7 @@ export async function getSessionDocumentRef(
   return { pdf_summary_id: pdfSummaryId, document_version_id: documentVersionId ?? null };
 }
 
-export async function updateQASessionName(
-  sessionId: string,
-  userId: string,
-  newName: string
-) {
+export async function updateQASessionName(sessionId: string, userId: string, newName: string) {
   try {
     const sql = await getDbConnection();
     const result = await sql`
@@ -191,10 +181,7 @@ export async function saveQAMessage({
   }
 }
 
-export async function getQAMessagesBySession(
-  sessionId: string,
-  userId: string
-) {
+export async function getQAMessagesBySession(sessionId: string, userId: string) {
   try {
     const sql = await getDbConnection();
 

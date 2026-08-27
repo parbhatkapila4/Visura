@@ -35,7 +35,9 @@ export default function PrivacyPolicyPage() {
             </div>
 
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Information We Collect</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+                Information We Collect
+              </h2>
               <div className="space-y-5">
                 <div className="group rounded-2xl border border-white/[0.08] bg-zinc-900/50 backdrop-blur-sm p-6 sm:p-6 transition-colors hover:border-white/[0.12] hover:bg-zinc-800/50">
                   <div className="flex items-start gap-5">
@@ -43,11 +45,13 @@ export default function PrivacyPolicyPage() {
                       <UserCheck className="w-5 h-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-lg font-semibold text-white mb-1.5">Personal Information</h3>
+                      <h3 className="text-lg font-semibold text-white mb-1.5">
+                        Personal Information
+                      </h3>
                       <p className="text-sm sm:text-base text-zinc-400 leading-relaxed">
-                        We collect information you provide directly to us, such as when you create an
-                        account, upload documents, or contact us for support. This may include your
-                        name, email address, and any other information you choose to provide.
+                        We collect information you provide directly to us, such as when you create
+                        an account, upload documents, or contact us for support. This may include
+                        your name, email address, and any other information you choose to provide.
                       </p>
                     </div>
                   </div>
@@ -87,14 +91,34 @@ export default function PrivacyPolicyPage() {
             </div>
 
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">How We Use Your Information</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+                How We Use Your Information
+              </h2>
               <ul className="space-y-3 text-base sm:text-lg text-zinc-400">
-                <li className="flex gap-2"><span className="text-primary">•</span> Provide and maintain our document analysis services</li>
-                <li className="flex gap-2"><span className="text-primary">•</span> Process and analyze your uploaded documents</li>
-                <li className="flex gap-2"><span className="text-primary">•</span> Communicate with you about your account and our services</li>
-                <li className="flex gap-2"><span className="text-primary">•</span> Improve our platform and develop new features</li>
-                <li className="flex gap-2"><span className="text-primary">•</span> Ensure the security and integrity of our services</li>
-                <li className="flex gap-2"><span className="text-primary">•</span> Comply with legal obligations and protect our rights</li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span> Provide and maintain our document analysis
+                  services
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span> Process and analyze your uploaded
+                  documents
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span> Communicate with you about your account
+                  and our services
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span> Improve our platform and develop new
+                  features
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span> Ensure the security and integrity of our
+                  services
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span> Comply with legal obligations and protect
+                  our rights
+                </li>
               </ul>
             </div>
 
@@ -123,12 +147,24 @@ export default function PrivacyPolicyPage() {
                 You have certain rights regarding your personal information, including:
               </p>
               <ul className="space-y-3 text-base sm:text-lg text-zinc-400">
-                <li className="flex gap-2"><span className="text-primary">•</span> Access to your personal information</li>
-                <li className="flex gap-2"><span className="text-primary">•</span> Correction of inaccurate information</li>
-                <li className="flex gap-2"><span className="text-primary">•</span> Deletion of your personal information</li>
-                <li className="flex gap-2"><span className="text-primary">•</span> Portability of your data</li>
-                <li className="flex gap-2"><span className="text-primary">•</span> Objection to certain processing activities</li>
-                <li className="flex gap-2"><span className="text-primary">•</span> Withdrawal of consent where applicable</li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span> Access to your personal information
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span> Correction of inaccurate information
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span> Deletion of your personal information
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span> Portability of your data
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span> Objection to certain processing activities
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span> Withdrawal of consent where applicable
+                </li>
               </ul>
             </div>
 
@@ -146,8 +182,12 @@ export default function PrivacyPolicyPage() {
                   <Mail className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 mb-0.5">Email</p>
-                  <p className="text-white font-semibold group-hover:text-primary transition-colors">parbhat@parbhat.dev</p>
+                  <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 mb-0.5">
+                    Email
+                  </p>
+                  <p className="text-white font-semibold group-hover:text-primary transition-colors">
+                    parbhat@parbhat.dev
+                  </p>
                 </div>
               </a>
             </div>

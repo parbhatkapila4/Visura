@@ -35,7 +35,9 @@ export default function TermsOfServicePage() {
             </div>
 
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Service Description</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+                Service Description
+              </h2>
               <div className="flex items-start gap-4 rounded-xl border border-white/10 bg-zinc-900/60 p-4 sm:p-5">
                 <FileText className="w-6 h-6 text-primary mt-0.5 flex-shrink-0" />
                 <div>
@@ -50,12 +52,16 @@ export default function TermsOfServicePage() {
             </div>
 
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">User Responsibilities</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+                User Responsibilities
+              </h2>
               <div className="space-y-6">
                 <div className="flex items-start gap-4 rounded-xl border border-white/10 bg-zinc-900/60 p-4 sm:p-5">
                   <Users className="w-6 h-6 text-primary mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Account Security</h3>
+                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+                      Account Security
+                    </h3>
                     <p className="text-zinc-400">
                       You are responsible for maintaining the confidentiality of your account
                       credentials and for all activities that occur under your account.
@@ -66,7 +72,9 @@ export default function TermsOfServicePage() {
                 <div className="flex items-start gap-4 rounded-xl border border-white/10 bg-zinc-900/60 p-4 sm:p-5">
                   <Shield className="w-6 h-6 text-primary mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Content Compliance</h3>
+                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+                      Content Compliance
+                    </h3>
                     <p className="text-zinc-400">
                       You agree not to upload, process, or share any content that is illegal,
                       harmful, threatening, abusive, or violates any third-party rights.
@@ -77,7 +85,9 @@ export default function TermsOfServicePage() {
             </div>
 
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Service Availability</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+                Service Availability
+              </h2>
               <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
                 We strive to provide continuous service availability, but we do not guarantee
                 uninterrupted access. We may temporarily suspend the service for maintenance,
@@ -86,7 +96,9 @@ export default function TermsOfServicePage() {
             </div>
 
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Intellectual Property</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+                Intellectual Property
+              </h2>
               <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
                 The Visura platform, including its design, functionality, and underlying technology,
                 is protected by intellectual property laws. You retain ownership of your uploaded
@@ -95,7 +107,9 @@ export default function TermsOfServicePage() {
             </div>
 
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Limitation of Liability</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+                Limitation of Liability
+              </h2>
               <div className="flex items-start gap-4 rounded-xl border border-white/10 bg-zinc-900/60 p-4 sm:p-5">
                 <AlertTriangle className="w-6 h-6 text-primary mt-0.5 flex-shrink-0" />
                 <div>
@@ -127,7 +141,9 @@ export default function TermsOfServicePage() {
             </div>
 
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Contact Information</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+                Contact Information
+              </h2>
               <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
                 If you have any questions about these Terms of Service, please contact us at:
               </p>

@@ -33,12 +33,7 @@ const Globe: React.FC<{
     <group ref={groupRef} position={position}>
       <mesh>
         <sphereGeometry args={[radius, 64, 64]} />
-        <meshBasicMaterial
-          color="#e5e7eb"
-          transparent
-          opacity={0.22}
-          wireframe
-        />
+        <meshBasicMaterial color="#e5e7eb" transparent opacity={0.22} wireframe />
       </mesh>
     </group>
   );
@@ -59,10 +54,7 @@ const DotGlobeHero = React.forwardRef<HTMLDivElement, DotGlobeHeroProps>(
     return (
       <div
         ref={ref}
-        className={cn(
-          "relative w-full h-screen bg-background overflow-hidden",
-          className
-        )}
+        className={cn("relative w-full h-screen bg-background overflow-hidden", className)}
         {...props}
       >
         <div className="relative z-10 flex flex-col items-center justify-center h-full">
@@ -75,11 +67,7 @@ const DotGlobeHero = React.forwardRef<HTMLDivElement, DotGlobeHeroProps>(
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} intensity={1} />
 
-            <Globe
-              rotationSpeed={rotationSpeed}
-              radius={globeRadius}
-              position={globePosition}
-            />
+            <Globe rotationSpeed={rotationSpeed} radius={globeRadius} position={globePosition} />
           </Canvas>
         </div>
       </div>

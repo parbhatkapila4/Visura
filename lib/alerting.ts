@@ -24,7 +24,7 @@ interface DedupEntry {
 }
 
 const dedupMap = new Map<string, DedupEntry>();
-const DEDUP_WINDOW_MS = 10 * 60 * 1000; 
+const DEDUP_WINDOW_MS = 10 * 60 * 1000;
 
 function shouldSuppressAlert(key: string): boolean {
   const entry = dedupMap.get(key);
@@ -101,14 +101,14 @@ export async function sendAlert({
     });
 
     if (!response.ok) {
-      const errorText = await response.text().catch(() => 'Unable to read error response');
+      const errorText = await response.text().catch(() => "Unable to read error response");
       logger.warn("Alert webhook failed", {
         status: response.status,
         statusText: response.statusText,
         errorText,
         alertType: type,
         severity,
-        webhookUrl: webhookUrl.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'),
+        webhookUrl: webhookUrl.replace(/\/\/[^:]+:[^@]+@/, "//***:***@"),
       });
     }
   } catch (error) {

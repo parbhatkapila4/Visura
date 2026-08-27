@@ -25,7 +25,7 @@ export async function createVersionedDocumentJob(
   pdfText: string,
   fileName: string,
   fileUrl: string,
-  language: SupportedLanguage = 'ENGLISH'
+  language: SupportedLanguage = "ENGLISH"
 ) {
   let userId: string | undefined = undefined;
   let versionIdForEvents: string | null = null;
@@ -127,7 +127,9 @@ export async function createVersionedDocumentJob(
               return processChunkInternal(chunk.id, latestVersion.id, language);
             })
           );
-          const succeeded = results.filter((r) => r.status === "fulfilled" && r.value.success).length;
+          const succeeded = results.filter(
+            (r) => r.status === "fulfilled" && r.value.success
+          ).length;
           processedCount += succeeded;
           logger.info("Batch completed for unchanged version", {
             versionId: latestVersion.id,
@@ -143,7 +145,7 @@ export async function createVersionedDocumentJob(
         });
 
         const completionDelay = parseInt(process.env.COMPLETION_CHECK_DELAY_MS || "2000", 10);
-        await new Promise(resolve => setTimeout(resolve, completionDelay));
+        await new Promise((resolve) => setTimeout(resolve, completionDelay));
         const { checkVersionCompletion } = await import("@/lib/chunk-processor");
         for (let attempt = 1; attempt <= 3; attempt++) {
           logger.info("Checking completion for unchanged version after processing", {
@@ -152,7 +154,7 @@ export async function createVersionedDocumentJob(
           });
           try {
             await checkVersionCompletion(latestVersion.id);
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
           } catch (error) {
             logger.error("Completion check failed for unchanged version", error, {
               versionId: latestVersion.id,
@@ -180,12 +182,15 @@ export async function createVersionedDocumentJob(
               },
             };
           }
-          if (attempt < 3) await new Promise(resolve => setTimeout(resolve, 2000));
+          if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, 2000));
         }
-        logger.info("Summary not ready yet for unchanged version - returning placeholder for polling", {
-          versionId: latestVersion.id,
-          pdfSummaryId: placeholderId,
-        });
+        logger.info(
+          "Summary not ready yet for unchanged version - returning placeholder for polling",
+          {
+            versionId: latestVersion.id,
+            pdfSummaryId: placeholderId,
+          }
+        );
       } else {
         logger.info("No incomplete chunks found for unchanged version", {
           versionId: latestVersion.id,
@@ -194,18 +199,22 @@ export async function createVersionedDocumentJob(
         for (let attempt = 1; attempt <= 2; attempt++) {
           try {
             await checkVersionCompletion(latestVersion.id);
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
           } catch (error) {
-            logger.error("Completion check failed for unchanged version (no incomplete chunks)", error, {
-              versionId: latestVersion.id,
-            });
+            logger.error(
+              "Completion check failed for unchanged version (no incomplete chunks)",
+              error,
+              {
+                versionId: latestVersion.id,
+              }
+            );
           }
           const sql = await getDbConnection();
           const [finalCheck] = await sql`
             SELECT pdf_summary_id FROM document_versions WHERE id = ${latestVersion.id}
           `;
           if (finalCheck?.pdf_summary_id) break;
-          if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 1500));
+          if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 1500));
         }
       }
 
@@ -237,9 +246,7 @@ export async function createVersionedDocumentJob(
     const avgCharsPerChunk = totalTextSize / totalChunks;
 
     for (const chunk of chunks) {
-      const existingChunk = latestVersion
-        ? await getChunksByHash(document.id, chunk.hash)
-        : null;
+      const existingChunk = latestVersion ? await getChunksByHash(document.id, chunk.hash) : null;
 
       if (existingChunk && existingChunk.summary) {
         reusedChunks++;
@@ -249,7 +256,7 @@ export async function createVersionedDocumentJob(
     const newChunksCount = totalChunks - reusedChunks;
 
     const estimatedTokensForNewChunks = Math.ceil(
-      (avgCharsPerChunk * newChunksCount) / 4 + (newChunksCount * 300)
+      (avgCharsPerChunk * newChunksCount) / 4 + newChunksCount * 300
     );
 
     const costCheck = await checkCostGuardrails(
@@ -279,7 +286,6 @@ export async function createVersionedDocumentJob(
       };
     }
 
-
     logger.info("Creating document version with language", {
       documentId: document.id,
       language,
@@ -298,8 +304,16 @@ export async function createVersionedDocumentJob(
     );
     versionIdForEvents = version.id;
 
-    void logProcessingEvent({ versionId: version.id, type: "upload_started", message: "Version created" });
-    void logProcessingEvent({ versionId: version.id, type: "chunking_started", message: "Chunking started" });
+    void logProcessingEvent({
+      versionId: version.id,
+      type: "upload_started",
+      message: "Version created",
+    });
+    void logProcessingEvent({
+      versionId: version.id,
+      type: "chunking_started",
+      message: "Chunking started",
+    });
     void logProcessingEvent({
       versionId: version.id,
       type: "chunking_completed",
@@ -338,9 +352,7 @@ export async function createVersionedDocumentJob(
     });
 
     for (const chunk of chunks) {
-      const existingChunk = latestVersion
-        ? await getChunksByHash(document.id, chunk.hash)
-        : null;
+      const existingChunk = latestVersion ? await getChunksByHash(document.id, chunk.hash) : null;
 
       if (existingChunk && existingChunk.summary) {
         const reusedChunk = await createDocumentChunk(
@@ -431,14 +443,18 @@ export async function createVersionedDocumentJob(
             })
           );
 
-          const succeeded = results.filter((r) => r.status === "fulfilled" && r.value.success).length;
-          const failed = results.filter((r) => r.status === "rejected" || (r.status === "fulfilled" && !r.value.success));
+          const succeeded = results.filter(
+            (r) => r.status === "fulfilled" && r.value.success
+          ).length;
+          const failed = results.filter(
+            (r) => r.status === "rejected" || (r.status === "fulfilled" && !r.value.success)
+          );
 
           if (failed.length > 0) {
             logger.error("Some chunks failed in batch", undefined, {
               versionId: version.id,
               batchNumber: Math.floor(i / batchSize) + 1,
-              failed: failed.map(r => ({
+              failed: failed.map((r) => ({
                 status: r.status,
                 error: r.status === "rejected" ? String(r.reason) : r.value.error,
               })),
@@ -468,7 +484,7 @@ export async function createVersionedDocumentJob(
       });
 
       const completionDelay = parseInt(process.env.COMPLETION_CHECK_DELAY_MS || "2000", 10);
-      await new Promise(resolve => setTimeout(resolve, completionDelay));
+      await new Promise((resolve) => setTimeout(resolve, completionDelay));
 
       const { checkVersionCompletion } = await import("@/lib/chunk-processor");
       const sql = await getDbConnection();
@@ -481,7 +497,7 @@ export async function createVersionedDocumentJob(
 
           await checkVersionCompletion(version.id);
 
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           const [finalCheck] = await sql`
             SELECT pdf_summary_id FROM document_versions WHERE id = ${version.id}
           `;
@@ -525,13 +541,15 @@ export async function createVersionedDocumentJob(
             }
 
             if (attempt < 3) {
-              await new Promise(resolve => setTimeout(resolve, 2000));
+              await new Promise((resolve) => setTimeout(resolve, 2000));
             }
           }
         } catch (error) {
-          logger.error(`Final completion check failed (attempt ${attempt}/3)`, error, { versionId: version.id });
+          logger.error(`Final completion check failed (attempt ${attempt}/3)`, error, {
+            versionId: version.id,
+          });
           if (attempt < 3) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise((resolve) => setTimeout(resolve, 2000));
           }
         }
       }

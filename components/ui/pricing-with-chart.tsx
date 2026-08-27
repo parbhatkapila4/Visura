@@ -4,13 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircleIcon } from "lucide-react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   type ChartConfig,
   ChartContainer,
@@ -26,7 +20,8 @@ export function PricingWithChart() {
           Pricing that Scales with You
         </h1>
         <p className="mt-4 text-sm text-zinc-400 md:text-base">
-          From AI summaries and document chat to team workspaces and analytics - pick the plan that fits your document workflow.
+          From AI summaries and document chat to team workspaces and analytics - pick the plan that
+          fits your document workflow.
         </p>
       </div>
 
@@ -34,15 +29,9 @@ export function PricingWithChart() {
         <div className="flex flex-col justify-between border-b border-white/10 p-6 md:col-span-2 md:border-b-0 md:border-r">
           <div className="space-y-4">
             <div>
-              <h2 className="text-xl font-semibold text-white">
-                Free
-              </h2>
-              <span className="my-3 block text-3xl font-bold text-primary">
-                $0
-              </span>
-              <p className="text-sm text-zinc-400">
-                Best for trying document intelligence
-              </p>
+              <h2 className="text-xl font-semibold text-white">Free</h2>
+              <span className="my-3 block text-3xl font-bold text-primary">$0</span>
+              <p className="text-sm text-zinc-400">Best for trying document intelligence</p>
             </div>
 
             <p className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-center text-sm text-zinc-400">
@@ -70,12 +59,8 @@ export function PricingWithChart() {
           <div className="flex flex-col justify-between space-y-6">
             <div>
               <h2 className="text-xl font-semibold text-white">Pro Monthly Package</h2>
-              <span className="my-3 block text-3xl font-bold text-primary">
-                $20
-              </span>
-              <p className="text-sm text-zinc-400">
-                Perfect for small businesses & startups
-              </p>
+              <span className="my-3 block text-3xl font-bold text-primary">$20</span>
+              <p className="text-sm text-zinc-400">Perfect for small businesses & startups</p>
             </div>
             <div className="h-fit w-full rounded-lg border border-white/10 bg-zinc-800/50 p-2">
               <InterestChart />
@@ -167,9 +152,7 @@ function InterestChart() {
             <ChartTooltip
               cursor={false}
               content={
-                <ChartTooltipContent
-                  className="border-white/20 bg-zinc-800 text-zinc-100 shadow-xl [&_.text-muted-foreground]:!text-zinc-400 [&_.text-foreground]:!text-white"
-                />
+                <ChartTooltipContent className="border-white/20 bg-zinc-800 text-zinc-100 shadow-xl [&_.text-muted-foreground]:!text-zinc-400 [&_.text-foreground]:!text-white" />
               }
             />
             <Line
@@ -185,4 +168,3 @@ function InterestChart() {
     </Card>
   );
 }
-

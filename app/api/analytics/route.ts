@@ -97,8 +97,8 @@ export async function GET(request: NextRequest) {
       docsLastMonthCount > 0
         ? Math.round(((docsThisMonthCount - docsLastMonthCount) / docsLastMonthCount) * 100)
         : docsThisMonthCount > 0
-        ? 100
-        : 0;
+          ? 100
+          : 0;
 
     const avgWordsPerDocument =
       totalDocuments > 0 ? Math.round(totalWordsProcessed / totalDocuments) : 0;

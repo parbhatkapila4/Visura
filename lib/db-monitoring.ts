@@ -42,10 +42,7 @@ export function trackQuery(query: string, duration: number, error?: Error) {
   });
 }
 
-export async function trackedQuery<T>(
-  queryFn: () => Promise<T>,
-  queryName?: string
-): Promise<T> {
+export async function trackedQuery<T>(queryFn: () => Promise<T>, queryName?: string): Promise<T> {
   const startTime = Date.now();
   try {
     const result = await queryFn();
@@ -69,7 +66,8 @@ export function getQueryStats(): {
   const recent = queryMetrics.slice(-100);
   const total = queryMetrics.length;
   const durations = queryMetrics.map((m) => m.duration);
-  const avgDuration = durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+  const avgDuration =
+    durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
   const slowQueries = queryMetrics.filter((m) => m.duration > 1000).length;
   const errorQueries = queryMetrics.filter((m) => m.error).length;
 

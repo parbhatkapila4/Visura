@@ -18,10 +18,7 @@ export default async function Home({ searchParams }: HomeProps) {
         className="relative z-10 w-full bg-black"
         style={{ position: "relative", zIndex: 10, backgroundColor: "#000000" }}
       >
-        <HomeClient
-          showSuccessMessage={showSuccessMessage}
-          showCancelMessage={showCancelMessage}
-        />
+        <HomeClient showSuccessMessage={showSuccessMessage} showCancelMessage={showCancelMessage} />
       </div>
     </div>
   );

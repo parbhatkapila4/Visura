@@ -24,7 +24,9 @@ function VerticalMarquee({
 
   useEffect(() => {
     if (onItemsRef && containerRef.current) {
-      const items = Array.from(containerRef.current.querySelectorAll('.marquee-item')) as HTMLElement[];
+      const items = Array.from(
+        containerRef.current.querySelectorAll(".marquee-item")
+      ) as HTMLElement[];
       onItemsRef(items);
     }
   }, [onItemsRef]);
@@ -32,10 +34,7 @@ function VerticalMarquee({
   return (
     <div
       ref={containerRef}
-      className={cn(
-        "group flex flex-col overflow-hidden",
-        className
-      )}
+      className={cn("group flex flex-col overflow-hidden", className)}
       style={
         {
           "--duration": `${speed}s`,
@@ -81,7 +80,7 @@ export default function CTAWithVerticalMarquee() {
     if (!marqueeContainer) return;
 
     const updateOpacity = () => {
-      const items = marqueeContainer.querySelectorAll('.marquee-item');
+      const items = marqueeContainer.querySelectorAll(".marquee-item");
       const containerRect = marqueeContainer.getBoundingClientRect();
       const centerY = containerRect.top + containerRect.height / 2;
 
@@ -116,8 +115,8 @@ export default function CTAWithVerticalMarquee() {
               Get Started in Minutes
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed animate-fade-in-up [animation-delay:400ms]">
-              Start getting more distribution and ROI out of your content. Try
-              Assembly for free for 14 days.
+              Start getting more distribution and ROI out of your content. Try Assembly for free for
+              14 days.
             </p>
             <div className="flex flex-wrap gap-4 animate-fade-in-up [animation-delay:600ms]">
               <button className="group relative px-6 py-3 bg-foreground text-background rounded-md font-medium overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg">
@@ -132,7 +131,10 @@ export default function CTAWithVerticalMarquee() {
           </div>
 
           {/* Right Marquee */}
-          <div ref={marqueeRef} className="relative h-[600px] lg:h-[700px] flex items-center justify-center animate-fade-in-up [animation-delay:400ms]">
+          <div
+            ref={marqueeRef}
+            className="relative h-[600px] lg:h-[700px] flex items-center justify-center animate-fade-in-up [animation-delay:400ms]"
+          >
             <div className="relative w-full h-full">
               <VerticalMarquee speed={20} className="h-full">
                 {marqueeItems.map((item, idx) => (
@@ -144,10 +146,10 @@ export default function CTAWithVerticalMarquee() {
                   </div>
                 ))}
               </VerticalMarquee>
-              
+
               {/* Top vignette */}
               <div className="pointer-events-none absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-background via-background/50 to-transparent z-10"></div>
-              
+
               {/* Bottom vignette */}
               <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-background via-background/50 to-transparent z-10"></div>
             </div>

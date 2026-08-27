@@ -4,8 +4,14 @@ import { clerkAppearance } from "@/lib/clerk-appearance";
 
 export default function Page() {
   return (
-    <div className="flex min-h-dvh w-full min-w-0 bg-[#2C2638]" style={{ backgroundColor: "#2C2638" }}>
-      <AuthVisualPane tagline="Transforming documents into actionable insights" currentPage="sign-up" />
+    <div
+      className="flex min-h-dvh w-full min-w-0 bg-[#2C2638]"
+      style={{ backgroundColor: "#2C2638" }}
+    >
+      <AuthVisualPane
+        tagline="Transforming documents into actionable insights"
+        currentPage="sign-up"
+      />
 
       <div className="flex-1 lg:w-[50%] flex items-center justify-center relative overflow-hidden min-h-dvh">
         <div className="absolute inset-0">

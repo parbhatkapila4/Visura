@@ -160,13 +160,13 @@ export async function GET(request: NextRequest) {
       } else {
         sources = [];
       }
-      const enrichedSources = (sources as Array<{ page?: number | null; snippet?: string; chunk_id?: string | null }>).map(
-        (s) => ({
-          ...s,
-          document_version_id: ref.document_version_id ?? undefined,
-          pdf_summary_id: ref.pdf_summary_id ?? undefined,
-        })
-      );
+      const enrichedSources = (
+        sources as Array<{ page?: number | null; snippet?: string; chunk_id?: string | null }>
+      ).map((s) => ({
+        ...s,
+        document_version_id: ref.document_version_id ?? undefined,
+        pdf_summary_id: ref.pdf_summary_id ?? undefined,
+      }));
       return { ...m, sources: enrichedSources };
     });
     return NextResponse.json({ messages });

@@ -9,7 +9,8 @@ export default function UploadHeader() {
         Upload your document
       </h1>
       <p className="text-[#666] text-base sm:text-lg max-w-md mx-auto">
-        Our AI will analyze and summarize your document in seconds. Supports PDF, Word, Text, Markdown, Excel, and PowerPoint.
+        Our AI will analyze and summarize your document in seconds. Supports PDF, Word, Text,
+        Markdown, Excel, and PowerPoint.
       </p>
     </div>
   );

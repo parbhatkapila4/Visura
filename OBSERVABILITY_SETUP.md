@@ -31,6 +31,7 @@ The observability module will automatically initialize Sentry when `NEXT_PUBLIC_
 ### Setup Steps:
 
 1. **Set OpenTelemetry Endpoint**:
+
    ```bash
    OTEL_EXPORTER_OTLP_ENDPOINT=https://your-otel-endpoint.com
    ```
@@ -91,7 +92,7 @@ Access via: `GET /api/metrics`
 
 1. **Sentry DSN** (optional): Add `NEXT_PUBLIC_SENTRY_DSN` to your `.env.local`
 2. **OpenTelemetry Endpoint** (optional): Add `OTEL_EXPORTER_OTLP_ENDPOINT` to your `.env.local`
-3. **Run Database Migration**: 
+3. **Run Database Migration**:
    ```bash
    psql $DATABASE_URL -f migrations/embeddings_storage_migration.sql
    ```
@@ -99,22 +100,25 @@ Access via: `GET /api/metrics`
 ## Available Metrics Endpoints
 
 ### Business Metrics
+
 - **Endpoint**: `GET /api/observability/metrics`
-- **Query Params**: 
+- **Query Params**:
   - `name`: Filter by metric name
   - `summary=true`: Get summary statistics
   - `tags[key]=value`: Filter by tag values
 - **Authentication**: Requires Clerk authentication
 
 ### Database Performance
+
 - **Endpoint**: `GET /api/observability/database`
 - **Health Check**: `GET /api/observability/database?health=true`
 - **Metrics**: Query stats, slow queries, connection pool metrics
 - **Authentication**: Requires Clerk authentication
 
 ### Performance Metrics
+
 - **Endpoint**: `GET /api/metrics`
-- **Query Params**: 
+- **Query Params**:
   - `metricName`: Specific metric
   - `timeWindow`: Time window in seconds
   - `tagKey`: Group by tag
@@ -146,11 +150,11 @@ Access via: `GET /api/metrics`
 
 ```typescript
 // Fetch business metrics
-const metrics = await fetch('/api/observability/metrics?summary=true');
+const metrics = await fetch("/api/observability/metrics?summary=true");
 
 // Fetch database health
-const dbHealth = await fetch('/api/observability/database?health=true');
+const dbHealth = await fetch("/api/observability/database?health=true");
 
 // Fetch performance metrics
-const perf = await fetch('/api/metrics?metricName=document_processing');
+const perf = await fetch("/api/metrics?metricName=document_processing");
 ```

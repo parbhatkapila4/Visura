@@ -44,7 +44,10 @@ export function hashContent(content: string): string {
   return createHash("sha256").update(content).digest("hex");
 }
 
-export function chunkText(text: string, chunkSize: number = 1000): Array<{ text: string; hash: string; index: number }> {
+export function chunkText(
+  text: string,
+  chunkSize: number = 1000
+): Array<{ text: string; hash: string; index: number }> {
   const chunks: Array<{ text: string; hash: string; index: number }> = [];
   const words = text.split(/\s+/);
 
@@ -91,10 +94,7 @@ export function chunkText(text: string, chunkSize: number = 1000): Array<{ text:
   return chunks;
 }
 
-export async function findOrCreateDocument(
-  userId: string,
-  title: string
-): Promise<Document> {
+export async function findOrCreateDocument(userId: string, title: string): Promise<Document> {
   const sql = await getDbConnection();
 
   const existing = await sql`
@@ -133,7 +133,7 @@ export async function createDocumentVersion(
   totalChunks: number,
   reusedChunks: number,
   fileUrl?: string | null,
-  outputLanguage: string = 'ENGLISH'
+  outputLanguage: string = "ENGLISH"
 ): Promise<DocumentVersion> {
   const sql = await getDbConnection();
 
@@ -156,9 +156,7 @@ export async function createDocumentVersion(
   }
 
   if (estimatedTokensSaved < 0) {
-    throw new Error(
-      `INVARIANT VIOLATION: estimated_tokens_saved (${estimatedTokensSaved}) < 0`
-    );
+    throw new Error(`INVARIANT VIOLATION: estimated_tokens_saved (${estimatedTokensSaved}) < 0`);
   }
 
   const [version] = await sql`
@@ -281,7 +279,10 @@ export async function getChunksNeedingSummary(versionId: string): Promise<Docume
   return chunks as DocumentChunk[];
 }
 
-export async function linkVersionToSummary(versionId: string, pdfSummaryId: string): Promise<boolean> {
+export async function linkVersionToSummary(
+  versionId: string,
+  pdfSummaryId: string
+): Promise<boolean> {
   const sql = await getDbConnection();
   const [result] = await sql`
     UPDATE document_versions
@@ -302,7 +303,7 @@ export async function createPlaceholderSummary(
   const sql = await getDbConnection();
   const [row] = await sql`
     INSERT INTO pdf_summaries (user_id, original_file_url, summary_text, title, file_name, status)
-    VALUES (${userId}, ${fileUrl || ''}, '', ${title || 'Untitled Document'}, ${fileName || ''}, 'processing')
+    VALUES (${userId}, ${fileUrl || ""}, '', ${title || "Untitled Document"}, ${fileName || ""}, 'processing')
     RETURNING id
   `;
   if (!row?.id) throw new Error("Failed to create placeholder summary");

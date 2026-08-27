@@ -9,6 +9,7 @@ import { useAuth, useUser, useClerk } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { MenuToggleIcon } from "@/components/menu-toggle-icon";
 import { LogOut } from "lucide-react";
+import { clearLogoutLoaderPending, dispatchLogoutLoaderStart } from "@/lib/logout-loader-events";
 
 const baseNavLinks = [
   { label: "About", href: "/about" },
@@ -66,7 +67,12 @@ export default function Header() {
   }, [userMenuOpen]);
 
   const handleLogout = async () => {
-    await signOut();
+    try {
+      dispatchLogoutLoaderStart();
+      await signOut({ redirectUrl: `${window.location.origin}/` });
+    } catch {
+      clearLogoutLoaderPending();
+    }
     setUserMenuOpen(false);
   };
 
@@ -177,11 +183,16 @@ export default function Header() {
                       />
                     ) : (
                       <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/30 text-white text-xs font-semibold">
-                        {firstName ? firstName.charAt(0).toUpperCase() : user?.emailAddresses?.[0]?.emailAddress?.charAt(0).toUpperCase() ?? "U"}
+                        {firstName
+                          ? firstName.charAt(0).toUpperCase()
+                          : (user?.emailAddresses?.[0]?.emailAddress?.charAt(0).toUpperCase() ??
+                            "U")}
                       </span>
                     )}
                     {firstName ? (
-                      <span className="text-sm font-medium text-white truncate max-w-[100px]">{firstName}</span>
+                      <span className="text-sm font-medium text-white truncate max-w-[100px]">
+                        {firstName}
+                      </span>
                     ) : (
                       <span className="text-sm font-medium text-white truncate max-w-[120px]">
                         {user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] ?? "Account"}
@@ -270,11 +281,7 @@ export default function Header() {
             className="md:hidden p-2 rounded-md text-white hover:bg-white/10 transition-colors"
             aria-label="Toggle menu"
           >
-            <MenuToggleIcon
-              open={mobileOpen}
-              className="size-6"
-              duration={300}
-            />
+            <MenuToggleIcon open={mobileOpen} className="size-6" duration={300} />
           </button>
         </nav>
       </header>
@@ -294,9 +301,7 @@ export default function Header() {
                     key={link.label}
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
-                    className={cn(
-                      "py-3 text-base font-medium text-white hover:text-white/80"
-                    )}
+                    className={cn("py-3 text-base font-medium text-white hover:text-white/80")}
                   >
                     {link.label}
                   </Link>
@@ -310,7 +315,9 @@ export default function Header() {
                         {user?.emailAddresses?.[0]?.emailAddress ?? ""}
                       </p>
                       <p className="mt-1 text-sm font-medium text-white">
-                        {firstName || user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] || "Account"}
+                        {firstName ||
+                          user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] ||
+                          "Account"}
                       </p>
                     </div>
                     <Link

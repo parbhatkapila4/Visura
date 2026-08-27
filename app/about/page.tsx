@@ -14,7 +14,9 @@ export default function AboutPage() {
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">About us</h1>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
+            About us
+          </h1>
           <p className="text-base sm:text-lg lg:text-xl text-zinc-400 max-w-3xl">
             Hyper-focused on details. We're dedicated to our craft and we hope it shows through in
             our work.

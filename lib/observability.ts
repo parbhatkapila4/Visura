@@ -1,4 +1,3 @@
-
 import { logger } from "./logger";
 
 let sentryInitialized = false;
@@ -13,7 +12,6 @@ export async function initSentry() {
   }
 
   try {
-
     // @ts-expect-error - Sentry is optional dependency, may not be installed
     const SentryModule = await import("@sentry/nextjs").catch(() => null);
     if (!SentryModule) {
@@ -26,9 +24,7 @@ export async function initSentry() {
       environment: process.env.NODE_ENV || "development",
       tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
       debug: process.env.NODE_ENV === "development",
-      integrations: [
-        new SentryModule.Integrations.Http({ tracing: true }),
-      ],
+      integrations: [new SentryModule.Integrations.Http({ tracing: true })],
       beforeSend(event: any, hint: any) {
         if (process.env.NODE_ENV === "production") {
           const error = hint?.originalException;
@@ -65,7 +61,11 @@ export async function captureException(error: Error, context?: Record<string, un
   }
 }
 
-export async function captureMessage(message: string, level: "info" | "warning" | "error" = "info", context?: Record<string, unknown>) {
+export async function captureMessage(
+  message: string,
+  level: "info" | "warning" | "error" = "info",
+  context?: Record<string, unknown>
+) {
   try {
     // @ts-expect-error - Sentry is optional dependency, may not be installed
     const SentryModule = await import("@sentry/nextjs").catch(() => null);
@@ -204,14 +204,22 @@ export function getBusinessMetricsSummary(name: string): {
   return { count: metrics.length, sum, avg, min, max };
 }
 
-export function trackPerformanceMetric(operation: string, duration: number, metadata?: Record<string, unknown>) {
+export function trackPerformanceMetric(
+  operation: string,
+  duration: number,
+  metadata?: Record<string, unknown>
+) {
   trackBusinessMetric("performance", duration, {
     operation,
     ...(metadata as Record<string, string>),
   });
 }
 
-export function trackUserEngagement(event: string, userId: string, metadata?: Record<string, unknown>) {
+export function trackUserEngagement(
+  event: string,
+  userId: string,
+  metadata?: Record<string, unknown>
+) {
   trackBusinessMetric("user_engagement", 1, {
     event,
     userId,
@@ -219,7 +227,11 @@ export function trackUserEngagement(event: string, userId: string, metadata?: Re
   });
 }
 
-export function trackFeatureUsage(feature: string, userId: string, metadata?: Record<string, unknown>) {
+export function trackFeatureUsage(
+  feature: string,
+  userId: string,
+  metadata?: Record<string, unknown>
+) {
   trackBusinessMetric("feature_usage", 1, {
     feature,
     userId,

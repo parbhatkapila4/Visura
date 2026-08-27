@@ -143,10 +143,27 @@ export function ChatbotAnimatedView({
   const { textareaRef, adjustHeight } = useAutoResizeTextarea(60, 200);
 
   const documentCommands: CommandSuggestion[] = [
-    { icon: <FileText className="w-4 h-4" />, label: "Summarize key points", prompt: "Summarize the key points from this document" },
-    { icon: <Lightbulb className="w-4 h-4" />, label: "Explain like I'm 5", prompt: "Explain the main concepts from this document in very simple terms, like I'm 5 years old" },
-    { icon: <Target className="w-4 h-4" />, label: "Find action items", prompt: "What are the actionable items or next steps mentioned in this document?" },
-    { icon: <ListOrdered className="w-4 h-4" />, label: "Create an outline", prompt: "Create a detailed outline of the structure and main points of this document" },
+    {
+      icon: <FileText className="w-4 h-4" />,
+      label: "Summarize key points",
+      prompt: "Summarize the key points from this document",
+    },
+    {
+      icon: <Lightbulb className="w-4 h-4" />,
+      label: "Explain like I'm 5",
+      prompt:
+        "Explain the main concepts from this document in very simple terms, like I'm 5 years old",
+    },
+    {
+      icon: <Target className="w-4 h-4" />,
+      label: "Find action items",
+      prompt: "What are the actionable items or next steps mentioned in this document?",
+    },
+    {
+      icon: <ListOrdered className="w-4 h-4" />,
+      label: "Create an outline",
+      prompt: "Create a detailed outline of the structure and main points of this document",
+    },
   ];
 
   const loadSessions = useCallback(async () => {
@@ -200,7 +217,9 @@ export function ChatbotAnimatedView({
   useEffect(() => {
     if (value.startsWith("/") && !value.includes(" ")) {
       setShowCommandPalette(true);
-      const idx = documentCommands.findIndex((c) => c.prompt.toLowerCase().startsWith(value.toLowerCase().slice(1)));
+      const idx = documentCommands.findIndex((c) =>
+        c.prompt.toLowerCase().startsWith(value.toLowerCase().slice(1))
+      );
       setActiveSuggestion(idx >= 0 ? idx : -1);
     } else {
       setShowCommandPalette(false);
@@ -217,7 +236,11 @@ export function ChatbotAnimatedView({
     const onClick = (e: MouseEvent) => {
       const target = e.target as Node;
       const cmdBtn = document.querySelector("[data-command-button]");
-      if (commandPaletteRef.current && !commandPaletteRef.current.contains(target) && !cmdBtn?.contains(target)) {
+      if (
+        commandPaletteRef.current &&
+        !commandPaletteRef.current.contains(target) &&
+        !cmdBtn?.contains(target)
+      ) {
         setShowCommandPalette(false);
       }
     };
@@ -228,7 +251,14 @@ export function ChatbotAnimatedView({
   const createNewSession = async (firstMessage?: string): Promise<string | null> => {
     try {
       const sessionName = firstMessage
-        ? firstMessage.replace(/[?!.,]/g, "").trim().split(" ").filter((w) => w.length > 2).slice(0, 4).join(" ").slice(0, 35) || `Chat ${sessions.length + 1}`
+        ? firstMessage
+            .replace(/[?!.,]/g, "")
+            .trim()
+            .split(" ")
+            .filter((w) => w.length > 2)
+            .slice(0, 4)
+            .join(" ")
+            .slice(0, 35) || `Chat ${sessions.length + 1}`
         : `Chat ${sessions.length + 1}`;
       const res = await fetch("/api/chatbot/sessions", {
         method: "POST",
@@ -331,26 +361,26 @@ export function ChatbotAnimatedView({
   const showWelcome = !currentSessionId || messages.length === 0;
 
   return (
-    <div className="h-full min-h-0 flex flex-col w-full items-center justify-center bg-[#0a0a0a] text-white p-4 sm:p-6 relative overflow-hidden">
+    <div className="h-full min-h-0 flex flex-col w-full items-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100 p-3 sm:p-5 relative overflow-hidden">
       <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full mix-blend-normal filter blur-[128px] animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full mix-blend-normal filter blur-[128px] animate-pulse [animation-delay:700ms]" />
-        <div className="absolute top-1/4 right-1/3 w-64 h-64 bg-fuchsia-500/10 rounded-full mix-blend-normal filter blur-[96px] animate-pulse [animation-delay:1s]" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-sky-500/10 rounded-full mix-blend-normal filter blur-[128px]" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full mix-blend-normal filter blur-[128px]" />
+        <div className="absolute top-1/4 right-1/3 w-64 h-64 bg-indigo-500/10 rounded-full mix-blend-normal filter blur-[96px]" />
       </div>
 
-      <div className="flex-1 w-full flex flex-col items-center justify-center min-h-0 relative z-10">
-        <div className="w-full max-w-2xl flex flex-col flex-1 min-h-0">
+      <div className="flex-1 w-full flex flex-col items-center min-h-0 relative z-10">
+        <div className="w-full max-w-4xl flex flex-col flex-1 min-h-0">
           <motion.div
-            className="relative flex flex-col flex-1 min-h-0 space-y-6"
+            className="relative flex flex-col flex-1 min-h-0"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             {showWelcome ? (
-              <>
+              <div className="flex-1 flex flex-col justify-center pb-8">
                 <div className="text-center space-y-3 flex-shrink-0">
                   <motion.h1
-                    className="text-3xl font-medium tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white/90 to-white/40 pb-1"
+                    className="text-3xl sm:text-4xl font-semibold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-100 to-slate-300 pb-1"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
@@ -364,7 +394,7 @@ export function ChatbotAnimatedView({
                     transition={{ delay: 0.5, duration: 0.8 }}
                   />
                   <motion.p
-                    className="text-sm text-white/40"
+                    className="text-sm sm:text-base text-slate-300"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3 }}
@@ -372,11 +402,11 @@ export function ChatbotAnimatedView({
                     Type a command or ask about &quot;{pdfTitle}&quot;
                   </motion.p>
                 </div>
-              </>
+              </div>
             ) : (
               <div
                 ref={messagesContainerRef}
-                className="flex-1 overflow-y-auto min-h-0 rounded-2xl border border-white/[0.05] bg-white/[0.02] backdrop-blur-sm p-4"
+                className="flex-1 overflow-y-auto min-h-0 rounded-2xl border border-slate-700/80 bg-slate-900/70 backdrop-blur-sm p-4 mb-4"
               >
                 <div className="space-y-6 max-w-3xl mx-auto">
                   {messages.map((message) => (
@@ -404,13 +434,35 @@ export function ChatbotAnimatedView({
                             <div className="prose prose-sm max-w-none prose-invert">
                               <ReactMarkdown
                                 components={{
-                                  p: ({ children }) => <p className="mb-3 last:mb-0 text-white/90 text-[15px] leading-relaxed">{children}</p>,
-                                  ul: ({ children }) => <ul className="list-disc pl-5 mb-3 space-y-1.5 text-white/90">{children}</ul>,
-                                  ol: ({ children }) => <ol className="list-decimal pl-5 mb-3 space-y-1.5 text-white/90">{children}</ol>,
+                                  p: ({ children }) => (
+                                    <p className="mb-3 last:mb-0 text-white/90 text-[15px] leading-relaxed">
+                                      {children}
+                                    </p>
+                                  ),
+                                  ul: ({ children }) => (
+                                    <ul className="list-disc pl-5 mb-3 space-y-1.5 text-white/90">
+                                      {children}
+                                    </ul>
+                                  ),
+                                  ol: ({ children }) => (
+                                    <ol className="list-decimal pl-5 mb-3 space-y-1.5 text-white/90">
+                                      {children}
+                                    </ol>
+                                  ),
                                   li: ({ children }) => <li className="text-[15px]">{children}</li>,
-                                  strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
-                                  code: ({ children }) => <code className="bg-white/10 px-1.5 py-0.5 rounded text-sm font-mono text-white/90">{children}</code>,
-                                  pre: ({ children }) => <pre className="bg-black/30 border border-white/10 rounded-lg p-4 overflow-x-auto my-3">{children}</pre>,
+                                  strong: ({ children }) => (
+                                    <strong className="font-semibold text-white">{children}</strong>
+                                  ),
+                                  code: ({ children }) => (
+                                    <code className="bg-white/10 px-1.5 py-0.5 rounded text-sm font-mono text-white/90">
+                                      {children}
+                                    </code>
+                                  ),
+                                  pre: ({ children }) => (
+                                    <pre className="bg-black/30 border border-white/10 rounded-lg p-4 overflow-x-auto my-3">
+                                      {children}
+                                    </pre>
+                                  ),
                                 }}
                               >
                                 {message.message_content}
@@ -433,7 +485,8 @@ export function ChatbotAnimatedView({
                                           })
                                         );
                                     };
-                                    const pageLabel = source.page != null ? `Page ${source.page}` : null;
+                                    const pageLabel =
+                                      source.page != null ? `Page ${source.page}` : null;
                                     const snippetText = truncateSnippet(source.snippet ?? "");
                                     return (
                                       <li
@@ -441,9 +494,13 @@ export function ChatbotAnimatedView({
                                         className="text-sm text-white/70 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-2"
                                       >
                                         {pageLabel && (
-                                          <span className="text-white/50 text-xs mr-2">{pageLabel}</span>
+                                          <span className="text-white/50 text-xs mr-2">
+                                            {pageLabel}
+                                          </span>
                                         )}
-                                        <p className="text-white/80 leading-relaxed mt-0.5">{snippetText}</p>
+                                        <p className="text-white/80 leading-relaxed mt-0.5">
+                                          {snippetText}
+                                        </p>
                                         <button
                                           type="button"
                                           onClick={handleView}
@@ -459,7 +516,9 @@ export function ChatbotAnimatedView({
                             )}
                           </>
                         ) : (
-                          <p className="text-[15px] text-white/90 leading-relaxed">{message.message_content}</p>
+                          <p className="text-[15px] text-white/90 leading-relaxed">
+                            {message.message_content}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -470,7 +529,9 @@ export function ChatbotAnimatedView({
                         <Sparkles className="w-4 h-4 text-white/70" />
                       </div>
                       <div className="flex-1 pt-1">
-                        <p className="text-[11px] text-white/50 mb-1.5 uppercase tracking-wider">Visura</p>
+                        <p className="text-[11px] text-white/50 mb-1.5 uppercase tracking-wider">
+                          Visura
+                        </p>
                         <div className="flex items-center gap-2 text-sm text-white/70">
                           <span>Thinking</span>
                           <TypingDots />
@@ -484,7 +545,7 @@ export function ChatbotAnimatedView({
             )}
 
             <motion.div
-              className="relative backdrop-blur-2xl bg-white/[0.02] rounded-2xl border border-white/[0.05] shadow-2xl flex-shrink-0"
+              className="relative backdrop-blur-2xl bg-slate-900/80 rounded-2xl border border-slate-700 shadow-2xl flex-shrink-0"
               initial={{ scale: 0.98 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.1 }}
@@ -493,23 +554,27 @@ export function ChatbotAnimatedView({
                 {showCommandPalette && (
                   <motion.div
                     ref={commandPaletteRef}
-                    className="absolute left-4 right-4 bottom-full mb-2 backdrop-blur-xl bg-black/90 rounded-lg z-50 shadow-lg border border-white/10 overflow-hidden"
+                    className="fixed left-1/2 -translate-x-1/2 bottom-36 w-[min(44rem,calc(100vw-1.5rem))] sm:w-[min(44rem,calc(100vw-3rem))] max-h-72 overflow-y-auto backdrop-blur-xl bg-slate-900/95 rounded-xl z-[10020] shadow-2xl border border-slate-700"
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 5 }}
                     transition={{ duration: 0.15 }}
                   >
-                    <div className="py-1 bg-black/95">
+                    <div className="py-1 bg-slate-900/95">
                       {documentCommands.map((cmd, index) => (
                         <motion.div
                           key={cmd.label}
                           className={cn(
-                            "flex items-center gap-2 px-3 py-2 text-xs transition-colors cursor-pointer",
-                            activeSuggestion === index ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5"
+                            "flex items-center gap-2 px-3 py-2.5 text-sm transition-colors cursor-pointer",
+                            activeSuggestion === index
+                              ? "bg-slate-700 text-white"
+                              : "text-slate-200 hover:bg-slate-800"
                           )}
                           onClick={() => selectCommand(index)}
                         >
-                          <div className="w-5 h-5 flex items-center justify-center text-white/60">{cmd.icon}</div>
+                          <div className="w-5 h-5 flex items-center justify-center text-slate-300">
+                            {cmd.icon}
+                          </div>
                           <div className="font-medium">{cmd.label}</div>
                         </motion.div>
                       ))}
@@ -529,10 +594,10 @@ export function ChatbotAnimatedView({
                   onKeyDown={handleKeyDown}
                   onFocus={() => setInputFocused(true)}
                   onBlur={() => setInputFocused(false)}
-                  placeholder={`Ask about "${pdfTitle}"...`}
+                  placeholder={`Ask a question about "${pdfTitle}"...`}
                   disabled={isLoading}
                   className={cn(
-                    "w-full px-4 py-3 resize-none bg-transparent border-none text-white/90 text-sm focus:outline-none placeholder:text-white/20 min-h-[60px]"
+                    "w-full px-4 py-3 resize-none bg-transparent border-none text-slate-100 text-sm focus:outline-none placeholder:text-slate-400 min-h-[60px]"
                   )}
                   style={{ overflow: "hidden" }}
                   rows={1}
@@ -550,7 +615,7 @@ export function ChatbotAnimatedView({
                     {attachments.map((file, index) => (
                       <motion.div
                         key={index}
-                        className="flex items-center gap-2 text-xs bg-white/[0.03] py-1.5 px-3 rounded-lg text-white/70"
+                        className="flex items-center gap-2 text-xs bg-slate-800 py-1.5 px-3 rounded-lg text-slate-300"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
@@ -569,13 +634,13 @@ export function ChatbotAnimatedView({
                 )}
               </AnimatePresence>
 
-              <div className="p-4 border-t border-white/[0.05] flex items-center justify-between gap-4">
+              <div className="p-4 border-t border-slate-700 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <motion.button
                     type="button"
                     onClick={handleAttachFile}
                     whileTap={{ scale: 0.94 }}
-                    className="p-2 text-white/40 hover:text-white/90 rounded-lg transition-colors"
+                    className="p-2 text-slate-400 hover:text-slate-100 rounded-lg transition-colors"
                   >
                     <Paperclip className="w-4 h-4" />
                   </motion.button>
@@ -588,8 +653,8 @@ export function ChatbotAnimatedView({
                     }}
                     whileTap={{ scale: 0.94 }}
                     className={cn(
-                      "p-2 text-white/40 hover:text-white/90 rounded-lg transition-colors",
-                      showCommandPalette && "bg-white/10 text-white/90"
+                      "p-2 text-slate-400 hover:text-slate-100 rounded-lg transition-colors",
+                      showCommandPalette && "bg-slate-700 text-slate-100"
                     )}
                   >
                     <Command className="w-4 h-4" />
@@ -604,8 +669,8 @@ export function ChatbotAnimatedView({
                   className={cn(
                     "px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2",
                     value.trim()
-                      ? "bg-white text-[#0A0A0B] shadow-lg shadow-white/10"
-                      : "bg-white/[0.05] text-white/40"
+                      ? "bg-slate-100 text-slate-900 shadow-lg shadow-slate-500/20"
+                      : "bg-slate-800 text-slate-400"
                   )}
                 >
                   {isLoading ? (
@@ -618,13 +683,13 @@ export function ChatbotAnimatedView({
               </div>
             </motion.div>
 
-            <div className="flex flex-wrap items-center justify-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
               {documentCommands.map((cmd, index) => (
                 <motion.button
                   key={cmd.label}
                   type="button"
                   onClick={() => sendMessage(cmd.prompt)}
-                  className="flex items-center gap-2 px-3 py-2 bg-white/[0.02] hover:bg-white/[0.05] rounded-lg text-sm text-white/60 hover:text-white/90 transition-all"
+                  className="flex items-center gap-2 px-3 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-lg text-sm text-slate-300 hover:text-slate-100 transition-all border border-slate-700"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}

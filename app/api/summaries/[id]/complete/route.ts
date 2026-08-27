@@ -18,10 +18,7 @@ function buildReadableOverview(fullText: string): string {
   return `### Document overview\n\nThis document has **${wordCount}** words. You can read the content below and use **Chat** to ask questions.\n\n---\n\n${readable}${more ? "\n\n---\n\n*[... rest of document available in chat ...]*" : ""}`;
 }
 
-export async function POST(
-  request: NextRequest,
-  props: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -45,8 +42,14 @@ export async function POST(
       return NextResponse.json({ error: "Summary not found" }, { status: 404 });
     }
 
-    if (summary.status === "completed" && summary.summary_text && summary.summary_text.trim().length > 100) {
-      const isError = summary.summary_text.includes("Summary generation failed") || summary.summary_text.includes("could not be linked");
+    if (
+      summary.status === "completed" &&
+      summary.summary_text &&
+      summary.summary_text.trim().length > 100
+    ) {
+      const isError =
+        summary.summary_text.includes("Summary generation failed") ||
+        summary.summary_text.includes("could not be linked");
       if (!isError) {
         return NextResponse.json({ ok: true, message: "Already has summary" });
       }
@@ -60,16 +63,21 @@ export async function POST(
 
     let finalSummary: string;
     if (!versionRow) {
-      finalSummary = "### Document summary\n\nThis document could not be linked to stored content. Please re-upload the file from the upload page to generate a readable overview.";
+      finalSummary =
+        "### Document summary\n\nThis document could not be linked to stored content. Please re-upload the file from the upload page to generate a readable overview.";
     } else {
       const chunks = await getChunksForVersion(versionRow.id);
       const sortedChunks = chunks.sort((a, b) => a.chunk_index - b.chunk_index);
-      const fullText = sortedChunks.map((c) => c.text).join("\n\n").trim();
+      const fullText = sortedChunks
+        .map((c) => c.text)
+        .join("\n\n")
+        .trim();
 
       if (fullText.length > 0) {
         finalSummary = buildReadableOverview(fullText);
       } else {
-        finalSummary = "### Document summary\n\nThis document has no extractable text. You can still use chat if content is added later.";
+        finalSummary =
+          "### Document summary\n\nThis document has no extractable text. You can still use chat if content is added later.";
       }
     }
 

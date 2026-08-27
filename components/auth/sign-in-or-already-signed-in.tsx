@@ -80,7 +80,8 @@ export function SignInOrAlreadySignedIn() {
       <div className="w-full max-w-md mx-auto rounded-2xl border border-red-500/30 bg-red-950/20 p-6 text-center">
         <p className="text-base font-semibold text-red-200 mb-2">Redirect loop detected</p>
         <p className="text-sm text-red-200/80 mb-4">
-          Your session may be invalid (e.g. system clock wrong). Clear the session and sign in again.
+          Your session may be invalid (e.g. system clock wrong). Clear the session and sign in
+          again.
         </p>
         <button
           type="button"
@@ -91,7 +92,8 @@ export function SignInOrAlreadySignedIn() {
           {clearing ? "Clearing…" : "Clear session and sign in again"}
         </button>
         <p className="mt-4 text-xs text-red-200/60">
-          You’ll be taken to sign-in with a clean session. Fix your system clock if the issue continues.
+          You’ll be taken to sign-in with a clean session. Fix your system clock if the issue
+          continues.
         </p>
       </div>
     );

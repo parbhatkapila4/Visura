@@ -54,7 +54,7 @@ export async function GET() {
         type: "system_not_ready",
         message: `System not ready: ${stuckCount} stuck versions (threshold: ${MAX_STUCK_VERSIONS})`,
         context: { stuckVersionsCount: stuckCount, threshold: MAX_STUCK_VERSIONS },
-      }).catch(() => { });
+      }).catch(() => {});
     } else {
       ready.checks.stuck_versions = {
         status: "ok",
@@ -105,7 +105,7 @@ export async function GET() {
         type: "system_not_ready",
         message: `System not ready: ${orphanedCount} versions with orphaned reused chunks`,
         context: { orphanedChunksCount: orphanedCount },
-      }).catch(() => { });
+      }).catch(() => {});
     } else {
       ready.checks.orphaned_reused_chunks = {
         status: "ok",
@@ -127,7 +127,11 @@ export async function GET() {
   const statusCode = ready.status === "ready" ? 200 : 503;
 
   if (ready.status === "not_ready") {
-    logger.warn("Readiness check failed", { requestId, status: ready.status, duration: totalDuration });
+    logger.warn("Readiness check failed", {
+      requestId,
+      status: ready.status,
+      duration: totalDuration,
+    });
   }
 
   return NextResponse.json(

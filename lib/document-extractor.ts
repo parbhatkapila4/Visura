@@ -119,7 +119,7 @@ async function extractTextFromPDF(file: File): Promise<string> {
 
   let fullText = "";
   let pagesWithText = 0;
-  let pagesNeedingOCR: number[] = [];
+  const pagesNeedingOCR: number[] = [];
 
   for (let batchStart = 1; batchStart <= pagesToProcess; batchStart += BATCH_SIZE) {
     const batchEnd = Math.min(batchStart + BATCH_SIZE - 1, pagesToProcess);

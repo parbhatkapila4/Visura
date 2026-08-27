@@ -3,6 +3,7 @@
 ## Current Status
 
 Your current job processing system **works well** and is production-ready:
+
 - Database-based job queue (`summary_jobs` table)
 - Job claiming with atomic updates
 - Heartbeat mechanism for stuck job detection
@@ -20,6 +21,7 @@ Your current job processing system **works well** and is production-ready:
 ## When to Consider Upgrading
 
 Consider upgrading to BullMQ/Inngest if you need:
+
 - **High Throughput**: Processing 1000+ jobs/minute
 - **Priority Queues**: Different priority levels for jobs
 - **Scheduled Jobs**: Jobs that run at specific times
@@ -32,17 +34,20 @@ Consider upgrading to BullMQ/Inngest if you need:
 ### Option 1: BullMQ (Recommended if upgrading)
 
 **Pros:**
+
 - Mature, battle-tested
 - Great Redis integration (you already have Upstash!)
 - Excellent TypeScript support
 - Good monitoring tools
 
 **Cons:**
+
 - Requires Redis (you have this!)
 - More complex setup
 - Additional dependency
 
 **Setup:**
+
 ```bash
 npm install bullmq ioredis
 ```
@@ -50,18 +55,21 @@ npm install bullmq ioredis
 ### Option 2: Inngest
 
 **Pros:**
+
 - Serverless-first
 - Great DX
 - Built-in retries and scheduling
 - Free tier available
 
 **Cons:**
+
 - External service dependency
 - Less control
 
 ### Option 3: Keep Current System (Recommended)
 
 **Why:**
+
 - Already works perfectly
 - No additional costs
 - No new dependencies
@@ -70,11 +78,13 @@ npm install bullmq ioredis
 ## Recommendation
 
 **Keep your current system** unless you're hitting specific limitations:
+
 - Processing < 100 jobs/minute? Current system is fine
 - Need simple async processing? Current system is fine
 - Want to avoid extra services? Current system is fine
 
 **Upgrade only if:**
+
 - You need priority queues
 - You need scheduled jobs
 - You're processing 1000+ jobs/minute

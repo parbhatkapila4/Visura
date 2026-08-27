@@ -25,8 +25,8 @@ export default async function UploadPage() {
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-4">
-        <Link
-          href="/dashboard"
+              <Link
+                href="/dashboard"
                 className="flex items-center gap-2 text-[#666] hover:text-white transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -39,20 +39,22 @@ export default async function UploadPage() {
             <Link
               href="/"
               className="flex items-center gap-2 text-[#666] hover:text-white transition-colors"
-        >
+            >
               <Home className="w-4 h-4" />
               <span className="text-sm hidden sm:block">Home</span>
-        </Link>
+            </Link>
           </div>
         </div>
       </header>
 
       <div className="relative w-full flex-1 min-h-0 bg-[#0a0a0a] flex flex-col items-center">
-        <BackgroundLines className="fixed inset-0 top-14 w-full h-[calc(100vh-56px)] pointer-events-none bg-transparent">{null}</BackgroundLines>
+        <BackgroundLines className="fixed inset-0 top-14 w-full h-[calc(100vh-56px)] pointer-events-none bg-transparent">
+          {null}
+        </BackgroundLines>
         <div className="relative z-10 w-full px-4 py-12 pb-20 flex flex-col items-center">
           <div className="w-full max-w-xl mx-auto">
             <div className="mb-10">
-            <UploadHeader />
+              <UploadHeader />
             </div>
             <SupabaseUploadForm hasReachedLimit={hasReachedLimit} uploadLimit={uploadLimit} />
           </div>

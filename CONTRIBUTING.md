@@ -7,7 +7,8 @@ Thank you for your interest in contributing to Visura! This document provides gu
 ## Getting Started
 
 ### Prerequisites
-- Node.js 20+ 
+
+- Node.js 20+
 - npm or yarn
 - Git
 - Supabase account
@@ -17,17 +18,20 @@ Thank you for your interest in contributing to Visura! This document provides gu
 ### Setup
 
 1. **Fork and Clone**
+
 ```bash
 git clone https://github.com/parbhatkapila4/Visura.git
 cd visura
 ```
 
 2. **Install Dependencies**
+
 ```bash
 npm install
 ```
 
 3. **Setup Environment**
+
 ```bash
 # Create .env.local file
 # Add required environment variables (see README.md for full list)
@@ -35,11 +39,13 @@ npm install
 ```
 
 4. **Run Development Server**
+
 ```bash
 npm run dev
 ```
 
 5. **Run Tests**
+
 ```bash
 npm test
 ```
@@ -49,6 +55,7 @@ npm test
 ## Development Workflow
 
 ### 1. Create a Branch
+
 ```bash
 git checkout -b feature/your-feature-name
 # or
@@ -56,12 +63,14 @@ git checkout -b fix/bug-description
 ```
 
 ### 2. Make Changes
+
 - Write clean, readable code
 - Follow existing patterns
 - Add tests for new features
 - Update documentation
 
 ### 3. Test Your Changes
+
 ```bash
 npm run test:run      # All tests pass
 npm run lint          # No lint errors
@@ -70,12 +79,14 @@ npm run build         # Builds successfully
 ```
 
 ### 4. Commit
+
 ```bash
 git add .
 git commit -m "feat: add amazing feature"
 ```
 
 **Commit Message Format:**
+
 - `feat:` New feature
 - `fix:` Bug fix
 - `docs:` Documentation
@@ -85,6 +96,7 @@ git commit -m "feat: add amazing feature"
 - `chore:` Maintenance
 
 ### 5. Push and Create PR
+
 ```bash
 git push origin feature/your-feature-name
 ```
@@ -96,6 +108,7 @@ Then create a Pull Request on GitHub.
 ## Code Style
 
 ### TypeScript
+
 - Use TypeScript for all new files
 - Prefer `const` over `let`
 - Use arrow functions for components
@@ -119,6 +132,7 @@ export function getUser(id) {
 ```
 
 ### React Components
+
 - Use functional components
 - Keep components small (<300 lines)
 - Extract reusable logic to hooks
@@ -143,6 +157,7 @@ export function Button(props: any) {
 ```
 
 ### File Naming
+
 - Components: `PascalCase.tsx`
 - Utilities: `kebab-case.ts`
 - Pages: `page.tsx` (Next.js convention)
@@ -153,30 +168,33 @@ export function Button(props: any) {
 ## Testing Guidelines
 
 ### What to Test
+
 1. **Business Logic**: All utility functions
 2. **API Routes**: Request validation, responses
 3. **Components**: User interactions, rendering
 4. **Edge Cases**: Empty states, errors, loading
 
 ### Test Structure
+
 ```typescript
-describe('Feature Name', () => {
-  describe('Specific Functionality', () => {
-    it('should do something specific', () => {
+describe("Feature Name", () => {
+  describe("Specific Functionality", () => {
+    it("should do something specific", () => {
       // Arrange
-      const input = 'test';
-      
+      const input = "test";
+
       // Act
       const result = functionUnderTest(input);
-      
+
       // Assert
-      expect(result).toBe('expected');
+      expect(result).toBe("expected");
     });
   });
 });
 ```
 
 ### Coverage Goals
+
 - Aim for >75% overall coverage
 - 100% coverage for critical paths (payment, auth)
 - Don't test external libraries
@@ -188,6 +206,7 @@ describe('Feature Name', () => {
 ### Common Issues
 
 **Issue**: "Module not found"
+
 ```bash
 # Clear Next.js cache
 rm -rf .next
@@ -195,6 +214,7 @@ npm run dev
 ```
 
 **Issue**: Database connection errors
+
 ```bash
 # Check DATABASE_URL in .env.local
 # Verify Supabase credentials
@@ -202,12 +222,14 @@ npm run dev
 ```
 
 **Issue**: Tests failing
+
 ```bash
 # Clear test cache
 npx vitest run --clearCache
 ```
 
 **Issue**: Build errors
+
 ```bash
 # Check TypeScript errors
 npm run type-check
@@ -254,6 +276,7 @@ visura/
 ## Contribution Ideas
 
 ### Good First Issues
+
 - Add more keyboard shortcuts
 - Improve error messages and user feedback
 - Add loading states and skeleton screens
@@ -263,6 +286,7 @@ visura/
 - Enhance mobile responsiveness
 
 ### Medium Complexity
+
 - Add export to Word/Markdown feature
 - Implement document search functionality
 - Add document comparison
@@ -271,6 +295,7 @@ visura/
 - Improve observability dashboards
 
 ### Advanced
+
 - Add OCR for scanned PDFs
 - Document comparison feature
 - Custom AI model fine-tuning
@@ -317,6 +342,7 @@ Before submitting:
 ## Recognition
 
 Contributors will be:
+
 - Listed in README.md
 - Mentioned in release notes
 - Given credit in commit history
@@ -324,4 +350,3 @@ Contributors will be:
 ---
 
 Thank you for making Visura better!
-

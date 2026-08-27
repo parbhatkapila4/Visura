@@ -96,8 +96,7 @@ export async function getOrCreateEmbeddingsBatch(
       })
     );
 
-    Promise.all(insertPromises).catch(() => {
-    });
+    Promise.all(insertPromises).catch(() => {});
   }
 
   const allEmbeddings: number[][] = [];

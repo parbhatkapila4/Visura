@@ -16,7 +16,10 @@ const AnimatedHomePage = dynamic(() => import("./animated-home-page"), {
         backgroundColor: "#000",
       }}
     >
-      <span className="text-white/60 text-sm" style={{ color: "rgba(255,255,255,0.65)", fontSize: "0.875rem" }}>
+      <span
+        className="text-white/60 text-sm"
+        style={{ color: "rgba(255,255,255,0.65)", fontSize: "0.875rem" }}
+      >
         Loading...
       </span>
     </div>
@@ -28,10 +31,7 @@ interface HomeClientProps {
   showCancelMessage: boolean;
 }
 
-export default function HomeClient({
-  showSuccessMessage,
-  showCancelMessage,
-}: HomeClientProps) {
+export default function HomeClient({ showSuccessMessage, showCancelMessage }: HomeClientProps) {
   return (
     <AnimatedHomePage
       showSuccessMessage={showSuccessMessage}

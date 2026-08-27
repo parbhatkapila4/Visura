@@ -2,10 +2,7 @@ import { openrouterChatCompletion } from "@/lib/openrouter";
 import { openrouterStreamChatCompletion } from "@/lib/openrouter-stream";
 import { getQASessionById, getQAMessagesBySession } from "./chatbot";
 import { logger } from "./logger";
-import {
-  chunkTextForEmbedding,
-  findRelevantChunks,
-} from "./embeddings";
+import { chunkTextForEmbedding, findRelevantChunks } from "./embeddings";
 import { getChunksForVersion, getVersionIdByPdfSummaryId } from "./versioned-documents";
 import type { SourceItem } from "./validators";
 
@@ -69,7 +66,7 @@ export async function buildContextAndSources(
         const start = chunk?.start_page ?? null;
         const end = chunk?.end_page ?? null;
         const page =
-          start != null && end != null ? Math.round((start + end) / 2) : start ?? end ?? null;
+          start != null && end != null ? Math.round((start + end) / 2) : (start ?? end ?? null);
         return {
           page,
           snippet: truncateSnippet(rc.text),
@@ -77,8 +74,9 @@ export async function buildContextAndSources(
         };
       });
 
-      const pdfContext = `Here are the MOST RELEVANT SECTIONS from the document titled "${session.title || session.file_name
-        }" based on your question:
+      const pdfContext = `Here are the MOST RELEVANT SECTIONS from the document titled "${
+        session.title || session.file_name
+      }" based on your question:
 
 ---RELEVANT DOCUMENT SECTIONS---
 ${relevantText}
@@ -108,8 +106,9 @@ Answer their question based ONLY on the relevant sections provided above. If the
         chunk_id: null,
       }));
 
-      const pdfContext = `Here are the MOST RELEVANT SECTIONS from the document titled "${session.title || session.file_name
-        }" based on your question:
+      const pdfContext = `Here are the MOST RELEVANT SECTIONS from the document titled "${
+        session.title || session.file_name
+      }" based on your question:
 
 ---RELEVANT DOCUMENT SECTIONS---
 ${relevantText}
@@ -127,8 +126,9 @@ Answer their question based ONLY on the relevant sections provided above. If the
     }
   }
 
-  const pdfContext = `Here is the COMPLETE TEXT CONTENT from the document titled "${session.title || session.file_name
-    }". This text was extracted and is provided to you directly:
+  const pdfContext = `Here is the COMPLETE TEXT CONTENT from the document titled "${
+    session.title || session.file_name
+  }". This text was extracted and is provided to you directly:
 
 ---START OF DOCUMENT TEXT---
 ${fullText}
@@ -281,7 +281,8 @@ export async function generateChatbotResponseStream(
       sessionId,
       userId,
     });
-    const errorMessage = "I apologize, but I encountered an error while processing your question. Please try again.";
+    const errorMessage =
+      "I apologize, but I encountered an error while processing your question. Please try again.";
     const encoder = new TextEncoder();
     return new ReadableStream({
       start(controller) {

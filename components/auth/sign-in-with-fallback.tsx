@@ -64,12 +64,7 @@ export function SignInWithFallback() {
         className={`w-full flex flex-col items-center ${showFallback ? "absolute inset-0 opacity-0 pointer-events-none overflow-hidden" : ""}`}
         aria-hidden={showFallback}
       >
-        <SignIn
-          appearance={clerkAppearance}
-          routing="path"
-          path="/sign-in"
-          signUpUrl="/sign-up"
-        />
+        <SignIn appearance={clerkAppearance} routing="path" path="/sign-in" signUpUrl="/sign-up" />
         <p className="mt-6 text-center text-sm text-white/60">
           Having trouble?{" "}
           <Link href="/sign-in-help" className="text-[#a855f7] underline hover:no-underline">

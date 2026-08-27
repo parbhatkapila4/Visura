@@ -50,7 +50,7 @@ export default function DeleteButton({ summaryId, onDelete }: DeleteButtonProps)
         onDelete(summaryId);
       }
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
+      if (error instanceof Error && error.name === "AbortError") {
         toast.error("Delete request timed out. Please try again.");
       } else {
         toast.error(error instanceof Error ? error.message : "Failed to delete summary");

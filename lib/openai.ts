@@ -4,9 +4,17 @@ import { cached, getSummaryCacheKey } from "@/lib/cache";
 import { hashContent } from "@/lib/versioned-documents";
 import { measurePerformance } from "@/lib/performance-monitor";
 import { classifyDocument, type DocumentClassification } from "@/lib/document-classification";
-import { detectDocumentLanguage, type SupportedLanguage, LANGUAGE_NAMES } from "@/lib/document-language";
+import {
+  detectDocumentLanguage,
+  type SupportedLanguage,
+  LANGUAGE_NAMES,
+} from "@/lib/document-language";
 import { getTypeSpecificPrompt } from "@/lib/summary-prompts";
-import { enforceSummaryStructure, enforceWordLimits, validateSummary } from "@/lib/summary-post-processing";
+import {
+  enforceSummaryStructure,
+  enforceWordLimits,
+  validateSummary,
+} from "@/lib/summary-post-processing";
 import {
   estimatePagesFromTextLength,
   getSummaryFinalWordCap,
@@ -20,7 +28,7 @@ async function _classifyDocumentInternal(text: string): Promise<DocumentClassifi
   const sampleText = text.substring(0, 15000).toLowerCase();
 
   const signals: Record<string, RegExp[]> = {
-    'LEGAL/CONTRACT': [
+    "LEGAL/CONTRACT": [
       /whereas/i,
       /\bparty\s+(a|b|first|second)\b/i,
       /signature\s+block/i,
@@ -33,7 +41,7 @@ async function _classifyDocumentInternal(text: string): Promise<DocumentClassifi
       /breach\s+of\s+contract/i,
       /governing\s+law/i,
     ],
-    'FINANCIAL/BOND': [
+    "FINANCIAL/BOND": [
       /bond\s+indenture/i,
       /coupon\s+rate/i,
       /maturity\s+date/i,
@@ -48,7 +56,7 @@ async function _classifyDocumentInternal(text: string): Promise<DocumentClassifi
       /ebitda/i,
       /financial\s+statement/i,
     ],
-    'PRODUCT/TECHNICAL': [
+    "PRODUCT/TECHNICAL": [
       /\bprd\b/i,
       /product\s+requirements/i,
       /user\s+stor/i,
@@ -60,7 +68,7 @@ async function _classifyDocumentInternal(text: string): Promise<DocumentClassifi
       /system\s+design/i,
       /feature\s+list/i,
     ],
-    'RESEARCH/ANALYSIS': [
+    "RESEARCH/ANALYSIS": [
       /methodology/i,
       /hypothesis/i,
       /findings/i,
@@ -71,7 +79,7 @@ async function _classifyDocumentInternal(text: string): Promise<DocumentClassifi
       /literature\s+review/i,
       /case\s+study/i,
     ],
-    'MEETING NOTES': [
+    "MEETING NOTES": [
       /attendees?:/i,
       /action\s+items?/i,
       /\[[\sx]\]/i,
@@ -81,7 +89,7 @@ async function _classifyDocumentInternal(text: string): Promise<DocumentClassifi
       /agenda/i,
       /next\s+steps/i,
     ],
-    'MARKETING': [
+    MARKETING: [
       /target\s+audience/i,
       /campaign/i,
       /brand\s+voice/i,
@@ -91,7 +99,7 @@ async function _classifyDocumentInternal(text: string): Promise<DocumentClassifi
       /go-to-market/i,
       /brand\s+guidelines/i,
     ],
-    'HR/PEOPLE': [
+    "HR/PEOPLE": [
       /job\s+description/i,
       /salary\s+band/i,
       /performance\s+review/i,
@@ -101,7 +109,7 @@ async function _classifyDocumentInternal(text: string): Promise<DocumentClassifi
       /employee\s+handbook/i,
       /compensation/i,
     ],
-    'NOVEL/CREATIVE': [
+    "NOVEL/CREATIVE": [
       /chapter\s+\d+/i,
       /"[^"]*"/,
       /character\s+arc/i,
@@ -112,7 +120,7 @@ async function _classifyDocumentInternal(text: string): Promise<DocumentClassifi
       /dialogue/i,
       /scene\s+setting/i,
     ],
-    'PROJECT/PROPOSAL': [
+    "PROJECT/PROPOSAL": [
       /project\s+description/i,
       /project\s+scope/i,
       /deliverables/i,
@@ -142,22 +150,19 @@ async function _classifyDocumentInternal(text: string): Promise<DocumentClassifi
   const topScore = sorted[0][1];
   const secondScore = sorted[1]?.[1] || 0;
 
-  const confidence = topScore > 0
-    ? Math.min(95, Math.round((topScore / (topScore + secondScore + 1)) * 100))
-    : 50;
+  const confidence =
+    topScore > 0 ? Math.min(95, Math.round((topScore / (topScore + secondScore + 1)) * 100)) : 50;
 
   return {
     type: topType,
     confidence,
-    subtype: topScore > 3 && sorted.length > 1 && sorted[1][1] > 0
-      ? sorted[1][0]
-      : undefined,
+    subtype: topScore > 3 && sorted.length > 1 && sorted[1][1] > 0 ? sorted[1][0] : undefined,
   };
 }
 
 export async function generateSummaryFromText(
   pdfText: string,
-  language: SupportedLanguage = 'ENGLISH',
+  language: SupportedLanguage = "ENGLISH",
   options?: { isChunk?: boolean }
 ) {
   try {
@@ -179,7 +184,7 @@ export async function generateSummaryFromText(
       languageMatch: detectedLanguage === language,
     });
 
-    if (detectedLanguage === 'HINDI') {
+    if (detectedLanguage === "HINDI") {
       const hasDevanagari = /[\u0900-\u097F]/.test(pdfText);
       const devanagariCount = (pdfText.match(/[\u0900-\u097F]/g) || []).length;
       logger.info("Hindi validation", {
@@ -211,7 +216,7 @@ export async function generateSummaryFromText(
     const textToSummarize =
       pdfText.length > 200000
         ? pdfText.substring(0, 200000) +
-        "\n\n[Content truncated for processing - document is very long]"
+          "\n\n[Content truncated for processing - document is very long]"
         : pdfText;
 
     logger.info("Classifying document type");
@@ -246,7 +251,6 @@ export async function generateSummaryFromText(
 
     const textHash = hashContent(textToSummarize);
 
-
     const generateSummary = async () => {
       logger.info("Generating new summary (cache miss or language mismatch)", {
         textHash,
@@ -254,7 +258,7 @@ export async function generateSummaryFromText(
         requestedLanguageName: LANGUAGE_NAMES[language],
       });
 
-      let response = await measurePerformance(
+      const response = await measurePerformance(
         "ai_summary_generation",
         async () => {
           const temperature = 0.3;
@@ -273,29 +277,43 @@ DO NOT WRITE IN ENGLISH.
 DO NOT USE ENGLISH WORDS.
 DO NOT MIX LANGUAGES.
 
-${language === 'RUSSIAN' ? `
+${
+  language === "RUSSIAN"
+    ? `
 OUTPUT LANGUAGE: RUSSIAN (Русский)
 - You MUST use Cyrillic script (кириллица) for ALL text
 - Example CORRECT: "Это документ о продаже"
 - Example WRONG: "Eto dokument o prodazhe" or "This is a document"
 - Use Russian words: это, документ, о, для, с, по, из, на, в, к, от, при, за, про, без, под, над, между, среди
-` : ''}
-${language === 'GERMAN' ? `
+`
+    : ""
+}
+${
+  language === "GERMAN"
+    ? `
 OUTPUT LANGUAGE: GERMAN (Deutsch)
 - You MUST use German words and grammar
 - Use: der, die, das, und, ist, für, mit, auf, von, zu, den, dem, des, eine, ein, sind, werden, haben, können, muss, wird, wurde, dass, wenn, aber, oder, nicht, auch, nur, noch, schon, immer, sehr, mehr, viel, alle, jeder, dieser, jener
 - Example CORRECT: "Dies ist ein Dokument über den Verkauf"
 - Example WRONG: "This is a document about the sale"
 - Write EVERYTHING in German, not English
-` : ''}
-${language === 'FRENCH' ? `
+`
+    : ""
+}
+${
+  language === "FRENCH"
+    ? `
 OUTPUT LANGUAGE: FRENCH (Français)
 - You MUST use French words and grammar
 - Use: le, la, les, de, du, des, et, est, un, une, dans, pour, avec, sur, par, que, qui, dont, où
 - Example CORRECT: "Ceci est un document sur la vente"
 - Example WRONG: "This is a document about the sale"
-` : ''}
-${language === 'HINDI' ? `
+`
+    : ""
+}
+${
+  language === "HINDI"
+    ? `
 OUTPUT LANGUAGE: HINDI (हिंदी)
 - You MUST use Devanagari script (हिंदी) for ALL text
 - DO NOT use English transliteration
@@ -303,13 +321,17 @@ OUTPUT LANGUAGE: HINDI (हिंदी)
 - Example WRONG: "Yeh bikri ke bare mein ek document hai" or "This is a document about sale"
 - Use Hindi words: यह, एक, है, और, के, में, से, को, पर, के लिए, इस, उस, सभी, कुछ, बहुत, अधिक, कम, नहीं, हाँ
 - Write in Hindi script (Devanagari), NOT in English letters
-` : ''}
+`
+    : ""
+}
 
 INPUT: Document is in ${LANGUAGE_NAMES[detectedLanguage]}
 OUTPUT: Summary MUST be 100% in ${LANGUAGE_NAMES[language]} - NO EXCEPTIONS
 
 SUMMARY GUIDELINES:
-${isChunk ? `
+${
+  isChunk
+    ? `
 - This is a CHUNK summary (part of a larger document) - aim for 200-400 words total
 - Extract key information, facts, numbers, dates, and important details from this chunk
 - Be concise but informative - focus on the most important information in this section
@@ -318,7 +340,8 @@ ${isChunk ? `
 - Fill each section with relevant content from this chunk
 - Be specific - include numbers, dates, names, and concrete details when available
 - This will be merged with other chunk summaries to create the final comprehensive summary
-` : `
+`
+    : `
 - Be EXTREMELY comprehensive and detailed - aim for 2,000-3,000 words total
 - Extract ALL information, facts, numbers, dates, quotes, examples, and specific details from the document
 - Be purely informative - focus on facts, data, and concrete information from the document
@@ -329,7 +352,8 @@ ${isChunk ? `
 - Include actual numbers, dates, names, percentages, quotes, examples, case studies, and all concrete details
 - Provide comprehensive coverage - don't summarize too much, include more detail
 - Make it informative and factual - extract and present all relevant information from the document
-`}
+`
+}
 
 IF YOU WRITE IN ENGLISH WHEN ${LANGUAGE_NAMES[language].toUpperCase()} IS REQUESTED, THIS IS A COMPLETE FAILURE.`,
               },
@@ -355,8 +379,8 @@ INSTRUCTIONS:
 8. Fill each section with substantial content - don't be brief, be comprehensive
 9. Extract and present ALL relevant information, not just key points
 10. Be detailed and factual - include extensive information from the document
-${language === 'HINDI' ? '11. IMPORTANT: Write in Devanagari script (हिंदी), NOT in English transliteration' : ''}
-${language === 'GERMAN' ? '11. IMPORTANT: Use German words (der, die, das, und, ist, für, mit, etc.), NOT English words' : ''}
+${language === "HINDI" ? "11. IMPORTANT: Write in Devanagari script (हिंदी), NOT in English transliteration" : ""}
+${language === "GERMAN" ? "11. IMPORTANT: Use German words (der, die, das, und, ist, für, mit, etc.), NOT English words" : ""}
 
 Create a comprehensive, detailed, and purely informative summary now. Output language MUST be ${LANGUAGE_NAMES[language]}.`,
               },
@@ -368,27 +392,38 @@ Create a comprehensive, detailed, and purely informative summary now. Output lan
         { type: classification.type, language, estimatedPages: estimatedPages.toString() }
       );
 
-
-      if (language !== 'ENGLISH') {
+      if (language !== "ENGLISH") {
         const responseLower = response.toLowerCase();
         const hasCyrillic = /[\u0400-\u04FF]/.test(response);
         const hasDevanagari = /[\u0900-\u097F]/.test(response);
         const hasGermanChars = /[äöüÄÖÜß]/.test(response);
-        const hasGermanWords = /\b(der|die|das|und|ist|für|mit|auf|von|zu|den|dem|des|eine|ein|sind|werden|haben|können|müssen|wird|wurde|wurden|kann|muss|soll|sollte|dass|wenn|aber|oder|nicht|auch|nur|noch|schon|immer|sehr|mehr|viel|alle|jeder|dieser|jener|welcher|welche|welches)\b/i.test(responseLower);
+        const hasGermanWords =
+          /\b(der|die|das|und|ist|für|mit|auf|von|zu|den|dem|des|eine|ein|sind|werden|haben|können|müssen|wird|wurde|wurden|kann|muss|soll|sollte|dass|wenn|aber|oder|nicht|auch|nur|noch|schon|immer|sehr|mehr|viel|alle|jeder|dieser|jener|welcher|welche|welches)\b/i.test(
+            responseLower
+          );
         const hasFrenchChars = /[àâäéèêëïîôùûüÿç]/.test(response);
-        const hasFrenchWords = /\b(le|la|les|de|du|des|et|est|un|une|dans|pour|avec|sur|par|que|qui|dont|où)\b/i.test(responseLower);
-        const isEnglish = /\b(the|and|is|are|was|were|this|that|with|from|for|can|will|would|should)\b/i.test(responseLower) &&
-          !hasCyrillic && !hasDevanagari && !hasGermanChars && !hasFrenchChars;
+        const hasFrenchWords =
+          /\b(le|la|les|de|du|des|et|est|un|une|dans|pour|avec|sur|par|que|qui|dont|où)\b/i.test(
+            responseLower
+          );
+        const isEnglish =
+          /\b(the|and|is|are|was|were|this|that|with|from|for|can|will|would|should)\b/i.test(
+            responseLower
+          ) &&
+          !hasCyrillic &&
+          !hasDevanagari &&
+          !hasGermanChars &&
+          !hasFrenchChars;
 
-        const languageChecks: Record<Exclude<SupportedLanguage, 'ENGLISH'>, boolean> = {
+        const languageChecks: Record<Exclude<SupportedLanguage, "ENGLISH">, boolean> = {
           RUSSIAN: hasCyrillic,
           HINDI: hasDevanagari,
           GERMAN: hasGermanChars || hasGermanWords,
           FRENCH: hasFrenchChars || hasFrenchWords,
         };
 
-
-        const hasLanguageMarker = languageChecks[language as Exclude<SupportedLanguage, 'ENGLISH'>] || false;
+        const hasLanguageMarker =
+          languageChecks[language as Exclude<SupportedLanguage, "ENGLISH">] || false;
 
         if (isEnglish || !hasLanguageMarker) {
           logger.error("AI generated summary in wrong language - rejecting", {
@@ -405,14 +440,14 @@ Create a comprehensive, detailed, and purely informative summary now. Output lan
             responsePreview: response.substring(0, 200),
           });
 
-
-          throw new Error(`AI generated summary in wrong language. Requested: ${LANGUAGE_NAMES[language]}, but output appears to be in English or wrong language.`);
+          throw new Error(
+            `AI generated summary in wrong language. Requested: ${LANGUAGE_NAMES[language]}, but output appears to be in English or wrong language.`
+          );
         }
       }
 
       return response;
     };
-
 
     const summary = await cached(
       getSummaryCacheKey(textHash, language),
@@ -431,10 +466,13 @@ Create a comprehensive, detailed, and purely informative summary now. Output lan
       summaryLanguageCheck: summary?.substring(0, 100),
     });
 
-
     const minLength = isChunk
-      ? (language === 'ENGLISH' ? 200 : 150)
-      : (language === 'ENGLISH' ? 1000 : 800);
+      ? language === "ENGLISH"
+        ? 200
+        : 150
+      : language === "ENGLISH"
+        ? 1000
+        : 800;
     if (!summary || summary.trim().length < minLength) {
       logger.error("AI returned empty or very short summary", undefined, {
         summaryLength: summary?.length || 0,
@@ -442,22 +480,35 @@ Create a comprehensive, detailed, and purely informative summary now. Output lan
         minLength,
         summaryPreview: summary?.substring(0, 100),
       });
-      throw new Error(`AI returned empty or very short summary (${summary?.length || 0} chars, minimum ${minLength})`);
+      throw new Error(
+        `AI returned empty or very short summary (${summary?.length || 0} chars, minimum ${minLength})`
+      );
     }
 
-
-    if (language !== 'ENGLISH') {
+    if (language !== "ENGLISH") {
       const summaryLower = summary.toLowerCase();
       const hasCyrillic = /[\u0400-\u04FF]/.test(summary);
       const hasDevanagari = /[\u0900-\u097F]/.test(summary);
       const hasGermanChars = /[äöüÄÖÜß]/.test(summary);
-      const hasGermanWords = /\b(der|die|das|und|ist|für|mit|auf|von|zu|den|dem|des|eine|ein|sind|werden|haben|können|müssen|wird|wurde|wurden|kann|muss|soll|sollte|dass|wenn|aber|oder|nicht|auch|nur|noch|schon|immer|sehr|mehr|viel|alle|jeder|dieser|jener|welcher|welche|welches)\b/i.test(summaryLower);
+      const hasGermanWords =
+        /\b(der|die|das|und|ist|für|mit|auf|von|zu|den|dem|des|eine|ein|sind|werden|haben|können|müssen|wird|wurde|wurden|kann|muss|soll|sollte|dass|wenn|aber|oder|nicht|auch|nur|noch|schon|immer|sehr|mehr|viel|alle|jeder|dieser|jener|welcher|welche|welches)\b/i.test(
+          summaryLower
+        );
       const hasFrenchChars = /[àâäéèêëïîôùûüÿç]/.test(summary);
-      const hasFrenchWords = /\b(le|la|les|de|du|des|et|est|un|une|dans|pour|avec|sur|par|que|qui|dont|où)\b/i.test(summaryLower);
-      const isEnglish = /\b(the|and|is|are|was|were|this|that|with|from|for|can|will|would|should)\b/i.test(summaryLower) &&
-        !hasCyrillic && !hasDevanagari && !hasGermanChars && !hasFrenchChars;
+      const hasFrenchWords =
+        /\b(le|la|les|de|du|des|et|est|un|une|dans|pour|avec|sur|par|que|qui|dont|où)\b/i.test(
+          summaryLower
+        );
+      const isEnglish =
+        /\b(the|and|is|are|was|were|this|that|with|from|for|can|will|would|should)\b/i.test(
+          summaryLower
+        ) &&
+        !hasCyrillic &&
+        !hasDevanagari &&
+        !hasGermanChars &&
+        !hasFrenchChars;
 
-      const languageChecks: Record<Exclude<SupportedLanguage, 'ENGLISH'>, boolean> = {
+      const languageChecks: Record<Exclude<SupportedLanguage, "ENGLISH">, boolean> = {
         RUSSIAN: hasCyrillic,
         HINDI: hasDevanagari,
         GERMAN: hasGermanChars || hasGermanWords,
@@ -466,20 +517,22 @@ Create a comprehensive, detailed, and purely informative summary now. Output lan
 
       const hasLanguageMarker = languageChecks[language] || false;
 
-
       if (isEnglish) {
-        logger.error("CRITICAL: Summary generated in English but requested language was different", {
-          requestedLanguage: language,
-          requestedLanguageName: LANGUAGE_NAMES[language],
-          summaryPreview: summary.substring(0, 200),
-          hasCyrillic,
-          hasDevanagari,
-          hasGermanChars,
-          hasGermanWords,
-          hasFrenchChars,
-          hasFrenchWords,
-          isEnglish,
-        });
+        logger.error(
+          "CRITICAL: Summary generated in English but requested language was different",
+          {
+            requestedLanguage: language,
+            requestedLanguageName: LANGUAGE_NAMES[language],
+            summaryPreview: summary.substring(0, 200),
+            hasCyrillic,
+            hasDevanagari,
+            hasGermanChars,
+            hasGermanWords,
+            hasFrenchChars,
+            hasFrenchWords,
+            isEnglish,
+          }
+        );
       } else if (!hasLanguageMarker && summary.length > 200) {
         logger.warn("Output language verification: May not be in requested language", {
           requestedLanguage: language,
@@ -511,24 +564,31 @@ Create a comprehensive, detailed, and purely informative summary now. Output lan
         detectedLanguage,
         outputLanguage: language,
         documentType: classification.type,
-        ...(detectedLanguage === 'HINDI' || language === 'HINDI' ? {
-          devanagariCount: (summary.match(/[\u0900-\u097F]/g) || []).length,
-          inputPreview: pdfText.substring(0, 500),
-          summaryFull: summary,
-        } : {}),
-        ...(detectedLanguage === 'RUSSIAN' || language === 'RUSSIAN' ? {
-          cyrillicCount: (summary.match(/[\u0400-\u04FF]/g) || []).length,
-          summaryFull: summary,
-        } : {}),
-        ...(detectedLanguage === 'GERMAN' || language === 'GERMAN' ? {
-          germanChars: (summary.match(/[äöüÄÖÜß]/g) || []).length,
-          germanWords: summary.toLowerCase().match(/\b(der|die|das|und|ist|für|mit|auf|von|zu)\b/gi)?.length || 0,
-          summaryFull: summary,
-        } : {}),
+        ...(detectedLanguage === "HINDI" || language === "HINDI"
+          ? {
+              devanagariCount: (summary.match(/[\u0900-\u097F]/g) || []).length,
+              inputPreview: pdfText.substring(0, 500),
+              summaryFull: summary,
+            }
+          : {}),
+        ...(detectedLanguage === "RUSSIAN" || language === "RUSSIAN"
+          ? {
+              cyrillicCount: (summary.match(/[\u0400-\u04FF]/g) || []).length,
+              summaryFull: summary,
+            }
+          : {}),
+        ...(detectedLanguage === "GERMAN" || language === "GERMAN"
+          ? {
+              germanChars: (summary.match(/[äöüÄÖÜß]/g) || []).length,
+              germanWords:
+                summary.toLowerCase().match(/\b(der|die|das|und|ist|für|mit|auf|von|zu)\b/gi)
+                  ?.length || 0,
+              summaryFull: summary,
+            }
+          : {}),
       });
 
-
-      if (language !== 'ENGLISH' || detectedLanguage !== 'ENGLISH') {
+      if (language !== "ENGLISH" || detectedLanguage !== "ENGLISH") {
         logger.warn("Summary validation warnings for non-English document (continuing anyway)", {
           errors: validation.errors,
           detectedLanguage,
@@ -545,8 +605,8 @@ Create a comprehensive, detailed, and purely informative summary now. Output lan
     cleanedSummary = enforceWordLimits(cleanedSummary, estimatedPages, { isChunk });
 
     let finalWordCount: number;
-    if (language === 'ENGLISH') {
-      finalWordCount = cleanedSummary.split(/\s+/).filter(w => w.length > 0).length;
+    if (language === "ENGLISH") {
+      finalWordCount = cleanedSummary.split(/\s+/).filter((w) => w.length > 0).length;
     } else {
       finalWordCount = Math.ceil(cleanedSummary.length / 4.5);
     }
@@ -557,7 +617,6 @@ Create a comprehensive, detailed, and purely informative summary now. Output lan
       language,
     });
 
-
     const maxWords = getSummaryFinalWordCap(estimatedPages, isChunk);
 
     if (finalWordCount > maxWords) {
@@ -566,23 +625,24 @@ Create a comprehensive, detailed, and purely informative summary now. Output lan
         language,
       });
 
-      if (language === 'ENGLISH') {
-        const words = cleanedSummary.split(/\s+/).filter(w => w.length > 0);
-        cleanedSummary = words.slice(0, maxWords).join(' ');
+      if (language === "ENGLISH") {
+        const words = cleanedSummary.split(/\s+/).filter((w) => w.length > 0);
+        cleanedSummary = words.slice(0, maxWords).join(" ");
       } else {
         const maxChars = maxWords * 4.5;
         if (cleanedSummary.length > maxChars) {
           cleanedSummary = cleanedSummary.substring(0, maxChars);
-          const lastSectionIndex = cleanedSummary.lastIndexOf('###');
+          const lastSectionIndex = cleanedSummary.lastIndexOf("###");
           if (lastSectionIndex > 0) {
             cleanedSummary = cleanedSummary.substring(0, lastSectionIndex).trim();
           }
         }
       }
 
-      const finalCount = language === 'ENGLISH'
-        ? cleanedSummary.split(/\s+/).filter(w => w.length > 0).length
-        : Math.ceil(cleanedSummary.length / 4.5);
+      const finalCount =
+        language === "ENGLISH"
+          ? cleanedSummary.split(/\s+/).filter((w) => w.length > 0).length
+          : Math.ceil(cleanedSummary.length / 4.5);
 
       logger.info("Summary truncated", {
         finalWordCount: finalCount,

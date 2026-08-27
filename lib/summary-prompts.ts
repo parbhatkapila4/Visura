@@ -1,8 +1,10 @@
-
-export function getTypeSpecificPrompt(docType: string, estimatedPages: number, isChunk?: boolean): string {
-
-        if (isChunk) {
-                const basePrompt = `Create a concise, informative summary of this document chunk with the following sections. Extract key information from this chunk. Aim for 200-400 words total.
+export function getTypeSpecificPrompt(
+  docType: string,
+  estimatedPages: number,
+  isChunk?: boolean
+): string {
+  if (isChunk) {
+    const basePrompt = `Create a concise, informative summary of this document chunk with the following sections. Extract key information from this chunk. Aim for 200-400 words total.
 
 ### Executive Summary
 Provide a brief overview (2-3 sentences) of what this chunk covers and its main points.
@@ -22,10 +24,10 @@ List any actions or recommendations mentioned in this chunk. If none, state "No 
 ### Key Takeaways & Insights
 Provide 2-3 key insights or important points from this chunk.`;
 
-                return basePrompt;
-        }
+    return basePrompt;
+  }
 
-        const basePrompt = `Create a comprehensive, detailed, and purely informative summary with the following sections. Be EXTREMELY thorough and extract ALL information from the document. Aim for 2,000-3,000 words total.
+  const basePrompt = `Create a comprehensive, detailed, and purely informative summary with the following sections. Be EXTREMELY thorough and extract ALL information from the document. Aim for 2,000-3,000 words total.
 
 ### Executive Summary
 Provide a comprehensive overview (200-300 words) of what this document is about, its main purpose, key themes, and critical takeaways. Include detailed information about the document's content, structure, and significance.
@@ -48,8 +50,8 @@ Provide 8-12 key insights, conclusions, patterns, themes, and implications from 
 ### Additional Information
 Include any other relevant information, background context, related concepts, examples, case studies, or supplementary details that help understand the document better. Be thorough and extract all relevant information.`;
 
-        const typeSpecificPrompts: Record<string, string> = {
-                'LEGAL/CONTRACT': `Create a comprehensive contract summary with these sections:
+  const typeSpecificPrompts: Record<string, string> = {
+    "LEGAL/CONTRACT": `Create a comprehensive contract summary with these sections:
 
 ### Executive Summary
 Provide a clear overview of the contract type, parties involved, and main purpose.
@@ -72,7 +74,7 @@ List any required actions, deadlines, or next steps. Include signature requireme
 ### Recommendation
 Provide a clear recommendation: Sign, Negotiate, or Reject, with brief reasoning.`,
 
-                'FINANCIAL/BOND': `Create a comprehensive financial instrument summary:
+    "FINANCIAL/BOND": `Create a comprehensive financial instrument summary:
 
 ### Executive Summary
 Overview of the instrument type, issuer, and primary purpose.
@@ -92,7 +94,7 @@ Include yield, duration, credit spread, and any historical performance data if a
 ### Investment Recommendation
 Provide a clear recommendation: Invest, Avoid, or Review Further, with reasoning based on risk-return profile.`,
 
-                'PRODUCT/TECHNICAL': `Create a comprehensive product/technical document summary:
+    "PRODUCT/TECHNICAL": `Create a comprehensive product/technical document summary:
 
 ### Executive Summary
 Overview of the product, feature, or technical concept and its primary value proposition.
@@ -115,7 +117,7 @@ Include KPIs, success criteria, expected outcomes, or performance targets mentio
 ### Recommendation
 Provide recommendation: Build, Prioritize, or Reject, with reasoning based on feasibility and value.`,
 
-                'RESEARCH/ANALYSIS': `Create a comprehensive research/analysis summary:
+    "RESEARCH/ANALYSIS": `Create a comprehensive research/analysis summary:
 
 ### Executive Summary
 Overview of the research topic, main research question, and primary findings.
@@ -138,7 +140,7 @@ Explain what these findings mean in practical terms and how they might be applie
 ### Recommendation
 Provide assessment: Trust & Apply, Review Further, or Question Methodology, with reasoning.`,
 
-                'MEETING NOTES': `Create a comprehensive meeting notes summary:
+    "MEETING NOTES": `Create a comprehensive meeting notes summary:
 
 ### Executive Summary
 Overview of the meeting purpose, main topics discussed, and key outcomes.
@@ -161,7 +163,7 @@ Identify any blockers, unresolved issues, missing information, or concerns raise
 ### Next Steps
 Outline follow-up meetings, deadlines, and what needs to happen next.`,
 
-                'MARKETING': `Create a comprehensive marketing document summary:
+    MARKETING: `Create a comprehensive marketing document summary:
 
 ### Executive Summary
 Overview of the marketing plan, campaign, or strategy and its primary objectives.
@@ -184,7 +186,7 @@ Identify budget constraints, competition, market challenges, or execution risks.
 ### Recommendation
 Provide recommendation: Execute, Revise, or Reject, with reasoning based on strategy and feasibility.`,
 
-                'HR/PEOPLE': `Create a comprehensive HR/people document summary:
+    "HR/PEOPLE": `Create a comprehensive HR/people document summary:
 
 ### Executive Summary
 Overview of the HR document type, purpose, and main focus (hiring, policy, review, etc.).
@@ -207,7 +209,7 @@ List specific actions: interviews to schedule, approvals needed, documents to pr
 ### Recommendation
 Provide recommendation: Approve, Review Further, or Reject, with reasoning.`,
 
-                'NOVEL/CREATIVE': `5 sections. MAX 200 words TOTAL. MAX 3 bullets per section. MAX 12 words per bullet.
+    "NOVEL/CREATIVE": `5 sections. MAX 200 words TOTAL. MAX 3 bullets per section. MAX 12 words per bullet.
 
 ### TL;DR
 - Story summary
@@ -226,7 +228,7 @@ Provide recommendation: Approve, Review Further, or Reject, with reasoning.`,
 ### Bottom Line
 - Yes/No/Maybe`,
 
-                'PROJECT/PROPOSAL': `Create a comprehensive project/proposal summary:
+    "PROJECT/PROPOSAL": `Create a comprehensive project/proposal summary:
 
 ### Executive Summary
 Overview of the project, its objectives, and expected outcomes or deliverables.
@@ -248,19 +250,18 @@ Detail how success will be measured, KPIs, acceptance criteria, and expected out
 
 ### Recommendation
 Provide recommendation: Approve, Revise, or Reject, with reasoning based on feasibility and value.`,
-        };
+  };
 
+  if (isChunk) {
+    return basePrompt;
+  }
 
-        if (isChunk) {
-                return basePrompt;
-        }
+  const body = typeSpecificPrompts[docType] || basePrompt;
+  if (estimatedPages <= 55) {
+    return body;
+  }
 
-        const body = typeSpecificPrompts[docType] || basePrompt;
-        if (estimatedPages <= 55) {
-                return body;
-        }
-
-        return `${body}
+  return `${body}
 
 LONG DOCUMENT NOTE (roughly ${estimatedPages}+ estimated pages from text length): This is a large work. Add more bullets and sub-themes in **Key Points** and **Important Details**, and use **Key Takeaways** to reflect breadth across the *entire* document—not a short recap. Preserve concrete names, dates, figures, and chapter- or part-level themes where they appear in the source.`;
 }

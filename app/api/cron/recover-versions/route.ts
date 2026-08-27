@@ -9,7 +9,6 @@ export const maxDuration = 60;
 
 const STUCK_VERSION_THRESHOLD_MINUTES = 10;
 
-
 export async function GET(request: NextRequest) {
   const requestId = generateRequestId();
   const authHeader = request.headers.get("authorization");
@@ -71,7 +70,7 @@ export async function GET(request: NextRequest) {
               documentId: version.document_id,
               errorMessage: err.message,
             },
-          }).catch(() => { });
+          }).catch(() => {});
 
           return {
             versionId: version.id,
@@ -85,7 +84,15 @@ export async function GET(request: NextRequest) {
 
     const succeeded = recoveryResults.filter(
       (r) => r.status === "fulfilled" && r.value.success
-    ) as Array<PromiseFulfilledResult<{ success: true; chunksProcessed: number; versionId: string; documentId: string; incompleteChunks: number }>>;
+    ) as Array<
+      PromiseFulfilledResult<{
+        success: true;
+        chunksProcessed: number;
+        versionId: string;
+        documentId: string;
+        incompleteChunks: number;
+      }>
+    >;
 
     const failed = recoveryResults.filter(
       (r) => r.status === "rejected" || (r.status === "fulfilled" && !r.value.success)

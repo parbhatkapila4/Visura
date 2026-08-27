@@ -63,19 +63,35 @@ export async function GET(
       computeVersionEfficiency(versionId),
     ]);
 
-    const events = (eventsRows as { id: string; event_type: string; message: string | null; metadata: unknown; created_at: string | Date }[]).map((row) => ({
+    const events = (
+      eventsRows as {
+        id: string;
+        event_type: string;
+        message: string | null;
+        metadata: unknown;
+        created_at: string | Date;
+      }[]
+    ).map((row) => ({
       id: row.id,
       event_type: row.event_type,
       message: row.message ?? "",
-      metadata: (typeof row.metadata === "object" && row.metadata !== null ? row.metadata : {}) as Record<string, unknown>,
-      created_at: typeof row.created_at === "string" ? row.created_at : (row.created_at as Date).toISOString(),
+      metadata: (typeof row.metadata === "object" && row.metadata !== null
+        ? row.metadata
+        : {}) as Record<string, unknown>,
+      created_at:
+        typeof row.created_at === "string"
+          ? row.created_at
+          : (row.created_at as Date).toISOString(),
     }));
 
     const response: InsightsResponse = {
       version: {
         id: versionRow.id as string,
         version_number: Number(versionRow.version_number),
-        created_at: typeof versionRow.created_at === "string" ? versionRow.created_at : (versionRow.created_at as Date).toISOString(),
+        created_at:
+          typeof versionRow.created_at === "string"
+            ? versionRow.created_at
+            : (versionRow.created_at as Date).toISOString(),
         total_chunks: Number(versionRow.total_chunks ?? 0),
         reused_chunks: Number(versionRow.reused_chunks ?? 0),
         new_chunks: Number(versionRow.new_chunks ?? 0),

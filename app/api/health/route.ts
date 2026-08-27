@@ -33,13 +33,16 @@ export async function GET() {
       status: "error",
       message: err.message,
     };
-    logger.error("Health check failed: database unreachable", err, { requestId, check: "database" });
+    logger.error("Health check failed: database unreachable", err, {
+      requestId,
+      check: "database",
+    });
     sendAlert({
       severity: "critical",
       type: "health_check_failed",
       message: `Health check failed: Database unreachable - ${err.message}`,
       context: { check: "database", errorMessage: err.message },
-    }).catch(() => { });
+    }).catch(() => {});
   }
 
   try {
@@ -86,8 +89,11 @@ export async function GET() {
         severity: "critical",
         type: "health_check_failed",
         message: "Health check failed: Missing required tables",
-        context: { check: "schema", missingTables: "document_versions, document_chunks, or summary_jobs" },
-      }).catch(() => { });
+        context: {
+          check: "schema",
+          missingTables: "document_versions, document_chunks, or summary_jobs",
+        },
+      }).catch(() => {});
     }
   } catch (error) {
     health.status = "unhealthy";
@@ -102,14 +108,18 @@ export async function GET() {
       type: "health_check_failed",
       message: `Health check failed: Schema check error - ${err.message}`,
       context: { check: "schema", errorMessage: err.message },
-    }).catch(() => { });
+    }).catch(() => {});
   }
 
   const totalDuration = Date.now() - startTime;
   const statusCode = health.status === "healthy" ? 200 : 503;
 
   if (health.status === "unhealthy") {
-    logger.warn("Health check failed", { requestId, status: health.status, duration: totalDuration });
+    logger.warn("Health check failed", {
+      requestId,
+      status: health.status,
+      duration: totalDuration,
+    });
   }
 
   return NextResponse.json(

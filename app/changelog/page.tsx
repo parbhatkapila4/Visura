@@ -11,7 +11,8 @@ export default function ChangelogPage() {
       date: "March 2026",
       type: "feature",
       title: "Workspace Collaboration & Performance",
-      description: "Major release focused on real-time collaboration, performance, and reliability.",
+      description:
+        "Major release focused on real-time collaboration, performance, and reliability.",
       changes: [
         "Introduced shared workspaces so teams can collaborate on document analysis in real time",
         "Added per-workspace permissions for safer sharing with teammates and external collaborators",
@@ -153,8 +154,6 @@ export default function ChangelogPage() {
           ))}
         </div>
       </div>
-
-      
     </div>
   );
 }

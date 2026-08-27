@@ -1,17 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRetryableJobs, getStuckJobs, resetStuckJob, resetFailedJobForRetry, getJobById } from "@/lib/jobs";
+import {
+  getRetryableJobs,
+  getStuckJobs,
+  resetStuckJob,
+  resetFailedJobForRetry,
+  getJobById,
+} from "@/lib/jobs";
 import { sendAlert } from "@/lib/alerting";
 import { logger, generateRequestId } from "@/lib/logger";
 import { requireInternalAuth, createInternalRequestOptions } from "@/lib/internal-api-auth";
 
 export const maxDuration = 60;
 
-
 const PROCESSING_TIMEOUT_MINUTES = 10;
 
 export async function GET(request: NextRequest) {
   const requestId = generateRequestId();
-
 
   const authHeader = request.headers.get("authorization");
   const hasBearerAuth = authHeader === `Bearer ${process.env.CRON_SECRET}`;
@@ -33,7 +37,6 @@ export async function GET(request: NextRequest) {
       })
     );
 
-
     const failedJobs = await getRetryableJobs(20);
     const failedReset = await Promise.allSettled(
       failedJobs.map(async (job) => {
@@ -47,22 +50,19 @@ export async function GET(request: NextRequest) {
               retryCount: job.retry_count,
               maxRetries: job.max_retries,
             },
-          }).catch(() => { });
+          }).catch(() => {});
         }
         await resetFailedJobForRetry(job.id);
         return job.id;
       })
     );
 
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000";
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000";
-
-    const allJobsToProcess = [
-      ...stuckJobs.map(j => j.id),
-      ...failedJobs.map(j => j.id)
-    ];
+    const allJobsToProcess = [...stuckJobs.map((j) => j.id), ...failedJobs.map((j) => j.id)];
 
     // Use internal API signing for job processing calls
     const processResults = await Promise.allSettled(
@@ -78,15 +78,15 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    const succeeded = processResults.filter((r) =>
-      r.status === "fulfilled" && r.value.success
+    const succeeded = processResults.filter(
+      (r) => r.status === "fulfilled" && r.value.success
     ).length;
 
     const result = {
       stuckJobsFound: stuckJobs.length,
-      stuckJobsRecovered: stuckRecovered.filter(r => r.status === "fulfilled").length,
+      stuckJobsRecovered: stuckRecovered.filter((r) => r.status === "fulfilled").length,
       failedJobsFound: failedJobs.length,
-      failedJobsReset: failedReset.filter(r => r.status === "fulfilled").length,
+      failedJobsReset: failedReset.filter((r) => r.status === "fulfilled").length,
       totalProcessed: allJobsToProcess.length,
       succeeded,
       failed: allJobsToProcess.length - succeeded,

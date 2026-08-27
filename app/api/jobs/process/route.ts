@@ -9,7 +9,6 @@ import { requireInternalAuth } from "@/lib/internal-api-auth";
 
 export const maxDuration = 60;
 
-
 const HEARTBEAT_INTERVAL_MS = 10000;
 
 export async function POST(request: NextRequest) {
@@ -17,7 +16,6 @@ export async function POST(request: NextRequest) {
   let heartbeatInterval: NodeJS.Timeout | null = null;
 
   try {
-
     const isAuthorized = await requireInternalAuth(request);
     if (!isAuthorized) {
       logger.warn("Unauthorized internal API access attempt", { requestId });
@@ -36,12 +34,14 @@ export async function POST(request: NextRequest) {
 
     if (!job) {
       logger.warn("Job already claimed or not found", { requestId, jobId });
-      return NextResponse.json({
-        success: false,
-        message: "Job already claimed or not found"
-      }, { status: 409 });
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Job already claimed or not found",
+        },
+        { status: 409 }
+      );
     }
-
 
     heartbeatInterval = setInterval(async () => {
       try {
@@ -52,9 +52,7 @@ export async function POST(request: NextRequest) {
     }, HEARTBEAT_INTERVAL_MS);
 
     try {
-
       const summary = await generateSummaryFromText(job.extracted_text);
-
 
       const sql = await getDbConnection();
       const [savedSummary] = await sql`
@@ -66,7 +64,6 @@ export async function POST(request: NextRequest) {
         )
         RETURNING id
       `;
-
 
       try {
         await savePdfStore({
@@ -81,12 +78,16 @@ export async function POST(request: NextRequest) {
           userId: job.user_id,
           error: chatbotError instanceof Error ? chatbotError.message : String(chatbotError),
         });
-
       }
 
       await markJobCompleted(jobId, savedSummary.id);
 
-      logger.info("Job processing completed", { requestId, jobId, userId: job.user_id, summaryId: savedSummary.id });
+      logger.info("Job processing completed", {
+        requestId,
+        jobId,
+        userId: job.user_id,
+        summaryId: savedSummary.id,
+      });
 
       if (heartbeatInterval) {
         clearInterval(heartbeatInterval);
@@ -95,9 +96,8 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        summaryId: savedSummary.id
+        summaryId: savedSummary.id,
       });
-
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       await markJobFailed(jobId, err);
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
           userId: job.user_id,
           errorMessage: err.message,
         },
-      }).catch(() => { });
+      }).catch(() => {});
 
       if (heartbeatInterval) {
         clearInterval(heartbeatInterval);
@@ -122,11 +122,13 @@ export async function POST(request: NextRequest) {
 
       throw err;
     }
-
   } catch (error) {
     logger.error("Job processing error", error, { requestId });
     return NextResponse.json(
-      { error: "Processing failed", details: error instanceof Error ? error.message : String(error) },
+      {
+        error: "Processing failed",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

@@ -98,11 +98,8 @@ export default function CheckoutButton({
       </span>
       <span className="relative flex items-center gap-2 text-black">
         <span className="inline-flex h-2 w-2 rounded-full bg-black/60 shadow-[0_0_12px_rgba(255,255,255,0.7)]" />
-        {loading
-          ? "Preparing checkout…"
-          : `Pay ${sym}${resolvedAmount} (${currency})`}
+        {loading ? "Preparing checkout…" : `Pay ${sym}${resolvedAmount} (${currency})`}
       </span>
     </button>
   );
 }
-

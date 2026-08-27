@@ -19,10 +19,16 @@ export async function generateAndStoreDocumentSections(versionId: string): Promi
   try {
     const chunks = await getChunksForVersion(versionId);
     const sorted = [...chunks].sort((a, b) => a.chunk_index - b.chunk_index);
-    const fullText = sorted.map((c) => c.text).join("\n\n").trim();
+    const fullText = sorted
+      .map((c) => c.text)
+      .join("\n\n")
+      .trim();
 
     if (!fullText || fullText.length < 100) {
-      logger.info("Document too short for section detection", { versionId, length: fullText.length });
+      logger.info("Document too short for section detection", {
+        versionId,
+        length: fullText.length,
+      });
       await deleteSectionsForVersion(versionId);
       return;
     }
@@ -54,7 +60,10 @@ ${fullText.slice(0, 12000)}
       max_tokens: 2048,
     });
 
-    const jsonStr = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+    const jsonStr = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```\s*$/i, "")
+      .trim();
     let items: Array<{ title: string; start_page: number; end_page: number }>;
     try {
       items = JSON.parse(jsonStr) as Array<{ title: string; start_page: number; end_page: number }>;

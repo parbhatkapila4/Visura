@@ -28,22 +28,28 @@ export async function GET(
       ORDER BY created_at DESC
     `;
 
-    const insights = (rows as Array<{
-      id: string;
-      type: string;
-      title: string;
-      description: string;
-      source_summary_ids: string[] | unknown;
-      metadata: unknown;
-      created_at: string | Date;
-    }>).map((r) => ({
+    const insights = (
+      rows as Array<{
+        id: string;
+        type: string;
+        title: string;
+        description: string;
+        source_summary_ids: string[] | unknown;
+        metadata: unknown;
+        created_at: string | Date;
+      }>
+    ).map((r) => ({
       id: r.id,
       type: r.type,
       title: r.title,
       description: r.description,
       source_summary_ids: Array.isArray(r.source_summary_ids) ? r.source_summary_ids : [],
-      metadata: r.metadata && typeof r.metadata === "object" && r.metadata !== null ? (r.metadata as object) : {},
-      created_at: typeof r.created_at === "string" ? r.created_at : (r.created_at as Date).toISOString(),
+      metadata:
+        r.metadata && typeof r.metadata === "object" && r.metadata !== null
+          ? (r.metadata as object)
+          : {},
+      created_at:
+        typeof r.created_at === "string" ? r.created_at : (r.created_at as Date).toISOString(),
     }));
 
     return NextResponse.json({ insights });

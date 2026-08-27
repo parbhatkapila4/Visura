@@ -9,8 +9,7 @@ export async function GET() {
     res = await fetch(upstream, {
       headers: {
         Accept: "*/*",
-        "User-Agent":
-          "Mozilla/5.0 (compatible; VisuraSplineProxy/1.0; +https://visura.app)",
+        "User-Agent": "Mozilla/5.0 (compatible; VisuraSplineProxy/1.0; +https://visura.app)",
       },
       next: { revalidate: 300 },
     });
@@ -29,8 +28,7 @@ export async function GET() {
     return new NextResponse(null, { status: 502 });
   }
 
-  const contentType =
-    res.headers.get("Content-Type") ?? "application/octet-stream";
+  const contentType = res.headers.get("Content-Type") ?? "application/octet-stream";
 
   return new NextResponse(body, {
     status: 200,

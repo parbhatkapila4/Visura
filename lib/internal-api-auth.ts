@@ -14,13 +14,10 @@ export function signInternalRequest(
   }
 
   const payload = `${method}:${path}:${body}:${timestamp}`;
-  const signature = createHmac("sha256", INTERNAL_API_SECRET)
-    .update(payload)
-    .digest("hex");
+  const signature = createHmac("sha256", INTERNAL_API_SECRET).update(payload).digest("hex");
 
   return signature;
 }
-
 
 export function verifyInternalRequest(
   method: string,
@@ -34,7 +31,6 @@ export function verifyInternalRequest(
     return false;
   }
 
- 
   const now = Date.now();
   const timeDiff = Math.abs(now - timestamp);
   const maxAge = 5 * 60 * 1000;
@@ -50,21 +46,16 @@ export function verifyInternalRequest(
 
   const expectedSignature = signInternalRequest(method, path, body, timestamp);
 
-  
   if (expectedSignature.length !== providedSignature.length) {
     return false;
   }
 
   try {
-    return timingSafeEqual(
-      Buffer.from(expectedSignature),
-      Buffer.from(providedSignature)
-    );
+    return timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(providedSignature));
   } catch {
     return false;
   }
 }
-
 
 export async function requireInternalAuth(request: Request): Promise<boolean> {
   const signature = request.headers.get("X-Internal-Signature");
@@ -88,7 +79,6 @@ export async function requireInternalAuth(request: Request): Promise<boolean> {
   const url = new URL(request.url);
   const path = url.pathname + url.search;
 
-  
   let body = "";
   try {
     const clonedRequest = request.clone();
@@ -99,13 +89,7 @@ export async function requireInternalAuth(request: Request): Promise<boolean> {
     });
   }
 
-  const isValid = verifyInternalRequest(
-    method,
-    path,
-    body,
-    timestampNum,
-    signature
-  );
+  const isValid = verifyInternalRequest(method, path, body, timestampNum, signature);
 
   if (!isValid) {
     logger.warn("Internal request signature verification failed", {
@@ -117,7 +101,6 @@ export async function requireInternalAuth(request: Request): Promise<boolean> {
 
   return isValid;
 }
-
 
 export function createInternalRequestOptions(
   method: string,

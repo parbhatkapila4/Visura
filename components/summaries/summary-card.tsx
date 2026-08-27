@@ -56,8 +56,8 @@ const StatusBadge = ({ status }: { status: string }) => {
         status === "Completed"
           ? "bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border border-emerald-500/30 shadow-emerald-500/10"
           : status === "failed"
-          ? "bg-gradient-to-r from-red-500/20 to-rose-500/20 text-red-300 border border-red-500/40 shadow-red-500/10"
-          : "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-300 border border-amber-500/40 shadow-amber-500/10"
+            ? "bg-gradient-to-r from-red-500/20 to-rose-500/20 text-red-300 border border-red-500/40 shadow-red-500/10"
+            : "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-300 border border-amber-500/40 shadow-amber-500/10"
       )}
     >
       <span className="relative flex items-center gap-1.5">
@@ -67,8 +67,8 @@ const StatusBadge = ({ status }: { status: string }) => {
             status === "Completed"
               ? "bg-emerald-400 animate-pulse"
               : status === "failed"
-              ? "bg-red-400"
-              : "bg-amber-400 animate-pulse"
+                ? "bg-red-400"
+                : "bg-amber-400 animate-pulse"
           )}
         />
         {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -96,6 +96,8 @@ export default function SummaryCard({
       raw.includes("object.defineproperty") ||
       raw.includes("was unable to access") ||
       raw.includes("i apologize") ||
+      raw.includes("failed to process") ||
+      /^error:\s*/i.test(raw.trim()) ||
       raw.trim() === "";
     const processing =
       preview.executiveSummary.includes("being processed") ||
@@ -112,6 +114,7 @@ export default function SummaryCard({
     if (backendStatus === "failed") return "failed";
     if (backendStatus === "processing" || backendStatus === "in_progress") return "processing";
 
+    if (derivedStatus === "failed") return "failed";
     if (derivedStatus === "processing") return "processing";
     return "completed";
   })();

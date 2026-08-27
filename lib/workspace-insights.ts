@@ -46,7 +46,10 @@ async function loadWorkspaceDocumentContents(
     if (!versionId) continue;
     const chunks = await getChunksForVersion(versionId);
     const sorted = [...chunks].sort((a, b) => a.chunk_index - b.chunk_index);
-    const text = sorted.map((c) => c.text).join("\n\n").trim();
+    const text = sorted
+      .map((c) => c.text)
+      .join("\n\n")
+      .trim();
     if (text.length < 50) continue;
     out.push({
       pdf_summary_id: row.pdf_summary_id,
@@ -58,7 +61,9 @@ async function loadWorkspaceDocumentContents(
   return out;
 }
 
-export async function generateAndStoreWorkspaceInsights(workspaceId: string): Promise<{ count: number }> {
+export async function generateAndStoreWorkspaceInsights(
+  workspaceId: string
+): Promise<{ count: number }> {
   const sql = await getDbConnection();
 
   const docs = await loadWorkspaceDocumentContents(workspaceId);
@@ -68,10 +73,7 @@ export async function generateAndStoreWorkspaceInsights(workspaceId: string): Pr
   }
 
   const docBlocks = docs
-    .map(
-      (d) =>
-        `[Document: ${d.title} (id: ${d.pdf_summary_id})]\n${d.text}`
-    )
+    .map((d) => `[Document: ${d.title} (id: ${d.pdf_summary_id})]\n${d.text}`)
     .join("\n\n---\n\n");
 
   const prompt = `You are analyzing multiple documents in a workspace to find comparisons and conflicts.
@@ -111,7 +113,10 @@ ${docBlocks.slice(0, 35000)}
     throw error;
   }
 
-  const jsonStr = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+  const jsonStr = raw
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```\s*$/i, "")
+    .trim();
   let parsed: { insights?: unknown[] };
   try {
     parsed = JSON.parse(jsonStr) as { insights?: unknown[] };
@@ -126,10 +131,7 @@ ${docBlocks.slice(0, 35000)}
   const summaryIdSet = new Set(docs.map((d) => d.pdf_summary_id));
   const rawList = Array.isArray(parsed?.insights) ? parsed.insights : [];
   const insights = rawList
-    .filter(
-      (item): item is Record<string, unknown> =>
-        item !== null && typeof item === "object"
-    )
+    .filter((item): item is Record<string, unknown> => item !== null && typeof item === "object")
     .map((item) => {
       const ids = Array.isArray(item.source_summary_ids)
         ? (item.source_summary_ids as string[]).filter((id) => summaryIdSet.has(String(id)))
@@ -137,8 +139,14 @@ ${docBlocks.slice(0, 35000)}
       if (ids.length === 0) return null;
       return {
         type: coerceType(item.type),
-        title: String(item.title ?? "").trim().slice(0, 500) || "Untitled",
-        description: String(item.description ?? "").trim().slice(0, 3000) || "",
+        title:
+          String(item.title ?? "")
+            .trim()
+            .slice(0, 500) || "Untitled",
+        description:
+          String(item.description ?? "")
+            .trim()
+            .slice(0, 3000) || "",
         source_summary_ids: ids,
         metadata: (item.metadata && typeof item.metadata === "object" && item.metadata !== null
           ? item.metadata

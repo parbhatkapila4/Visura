@@ -13,7 +13,10 @@ function SignInFallback() {
 
 export default function Page() {
   return (
-    <div className="flex min-h-dvh w-full min-w-0 bg-[#2C2638]" style={{ backgroundColor: "#2C2638" }}>
+    <div
+      className="flex min-h-dvh w-full min-w-0 bg-[#2C2638]"
+      style={{ backgroundColor: "#2C2638" }}
+    >
       <AuthVisualPane tagline="Welcome back to your workspace" currentPage="sign-in" />
 
       <div className="flex-1 min-w-0 flex flex-col items-center justify-center relative overflow-auto shrink-0 basis-0 lg:basis-1/2 lg:min-w-[50%]">

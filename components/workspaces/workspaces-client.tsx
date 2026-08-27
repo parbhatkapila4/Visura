@@ -81,7 +81,6 @@ interface WorkspaceDocument {
   file_name?: string;
 }
 
-
 interface WorkspaceSearchHit {
   pdf_summary_id: string;
   document_id: string;
@@ -463,8 +462,9 @@ export default function WorkspacesClient() {
   return (
     <div className="bg-[#030303] flex min-h-screen w-full overflow-hidden md:fixed md:inset-0 md:h-screen md:w-screen md:z-50">
       <aside
-        className={`${sidebarOpen ? "w-72" : "w-0"
-          } flex-shrink-0 border-r border-white/[0.06] bg-[#0a0a0a] transition-all duration-300 overflow-hidden`}
+        className={`${
+          sidebarOpen ? "w-72" : "w-0"
+        } flex-shrink-0 border-r border-white/[0.06] bg-[#0a0a0a] transition-all duration-300 overflow-hidden`}
       >
         <div className="h-full flex flex-col p-4">
           <div className="flex items-center gap-3 px-2 mb-6">
@@ -558,16 +558,18 @@ export default function WorkspacesClient() {
                 <button
                   key={workspace.id}
                   onClick={() => setSelectedWorkspace(workspace)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${selectedWorkspace?.id === workspace.id
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${
+                    selectedWorkspace?.id === workspace.id
                       ? "bg-white/10 border border-white/10"
                       : "hover:bg-white/5 border border-transparent"
-                    }`}
+                  }`}
                 >
                   <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${selectedWorkspace?.id === workspace.id
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      selectedWorkspace?.id === workspace.id
                         ? "bg-gradient-to-br from-violet-500 to-purple-600"
                         : "bg-white/10"
-                      }`}
+                    }`}
                   >
                     <Building2 className="w-4 h-4 text-white" />
                   </div>
@@ -881,9 +883,7 @@ export default function WorkspacesClient() {
                     )}
                   </div>
                 </div>
-                {searchError && (
-                  <p className="mt-2 text-sm text-red-400">{searchError}</p>
-                )}
+                {searchError && <p className="mt-2 text-sm text-red-400">{searchError}</p>}
                 {searchRan && searchHits.length === 0 && !searchLoading && (
                   <p className="mt-3 text-sm text-white/50">
                     No results for &quot;{workspaceSearchQuery.trim()}&quot;
@@ -915,7 +915,9 @@ export default function WorkspacesClient() {
                               <p className="text-xs text-white/40 mt-0.5">
                                 {hit.page != null && <>Page {hit.page}</>}
                                 {hit.page != null && " · "}
-                                Relevance: {typeof hit.score === "number" ? (hit.score * 100).toFixed(0) : "—"}%
+                                Relevance:{" "}
+                                {typeof hit.score === "number" ? (hit.score * 100).toFixed(0) : "—"}
+                                %
                               </p>
                               <p className="text-sm text-white/70 mt-1.5 leading-snug">
                                 {truncateSnippet(hit.snippet)}
@@ -1001,9 +1003,7 @@ export default function WorkspacesClient() {
                           {sourceIds.length > 0 && (
                             <div className="mt-2 flex flex-wrap gap-1.5">
                               {sourceIds.map((summaryId, i) => {
-                                const doc = documents.find(
-                                  (d) => d.pdf_summary_id === summaryId
-                                );
+                                const doc = documents.find((d) => d.pdf_summary_id === summaryId);
                                 const label = doc?.title || "Document";
                                 return (
                                   <Link

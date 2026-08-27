@@ -183,6 +183,7 @@ Visit **http://localhost:3000**
 ## Troubleshooting
 
 ### "Module not found"
+
 ```bash
 rm -rf .next node_modules
 npm install
@@ -190,16 +191,19 @@ npm run dev
 ```
 
 ### Database connection errors
+
 - Verify `DATABASE_URL` is correct
 - Check Neon dashboard for connection issues
 - Ensure migrations have run
 
 ### Authentication errors
+
 - Verify Clerk keys are correct
 - Check Clerk dashboard for webhook configuration
 - Ensure `NEXT_PUBLIC_CLERK_SIGN_IN_URL` and `NEXT_PUBLIC_CLERK_SIGN_UP_URL` match your routes
 
 ### Build errors
+
 ```bash
 npm run type-check  # Check TypeScript errors
 npm run lint        # Check ESLint errors

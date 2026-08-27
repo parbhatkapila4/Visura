@@ -5,7 +5,7 @@ import BuiltForProfessionalsSection from "@/components/home/built-for-profession
 import PricingSection from "@/components/home/pricing-section";
 import CTAWithVerticalMarquee from "@/components/ui/cta-with-text-marquee";
 import { Component as FlickeringFooter } from "@/components/ui/flickering-footer";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { motion, useScroll } from "framer-motion";
 
@@ -19,6 +19,14 @@ export default function AnimatedHomePage({
   showCancelMessage = false,
 }: AnimatedHomePageProps) {
   const { scrollYProgress } = useScroll();
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    el.setAttribute("data-visura-home-ready", "true");
+    return () => el.removeAttribute("data-visura-home-ready");
+  }, []);
 
   useEffect(() => {
     if (showSuccessMessage) {
@@ -36,7 +44,11 @@ export default function AnimatedHomePage({
   }, [showSuccessMessage, showCancelMessage]);
 
   return (
-    <div className="relative bg-black min-h-screen" style={{ backgroundColor: "#000000" }}>
+    <div
+      ref={rootRef}
+      className="relative bg-black min-h-screen"
+      style={{ backgroundColor: "#000000" }}
+    >
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-white/20 origin-left z-[100]"
         style={{ scaleX: scrollYProgress }}

@@ -24,10 +24,7 @@ interface ShareDocumentDialogProps {
   onShared?: () => void;
 }
 
-export default function ShareDocumentDialog({
-  pdfSummaryId,
-  onShared,
-}: ShareDocumentDialogProps) {
+export default function ShareDocumentDialog({ pdfSummaryId, onShared }: ShareDocumentDialogProps) {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
   const [sharing, setSharing] = useState<string | null>(null);
@@ -85,9 +82,9 @@ export default function ShareDocumentDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="flex items-center gap-2 border-gray-700 bg-gray-800/50 text-white hover:bg-gray-800 hover:text-white hover:border-orange-500/50 transition-all duration-300"
         >
           <Share2 className="w-4 h-4" />
@@ -136,7 +133,7 @@ export default function ShareDocumentDialog({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-white">{workspace.name}</span>
-                        {workspace.role === 'owner' && (
+                        {workspace.role === "owner" && (
                           <Crown className="w-3.5 h-3.5 text-orange-400" />
                         )}
                       </div>

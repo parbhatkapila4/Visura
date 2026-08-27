@@ -95,10 +95,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
   const isErrorFallback =
     summaryText.includes("Summary generation failed") ||
     summaryText.includes("you can still chat with the document");
-  const hasNoContent =
-    !summaryText.trim() ||
-    summary.status === "processing" ||
-    isErrorFallback;
+  const hasNoContent = !summaryText.trim() || summary.status === "processing" || isErrorFallback;
   const isErrorSummary =
     summaryText.toLowerCase().includes("extraction error") ||
     summaryText.toLowerCase().includes("object.defineproperty") ||
@@ -313,7 +310,6 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
     }, 1000);
   };
 
-
   if (isErrorSummary) {
     return (
       <div className="bg-[#0a0a0a] overflow-x-hidden">
@@ -411,8 +407,9 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                             className="flex items-center gap-3 p-2 rounded-lg cursor-pointer text-white hover:text-white focus:text-white focus:bg-[#1a1a1a] hover:bg-[#1a1a1a]"
                           >
                             <div
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${added ? "bg-emerald-500/10" : "bg-[#1a1a1a]"
-                                }`}
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                added ? "bg-emerald-500/10" : "bg-[#1a1a1a]"
+                              }`}
                             >
                               {added ? (
                                 <Check className="w-4 h-4 text-emerald-500" />
@@ -545,10 +542,11 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                       <button
                         key={index}
                         onClick={() => scrollToSection(index)}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${isActive
-                          ? "bg-white/5 text-white"
-                          : "text-[#666] hover:text-[#999] hover:bg-white/[0.02]"
-                          }`}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
+                          isActive
+                            ? "bg-white/5 text-white"
+                            : "text-[#666] hover:text-[#999] hover:bg-white/[0.02]"
+                        }`}
                       >
                         <span className="line-clamp-1">{cleanTitle}</span>
                       </button>
@@ -575,7 +573,9 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                   disabled={isCompletingSummary}
                   className="bg-amber-500 hover:bg-amber-400 text-black font-medium"
                 >
-                  <RefreshCw className={`w-4 h-4 mr-2 ${isCompletingSummary ? "animate-spin" : ""}`} />
+                  <RefreshCw
+                    className={`w-4 h-4 mr-2 ${isCompletingSummary ? "animate-spin" : ""}`}
+                  />
                   {isCompletingSummary ? "Generating…" : "Generate summary"}
                 </Button>
               </div>
@@ -817,8 +817,9 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                             className="flex items-center gap-3 p-2 rounded-lg cursor-pointer text-white hover:text-white focus:text-white focus:bg-[#1a1a1a] hover:bg-[#1a1a1a]"
                           >
                             <div
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${added ? "bg-emerald-500/10" : "bg-[#1a1a1a]"
-                                }`}
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                added ? "bg-emerald-500/10" : "bg-[#1a1a1a]"
+                              }`}
                             >
                               {added ? (
                                 <Check className="w-4 h-4 text-emerald-500" />
@@ -894,7 +895,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                             duration: 3000,
                           });
                         }
-                      } catch (err) { }
+                      } catch (err) {}
                     }}
                   />
                   <button

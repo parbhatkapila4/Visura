@@ -1,4 +1,3 @@
-
 import { openrouterChatCompletion } from "@/lib/openrouter";
 import { logger } from "@/lib/logger";
 import { cached, getClassificationCacheKey } from "@/lib/cache";
@@ -25,7 +24,7 @@ export async function classifyDocument(text: string): Promise<DocumentClassifica
 
 async function classifyDocumentInternal(text: string): Promise<DocumentClassification> {
   const sampleText = text.substring(0, 15000).toLowerCase();
-  
+
   const signals: Record<string, RegExp[]> = {
     contract: [
       /contract|agreement|terms and conditions|party a|party b|whereas|hereby|witnesseth/i,

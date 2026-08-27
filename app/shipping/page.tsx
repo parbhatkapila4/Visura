@@ -1,14 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Package,
-  Globe2,
-  Clock4,
-  ShieldCheck,
-  Headset,
-} from "lucide-react";
+import { ArrowLeft, Package, Globe2, Clock4, ShieldCheck, Headset } from "lucide-react";
 
 export default function ShippingPolicyPage() {
   return (
@@ -39,9 +32,9 @@ export default function ShippingPolicyPage() {
                 <Package className="w-6 h-6 text-black mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-lg text-gray-700 leading-relaxed">
-                    Visura is a fully digital platform. Once your payment is confirmed, account upgrades
-                    and feature access are delivered instantly to the email address associated with your
-                    account. No physical shipping is required.
+                    Visura is a fully digital platform. Once your payment is confirmed, account
+                    upgrades and feature access are delivered instantly to the email address
+                    associated with your account. No physical shipping is required.
                   </p>
                 </div>
               </div>
@@ -53,9 +46,9 @@ export default function ShippingPolicyPage() {
                 <Globe2 className="w-6 h-6 text-black mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-lg text-gray-700 leading-relaxed">
-                    Our services are available worldwide wherever internet access is permitted by local
-                    regulations. Certain payment methods may vary by region, but access to the Visura
-                    platform remains consistent.
+                    Our services are available worldwide wherever internet access is permitted by
+                    local regulations. Certain payment methods may vary by region, but access to the
+                    Visura platform remains consistent.
                   </p>
                 </div>
               </div>
@@ -67,9 +60,9 @@ export default function ShippingPolicyPage() {
                 <Clock4 className="w-6 h-6 text-black mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-lg text-gray-700 leading-relaxed">
-                    Under normal circumstances, premium features become available within minutes after
-                    payment confirmation. If you do not see the changes reflected, please log out and back
-                    in, or contact support with your order details.
+                    Under normal circumstances, premium features become available within minutes
+                    after payment confirmation. If you do not see the changes reflected, please log
+                    out and back in, or contact support with your order details.
                   </p>
                 </div>
               </div>
@@ -82,8 +75,8 @@ export default function ShippingPolicyPage() {
                 <div>
                   <p className="text-lg text-gray-700 leading-relaxed">
                     All digital deliveries are processed through secure, encrypted systems. You are
-                    responsible for safeguarding your login credentials and ensuring that only authorized
-                    team members access your subscription.
+                    responsible for safeguarding your login credentials and ensuring that only
+                    authorized team members access your subscription.
                   </p>
                 </div>
               </div>
@@ -95,13 +88,14 @@ export default function ShippingPolicyPage() {
                 <Headset className="w-6 h-6 text-black mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-lg text-gray-700 leading-relaxed">
-                    Our support team is available to help with any access issues, billing questions, or
-                    account provisioning concerns. Reach out and we will respond within one business day.
+                    Our support team is available to help with any access issues, billing questions,
+                    or account provisioning concerns. Reach out and we will respond within one
+                    business day.
                   </p>
                 </div>
               </div>
               <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <p className="text-black font-semibold">Email: parbhat@parbhat.dev</p>
+                <p className="text-black font-semibold">Email: parbhat@parbhat.dev</p>
               </div>
             </div>
           </div>
@@ -110,4 +104,3 @@ export default function ShippingPolicyPage() {
     </div>
   );
 }
-

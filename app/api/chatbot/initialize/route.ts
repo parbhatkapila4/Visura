@@ -38,16 +38,20 @@ export async function POST(request: NextRequest) {
     console.log("Extracting full text for chatbot initialization...");
     console.log("File URL:", summary.original_file_url);
     console.log("File Name:", summary.file_name);
-    
+
     const fullTextContent = await extractTextFromDocumentUrl(
       summary.original_file_url,
       summary.file_name || undefined
     );
 
     if (!fullTextContent || fullTextContent.trim().length === 0) {
-      return NextResponse.json({ 
-        error: "Could not extract text from document. The document may be empty, corrupted, or in an unsupported format." 
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error:
+            "Could not extract text from document. The document may be empty, corrupted, or in an unsupported format.",
+        },
+        { status: 400 }
+      );
     }
 
     const pdfStore = await savePdfStore({

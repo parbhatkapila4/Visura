@@ -49,11 +49,17 @@ async function savePdfSummary({
 }
 
 /**
- * @deprecated This synchronous path is deprecated. The versioned pipeline (createVersionedDocumentJob) 
- * automatically creates pdf_summaries and pdf_stores on completion. This function is kept for backward 
+ * @deprecated This synchronous path is deprecated. The versioned pipeline (createVersionedDocumentJob)
+ * automatically creates pdf_summaries and pdf_stores on completion. This function is kept for backward
  * compatibility only.
  */
-export async function storePdfSummaryAction({ fileUrl, summary, title, fileName, extractedText }: PdfSummaryType) {
+export async function storePdfSummaryAction({
+  fileUrl,
+  summary,
+  title,
+  fileName,
+  extractedText,
+}: PdfSummaryType) {
   let savedSummary: any;
   try {
     const { userId } = await auth();
@@ -86,7 +92,7 @@ export async function storePdfSummaryAction({ fileUrl, summary, title, fileName,
       console.log("File Name:", fileName);
 
       let fullTextContent: string;
-      
+
       if (extractedText && extractedText.trim().length > 0) {
         console.log("Using pre-extracted text from client");
         fullTextContent = extractedText;
@@ -94,7 +100,7 @@ export async function storePdfSummaryAction({ fileUrl, summary, title, fileName,
         console.log("Extracting text from document URL...");
         fullTextContent = await extractTextFromDocumentUrl(fileUrl, fileName);
       }
-      
+
       console.log("Extracted text length:", fullTextContent?.length || 0);
 
       if (fullTextContent && fullTextContent.trim().length > 0) {

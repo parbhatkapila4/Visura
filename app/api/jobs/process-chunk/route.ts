@@ -5,11 +5,9 @@ import { requireInternalAuth } from "@/lib/internal-api-auth";
 
 export const maxDuration = 60;
 
-
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();
   try {
-
     const isAuthorized = await requireInternalAuth(request);
     if (!isAuthorized) {
       logger.warn("Unauthorized internal API access attempt", { requestId });
@@ -27,9 +25,10 @@ export async function POST(request: NextRequest) {
     const [version] = await sql`
       SELECT output_language FROM document_versions WHERE id = ${versionId}
     `;
-    
-    const language = (version?.output_language || 'ENGLISH') as import("@/lib/openai").SupportedLanguage;
-    
+
+    const language = (version?.output_language ||
+      "ENGLISH") as import("@/lib/openai").SupportedLanguage;
+
     logger.info("Processing chunk with language", {
       chunkId,
       versionId,

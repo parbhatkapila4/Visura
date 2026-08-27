@@ -1,7 +1,5 @@
-
 import { Redis } from "@upstash/redis";
 import { logger } from "./logger";
-
 
 let redis: Redis | null = null;
 let useRedis = false;
@@ -24,7 +22,6 @@ try {
   logger.error("Failed to initialize Redis cache", error);
 }
 
-
 interface CacheEntry<T> {
   value: T;
   expiresAt: number;
@@ -32,14 +29,12 @@ interface CacheEntry<T> {
 
 const inMemoryCache = new Map<string, CacheEntry<unknown>>();
 
-
 export async function get<T>(key: string): Promise<T | null> {
   try {
     if (useRedis && redis) {
       const value = await redis.get<T>(key);
       return value;
     } else {
-
       const entry = inMemoryCache.get(key) as CacheEntry<T> | undefined;
       if (!entry) {
         return null;
@@ -58,12 +53,7 @@ export async function get<T>(key: string): Promise<T | null> {
   }
 }
 
-
-export async function set<T>(
-  key: string,
-  value: T,
-  ttlSeconds: number = 3600
-): Promise<boolean> {
+export async function set<T>(key: string, value: T, ttlSeconds: number = 3600): Promise<boolean> {
   try {
     if (useRedis && redis) {
       await redis.setex(key, ttlSeconds, value);

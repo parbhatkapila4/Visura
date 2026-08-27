@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { InMemoryRateLimiter, checkRateLimit } from "@/lib/rate-limit";
+import { InMemoryRateLimiter, checkRateLimit, resetInMemoryRateLimitStore } from "@/lib/rate-limit";
 
 describe("Rate Limiting", () => {
   describe("InMemoryRateLimiter", () => {
     let limiter: InMemoryRateLimiter;
 
     beforeEach(() => {
+      resetInMemoryRateLimitStore();
       limiter = new InMemoryRateLimiter(3, 1000);
     });
 
@@ -62,6 +63,10 @@ describe("Rate Limiting", () => {
   });
 
   describe("checkRateLimit", () => {
+    beforeEach(() => {
+      resetInMemoryRateLimitStore();
+    });
+
     it("should return allowed:true when under limit", async () => {
       const limiter = new InMemoryRateLimiter(5, 60000);
       const result = await checkRateLimit(limiter, "user123");

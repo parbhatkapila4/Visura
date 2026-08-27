@@ -7,8 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans:
+    var(--font-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
   --font-display: var(--font-display), ui-serif, Georgia, serif;
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -152,12 +153,14 @@
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(90deg,
-      rgb(26 26 26) 0%,
-      rgb(38 38 38) 45%,
-      rgb(45 45 45) 50%,
-      rgb(38 38 38) 55%,
-      rgb(26 26 26) 100%);
+  background: linear-gradient(
+    90deg,
+    rgb(26 26 26) 0%,
+    rgb(38 38 38) 45%,
+    rgb(45 45 45) 50%,
+    rgb(38 38 38) 55%,
+    rgb(26 26 26) 100%
+  );
   background-size: 200% 100%;
   animation: skeleton-shimmer 1.8s ease-in-out infinite;
 }
@@ -250,7 +253,6 @@
   }
 
   @media (max-width: 768px) {
-
     html,
     body {
       overflow-x: hidden;
@@ -329,9 +331,11 @@
   }
 
   .btn-primary {
-    background: linear-gradient(135deg,
-        var(--primary),
-        oklch(from var(--primary) calc(l + 0.1) c h));
+    background: linear-gradient(
+      135deg,
+      var(--primary),
+      oklch(from var(--primary) calc(l + 0.1) c h)
+    );
     border: none;
     box-shadow: 0 4px 14px 0 rgba(var(--primary) / 0.39);
     transition: all 0.3s ease;
@@ -352,7 +356,10 @@
   }
 
   * {
-    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      border-color 0.3s ease,
+      color 0.3s ease;
   }
 
   main,
@@ -374,7 +381,6 @@
 }
 
 @keyframes gradient-x {
-
   0%,
   100% {
     background-size: 200% 100%;
@@ -594,17 +600,16 @@
     justify-content: center;
   }
 
-  .mobile-space-y-4>*+* {
+  .mobile-space-y-4 > * + * {
     margin-top: 1rem;
   }
 
-  .mobile-space-y-2>*+* {
+  .mobile-space-y-2 > * + * {
     margin-top: 0.5rem;
   }
 }
 
 @media (max-width: 768px) {
-
   button,
   .btn,
   [role="button"] {

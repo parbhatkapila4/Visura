@@ -9,14 +9,19 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-const eslintConfig = {
+/** @type {import("eslint").Linter.Config[]} */
+export default [
+  {
+    ignores: ["next-env.d.ts", ".next/**", "node_modules/**", "out/**", "dist/**"],
+  },
   ...compat.config({
     extends: ["next/core-web-vitals", "next/typescript", "prettier"],
     plugins: ["prettier"],
     rules: {
       "prettier/prettier": "error",
       "react/no-unescaped-entities": "off",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/triple-slash-reference": "off",
     },
   }),
-};
-export default eslintConfig;
+];

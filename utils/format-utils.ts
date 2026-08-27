@@ -1,15 +1,11 @@
 export function formatFileNameAsTitle(fileName: string): string {
-  
-  const withoutExtension = fileName.replace(/\.[^/]+$/, '');
+  const withoutExtension = fileName.replace(/\.[^/]+$/, "");
 
-  const withSpaces = withoutExtension
-    .replace(/[-_]+/g, ' ') 
-    .replace(/([a-z])([A-Z])/g, '$1 $2'); 
-
+  const withSpaces = withoutExtension.replace(/[-_]+/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2");
 
   return withSpaces
-    .split(' ')
+    .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ')
+    .join(" ")
     .trim();
 }

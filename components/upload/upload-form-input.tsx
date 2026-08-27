@@ -33,7 +33,7 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
       if (isLoading && processingRef.current) {
         try {
           processingRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-        } catch { }
+        } catch {}
       }
     }, [isLoading]);
 

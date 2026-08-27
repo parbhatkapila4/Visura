@@ -8,17 +8,9 @@ const ClerkProviderDynamic = dynamic(
   () =>
     import("@clerk/nextjs").then((mod) => {
       const C = mod.ClerkProvider;
-      return function ClerkProviderWrapper({
-        children,
-      }: {
-        children: React.ReactNode;
-      }) {
+      return function ClerkProviderWrapper({ children }: { children: React.ReactNode }) {
         return (
-          <C
-            signInUrl="/sign-in"
-            signUpUrl="/sign-up"
-            afterSignOutUrl="/"
-          >
+          <C signInUrl="/sign-in" signUpUrl="/sign-up" afterSignOutUrl="/">
             {children}
           </C>
         );

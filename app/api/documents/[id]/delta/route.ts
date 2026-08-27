@@ -3,10 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { getDbConnection } from "@/lib/db";
 import { computeDocumentDelta } from "@/lib/document-delta";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await auth();
     if (!userId) {

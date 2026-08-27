@@ -95,15 +95,11 @@ export function ProcessingPipeline({
     }
   }, [startedAtMs, initialEstimateMs]);
 
-  const finalizeIndex = useMemo(
-    () => steps.findIndex((s) => s.id === "finalize"),
-    [steps]
-  );
+  const finalizeIndex = useMemo(() => steps.findIndex((s) => s.id === "finalize"), [steps]);
 
   const progress = useMemo(() => {
     const n = steps.length || 8;
-    const finalizeActive =
-      finalizeIndex >= 0 && steps[finalizeIndex]?.status === "active";
+    const finalizeActive = finalizeIndex >= 0 && steps[finalizeIndex]?.status === "active";
     const chunks = chunkProgress?.total
       ? Math.min(1, Math.max(0, chunkProgress.completed / chunkProgress.total))
       : null;
@@ -134,7 +130,11 @@ export function ProcessingPipeline({
     const started = startedAtMs ?? null;
     const total = lockedEstimateMs;
     if (!started) {
-      return { remainingMs: null as number | null, totalMs: total, elapsedMs: null as number | null };
+      return {
+        remainingMs: null as number | null,
+        totalMs: total,
+        elapsedMs: null as number | null,
+      };
     }
 
     const elapsedMs = Math.max(0, nowMs - started);
@@ -154,7 +154,10 @@ export function ProcessingPipeline({
     return { remainingMs, totalMs, elapsedMs };
   }, [hasError, isComplete, lockedEstimateMs, nowMs, progress, startedAtMs]);
 
-  const activeLabel = useMemo(() => steps.find((s) => s.status === "active")?.label ?? null, [steps]);
+  const activeLabel = useMemo(
+    () => steps.find((s) => s.status === "active")?.label ?? null,
+    [steps]
+  );
   const percent = Math.round(progress * 100);
 
   return (
@@ -172,7 +175,7 @@ export function ProcessingPipeline({
                 className={cn(
                   "flex gap-4 pb-6 last:pb-0 relative",
                   index < steps.length - 1 &&
-                  "before:absolute before:left-[18px] before:top-9 before:bottom-0 before:w-px before:-translate-x-1/2 before:bg-[#252525]"
+                    "before:absolute before:left-[18px] before:top-9 before:bottom-0 before:w-px before:-translate-x-1/2 before:bg-[#252525]"
                 )}
               >
                 <div className="relative z-[1] flex h-9 w-9 flex-shrink-0 items-center justify-center">

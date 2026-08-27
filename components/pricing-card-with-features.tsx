@@ -4,12 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { FaCheck } from "react-icons/fa6";
 import { ArrowRight } from "lucide-react";
 
@@ -53,8 +48,9 @@ export function PricingCardWithFeatures({
         isDark
           ? "border-white/[0.08] text-gray-200 bg-gradient-to-b from-zinc-900 to-zinc-900/95 shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset,0_4px_24px_-4px_rgba(0,0,0,0.5),0_12px_48px_-12px_rgba(0,0,0,0.4)] hover:shadow-[0_0_0_1px_rgba(255,255,255,0.05)_inset,0_8px_32px_-8px_rgba(0,0,0,0.5),0_20px_56px_-16px_rgba(0,0,0,0.45)] hover:-translate-y-1"
           : "border-border bg-card text-card-foreground shadow-sm hover:shadow-md hover:-translate-y-0.5",
-        primary && isDark &&
-        "border-blue-500/20 shadow-[0_0_0_1px_rgba(59,130,246,0.15)_inset,0_0_0_1px_rgba(255,255,255,0.06)_inset,0_4px_24px_-4px_rgba(0,0,0,0.5),0_12px_48px_-12px_rgba(0,0,0,0.4)] hover:shadow-[0_0_0_1px_rgba(59,130,246,0.2)_inset,0_0_0_1px_rgba(255,255,255,0.08)_inset,0_8px_32px_-8px_rgba(0,0,0,0.5),0_20px_56px_-16px_rgba(0,0,0,0.45),0_0_24px_-8px_rgba(59,130,246,0.12)] hover:-translate-y-1",
+        primary &&
+          isDark &&
+          "border-blue-500/20 shadow-[0_0_0_1px_rgba(59,130,246,0.15)_inset,0_0_0_1px_rgba(255,255,255,0.06)_inset,0_4px_24px_-4px_rgba(0,0,0,0.5),0_12px_48px_-12px_rgba(0,0,0,0.4)] hover:shadow-[0_0_0_1px_rgba(59,130,246,0.2)_inset,0_0_0_1px_rgba(255,255,255,0.08)_inset,0_8px_32px_-8px_rgba(0,0,0,0.5),0_20px_56px_-16px_rgba(0,0,0,0.45),0_0_24px_-8px_rgba(59,130,246,0.12)] hover:-translate-y-1",
         className
       )}
     >
@@ -67,22 +63,31 @@ export function PricingCardWithFeatures({
 
       <div className="shrink-0 space-y-1.5 relative">
         <h2
-          className={cn(
-            "text-2xl font-semibold tracking-tight",
-            isDark ? "text-white" : ""
-          )}
-          style={isDark ? { fontFamily: "var(--font-display), ui-serif, Georgia, serif" } : undefined}
+          className={cn("text-2xl font-semibold tracking-tight", isDark ? "text-white" : "")}
+          style={
+            isDark ? { fontFamily: "var(--font-display), ui-serif, Georgia, serif" } : undefined
+          }
         >
           {title}
         </h2>
-        <p className={cn("text-sm leading-relaxed", isDark ? "text-gray-400" : "text-muted-foreground")}>
+        <p
+          className={cn(
+            "text-sm leading-relaxed",
+            isDark ? "text-gray-400" : "text-muted-foreground"
+          )}
+        >
           {subtitle}
         </p>
       </div>
 
       <div className="flex flex-col gap-3 flex-1 min-h-0">
         <div className="shrink-0 flex flex-col gap-2">
-          <span className={cn("text-[11px] font-medium uppercase tracking-[0.2em]", isDark ? "text-gray-500" : "text-muted-foreground")}>
+          <span
+            className={cn(
+              "text-[11px] font-medium uppercase tracking-[0.2em]",
+              isDark ? "text-gray-500" : "text-muted-foreground"
+            )}
+          >
             What&apos;s included
           </span>
           <div className={cn("h-px w-8", isDark ? "bg-white/10" : "bg-border")} />
@@ -94,7 +99,14 @@ export function PricingCardWithFeatures({
               ? "border-white/[0.06] bg-black/50 shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_2px_8px_rgba(0,0,0,0.2)]"
               : "border-border bg-background"
           )}
-          style={isDark ? { backgroundImage: "radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "16px 16px" } : undefined}
+          style={
+            isDark
+              ? {
+                  backgroundImage: "radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)",
+                  backgroundSize: "16px 16px",
+                }
+              : undefined
+          }
         >
           {features.map((f, i) => (
             <Tooltip key={i}>
@@ -103,7 +115,9 @@ export function PricingCardWithFeatures({
                   <div
                     className={cn(
                       "flex items-center gap-3 cursor-pointer select-none transition-colors group py-2.5 -mx-1 px-1 rounded-lg",
-                      isDark ? "text-gray-300 hover:text-white hover:bg-white/[0.03]" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      isDark
+                        ? "text-gray-300 hover:text-white hover:bg-white/[0.03]"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     )}
                   >
                     <span
@@ -119,7 +133,9 @@ export function PricingCardWithFeatures({
                     <span className="text-sm leading-snug">{f.label}</span>
                   </div>
                   {i < features.length - 1 && (
-                    <div className={cn("h-px shrink-0", isDark ? "bg-white/[0.05]" : "bg-border")} />
+                    <div
+                      className={cn("h-px shrink-0", isDark ? "bg-white/[0.05]" : "bg-border")}
+                    />
                   )}
                 </div>
               </TooltipTrigger>
@@ -127,7 +143,9 @@ export function PricingCardWithFeatures({
                 side="top"
                 className={cn(
                   "max-w-[260px] text-sm rounded-lg px-3 py-2 shadow-lg border",
-                  isDark ? "bg-zinc-800 border-gray-600 text-gray-100" : "bg-popover text-popover-foreground border-border"
+                  isDark
+                    ? "bg-zinc-800 border-gray-600 text-gray-100"
+                    : "bg-popover text-popover-foreground border-border"
                 )}
               >
                 {f.info}
@@ -142,10 +160,20 @@ export function PricingCardWithFeatures({
         <div className={cn("rounded-xl p-4 -mx-1", isDark && "bg-white/[0.02]")}>
           <div className="flex items-end justify-between gap-6">
             <div className="flex flex-col gap-0.5">
-              <span className={cn("text-xs font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-muted-foreground")}>
+              <span
+                className={cn(
+                  "text-xs font-medium uppercase tracking-wider",
+                  isDark ? "text-gray-500" : "text-muted-foreground"
+                )}
+              >
                 {priceLabel}
               </span>
-              <span className={cn("text-3xl font-semibold tracking-tight tabular-nums", isDark ? "text-white" : "")}>
+              <span
+                className={cn(
+                  "text-3xl font-semibold tracking-tight tabular-nums",
+                  isDark ? "text-white" : ""
+                )}
+              >
                 {price}
               </span>
             </div>
@@ -178,13 +206,25 @@ export function Box(): React.ReactElement {
         subtitle="Tailor solution for your case"
         features={[
           { label: "Complete App development", info: "End-to-end GPT app delivery." },
-          { label: "Custom UI/UX Interfaces for ChatGPT", info: "Optimized conversational design." },
-          { label: "Backend API integration", info: "Seamless OpenAI + third-party API integration." },
-          { label: "OAuth authentication setup trough OpenAI", info: "Implements secure OAuth sign-in." },
+          {
+            label: "Custom UI/UX Interfaces for ChatGPT",
+            info: "Optimized conversational design.",
+          },
+          {
+            label: "Backend API integration",
+            info: "Seamless OpenAI + third-party API integration.",
+          },
+          {
+            label: "OAuth authentication setup trough OpenAI",
+            info: "Implements secure OAuth sign-in.",
+          },
           { label: "Production deployment", info: "Deployment on Vercel or preferred host." },
           { label: "Updates every 48h", info: "Frequent feature & patch releases." },
           { label: "30-90 days post-launch support", info: "Ongoing stability & support." },
-          { label: "Handling submission process with OpenAI", info: "App review & approval assistance." },
+          {
+            label: "Handling submission process with OpenAI",
+            info: "App review & approval assistance.",
+          },
         ]}
         price="$3499"
         buttonText="Book a call"

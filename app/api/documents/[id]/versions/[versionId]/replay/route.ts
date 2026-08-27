@@ -62,10 +62,7 @@ export async function POST(
         versionId,
         errorMessage: err.message,
       },
-    }).catch(() => { });
-    return NextResponse.json(
-      { error: "Replay failed", details: err.message },
-      { status: 500 }
-    );
+    }).catch(() => {});
+    return NextResponse.json({ error: "Replay failed", details: err.message }, { status: 500 });
   }
 }

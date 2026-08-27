@@ -39,12 +39,16 @@ export default function CookiesSettingsPage() {
             </div>
 
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Types of Cookies We Use</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+                Types of Cookies We Use
+              </h2>
               <div className="space-y-6">
                 <div className="flex items-start gap-4 rounded-xl border border-white/10 bg-zinc-900/60 p-4 sm:p-5">
                   <Settings className="w-6 h-6 text-primary mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Essential Cookies</h3>
+                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+                      Essential Cookies
+                    </h3>
                     <p className="text-zinc-400">
                       These cookies are necessary for the website to function properly. They enable
                       basic functions like page navigation, access to secure areas, and
@@ -56,7 +60,9 @@ export default function CookiesSettingsPage() {
                 <div className="flex items-start gap-4 rounded-xl border border-white/10 bg-zinc-900/60 p-4 sm:p-5">
                   <Eye className="w-6 h-6 text-primary mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Analytics Cookies</h3>
+                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+                      Analytics Cookies
+                    </h3>
                     <p className="text-zinc-400">
                       These cookies help us understand how visitors interact with our website by
                       collecting and reporting information anonymously. This helps us improve our
@@ -68,7 +74,9 @@ export default function CookiesSettingsPage() {
                 <div className="flex items-start gap-4 rounded-xl border border-white/10 bg-zinc-900/60 p-4 sm:p-5">
                   <Shield className="w-6 h-6 text-primary mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Security Cookies</h3>
+                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+                      Security Cookies
+                    </h3>
                     <p className="text-zinc-400">
                       These cookies are used to enhance the security of our platform and protect
                       against unauthorized access and malicious activities.
@@ -79,7 +87,9 @@ export default function CookiesSettingsPage() {
                 <div className="flex items-start gap-4 rounded-xl border border-white/10 bg-zinc-900/60 p-4 sm:p-5">
                   <Database className="w-6 h-6 text-primary mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Preference Cookies</h3>
+                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+                      Preference Cookies
+                    </h3>
                     <p className="text-zinc-400">
                       These cookies remember your choices and preferences, such as language
                       settings, theme preferences, and other customization options.
@@ -97,15 +107,33 @@ export default function CookiesSettingsPage() {
                 You can control and manage cookies in several ways:
               </p>
               <ul className="space-y-3 text-base sm:text-lg text-zinc-400">
-                <li className="flex gap-2"><span className="text-primary">•</span> <strong className="text-white">Browser Settings:</strong> Most web browsers allow you to control cookies through their settings preferences</li>
-                <li className="flex gap-2"><span className="text-primary">•</span> <strong className="text-white">Opt-out Tools:</strong> You can use industry opt-out tools to manage advertising cookies</li>
-                <li className="flex gap-2"><span className="text-primary">•</span> <strong className="text-white">Delete Cookies:</strong> You can delete cookies that have already been set in your browser</li>
-                <li className="flex gap-2"><span className="text-primary">•</span> <strong className="text-white">Block Cookies:</strong> You can set your browser to block cookies entirely, though this may affect functionality</li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span>{" "}
+                  <strong className="text-white">Browser Settings:</strong> Most web browsers allow
+                  you to control cookies through their settings preferences
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span>{" "}
+                  <strong className="text-white">Opt-out Tools:</strong> You can use industry
+                  opt-out tools to manage advertising cookies
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span>{" "}
+                  <strong className="text-white">Delete Cookies:</strong> You can delete cookies
+                  that have already been set in your browser
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-primary">•</span>{" "}
+                  <strong className="text-white">Block Cookies:</strong> You can set your browser to
+                  block cookies entirely, though this may affect functionality
+                </li>
               </ul>
             </div>
 
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Third-Party Cookies</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+                Third-Party Cookies
+              </h2>
               <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
                 Some cookies on our site are set by third-party services that we use, such as
                 analytics providers and payment processors. These cookies are subject to the
@@ -123,7 +151,9 @@ export default function CookiesSettingsPage() {
             </div>
 
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Updates to This Policy</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+                Updates to This Policy
+              </h2>
               <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
                 We may update this Cookie Policy from time to time to reflect changes in our
                 practices or for other operational, legal, or regulatory reasons. We will notify you

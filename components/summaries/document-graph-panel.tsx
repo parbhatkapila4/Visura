@@ -116,10 +116,7 @@ export function DocumentGraphPanel({
                   <CardContent>
                     <ul className="space-y-1.5">
                       {items.map((node) => (
-                        <li
-                          key={node.id}
-                          className="text-sm text-[#ccc] flex items-center gap-2"
-                        >
+                        <li key={node.id} className="text-sm text-[#ccc] flex items-center gap-2">
                           <Network className="h-3.5 w-3.5 text-[#555] shrink-0" />
                           <span className="truncate">{node.label || node.id}</span>
                         </li>
@@ -142,7 +139,8 @@ export function DocumentGraphPanel({
                       const toLabel = nodes.find((n) => n.id === edge.to)?.label ?? edge.to;
                       return (
                         <li key={`${edge.from}-${edge.to}-${i}`} className="truncate">
-                          {fromLabel} → {toLabel} <span className="text-[#555]">({edge.relation})</span>
+                          {fromLabel} → {toLabel}{" "}
+                          <span className="text-[#555]">({edge.relation})</span>
                         </li>
                       );
                     })}

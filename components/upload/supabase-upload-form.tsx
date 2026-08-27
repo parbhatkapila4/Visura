@@ -63,7 +63,11 @@ function toUserFriendlyProcessingError(message?: string | null): string {
   if (lower.includes("daily token limit") || lower.includes("processing limit")) {
     return "You've reached today's processing limit. Please try again later.";
   }
-  if (lower.includes("estimated cost") || lower.includes("cost limit") || lower.includes("budget")) {
+  if (
+    lower.includes("estimated cost") ||
+    lower.includes("cost limit") ||
+    lower.includes("budget")
+  ) {
     return "You've reached today's AI processing budget. Please try again later.";
   }
   if (/\b402\b|payment required|billing|credits|quota/i.test(msg)) {
@@ -137,10 +141,7 @@ async function pollForSummary(
       return {
         ok: false,
         kind: "network",
-        message:
-          e instanceof Error
-            ? e.message
-            : "Network error while checking status. Try again.",
+        message: e instanceof Error ? e.message : "Network error while checking status. Try again.",
       };
     }
     await sleep(pollIntervalMs);
@@ -181,9 +182,7 @@ export default function SupabaseUploadForm({
   }, []);
 
   const updateStep = useCallback((idx: number, status: PipelineStepStatus) => {
-    setPipelineSteps((prev) =>
-      prev.map((s, i) => (i === idx ? { ...s, status } : s))
-    );
+    setPipelineSteps((prev) => prev.map((s, i) => (i === idx ? { ...s, status } : s)));
   }, []);
 
   const activateStep = useCallback(
@@ -240,7 +239,10 @@ export default function SupabaseUploadForm({
   const estimateMsFromWorkload = useCallback(
     (file: File, workload?: { chunksToProcess?: number | null; chunksTotal?: number | null }) => {
       const sizeMb = file.size / (1024 * 1024);
-      const chunks = Math.max(0, Number(workload?.chunksToProcess ?? workload?.chunksTotal ?? 0) || 0);
+      const chunks = Math.max(
+        0,
+        Number(workload?.chunksToProcess ?? workload?.chunksTotal ?? 0) || 0
+      );
       const baseSec = 75 + Math.min(220, sizeMb * 4);
       const chunkSec = chunks > 0 ? Math.min(42 * 60, chunks * 18) : 0;
       const seconds = Math.min(55 * 60, Math.max(90, baseSec + chunkSec));
@@ -267,9 +269,15 @@ export default function SupabaseUploadForm({
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
-    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.length === 0 || supabaseAnonKey.length === 0) {
+    if (
+      !supabaseUrl ||
+      !supabaseAnonKey ||
+      supabaseUrl.length === 0 ||
+      supabaseAnonKey.length === 0
+    ) {
       toast.error("Configuration Error", {
-        description: "Missing or invalid Supabase configuration. Please check your environment variables.",
+        description:
+          "Missing or invalid Supabase configuration. Please check your environment variables.",
       });
       return;
     }
@@ -383,7 +391,9 @@ export default function SupabaseUploadForm({
 
       if (!supabaseResult.success || !supabaseResult.data) {
         updateStep(STEP_UPLOAD, "error");
-        setPipelineError(supabaseResult.error || "Upload failed. Check your connection and try again.");
+        setPipelineError(
+          supabaseResult.error || "Upload failed. Check your connection and try again."
+        );
         setIsLoading(false);
         return;
       }
@@ -450,7 +460,9 @@ export default function SupabaseUploadForm({
           setPipelineError(toUserFriendlyProcessingError(versionResult.message));
         } else {
           setPipelineError(
-            toUserFriendlyProcessingError(versionResult?.message || "Failed to create document version. Try again.")
+            toUserFriendlyProcessingError(
+              versionResult?.message || "Failed to create document version. Try again."
+            )
           );
         }
         setIsLoading(false);
@@ -480,9 +492,7 @@ export default function SupabaseUploadForm({
         await simulateRemainingSteps(STEP_EMBED, 250);
         const finalizeStartedAt = await activateStep(STEP_FINALIZE);
         await completeStep(STEP_FINALIZE, finalizeStartedAt, 700);
-        setPipelinePdfSummaryId(
-          vData.pdfSummaryId != null ? String(vData.pdfSummaryId) : null
-        );
+        setPipelinePdfSummaryId(vData.pdfSummaryId != null ? String(vData.pdfSummaryId) : null);
         setPipelineComplete(true);
         setIsLoading(false);
         formRef.current?.reset();
@@ -592,9 +602,7 @@ export default function SupabaseUploadForm({
           onRetry={handlePipelineRetry}
           isComplete={pipelineComplete}
           summaryHref={
-            pipelinePdfSummaryId
-              ? `/summaries/${encodeURIComponent(pipelinePdfSummaryId)}`
-              : null
+            pipelinePdfSummaryId ? `/summaries/${encodeURIComponent(pipelinePdfSummaryId)}` : null
           }
           startedAtMs={pipelineStartedAtMs}
           initialEstimateMs={pipelineInitialEstimateMs}

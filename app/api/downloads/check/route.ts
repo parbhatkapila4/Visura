@@ -33,7 +33,10 @@ export async function GET(request: NextRequest) {
     const hasDownloaded = summaryId ? await hasSummaryBeenDownloaded(userId, summaryId) : false;
 
     const downloadLimit = userPlan === "pro" ? null : 2;
-    const canDownload = userPlan === "pro" || (downloadLimit !== null && downloadCount < downloadLimit) || hasDownloaded;
+    const canDownload =
+      userPlan === "pro" ||
+      (downloadLimit !== null && downloadCount < downloadLimit) ||
+      hasDownloaded;
 
     return NextResponse.json({
       downloadCount,

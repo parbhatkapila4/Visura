@@ -1,4 +1,3 @@
-
 import { logger } from "./logger";
 import { cached } from "./cache";
 import { hashContent } from "./versioned-documents";
@@ -107,7 +106,8 @@ export async function findRelevantChunks(
   topK: number = 5
 ): Promise<Array<{ text: string; index: number; similarity: number }>> {
   try {
-    const { getOrCreateEmbedding, getOrCreateEmbeddingsBatch } = await import("./embeddings-storage");
+    const { getOrCreateEmbedding, getOrCreateEmbeddingsBatch } =
+      await import("./embeddings-storage");
 
     const queryEmbedding = await getOrCreateEmbedding(query);
 
@@ -120,9 +120,7 @@ export async function findRelevantChunks(
       similarity: cosineSimilarity(queryEmbedding, embedding),
     }));
 
-    return similarities
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, topK);
+    return similarities.sort((a, b) => b.similarity - a.similarity).slice(0, topK);
   } catch (error) {
     logger.error("Error finding relevant chunks", error);
     return chunks.slice(0, topK).map((chunk) => ({

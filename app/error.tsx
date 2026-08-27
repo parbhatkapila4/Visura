@@ -58,7 +58,9 @@ export default function Error({
           {process.env.NODE_ENV === "development" && (
             <details className="mb-8 group">
               <summary className="cursor-pointer text-xs font-medium text-zinc-500 hover:text-zinc-400 transition-colors flex items-center gap-1.5">
-                <span className="group-open:rotate-90 transition-transform text-[10px]">&#9654;</span>
+                <span className="group-open:rotate-90 transition-transform text-[10px]">
+                  &#9654;
+                </span>
                 Error details
               </summary>
               <div className="mt-3 rounded-xl border border-white/[0.06] bg-black/40 p-4">
