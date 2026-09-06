@@ -22,6 +22,10 @@ export default function AppChrome({ children }: { children: React.ReactNode }) {
     );
   }
 
+  if (pathname === "/") {
+    return <>{children}</>;
+  }
+
   return (
     <div className="relative flex min-h-dvh w-full flex-col bg-black">
       <Header />

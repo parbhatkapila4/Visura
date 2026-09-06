@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
-import { Source_Sans_3 as FontSans, Fraunces as FontDisplay } from "next/font/google";
+import {
+  Source_Sans_3 as FontSans,
+  Fraunces as FontDisplay,
+  Geist,
+  Source_Serif_4,
+  Spline_Sans_Mono,
+  Instrument_Serif,
+} from "next/font/google";
 import "./globals.css";
 import AppChrome from "@/components/common/app-chrome";
 import RouteLoadingIndicator from "@/components/common/route-loading-indicator";
@@ -16,6 +23,33 @@ const fontDisplay = FontDisplay({
   variable: "--font-display",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+const fontVsSans = Geist({
+  variable: "--font-vs-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const fontVsSerif = Source_Serif_4({
+  variable: "--font-vs-serif",
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  style: ["normal", "italic"],
+});
+
+const fontVsMono = Spline_Sans_Mono({
+  variable: "--font-vs-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+});
+
+const fontVsDisplay = Instrument_Serif({
+  variable: "--font-vs-display",
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -35,7 +69,6 @@ export const metadata: Metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -46,7 +79,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${fontSans.variable} ${fontDisplay.variable} font-sans antialiased bg-black text-white overflow-x-hidden`}
+        className={`${fontSans.variable} ${fontDisplay.variable} ${fontVsSans.variable} ${fontVsSerif.variable} ${fontVsMono.variable} ${fontVsDisplay.variable} font-sans antialiased bg-black text-white overflow-x-hidden`}
         style={{
           backgroundColor: "#000000",
           margin: 0,
