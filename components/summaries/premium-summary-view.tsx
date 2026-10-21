@@ -11,7 +11,6 @@ import {
   Share2,
   Copy,
   Building2,
-  Clock,
   FileText,
   Zap,
   Sparkles,
@@ -116,13 +115,13 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
       const res = await fetch(`/api/summaries/${summary.id}/complete`, { method: "POST" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast.error(data.error || "Failed to generate summary");
+        toast.error(data.error || "Couldn't add the document text");
         return;
       }
-      toast.success("Summary generated");
+      toast.success(data.completed ? "Page updated" : "This document already has a summary");
       router.refresh();
     } catch (e) {
-      toast.error("Failed to generate summary");
+      toast.error("Couldn't add the document text");
     } finally {
       setIsCompletingSummary(false);
     }
@@ -173,7 +172,6 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
   }, [sections.length, activeSection]);
 
   const totalInsights = sections.reduce((total, section) => total + section.points.length, 0);
-  const estimatedReadTime = Math.ceil(totalInsights * 0.5);
   const wordCount = summary.word_count || summary.summary_text.split(/\s+/).length;
 
   const fetchWorkspaces = async () => {
@@ -225,18 +223,18 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
 
       if (response.ok) {
         toast.success(`Added to ${workspaceName}`, {
-          description: "The document is now available in the workspace",
+          description: "It now appears in the workspace's document list",
           duration: 3000,
         });
 
         setWorkspacesWithDocument((prev) => new Set(prev).add(workspaceId));
       } else {
         const error = await response.json();
-        toast.error(error.error || "Failed to add to workspace");
+        toast.error(error.error || "Couldn't add it to the workspace");
       }
     } catch (error) {
       console.error("Error adding to workspace:", error);
-      toast.error("Failed to add to workspace");
+      toast.error("Couldn't add it to the workspace");
     } finally {
       setIsAddingToWorkspace(false);
     }
@@ -283,8 +281,8 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
       console.error("Share error:", e);
       setIsGeneratingShareLink(false);
       setShowShareDialog(false);
-      toast.error("Share Failed", {
-        description: e.message || "Failed to share. Please try again.",
+      toast.error("Couldn't get a share link", {
+        description: e.message || "Try again.",
       });
     }
   };
@@ -319,18 +317,19 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
               <AlertTriangle className="w-8 h-8 text-red-400" />
             </div>
             <h1 className="text-xl sm:text-2xl font-semibold text-white mb-3 px-4">
-              Processing Failed
+              This summary looks like an error message
             </h1>
             <p className="text-sm sm:text-base text-[#888] leading-relaxed max-w-md mx-auto px-4">
-              We couldn't extract text from this document. This usually happens with scanned PDFs,
-              password-protected files, or corrupted documents.
+              Its text contains a phrase like “I apologize” or “extraction error”, so it isn’t
+              shown. Password-protected and corrupted files can't be read, and a fully scanned PDF
+              is read with English OCR, first 10 pages only.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row justify-center gap-3 px-4">
             <Link href="/upload" className="w-full sm:w-auto">
               <Button className="bg-white text-black hover:bg-[#e5e5e5] w-full sm:w-auto">
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Try Another File
+                Try another file
               </Button>
             </Link>
             <Link href="/dashboard" className="w-full sm:w-auto">
@@ -338,7 +337,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 variant="outline"
                 className="border-[#2a2a2a] text-white hover:bg-[#1a1a1a] w-full sm:w-auto"
               >
-                Back to Dashboard
+                Back to dashboard
               </Button>
             </Link>
           </div>
@@ -455,7 +454,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 className="text-[#888] hover:text-white hover:bg-[#1a1a1a] h-8 w-8 p-0"
                 asChild
               >
-                <Link href={`/summaries/${summary.id}/ai-insights`} title="AI Insights">
+                <Link href={`/summaries/${summary.id}/ai-insights`} title="AI insights">
                   <Sparkles className="w-4 h-4" />
                 </Link>
               </Button>
@@ -509,19 +508,13 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                     <p className="text-lg font-semibold text-white">{sections.length}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-[#555] uppercase tracking-wider mb-1">
-                      Insights
-                    </p>
+                    <p className="text-[10px] text-[#555] uppercase tracking-wider mb-1">Points</p>
                     <p className="text-lg font-semibold text-white">{totalInsights}</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-[#555] uppercase tracking-wider mb-1">
-                      Read time
+                      Approx. summary words
                     </p>
-                    <p className="text-lg font-semibold text-white">{estimatedReadTime}m</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-[#555] uppercase tracking-wider mb-1">Words</p>
                     <p className="text-lg font-semibold text-white">
                       {(wordCount / 1000).toFixed(1)}k
                     </p>
@@ -565,8 +558,10 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 </p>
                 <p className="text-sm text-amber-200/80 mb-4">
                   {isErrorFallback
-                    ? "Click below to build a readable overview from your document so you can read and use chat."
-                    : "This document hasn’t been summarized. Generate one now so you can see sections, insights, and use chat."}
+                    ? "Show the start of the document's text here instead, with its word count. Nothing gets summarized."
+                    : summary.status === "processing"
+                      ? "This document's summary isn't finished. You can show the start of its text here now; the summary replaces it when it's done."
+                      : "This document has no summary yet. You can show the start of its text here instead, with its word count. Nothing gets summarized."}
                 </p>
                 <Button
                   onClick={handleGenerateSummary}
@@ -576,7 +571,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                   <RefreshCw
                     className={`w-4 h-4 mr-2 ${isCompletingSummary ? "animate-spin" : ""}`}
                   />
-                  {isCompletingSummary ? "Generating…" : "Generate summary"}
+                  {isCompletingSummary ? "Adding text…" : "Show document text"}
                 </Button>
               </div>
             )}
@@ -606,11 +601,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Zap className="w-3.5 h-3.5" />
-                  {totalInsights} insights
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5" />
-                  {estimatedReadTime} min
+                  {totalInsights} points
                 </span>
               </div>
 
@@ -692,7 +683,8 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                     Want to explore deeper?
                   </h3>
                   <p className="text-xs sm:text-sm text-[#666]">
-                    Chat with AI to ask questions about this document
+                    Ask questions about this document in chat. Only the person who uploaded it can
+                    open its chat.
                   </p>
                 </div>
                 <Button
@@ -701,7 +693,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                   onClick={() => router.push(`/chatbot/${summary.id}`)}
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />
-                  Start Chat
+                  Start chat
                   <ArrowUpRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
@@ -751,7 +743,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                 <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mb-3">
                   <Sparkles className="w-4 h-4 text-[#888]" />
                 </div>
-                <p className="text-sm font-medium text-white mb-1">AI Insights</p>
+                <p className="text-sm font-medium text-white mb-1">AI insights</p>
                 <p className="text-xs text-[#666]">Key insights, risks, highlights</p>
               </Link>
 
@@ -792,7 +784,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                       <Building2 className="w-4 h-4 text-[#888]" />
                     </div>
                     <p className="text-sm font-medium text-white mb-1">Workspace</p>
-                    <p className="text-xs text-[#666]">Add to team</p>
+                    <p className="text-xs text-[#666]">Add to a workspace</p>
                   </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-64 bg-[#111] border-[#1f1f1f]">
@@ -852,11 +844,11 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                   <RefreshCw className="w-5 h-5 text-[#888] animate-spin" />
                 </div>
                 <DialogTitle className="text-lg font-semibold text-white">
-                  Generating Share Link...
+                  Getting share link…
                 </DialogTitle>
               </div>
               <DialogDescription className="text-[#666] text-sm">
-                Please wait while we create your shareable link.
+                Reusing this summary&apos;s link, or creating one if it has none.
               </DialogDescription>
             </DialogHeader>
           ) : shareUrl ? (
@@ -867,11 +859,11 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                     <Check className="w-5 h-5 text-emerald-500" />
                   </div>
                   <DialogTitle className="text-lg font-semibold text-white">
-                    Link Copied!
+                    Share link ready
                   </DialogTitle>
                 </div>
                 <DialogDescription className="text-[#666] text-sm">
-                  Your share link has been copied to clipboard.
+                  Copied to your clipboard if your browser allowed it. The link is also below.
                 </DialogDescription>
               </DialogHeader>
 
@@ -890,8 +882,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                       try {
                         if (navigator.clipboard && navigator.clipboard.writeText) {
                           await navigator.clipboard.writeText(shareUrl);
-                          toast.success("Copied to clipboard!", {
-                            description: "Share link has been copied to your clipboard",
+                          toast.success("Link copied", {
                             duration: 3000,
                           });
                         }
@@ -906,7 +897,7 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                       e.stopPropagation();
 
                       if (!shareUrl) {
-                        toast.error("No URL to copy");
+                        toast.error("No link to copy");
                         return;
                       }
 
@@ -951,15 +942,13 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                       try {
                         const success = await copyToClipboard(shareUrl);
                         if (success) {
-                          toast.success("Copied to clipboard!", {
-                            description: "Share link has been copied to your clipboard",
+                          toast.success("Link copied", {
                             duration: 3000,
                           });
                         } else {
                           const fallbackSuccess = copyFallback(shareUrl);
                           if (fallbackSuccess) {
-                            toast.success("Copied to clipboard!", {
-                              description: "Share link has been copied to your clipboard",
+                            toast.success("Link copied", {
                               duration: 3000,
                             });
                           } else {
@@ -968,8 +957,8 @@ export default function PremiumSummaryView({ summary }: PremiumSummaryViewProps)
                         }
                       } catch (error) {
                         console.error("Copy failed:", error);
-                        toast.error("Failed to copy", {
-                          description: "Please copy the link manually from the input field",
+                        toast.error("Couldn't copy the link", {
+                          description: "Select the link above and copy it.",
                           duration: 5000,
                         });
                       }

@@ -64,7 +64,7 @@ export default function WorkspaceChat({ workspaceId }: WorkspaceChatProps) {
 
         if (errorData.code === "TABLE_NOT_FOUND" || errorMessage.includes("migration")) {
           throw new Error(
-            "Chat feature requires database setup. Please contact support or check the setup instructions."
+            "Workspace chat is not set up on this server: its database table is missing. Email parbhat@parbhat.dev."
           );
         }
 
@@ -235,6 +235,11 @@ export default function WorkspaceChat({ workspaceId }: WorkspaceChatProps) {
 
       if (!response.ok) {
         const errorData = await response.json();
+        if (errorData.code === "TABLE_NOT_FOUND") {
+          throw new Error(
+            "Workspace chat is not set up on this server: its database table is missing. Email parbhat@parbhat.dev."
+          );
+        }
         throw new Error(errorData.error || "Failed to send message");
       }
 
@@ -306,7 +311,7 @@ export default function WorkspaceChat({ workspaceId }: WorkspaceChatProps) {
       <div className="flex items-center justify-center h-full min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-6 h-6 text-white/40 animate-spin" />
-          <p className="text-white/40 text-sm">Loading chat...</p>
+          <p className="text-white/40 text-sm">Loading messages...</p>
         </div>
       </div>
     );
@@ -321,11 +326,9 @@ export default function WorkspaceChat({ workspaceId }: WorkspaceChatProps) {
               <MessageCircle className="w-4 h-4 text-violet-400" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-white">Team Chat</h3>
-              <p className="text-xs text-white/40">{messages.length} messages</p>
+              <h3 className="text-base font-semibold text-white">Messages</h3>
             </div>
           </div>
-          <div className="w-2 h-2 rounded-full bg-emerald-500" title="Live" />
         </div>
       </div>
 
@@ -346,7 +349,9 @@ export default function WorkspaceChat({ workspaceId }: WorkspaceChatProps) {
               <MessageCircle className="w-6 h-6 text-white/20" />
             </div>
             <p className="text-sm text-white/40">No messages yet</p>
-            <p className="text-xs text-white/20">Start the conversation</p>
+            <p className="text-xs text-white/20">
+              Added members can't open this workspace, so only you see messages here.
+            </p>
           </div>
         ) : (
           <>

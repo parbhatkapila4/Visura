@@ -25,7 +25,7 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
 
   const { pdfSummaryId } = await params;
 
-  const summary = await findSummaryById(pdfSummaryId);
+  const summary = await findSummaryById(pdfSummaryId, userId);
   if (!summary || summary.user_id !== userId) {
     redirect("/dashboard");
   }
@@ -82,10 +82,11 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 flex items-center justify-center mx-auto mb-6">
                   <MessageCircle className="w-8 h-8 text-slate-300" />
                 </div>
-                <h3 className="text-xl font-semibold text-slate-100 mb-3">Chat Not Available</h3>
+                <h3 className="text-xl font-semibold text-slate-100 mb-3">
+                  Chat isn&apos;t set up for this document yet
+                </h3>
                 <p className="text-slate-400 mb-8 leading-relaxed">
-                  The chatbot functionality is not yet initialized for this document. Click the
-                  button below to initialize it.
+                  Setting it up reads the text of the file you uploaded.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <InitializeChatbotButton pdfSummaryId={pdfSummaryId} />
@@ -93,7 +94,7 @@ async function ChatbotPage({ params }: ChatbotPageProps) {
                     href="/dashboard"
                     className="inline-flex items-center justify-center h-11 px-6 bg-slate-900 text-slate-100 text-sm font-medium rounded-lg border border-slate-700 hover:bg-slate-800 transition-colors"
                   >
-                    Go to Dashboard
+                    Go to dashboard
                   </Link>
                 </div>
               </div>

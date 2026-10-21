@@ -1,22 +1,6 @@
-import { pricingPlans } from "@/utils/constants";
+import { documentLimitFor, getPlanForEmail } from "./billing";
 import { getDbConnection } from "./db";
 import { getUserDocumentCount } from "./summaries";
-
-export async function getPriceIdForActiveUser(email: string) {
-  const sql = await getDbConnection();
-
-  const query = await sql`SELECT price_id FROM users WHERE email = ${email} AND status = 'active'`;
-
-  return query?.[0]?.price_id || null;
-}
-
-export async function getPriceIdForUser(email: string) {
-  const sql = await getDbConnection();
-
-  const query = await sql`SELECT price_id FROM users WHERE email = ${email}`;
-
-  return query?.[0]?.price_id || null;
-}
 
 export async function createUserInDatabase({
   email,
@@ -63,13 +47,11 @@ export async function getUserByEmail(email: string) {
 }
 
 export async function hasReachedUploadLimit(userId: string, email: string) {
-  const uploadCount = await getUserDocumentCount(userId);
+  const [uploadCount, plan] = await Promise.all([
+    getUserDocumentCount(userId),
+    getPlanForEmail(email),
+  ]);
+  const uploadLimit = documentLimitFor(plan);
 
-  const priceId = await getPriceIdForActiveUser(email);
-
-  const isPro = pricingPlans.find((plan) => plan.priceId === priceId)?.id === "pro";
-
-  const uploadLimit: number = isPro ? 1000 : 5;
-
-  return { hasReachedLimit: uploadCount >= uploadLimit, uploadLimit };
+  return { hasReachedLimit: uploadCount >= uploadLimit, uploadLimit, plan };
 }

@@ -10,607 +10,425 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-**Transform complex documents into actionable insights in seconds, not hours.**
+**Summarize, chat with, and compare documents. Re-upload an edited file and the passages that didn't change keep their summaries.**
 
-[Live Demo](https://visura.parbhat.dev/) · [Quick Start](QUICK_START.md) · [Documentation](ARCHITECTURE.md)
+[Live](https://visura.parbhat.dev/) · [Quick start](QUICK_START.md) · [Architecture](ARCHITECTURE.md)
 
 ---
 
 </div>
 
-## Executive Summary
+## What it is
 
-**Visura** is a production-ready, enterprise-scale AI document intelligence platform that processes, analyzes, and enables intelligent conversations with documents at scale. Built with **Next.js 15**, **TypeScript**, and **PostgreSQL**, it demonstrates **founding engineer-level** architecture with:
+Upload a PDF, get a summary, ask questions about it, and upload the next revision to see what changed. The interesting part isn't the summary. It's the second upload, and what happens when a run would cost more than you meant to spend.
 
-- **Cost-Optimized Processing**: Hash-based chunk reuse saves 50-80% on AI API costs
-- **Automatic Recovery**: Self-healing system with replay guarantees and crash recovery
-- **Full Observability**: Sentry, OpenTelemetry, business metrics, and database monitoring
-- **Production Performance**: P50 < 2.5s, P95 < 5s, P99 < 7s for document processing
-- **Enterprise Security**: HMAC request signing, distributed rate limiting, input sanitization
-- **Scalable Architecture**: Serverless-first, horizontal scaling, connection pooling
+Two decisions shape the system:
+
+- **Work is keyed by content hash**, so an edit re-summarizes the edit, not the document.
+- **Spend is checked before the first model call**, not after the invoice.
 
 ---
 
-## Key Features
+## How it works
 
-### AI-Powered Document Intelligence
+### The upload path
 
-| Feature                 | Capability                                               | Impact                                          |
-| ----------------------- | -------------------------------------------------------- | ----------------------------------------------- |
-| **Smart Summarization** | Gemini 2.5 Flash with type-specific prompts              | 30-second summaries from 100+ page documents    |
-| **Vector Search**       | Persistent embeddings with cosine similarity             | 5x faster context retrieval, 60% cost reduction |
-| **Document Chat**       | Context-aware conversations with memory                  | Natural language Q&A from document content      |
-| **Multi-Language**      | Auto-detection (English, Hindi, French, German, Russian) | Global document processing                      |
-| **Type Classification** | 15+ document types with custom prompts                   | Optimized summaries per document category       |
+The browser reads the file first, because sending 32 MB to a server action to extract text from is the wrong shape.
 
-### Enterprise Architecture
+1. The file goes from the browser to Supabase Storage.
+2. The browser extracts the text. For a PDF it reads the first 50 pages.
+3. If it finds nothing readable, it uploads the file for the server to read instead. The server reads the whole file, with no page cap and no OCR.
+4. A fully scanned PDF is OCR'd in the browser, English, first 10 pages.
+5. The extracted text goes to one server action, which creates the version and summarizes it.
 
-| Component                     | Technology                              | Why It Matters                          |
-| ----------------------------- | --------------------------------------- | --------------------------------------- |
-| **Versioned Processing**      | Hash-based chunking with reuse          | 50-80% cost savings on document updates |
-| **Distributed Rate Limiting** | Upstash Redis with in-memory fallback   | Prevents abuse, scales globally         |
-| **Observability Stack**       | Sentry + OpenTelemetry + Custom Metrics | Full visibility into production systems |
-| **Database Monitoring**       | Query tracking, slow query detection    | Proactive performance optimization      |
-| **Automatic Recovery**        | Self-healing with replay guarantees     | Zero-downtime resilience                |
-| **Cost Guardrails**           | Daily limits, per-version limits        | Prevents runaway costs                  |
+Passages are summarized inside that request, `CHUNK_BATCH_SIZE` at a time (default 2). There is no queue in the live path.
 
-### Team Collaboration
+### Versioned processing
 
-- **Workspaces**: Role-based access control (Owner, Admin, Member, Viewer)
-- **Real-time Chat**: Team communication within workspaces
-- **Document Sharing**: Secure sharing with permission controls
-- **Collaboration Presence**: See who's viewing documents in real-time
-- **Activity Tracking**: Complete audit trail of workspace actions
-
-### Analytics & Insights
-
-- **Processing Metrics**: Track documents, success rates, efficiency scores
-- **Performance Monitoring**: P50, P95, P99 latencies for all operations
-- **Business Metrics**: User engagement, feature usage, conversion tracking
-- **Cost Analytics**: Token usage, chunk reuse rates, processing costs
-- **Database Health**: Query performance, connection pool metrics
-
-### Security & Compliance
-
-- **Authentication**: Clerk with JWT verification and SSO support
-- **Authorization**: Middleware-protected routes with role-based access
-- **Input Validation**: Zod schemas for compile-time and runtime safety
-- **XSS Protection**: Comprehensive sanitization utilities
-- **SQL Injection Prevention**: Parameterized queries only
-- **Internal API Security**: HMAC-based request signing
-- **Rate Limiting**: Distributed rate limiting with Redis
-
----
-
-## Architecture Highlights
-
-### **Production-Ready Design Patterns**
+Every upload creates a version. The text is normalized, split at content-defined boundaries, and each passage keyed by SHA-256. On re-upload under the same filename, a passage whose hash matches one in an earlier version copies that summary instead of calling the model.
 
 ```typescript
-// Example: Cost-optimized versioned processing
 const version = await createVersionedDocumentJob({
   text: documentText,
   fileName: "contract.pdf",
   fileUrl: storageUrl,
 });
 
-// Automatically:
-// - Detects unchanged chunks (hash-based)
-// - Reuses previous summaries (50-80% cost savings)
-// - Processes only new/changed content
-// - Tracks cost metrics per version
-// - Enforces guardrails before processing
+// Normalizes the text and splits it into passages
+// Hashes each one
+// Copies the summary from a matching passage in an earlier version
+// Sends only unmatched passages to the model
+// Records reused_chunks and new_chunks on the version
 ```
 
-### **Observability Stack**
+**Boundaries.** A passage closes after a sentence whose FNV-1a hash opens the boundary gate, or at about 1,200 characters. Content-defined rather than fixed-size, so inserting a sentence near the top doesn't shift every boundary after it. A passage under 50 characters keeps its own text as its summary and never reaches the model.
+
+**Normalization** is what makes the hash stable across exports. Unicode is folded to NFKC, quotes and dashes unified, whitespace and line wrapping collapsed, running headers and page numbers dropped. The same contract exported at A4 and Letter matches.
+
+One consequence worth knowing: a line that contains only a number is treated as a page number and dropped. A table cell going from "30" to "60" can read as unchanged.
+
+**Identical re-upload.** The full text is hashed too. Upload the same file again and you get the existing version back rather than a new one.
+
+### Guardrails before work starts
+
+Cost controls that run after processing are accounting, not controls.
 
 ```typescript
-// Comprehensive monitoring built-in
-import {
-  trackUserEngagement,
-  trackFeatureUsage,
-  captureException,
-  measurePerformance,
-} from "@/lib/observability";
-
-// Automatic tracking:
-// - Error tracking (Sentry)
-// - Distributed tracing (OpenTelemetry)
-// - Business metrics (in-memory + API)
-// - Performance metrics (P50, P95, P99)
-// - Database query monitoring
+// Checked before the version, its passages, or any model call exist
+// Daily estimated-token cap per user (MAX_TOKENS_PER_USER_PER_DAY)
+// Today's usage estimated from new passage counts across today's versions
+// Optional per-version passage limit (MAX_NEW_CHUNKS_PER_VERSION, off by default)
+// A refused run leaves no version and no passages behind
 ```
 
-### **Automatic Recovery System**
+The scope is passage summaries on new versions. Chat, workspace analysis and change detection are not metered against this cap. The document row and the uploaded file already exist by the time the check runs, so a refused run isn't a completely clean slate.
 
-```typescript
-// Self-healing architecture
-// - Automatic detection of stuck versions (>10 min)
-// - Idempotent replay of incomplete chunks
-// - Crash recovery with state preservation
-// - No manual intervention required
-// - Converges to healthy state automatically
-```
+### Finalizing a version
 
----
+A version's summary is written once every passage has one. Reused passages count as done.
 
-## Performance Benchmarks
+The write claims the version's placeholder row while its status is still `processing`, so exactly one worker finalizes it and the second stops before anything runs twice. Passage summaries are written one statement at a time and only while the summary is still null, so two workers can call the model for the same passage but only one result lands.
 
-### **Production Metrics** (Real-world data)
+There are no transactions. Passages are inserted one statement at a time after the version row.
 
-| Operation                | P50   | P95   | P99   | Status |
-| ------------------------ | ----- | ----- | ----- | ------ |
-| PDF Upload (10MB)        | 1.2s  | 2.1s  | 3.5s  | Pass   |
-| Text Extraction          | 450ms | 800ms | 1.2s  | Pass   |
-| AI Summary Generation    | 2.5s  | 4.2s  | 6.8s  | Pass   |
-| Vector Search (5 chunks) | 180ms | 320ms | 580ms | Pass   |
-| Chat Response            | 1.1s  | 2.3s  | 4.1s  | Pass   |
-| Page Load (Dashboard)    | 320ms | 580ms | 920ms | Pass   |
+### Summary length
 
-### **Core Web Vitals**
+Merging keeps every distinct paragraph of every passage summary. That's right for a short document and unreadable for a long one: a 92-passage upload merges to 135,000 characters.
 
-- **LCP** (Largest Contentful Paint): **1.2s** (Target: < 2.5s) - Pass
-- **FID** (First Input Delay): **45ms** (Target: < 100ms) - Pass
-- **CLS** (Cumulative Layout Shift): **0.02** (Target: < 0.1) - Pass
-- **TTFB** (Time to First Byte): **180ms** (Target: < 600ms) - Pass
+So the merge is held to the same word budget the summarizer uses: 3,500 words up to 15 pages, 6,000 up to 50, rising to 12,000 for very long documents.
 
-### **Cost Optimization**
+- Within the budget, the merge is used as it is, with no model call.
+- Over it, each section is condensed by its own calls, each asked for about 300 words from at most 6,000 words of notes, up to 16 in flight. Small asks in parallel, because asked for 2,000 words in one reply the model writes 3,850 and takes 38 seconds, while asked for 300 it writes 300 in 4.
+- If any call fails or the whole thing passes 45 seconds, a fallback selects the first lines of every section of every passage, with no model call. Nothing is ever cut mid-sentence.
 
-- **Chunk Reuse Rate**: 50-80% for versioned documents
-- **Embedding Cache Hit Rate**: 85%+ (persistent storage)
-- **Token Savings**: ~60% through intelligent caching
-- **Processing Efficiency**: 3x faster with vector search
+### Stored embeddings and chat
 
----
+Embeddings are written to Postgres, keyed by a hash of the text and the model, so the same text isn't embedded twice. Entries are kept for 30 days.
 
-## Tech Stack
+Chat over a document under 5,000 characters sends the whole text. Over that, the closest passages are retrieved by cosine similarity computed in the app over the stored vectors. If retrieval fails for any reason, it falls back to the first five passages rather than answering with nothing.
 
-### **Core Framework**
+### Change detection
 
-- **Next.js 15** (App Router, Server Components, API Routes)
-- **React 19** (Server Components, Concurrent Features)
-- **TypeScript 5** (Strict mode, full type safety)
+Each new version is compared with the one before it. Passages are aligned by hash, so nothing decides what changed except the hashes. A model is used only to describe the changes that alignment already found, on the first 40 of them.
 
-### **Backend & Infrastructure**
+### Compare
 
-- **Neon PostgreSQL** (Serverless Postgres with connection pooling)
-- **Supabase** (Storage, Auth webhooks)
-- **Upstash Redis** (Distributed rate limiting, caching)
-- **Vercel** (Edge network, serverless functions)
+`/compare` takes two files directly, without an account. It lists every change it finds and, when both files were read in full without OCR, how much of the text matched after normalization.
 
-### **AI & ML**
+Changes are labelled by what they touch:
 
-- **OpenRouter** (Multi-model AI gateway: Gemini 2.5 Flash, Claude, GPT-4)
-- **Vector Search** (OpenRouter embeddings, persistent storage)
-- **LangChain** (Orchestration, chunking, retrieval)
+- **Material**: an amount, a date, a number, a time period, or a word like shall, liable or termination.
+- **Substantive**: wording that changes meaning without touching those.
+- **Cosmetic**: punctuation only, or short words and numbers inside a passage that starts with a label.
 
-### **Security & Auth**
+A passage that moved elsewhere counts as a deletion and an insertion, except in a very long document, where a passage that only moved is recognized as such.
 
-- **Clerk** (Authentication, SSO, user management)
-- **HMAC Signing** (Internal API security)
-- **Zod** (Runtime validation, type safety)
+### Workspaces
 
-### **Observability**
-
-- **Sentry** (Error tracking, performance monitoring)
-- **OpenTelemetry** (Distributed tracing)
-- **Custom Metrics** (Business metrics, performance tracking)
-- **Pino** (Structured logging)
-
-### **Payments & Integrations**
-
-- **Razorpay** (Multi-currency payment processing)
-- **UploadThing** (File uploads, CDN distribution)
+Documents are grouped into workspaces, searched across, and compared: ask the workspace to analyze its documents and it looks for conflicts between them, which needs at least two.
 
 ---
 
-## Quick Start
+## What happens when things fail
 
-### **Prerequisites**
+| Failure | What's left behind |
+| --- | --- |
+| The request dies mid-version | Passage summaries already written stay. The version stays `processing` and its passages resume on the next run |
+| Two workers reach the same passage | Both may call the model; the write lands only while the summary is still null |
+| Two workers finish at the same time | Only the one that claims the `processing` placeholder writes the summary, so chat setup and change detection don't run twice |
+| Duplicate passage insert | Caught on the unique key and the existing passage is returned |
+| The same changed file uploaded twice at once | Both compute the same next version number; the unique constraint rejects one |
+| The provider fails or returns nothing | Retried once on `gpt-4o-mini`. If that fails too, the passage keeps no summary and nothing is written for it |
+| The daily cap would be exceeded | Refused before the version, its passages, or the placeholder summary exist |
+| A reused passage whose copied summary never landed | Completion falls back to the source passage's summary |
 
-- Node.js 20+ (LTS recommended)
-- npm, yarn, or pnpm
-- PostgreSQL database (Neon recommended)
-- Accounts: [Clerk](https://clerk.com), [Neon](https://neon.tech), [OpenRouter](https://openrouter.ai)
+What isn't guaranteed: the same text does not always produce the same summary. Temperature is 0.3, and identical output only comes back from the 7-day summary cache.
 
-### **Installation**
+---
+
+## Features
+
+| Feature | How it works |
+| --- | --- |
+| **Summaries** | Each passage summarized by GPT-4o mini through OpenRouter, merged, and condensed if the merge runs long |
+| **Document chat** | Answers from the document's own passages; long documents retrieve the closest ones |
+| **Versioned uploads** | Hash-keyed passages, matching passages keep their summaries |
+| **Compare** | Every change between two files, labelled material, substantive or cosmetic |
+| **Sections, insights, graph** | Generated per completed version from the document text |
+| **Workspaces** | Group documents, search across them, ask for comparisons and conflicts |
+| **Share links** | A 128-bit token per summary, issued and revoked by its owner |
+
+| Component | Technology | Why |
+| --- | --- | --- |
+| **Versioned processing** | SHA-256 over normalized passage text | An edit costs what the edit costs |
+| **Content-defined boundaries** | FNV-1a gate over sentence hashes | An insertion disturbs its own passage, not every one after it |
+| **Cost guardrails** | Daily estimated-token cap, checked before anything is written | Refuse up front instead of overspending |
+| **Finalization** | One claim on the placeholder row | One writer, no duplicated side effects |
+| **Embeddings** | Hash-keyed lookup before the provider | The same text is never embedded twice |
+| **Rate limiting** | Upstash Redis, in-memory fallback | Works locally, holds across instances |
+| **Storage** | Neon Postgres | Documents, passages, summaries and vectors in one place |
+
+---
+
+## Tech stack
+
+**Core**
+
+- Next.js 15 (App Router, Server Components, Route Handlers)
+- React 19
+- TypeScript 5
+
+**Backend and infrastructure**
+
+- Neon Postgres, over the serverless HTTP driver, so every query is its own HTTP request and no pool is held
+- Supabase Storage for uploaded files
+- Upstash Redis for rate limiting and caching
+- Vercel
+
+**AI**
+
+- Everything through OpenRouter: GPT-4o mini for summaries, chat, sections, insights and the graph; Gemini 2.5 Flash for change descriptions
+- `text-embedding-3-small` for embeddings
+- LangChain as the PDF loader
+
+**Auth, payments, uploads**
+
+- Clerk
+- Razorpay, one-time payments in INR, USD and EUR
+
+**Validation and logging**
+
+- Zod on the chat routes
+- Pino, structured JSON to stdout
+- Webhook alerts to `ALERT_WEBHOOK_URL`, fire and forget
+
+---
+
+## Limits
+
+- 32 MB per file. PDF, DOCX, TXT, MD, XLSX, XLS, PPTX. `.doc` and `.ppt` upload but can't be read.
+- The browser reads the first 50 pages of a PDF. If that fails, the server reads the whole file with no OCR.
+- A fully scanned PDF is OCR'd in English, first 10 pages only.
+- Summaries are written in English.
+- Very long documents can fail on the server action's body limit, which Next sets at 1 MB by default.
+- Documents kept: 5 free, 10 Starter, 1,000 Pro. Each new version counts as one.
+- 2 summary downloads per account. Re-downloading something you already downloaded is free.
+- Checkout takes INR, USD and EUR.
+
+---
+
+## Quick start
+
+### Prerequisites
+
+- Node.js 20.19+ on 20.x, 22.12+ on 22.x, or 24+
+- Postgres (Neon works), a Supabase project for storage, a Clerk app, an OpenRouter key
+
+### Install
 
 ```bash
-# Clone repository
 git clone https://github.com/parbhatkapila4/Visura.git
 cd visura
 
-# Install dependencies
 npm install
 
-# Copy environment template
 cp ENV_TEMPLATE.md .env.local
+# fill in the variables below
 
-# Configure environment variables (see below)
-# Then start development server
+node scripts/migrate.mjs --pending
+
 npm run dev
 ```
 
-Visit `http://localhost:3000`
+Runs at `http://localhost:3000`.
 
-### **Environment Variables**
+### Environment
 
 ```bash
 # Database
 DATABASE_URL=postgresql://user:pass@host/db
 
-# Authentication (Clerk)
+# Auth (Clerk)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
 CLERK_SECRET_KEY=sk_...
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 
-# AI (OpenRouter)
+# AI
 OPENROUTER_API_KEY=sk-or-...
 
-# File Storage
-UPLOADTHING_SECRET=sk_live_...
-UPLOADTHING_APP_ID=...
+# Storage
 NEXT_PUBLIC_SUPABASE_URL=https://...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 
-# Redis (Optional - for distributed rate limiting)
+# Payments
+RAZORPAY_KEY_ID=...
+RAZORPAY_KEY_SECRET=...
+RAZORPAY_WEBHOOK_SECRET=...
+
+# Optional: rate limiting and caching
 UPSTASH_REDIS_REST_URL=https://...
 UPSTASH_REDIS_REST_TOKEN=...
 
-# Observability (Optional)
-NEXT_PUBLIC_SENTRY_DSN=https://...
-OTEL_EXPORTER_OTLP_ENDPOINT=https://...
+# Internal
+INTERNAL_API_SECRET=...   # openssl rand -hex 32
+CRON_SECRET=...           # openssl rand -hex 32
+ALERT_WEBHOOK_URL=https://...
 
-# Internal API Security
-INTERNAL_API_SECRET=... # Generate with: openssl rand -hex 32
-CRON_SECRET=... # Generate with: openssl rand -hex 32
+# Cost limits
+MAX_TOKENS_PER_USER_PER_DAY=2000000
+MAX_NEW_CHUNKS_PER_VERSION=0   # 0 turns the per-version limit off
 ```
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed setup instructions.
+Without the Supabase variables the app throws at import, so those aren't optional.
 
 ---
 
-## Project Structure
+## Layout
 
 ```
-visura/
-├── app/                          # Next.js App Router
-│   ├── (logged-in)/              # Protected routes
-│   │   ├── dashboard/            # Analytics dashboard
-│   │   ├── upload/               # Document upload
-│   │   ├── summaries/[id]/      # Summary viewer
-│   │   ├── chatbot/[id]/        # Document chat
-│   │   └── workspaces/           # Team workspaces
-│   ├── api/                      # API endpoints
-│   │   ├── analytics/            # Analytics data
-│   │   ├── chatbot/             # Chat functionality
-│   │   ├── documents/           # Document operations
-│   │   ├── observability/       # Metrics & monitoring
-│   │   ├── jobs/                 # Background jobs
-│   │   └── workspaces/           # Workspace management
-│   └── checkout/                 # Payment pages
-├── components/                   # React components
-│   ├── chatbot/                 # Chat interface
-│   ├── dashboard/               # Dashboard components
-│   ├── upload/                  # Upload components
-│   └── ui/                      # shadcn/ui primitives
-├── lib/                          # Core business logic
-│   ├── versioned-documents.ts   # Versioned processing
-│   ├── chunk-processor.ts       # Chunk processing
-│   ├── embeddings.ts            # Vector search
-│   ├── observability.ts         # Monitoring & metrics
-│   ├── rate-limit-distributed.ts # Distributed rate limiting
-│   ├── db-monitoring.ts         # Database monitoring
-│   ├── cost-guardrails.ts       # Cost controls
-│   └── ...                      # 30+ utility modules
-├── actions/                      # Server actions
-├── migrations/                  # Database migrations
-└── tests/                        # Test files
+app/
+├── (logged-in)/            Protected routes
+│   ├── dashboard/          Documents and analytics
+│   ├── upload/             Upload and processing
+│   ├── summaries/[id]/     Summary, sections, insights, graph
+│   ├── chatbot/[id]/       Document chat
+│   └── workspaces/         Workspaces
+├── compare/                Compare two files, no account needed
+├── api/                    Route handlers
+└── checkout/               Payments
+
+lib/
+├── versioned-documents.ts    Versions, passage reuse, cost metrics
+├── document-segmentation.ts  Normalization, boundaries, hashing
+├── document-extractor.ts     PDF, DOCX, XLSX, PPTX, OCR
+├── chunk-processor.ts        Passage summaries and finalization
+├── final-summary.ts          Merging and condensing
+├── summary-length-config.ts  The word budget table
+├── cost-guardrails.ts        Daily and per-version limits
+├── embeddings-storage.ts     Hash-keyed embedding lookup
+├── document-change-events.ts Change detection between versions
+└── workspaces.ts             Workspaces, members, shares
+
+migrations/   Applied by hand via scripts/migrate.mjs
+tests/        Tests
 ```
 
 ---
 
-## Advanced Features
+## Database
 
-### **1. Versioned Document Processing**
-
-**Problem**: Reprocessing unchanged document content wastes AI API costs and time.
-
-**Solution**: Hash-based chunking with intelligent reuse.
-
-```typescript
-// Automatic chunk reuse detection
-const version = await createVersionedDocumentJob({
-  text: updatedDocumentText,
-  fileName: "contract_v2.pdf",
-});
-
-// System automatically:
-// 1. Chunks document deterministically (SHA-256 hashing)
-// 2. Compares hashes against previous version
-// 3. Reuses summaries for unchanged chunks (50-80% savings)
-// 4. Processes only new/changed content
-// 5. Tracks cost metrics: reused_chunks, new_chunks, estimated_tokens_saved
-```
-
-**Impact**:
-
-- **50-80% cost reduction** on document updates
-- **3x faster processing** for versioned documents
-- **Full observability** of cost metrics per version
-
-### **2. Automatic Recovery & Replay**
-
-**Problem**: Serverless functions can timeout, network can fail, AI providers can rate limit.
-
-**Solution**: Idempotent replay system with automatic recovery.
-
-```typescript
-// Automatic recovery (runs every 5 minutes)
-// - Detects stuck versions (>10 minutes old)
-// - Replays incomplete chunks idempotently
-// - Preserves completed work (no duplication)
-// - Converges to healthy state automatically
-// - Zero manual intervention required
-```
-
-**Guarantees**:
-
-- **Idempotent**: Safe to replay N times
-- **Crash-safe**: Partial progress preserved
-- **Automatic**: Self-healing within 5-15 minutes
-- **Observable**: Full audit trail of recovery actions
-
-### **3. Cost Guardrails**
-
-**Problem**: Runaway AI costs from oversized documents or excessive usage.
-
-**Solution**: Multi-layer cost controls with pre-processing checks.
-
-```typescript
-// Enforced before any processing begins
-// - Daily token limit per user (default: 500,000 tokens)
-// - Per-version chunk limit (default: 100 chunks)
-// - Atomic checks (no partial state on limit exceeded)
-// - CRITICAL alerts when limits hit
-// - Clear error messages with usage details
-// - Configurable via MAX_TOKENS_PER_USER_PER_DAY env var
-```
-
-**Impact**:
-
-- **Prevents cost overruns** before processing starts
-- **Observable usage** with daily tracking
-- **Configurable limits** via environment variables
-
-### **4. Vector Search with Persistent Embeddings**
-
-**Problem**: Regenerating embeddings for every query is slow and expensive.
-
-**Solution**: Persistent embeddings storage with automatic caching.
-
-```typescript
-// Automatic embedding caching
-const embedding = await getOrCreateEmbedding({
-  text: documentChunk,
-  model: "text-embedding-3-small",
-});
-
-// System automatically:
-// 1. Checks database for existing embedding (hash-based)
-// 2. Returns cached embedding if found (85%+ hit rate)
-// 3. Generates and stores new embedding if not found
-// 4. Batch operations for multiple texts
-```
-
-**Impact**:
-
-- **5x faster** context retrieval
-- **60% cost reduction** on embedding generation
-- **85%+ cache hit rate** in production
-
-### **5. Comprehensive Observability**
-
-**Problem**: Production systems need visibility into errors, performance, and business metrics.
-
-**Solution**: Full-stack observability with Sentry, OpenTelemetry, and custom metrics.
-
-```typescript
-// Built-in observability
-import {
-  captureException, // Sentry error tracking
-  trackUserEngagement, // Business metrics
-  trackFeatureUsage, // Feature analytics
-  measurePerformance, // Performance tracking
-} from "@/lib/observability";
-
-// Automatic tracking:
-// - All errors → Sentry
-// - All queries → Database monitoring
-// - All operations → Performance metrics (P50, P95, P99)
-// - User actions → Business metrics
-```
-
-**Features**:
-
-- **Error Tracking**: Sentry integration with context
-- **Distributed Tracing**: OpenTelemetry support
-- **Business Metrics**: User engagement, feature usage
-- **Performance Metrics**: P50, P95, P99 for all operations
-- **Database Monitoring**: Query performance, slow query detection
-- **API Endpoints**: `/api/observability/metrics`, `/api/observability/database`
+| Table | Holds |
+| --- | --- |
+| `documents` | Document metadata and file URLs |
+| `document_versions` | One row per upload, with reused and new passage counts |
+| `document_chunks` | Passage text, hash, summary, and which passage it was reused from |
+| `pdf_summaries` | The version's summary, with its status |
+| `pdf_stores` | Full text, for chat |
+| `document_embeddings` | Stored embeddings, keyed by text hash and model |
+| `document_change_events` | Changes found between two versions |
+| `pdf_qa_sessions` | Chat sessions |
+| `pdf_qa_messages` | Conversation history |
+| `workspaces` | Workspaces |
+| `workspace_members` | Membership and roles |
+| `document_shares` | Documents shared into a workspace |
+| `users` | Plan and billing state |
 
 ---
 
-## Security Architecture
+## Security
 
-### **Multi-Layer Security**
+- Clerk authentication, with middleware-protected pages
+- A summary opens for the person who uploaded it, and for anyone holding its share link
+- Share tokens are 128-bit, issued and revoked by the owner
+- Zod validation on the chat routes
+- Parameterized queries only
+- HMAC signing on internal job routes, a shared secret on cron routes
+- Rate limiting on chat
+- Security headers set in `next.config.ts`
 
-```
-Request Flow:
-1. Rate Limiting (Upstash Redis) → Prevents abuse
-2. Authentication (Clerk JWT) → Verifies user identity
-3. Authorization (Middleware) → Checks permissions
-4. Input Validation (Zod) → Validates request data
-5. Sanitization (XSS protection) → Cleans user input
-6. Parameterized Queries → Prevents SQL injection
-7. HMAC Signing (Internal APIs) → Prevents unauthorized access
-```
-
-### **Security Features**
-
-- **JWT Authentication** with Clerk
-- **Role-Based Access Control** (RBAC) for workspaces
-- **Distributed Rate Limiting** (Redis-backed)
-- **Input Sanitization** (XSS protection)
-- **SQL Injection Prevention** (parameterized queries only)
-- **HMAC Request Signing** (internal API security)
-- **CORS & Security Headers** (CSP, X-Frame-Options)
-- **Environment Variable Validation** (required vars checked at startup)
+Deleting a document removes its summary, chat history, share link, workspace shares and comments. The uploaded file, its versions, passages and embeddings stay until they're removed separately.
 
 ---
 
-## Database Schema
+## Operations
 
-### **Core Tables**
-
-- **`documents`**: Document metadata and file URLs
-- **`document_versions`**: Versioned document processing with cost metrics
-- **`document_chunks`**: Chunked content with hash-based reuse
-- **`pdf_summaries`**: AI-generated summaries
-- **`pdf_stores`**: Full text content for chat
-- **`document_embeddings`**: Persistent embeddings for vector search
-- **`chatbot_sessions`**: Chat session management
-- **`chatbot_messages`**: Conversation history
-- **`workspaces`**: Team collaboration spaces
-- **`workspace_members`**: Role-based access control
-- **`document_change_events`**: Semantic change tracking
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for complete schema documentation.
-
----
-
-## Testing
+**Migrations** are never automatic.
 
 ```bash
-# Run tests
-npm test                 # Watch mode
-npm run test:run         # Single run
-npm run test:coverage    # Coverage report
-npm run test:ui          # Visual test runner
-
-# Code quality
-npm run lint             # ESLint
-npm run type-check       # TypeScript validation
-npm run format:check     # Prettier check
+node scripts/migrate.mjs --list      # every migration and its state
+node scripts/migrate.mjs --pending   # apply what's missing
+node scripts/migrate.mjs <name>      # apply one
 ```
 
-**Test Coverage**:
+**Deploys** go out from `main`.
 
-- Unit tests for utilities and validators
-- Integration tests for API endpoints
-- Component tests for React components
+**Crons** are declared in `vercel.json` and authenticated with `CRON_SECRET`. A route refuses every request when the secret isn't set.
 
----
+**Health.** `/api/health` answers a simple check. `/api/ready` looks at the database and reports 503 when too many versions are sitting unfinished, which is a real signal rather than a formality.
 
-## Documentation
+**Alerts** are POSTed as JSON to `ALERT_WEBHOOK_URL` when it's set. Delivery is fire and forget: a failed alert is logged as a warning and never blocks the work it was reporting on.
 
-- **[ARCHITECTURE.md](ARCHITECTURE.md)**: Complete system architecture
-- **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution guidelines
-- **[OBSERVABILITY_SETUP.md](OBSERVABILITY_SETUP.md)**: Observability setup guide
-- **[docs/SCALE_AND_COST.md](docs/SCALE_AND_COST.md)**: Scaling and cost analysis
-- **[docs/OPERATOR_QUERIES.sql](docs/OPERATOR_QUERIES.sql)**: Database queries for operators
+**After a deploy:** apply any pending migrations, upload a document, run a chat, and confirm a payment reaches the right plan.
 
 ---
 
-## Deployment
-
-### **Vercel (Recommended)**
+## Tests
 
 ```bash
-# Automatic deployment on git push
-git push origin main
-
-# Manual deployment
-vercel --prod
+npm test              # watch
+npm run test:run      # once
+npm run test:coverage
+npm run lint
+npm run type-check
 ```
 
-### **Environment Variables**
-
-Set all required environment variables in Vercel dashboard:
-
-- Database, Auth, AI, Storage, Redis, Observability, Security secrets
-
-### **Post-Deployment**
-
-1. Verify database migrations applied
-2. Check Sentry for errors
-3. Monitor Core Web Vitals
-4. Test critical flows (upload, chat, payment)
-5. Verify observability endpoints
+`next build` does not stop on TypeScript or ESLint errors, by configuration in `next.config.ts`. Nothing runs these automatically, so run them yourself before pushing.
 
 ---
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-**Quick Start**:
-
 ```bash
-# Fork and clone
-git clone https://github.com/your-username/Visura.git
+# Fork on GitHub, then clone your fork
+git clone https://github.com/<your-username>/Visura.git
 cd visura
 
-# Create feature branch
-git checkout -b feature/amazing-feature
+npm install
+cp ENV_TEMPLATE.md .env.local
+node scripts/migrate.mjs --pending
 
-# Make changes and test
-npm run test:run
-npm run type-check
+git checkout -b feature/your-change
+npm run test:run && npm run type-check && npm run lint
 
-# Commit with conventional commits
-git commit -m "feat: add amazing feature"
-
-# Push and create PR
-git push origin feature/amazing-feature
+git commit -m "feat: your change"
+git push origin feature/your-change
 ```
+
+Conventions: component files are kebab-case, landing page sections live in `components/landing/`, and `lib/` is mostly server-side.
+
+---
+
+## Docs
+
+- [ARCHITECTURE.md](ARCHITECTURE.md): system architecture and schema
+- [QUICK_START.md](QUICK_START.md): setup
+- [docs/SCALE_AND_COST.md](docs/SCALE_AND_COST.md): every limit and where it lives in the code
+- [docs/FAILURE_SCENARIOS.md](docs/FAILURE_SCENARIOS.md): what each failure leaves behind
+- [docs/OPERATOR_QUERIES.sql](docs/OPERATOR_QUERIES.sql): queries for operators
 
 ---
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
-
----
+MIT. See [LICENSE](LICENSE).
 
 ## Author
 
 **Parbhat Kapila**
 
-- Website: [parbhat.dev](https://parbhat.dev)
-- Twitter: [@Parbhat03](https://x.com/Parbhat03)
-- LinkedIn: [parbhat-kapila](https://www.linkedin.com/in/parbhat-kapila/)
-- GitHub: [@parbhatkapila4](https://github.com/parbhatkapila4)
-
----
-
-## Acknowledgments
-
-- **Next.js Team** for the incredible framework
-- **Vercel** for seamless deployment
-- **OpenRouter** for multi-model AI access
-- **Clerk** for authentication infrastructure
-- **Neon** for serverless PostgreSQL
-
----
-
-<div align="center">
-
-**If Visura saves you time, consider giving it a star on GitHub!**
-
-[![GitHub stars](https://img.shields.io/github/stars/parbhatkapila4/Visura?style=social)](https://github.com/parbhatkapila4/Visura)
-
-</div>
+- [parbhat.dev](https://parbhat.dev)
+- [@Parbhat03](https://x.com/Parbhat03)
+- [parbhat-kapila](https://www.linkedin.com/in/parbhat-kapila/)
+- [@parbhatkapila4](https://github.com/parbhatkapila4)

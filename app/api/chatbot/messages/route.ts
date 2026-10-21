@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { saveQAMessage, getQAMessagesBySession, getSessionDocumentRef } from "@/lib/chatbot";
+import {
+  saveQAMessage,
+  getQAMessagesBySession,
+  getQASessionById,
+  getSessionDocumentRef,
+} from "@/lib/chatbot";
 import { generateChatbotResponse, generateChatbotResponseStream } from "@/lib/chatbot-ai";
 import { SendMessageSchema, GetMessagesSchema } from "@/lib/validators";
 import { chatbotRateLimit, checkRateLimit, trackRateLimitHit } from "@/lib/rate-limit";
@@ -24,6 +29,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = SendMessageSchema.parse(body);
     const { sessionId, message, stream } = validatedData;
+    if (!(await getQASessionById(sessionId, userId))) {
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    }
 
     const userMessage = await saveQAMessage({
       sessionId,

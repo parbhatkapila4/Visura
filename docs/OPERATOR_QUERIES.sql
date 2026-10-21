@@ -13,8 +13,10 @@ SELECT dv.id as version_id,
   NOW() - dv.created_at as age
 FROM document_versions dv
   JOIN documents d ON dv.document_id = d.id
+  JOIN pdf_summaries ps ON ps.id = dv.pdf_summary_id
   LEFT JOIN document_chunks dc ON dv.id = dc.document_version_id
-WHERE dv.pdf_summary_id IS NULL
+WHERE ps.status = 'processing'
+  AND dv.created_at < NOW() - INTERVAL '10 minutes'
 GROUP BY dv.id,
   dv.version_number,
   d.title,
@@ -23,12 +25,7 @@ GROUP BY dv.id,
   dv.total_chunks,
   dv.reused_chunks,
   dv.new_chunks
-HAVING COUNT(dc.id) FILTER (
-    WHERE dc.summary IS NULL
-      AND dc.reused_from_chunk_id IS NULL
-  ) > 0
-  AND dv.created_at < NOW() - INTERVAL '10 minutes'
-ORDER BY dv.created_at ASC;
+ORDER BY dv.created_at DESC;
 SELECT dc.id as chunk_id,
   dc.chunk_index,
   dc.chunk_hash,
@@ -67,8 +64,7 @@ WHERE dc.summary IS NULL
   AND dc.reused_from_chunk_id IS NOT NULL
 ORDER BY dv.created_at ASC,
   dc.chunk_index ASC;
--- Version Completion Status (all versions)
--- To filter by specific version, uncomment and modify the WHERE clause below
+
 SELECT dv.id as version_id,
   dv.version_number,
   d.title as document_title,
@@ -86,43 +82,38 @@ SELECT dv.id as version_id,
     WHERE dc.summary IS NULL
       AND dc.reused_from_chunk_id IS NULL
   ) as incomplete_chunks,
-  dv.pdf_summary_id IS NOT NULL as has_final_summary,
+  COALESCE(ps.status = 'completed', false) as has_final_summary,
   CASE
     WHEN COUNT(dc.id) FILTER (
       WHERE dc.summary IS NULL
         AND dc.reused_from_chunk_id IS NULL
     ) = 0
-    AND dv.pdf_summary_id IS NOT NULL THEN 'complete'
+    AND ps.status = 'completed' THEN 'complete'
     WHEN COUNT(dc.id) FILTER (
       WHERE dc.summary IS NULL
         AND dc.reused_from_chunk_id IS NULL
     ) = 0
-    AND dv.pdf_summary_id IS NULL THEN 'chunks_complete_summary_pending'
+    AND ps.status = 'processing' THEN 'chunks_complete_summary_pending'
     ELSE 'incomplete'
   END as completion_status
 FROM document_versions dv
   JOIN documents d ON dv.document_id = d.id
+  LEFT JOIN pdf_summaries ps ON ps.id = dv.pdf_summary_id
   LEFT JOIN document_chunks dc ON dv.id = dc.document_version_id
--- Uncomment the line below and replace with actual version UUID to filter by specific version:
--- WHERE dv.id = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+
 GROUP BY dv.id,
   dv.version_number,
   d.title,
   d.user_id,
   dv.created_at,
   dv.total_chunks,
-  dv.pdf_summary_id;
+  dv.pdf_summary_id,
+  ps.status;
 SELECT COUNT(*) as stuck_versions
 FROM document_versions dv
-WHERE dv.pdf_summary_id IS NULL
-  AND dv.created_at < NOW() - INTERVAL '10 minutes'
-  AND EXISTS (
-    SELECT 1
-    FROM document_chunks dc
-    WHERE dc.document_version_id = dv.id
-      AND dc.summary IS NULL
-      AND dc.reused_from_chunk_id IS NULL
-  );
+  JOIN pdf_summaries ps ON ps.id = dv.pdf_summary_id
+WHERE ps.status = 'processing'
+  AND dv.created_at < NOW() - INTERVAL '10 minutes';
 SELECT COUNT(*) as incomplete_chunks
 FROM document_chunks dc
 WHERE dc.summary IS NULL
@@ -246,18 +237,20 @@ SELECT dv.id as version_id,
     WHERE dc.summary IS NULL
       AND dc.reused_from_chunk_id IS NOT NULL
   ) as incomplete_reused_chunks,
-  dv.pdf_summary_id IS NULL as needs_final_summary
+  ps.status = 'processing' as needs_final_summary
 FROM document_versions dv
   JOIN documents d ON dv.document_id = d.id
+  JOIN pdf_summaries ps ON ps.id = dv.pdf_summary_id
   LEFT JOIN document_chunks dc ON dv.id = dc.document_version_id
-WHERE dv.pdf_summary_id IS NULL
+WHERE ps.status = 'processing'
 GROUP BY dv.id,
   dv.version_number,
   d.title,
   d.user_id,
   dv.created_at,
   dv.total_chunks,
-  dv.pdf_summary_id
+  dv.pdf_summary_id,
+  ps.status
 HAVING COUNT(dc.id) FILTER (
     WHERE dc.summary IS NULL
       AND dc.reused_from_chunk_id IS NULL

@@ -124,7 +124,7 @@ export default function SummaryCard({
     const text = (summary.summary_text || "").trim();
     const line = text.split(/\n|\. /).find((l: string) => /error|failed|unable to|cannot/i.test(l));
     if (line) return line.trim();
-    return "We couldn't generate a summary for this document. Please try re-uploading the file or generating again.";
+    return "We couldn't generate a summary for this document.";
   })();
 
   const getDocumentTypeIcon = (type: string, title: string) => {
@@ -227,7 +227,7 @@ export default function SummaryCard({
                 <p className="text-[11px] sm:text-xs md:text-sm text-gray-200 leading-relaxed line-clamp-3 break-words overflow-hidden">
                   {preview.executiveSummary === "Summary not available" ||
                   preview.executiveSummary === "No summary available"
-                    ? "Summary is being processed. Please check back in a few moments or click View to see the full document."
+                    ? "This document has no summary text."
                     : preview.executiveSummary}
                 </p>
               </div>
@@ -257,7 +257,7 @@ export default function SummaryCard({
                 </div>
               ) : (
                 <div className="text-[11px] sm:text-xs md:text-sm text-gray-500 italic">
-                  Key insights will be available once processing is complete.
+                  No key points found in this summary.
                 </div>
               )}
             </div>

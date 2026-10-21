@@ -15,7 +15,7 @@ export default async function ChatbotHomePage() {
     redirect("/sign-in");
   }
 
-  const summaries = await getUserSummaries(userId, "pro");
+  const summaries = await getUserSummaries(userId, null);
 
   return (
     <ChatbotPortal>

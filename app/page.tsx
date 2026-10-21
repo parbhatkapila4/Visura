@@ -6,15 +6,14 @@ import PipelineSection from "@/components/landing/pipeline-section";
 import ReuseSection from "@/components/landing/reuse-section";
 import StatesSection from "@/components/landing/states-section";
 import ChangesSection from "@/components/landing/changes-section";
-import ChatSection from "@/components/landing/chat-section";
 import FeaturesSection from "@/components/landing/features-section";
 import FooterSection from "@/components/landing/footer-section";
 import LandingToasts from "./landing-toasts";
 
 export const metadata: Metadata = {
-  title: "Visura — update the document, keep the summaries",
+  title: "Visura — see what changed between two versions of a document",
   description:
-    "Visura summarizes, indexes, and lets you chat with your documents. Upload a revision and unchanged sections keep their summaries — only new material is processed, and every version shows its work.",
+    "Drop in the version you sent and the one that came back. Visura lists every change it finds and, when both files were read in full without OCR, how many passages still match once formatting, page numbers and short repeated lines such as running headers are set aside. No account, and neither file is uploaded.",
 };
 
 type HomeProps = {
@@ -31,11 +30,10 @@ export default async function Home({ searchParams }: HomeProps) {
       <LandingHeader />
       <main id="vs-main" tabIndex={-1}>
         <HeroSection />
-        <PipelineSection />
-        <ReuseSection />
-        <StatesSection />
         <ChangesSection />
-        <ChatSection />
+        <ReuseSection />
+        <PipelineSection />
+        <StatesSection />
         <FeaturesSection />
       </main>
       <FooterSection />

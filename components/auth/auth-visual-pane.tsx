@@ -9,7 +9,7 @@ interface AuthVisualPaneProps {
 }
 
 export default function AuthVisualPane({
-  tagline = "Transforming documents into actionable insights",
+  tagline = "Summarize a document, then ask it questions",
   currentPage = "sign-up",
 }: AuthVisualPaneProps) {
   return (

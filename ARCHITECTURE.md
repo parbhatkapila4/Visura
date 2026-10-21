@@ -9,7 +9,7 @@
 │                                                                  │
 │  Next.js 15 App Router                                          │
 │  ├── Pages (Server Components)                                  │
-│  ├── API Routes (Edge/Node)                                     │
+│  ├── API Routes (Node)                                           │
 │  └── Client Components (React 19)                               │
 │                                                                  │
 └────────────────────┬────────────────────────────────────────────┘
@@ -21,7 +21,7 @@
 │  Clerk Auth                                                      │
 │  ├── JWT Verification                                            │
 │  ├── User Management                                             │
-│  ├── Webhook Sync → Database                                    │
+│  ├── Users Row Created by Dashboard/Chat/Workspaces              │
 │  └── Protected Routes (Middleware)                               │
 │                                                                  │
 └────────────────────┬────────────────────────────────────────────┘
@@ -32,8 +32,8 @@
 │                                                                  │
 │  Document Processing Pipeline                                    │
 │  ┌──────────┐    ┌──────────┐    ┌──────────┐                  │
-│  │  Upload  │───▶│ Extract  │───▶│ Analyze  │                  │
-│  │ (Client) │    │   Text   │    │  with AI │                  │
+│  │ Extract  │───▶│  Upload  │───▶│ Analyze  │                  │
+│  │   Text   │    │   File   │    │  with AI │                  │
 │  └──────────┘    └──────────┘    └──────────┘                  │
 │                                                                  │
 │  Chat System                                                     │
@@ -53,12 +53,12 @@
 │  ├── Document Chunks (Hash-based reuse)                          │
 │  ├── PDF Summaries & Stores                                      │
 │  ├── Chat Sessions & Messages                                    │
-│  ├── Workspaces & Collaboration                                  │
+│  ├── Workspaces, Members & Shares                                │
 │  ├── Document Embeddings (Persistent storage)                    │
-│  └── Cost Ledger & Metrics                                       │
+│  └── Cost Ledger (Per-Version Chunk Counts)                      │
 │                                                                  │
 │  Supabase Storage                                                │
-│  └── PDF Files (up to 50MB)                                      │
+│  └── Uploaded Files                                              │
 │                                                                  │
 │  Upstash Redis (Distributed Cache & Rate Limiting)              │
 │  ├── Rate Limiting (Distributed)                                 │
@@ -71,21 +71,19 @@
 │                      EXTERNAL SERVICES                           │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
-│  AI/ML Services                                                  │
-│  ├── OpenRouter (Gemini 2.5 Flash)                              │
-│  ├── OpenRouter (Multi-model: Gemini 2.5 Flash, Claude, GPT-4) │
-│  ├── Embeddings (text-embedding-3-small)                        │
-│  └── LangChain (Orchestration)                                   │
+│  AI/ML Services (all via OpenRouter)                             │
+│  ├── GPT-4o mini (Summaries)                                     │
+│  ├── GPT-4o mini (Chat, Sections, Insights, Graph, Fallback)     │
+│  ├── Gemini 2.5 Flash (Change Descriptions)                      │
+│  ├── Embeddings (text-embedding-3-small)                         │
+│  └── LangChain (PDF Loader for Fallback Extraction)              │
 │                                                                  │
 │  Payment Processing                                              │
-│  └── Razorpay (Multi-currency payments)                         │
+│  └── Razorpay (one-time, INR / USD / EUR)                        │
 │                                                                  │
-│  Observability & Monitoring                                      │
-│  ├── Sentry (Error Tracking)                                    │
-│  ├── OpenTelemetry (Distributed Tracing)                        │
-│  ├── Custom Metrics (Business & Performance)                    │
-│  ├── Database Monitoring (Query Performance)                    │
-│  └── Vercel Analytics (Performance)                             │
+│  Logging & Alerting                                              │
+│  ├── Pino (Structured Server Logs)                               │
+│  └── Webhook Alerts (ALERT_WEBHOOK_URL)                          │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -96,59 +94,64 @@
 
 ### Document Upload & Processing Flow
 
-**IMPORTANT: ALL document uploads go through the versioned, async, replay-safe pipeline. There is exactly ONE upload path.**
+**Every upload from the UI goes through one server action, `createVersionedDocumentJob()`.**
 
 ```
 User                Client              Server              AI Service        Database
  │                    │                   │                     │               │
  │  1. Select File    │                   │                     │               │
- │───────────────────▶│                   │                    │              │
+ │───────────────────▶│                   │                     │               │
  │                    │                   │                     │               │
  │                    │  2. Extract Text  │                     │               │
- │                    │   (Client-side)   │                     │               │
+ │                    │   (in browser)    │                     │               │
  │                    │                   │                     │               │
  │                    │  3. Upload File   │                     │               │
- │                    │──────────────────▶│                     │               │
- │                    │                   │  4. Store File      │               │
- │                    │                   │────────────────────▶│               │
+ │                    │   to Supabase     │                     │               │
+ │                    │   Storage         │                     │               │
  │                    │                   │                     │               │
- │                    │  5. Create Version│                     │               │
- │                    │   (Async Job)     │                     │               │
+ │                    │  4. Server Action │                     │               │
+ │                    │   createVersioned │                     │               │
+ │                    │   DocumentJob()   │                     │               │
  │                    │──────────────────▶│                     │               │
- │                    │                   │  6. Check Guardrails│               │
- │                    │                   │─────────────────────────────────────▶│
- │                    │                   │  7. Create Document │               │
- │                    │                   │   & Version         │               │
- │                    │                   │─────────────────────────────────────▶│
- │                    │                   │  8. Chunk Document  │               │
- │                    │                   │─────────────────────────────────────▶│
- │                    │                   │  9. Enqueue Chunks  │               │
- │                    │                   │   (Fire & Forget)   │               │
+ │                    │                   │  5. Find or Create  │               │
+ │                    │                   │   Document          │               │
+ │                    │                   │────────────────────────────────────▶│
+ │                    │                   │  6. Chunk & Match   │               │
+ │                    │                   │   Chunk Hashes      │               │
+ │                    │                   │────────────────────────────────────▶│
+ │                    │                   │  7. Check Guardrails│               │
+ │                    │                   │────────────────────────────────────▶│
+ │                    │                   │  8. Create Version, │               │
+ │                    │                   │   Placeholder       │               │
+ │                    │                   │   Summary & Chunks  │               │
+ │                    │                   │────────────────────────────────────▶│
+ │                    │                   │  9. Summarize New   │               │
+ │                    │                   │   Chunks in Batches │               │
  │                    │                   │────────────────────▶│               │
- │                    │  10. Redirect     │                     │               │
- │  11. View Status   │◀──────────────────│                     │               │
+ │                    │                   │ 10. Save Chunk      │               │
+ │                    │                   │   Summaries         │               │
+ │                    │                   │────────────────────────────────────▶│
+ │                    │                   │ 11. Last Chunk Done:│               │
+ │                    │                   │   Merge Summary,    │               │
+ │                    │                   │   Save pdf_stores   │               │
+ │                    │                   │────────────────────────────────────▶│
+ │                    │ 12. Return Result │                     │               │
+ │                    │◀──────────────────│                     │               │
+ │                    │ 13. Poll Version  │                     │               │
+ │                    │   Status          │                     │               │
+ │                    │──────────────────▶│                     │               │
+ │ 14. Link to        │                   │                     │               │
+ │     Summary        │                   │                     │               │
  │◀───────────────────│                   │                     │               │
- │                    │                   │  [Background]      │               │
- │                    │                   │  12. Process Chunks │               │
- │                    │                   │────────────────────▶│               │
- │                    │                   │                     │  13. Generate │
- │                    │                   │                     │     Summary   │
- │                    │                   │                     │◀──────────────│
- │                    │                   │  14. Save Summary  │               │
- │                    │                   │   & PDF Store      │               │
- │                    │                   │─────────────────────────────────────▶│
- │                    │                   │  15. Link Version  │               │
- │                    │                   │─────────────────────────────────────▶│
 ```
 
 **Key Points:**
 
 - **Single Upload Path**: All uploads use `createVersionedDocumentJob()` from `actions/versioned-upload-actions.tsx`
-- **Async Processing**: Chunk processing happens in background via `/api/jobs/process-chunk`
-- **Cost Guardrails**: Enforced before version creation (prevents partial state)
-- **Automatic Completion**: When all chunks complete, `pdf_summaries` and `pdf_stores` are created automatically
-- **Replay-Safe**: All processing is idempotent and can be safely replayed
-- **Legacy Paths Deprecated**: `storePdfSummaryAction` and `generatePdfSummaryFromText` are deprecated but kept for backward compatibility
+- **Processing Runs in the Server Action**: New chunks are summarized inside `createVersionedDocumentJob()`, `CHUNK_BATCH_SIZE` (default 2) at a time, before it returns. `/api/jobs/process-chunk` exists, but nothing calls it
+- **Cost Guardrails**: Checked before the version is created, so a blocked upload leaves no version, chunks or placeholder summary. The `documents` row is found or created before the check
+- **Automatic Completion**: A placeholder `pdf_summaries` row (status `processing`) is created with the version. When the last chunk has a summary, `checkVersionCompletion()` fills it in, marks it `completed` and creates the `pdf_stores` row
+- **Legacy Paths**: `storePdfSummaryAction` and `generatePdfSummaryFromText` still exist, but nothing calls them
 
 ### Chat Message Flow
 
@@ -185,90 +188,63 @@ User                Client              Server              Database          AI
 ### Core Tables
 
 ```sql
--- Users (synced from Clerk)
+-- Users (created by ensureUserExistsInDatabase() when the dashboard, chat or workspaces page loads; looked up by email)
 users
 ├── id (PK)
-├── clerk_id (unique)
 ├── email
 ├── full_name
-├── customer_id (Stripe)
-├── price_id (subscription)
-├── status (active/cancelled)
-└── created_at
+├── price_id (nothing writes it)
+├── status (inactive/active)
+├── plan (free/starter/pro)
+├── plan_granted_at
+├── razorpay_order_id
+└── razorpay_payment_id
 
 -- PDF Summaries
 pdf_summaries
 ├── id (PK)
-├── user_id (FK → users)
+├── user_id (Clerk user ID)
 ├── title
 ├── summary_text
 ├── file_name
 ├── original_file_url
-├── word_count
-├── status (processing/completed/failed)
+├── status (processing/completed)
 ├── created_at
 └── updated_at
 
--- PDF Store (for chatbot)
-pdf_store
+-- PDF Stores (full text for chat)
+pdf_stores
 ├── id (PK)
 ├── pdf_summary_id (FK → pdf_summaries)
-├── user_id (FK → users)
-├── file_name
-├── title
+├── user_id (Clerk user ID)
 ├── full_text_content
-└── created_at
+├── created_at
+└── updated_at
 
 -- Chat Sessions
-chatbot_sessions
+pdf_qa_sessions
 ├── id (PK)
-├── pdf_store_id (FK → pdf_store)
-├── user_id (FK → users)
+├── pdf_store_id (FK → pdf_stores)
+├── user_id (Clerk user ID)
 ├── session_name
-├── message_count
 ├── created_at
 └── updated_at
 
 -- Chat Messages
-chatbot_messages
+pdf_qa_messages
 ├── id (PK)
-├── session_id (FK → chatbot_sessions)
+├── session_id (FK → pdf_qa_sessions)
 ├── message_type (user/assistant)
 ├── message_content
+├── sources (JSONB)
 └── created_at
-
--- Payments
-payments
-├── id (PK)
-├── user_email
-├── amount
-├── status
-├── stripe_payment_id
-├── price_id
-└── created_at
-```
-
-### Indexes for Performance
-
-```sql
--- User lookups
-CREATE INDEX idx_users_clerk ON users(clerk_id);
-CREATE INDEX idx_users_email ON users(email);
-
--- Summary queries
-CREATE INDEX idx_summaries_user_created ON pdf_summaries(user_id, created_at DESC);
-CREATE INDEX idx_summaries_status ON pdf_summaries(status) WHERE status = 'processing';
-
--- Chat performance
-CREATE INDEX idx_sessions_pdf_user ON chatbot_sessions(pdf_store_id, user_id);
-CREATE INDEX idx_messages_session ON chatbot_messages(session_id, created_at);
 ```
 
 ---
 
 ## Cost-Aware Incremental Processing
 
-Visura implements a **Processing Cost Ledger** to make document intelligence economically observable and minimize AI processing costs.
+Each document version records how many of its chunks were reused from an earlier version and how many had to be summarized.
 
 ### Why Chunk Reuse Exists
 
@@ -280,21 +256,14 @@ When documents are versioned (e.g., updated contracts, revised reports), most co
 
 ### How Cost Tracking Works
 
-1. **Deterministic Chunking**: Documents are split into fixed-size chunks (~1000 tokens) with SHA-256 hashing
-2. **Hash-Based Matching**: New versions compare chunk hashes against previous versions
-3. **Selective Processing**: Only changed chunks trigger AI summarization
+1. **Deterministic Chunking**: Text is normalized (`normalizeForComparison()` in `lib/document-segmentation.ts`), split into sentences (a sentence over 1,200 characters is cut into 1,200-character pieces) and grouped into chunks. A chunk closes after a sentence whose FNV-1a hash opens a gate, or once its length count (characters plus 2 per sentence) reaches 1,200, so a boundary depends only on the text since the previous boundary. Each chunk's normalized text is hashed with SHA-256
+2. **Hash-Based Matching**: Each chunk hash is looked up among the chunks of earlier versions of the same document with the same `CHUNKER_VERSION`; the newest match is reused if it has a summary
+3. **Selective Processing**: Only chunks without a reusable match are summarized
 4. **Cost Metrics**: Each version tracks:
    - `total_chunks`: Total chunks in version
-   - `reused_chunks`: Chunks reused from previous version
-   - `new_chunks`: Chunks requiring new AI processing
-   - `estimated_tokens_saved`: `reused_chunks × 1000 tokens`
-
-### Why This Matters at Scale
-
-- **Cost Protection**: Prevents runaway AI spend on unchanged content
-- **Observability**: Clear metrics on processing efficiency per version
-- **Architectural Proof**: Demonstrates the system minimizes redundant work
-- **Economic Validation**: Quantifies the value of incremental processing
+   - `reused_chunks`: Chunks reused from an earlier version
+   - `new_chunks`: `total_chunks - reused_chunks`, the chunks that need a new summary
+   - `estimated_tokens_saved`: `reused_chunks × 1000 tokens` (`ESTIMATED_TOKENS_PER_CHUNK`). This is a fixed guess, not a measurement, and it does not depend on the chunk's length
 
 ### Invariants Enforced
 
@@ -302,13 +271,13 @@ When documents are versioned (e.g., updated contracts, revised reports), most co
 - `new_chunks + reused_chunks = total_chunks`
 - `estimated_tokens_saved ≥ 0`
 
-These invariants are enforced at the database level via CHECK constraints and validated during version creation.
+These invariants are enforced by the `check_cost_invariants` CHECK constraint (`migrations/cost_ledger_migration.sql`) and checked in `createDocumentVersion()`.
 
 ---
 
-## Document Memory & Time-Travel Summaries
+## Document Change Events
 
-Visura implements **first-class semantic change history** to enable time-travel queries and explain how documents evolve over time, not just their latest state.
+Each new version of a document is compared with the version before it, and the changes found are stored in `document_change_events`, when both versions were chunked with the same `CHUNKER_VERSION`.
 
 ### Why Change Events Exist
 
@@ -320,15 +289,15 @@ Traditional diff-based approaches show _what_ changed (text differences) but not
 
 ### How Change Detection Works
 
-1. **Trigger Point**: After a document version completes successfully (all chunks processed, summary created, pdf_store created)
-2. **Comparison**: Compares current version summary with previous version summary
-3. **Classification**: Uses LLM to analyze semantic changes and classify them into predefined types
-4. **Storage**: Creates immutable `document_change_events` records with:
+1. **Trigger Point**: In `checkVersionCompletion()`, after the version's summary is marked `completed` and its `pdf_stores` row is created
+2. **Comparison**: The chunk hashes of this version and the previous one are aligned (`alignSegments()` in `lib/document-segmentation.ts`); no model decides what changed. Only the first 40 changed passages are analysed
+3. **Classification**: For each changed passage, `google/gemini-2.5-flash` (via OpenRouter) gets its raw text, cut to 3,000 characters per side (both sides and a word-level diff when the passage was rewritten, one side when it was added or removed), and returns a type, a one-sentence summary, a quote, a materiality and a confidence. The event is dropped unless the quote appears in the passage (ignoring case and spacing)
+4. **Storage**: Creates `document_change_events` records with:
    - `from_version` / `to_version`: Version pair
    - `change_type`: Semantic classification (added, removed, modified, policy_shift, risk_added, etc.)
    - `summary`: Human-readable explanation
    - `confidence`: 0.0-1.0 confidence score
-   - `affected_chunks`: Chunk indexes involved
+   - `affected_chunks`: Index of the changed chunk in the new version (empty for a removal)
 
 ### Change Types
 
@@ -340,43 +309,34 @@ The system classifies changes into 10 semantic types:
 - **Assumption Changes**: `assumption_added`, `assumption_removed`
 - **Clarifications**: `clarification`
 
-### Why Immutability Matters
-
-- **Temporal Queries**: "What changed between version 3 and 7?"
-- **Audit Trail**: Immutable history of document evolution
-- **Semantic Search**: Find documents with specific change types
-- **Confidence Tracking**: Low-confidence events can be flagged for review
-
 ### Why Diffs Are Insufficient
 
 - **Text diffs** show character/word changes but not semantic meaning
 - **Chunk diffs** show which chunks changed but not why
-- **Semantic events** explain the _intent_ and _impact_ of changes
+- **Semantic events** say why a change matters and quote the passage that shows it
 
 ### Idempotency Guarantees
 
-- Change detection runs **exactly once** per version pair
-- `UNIQUE(document_id, from_version, to_version, change_type, summary)` prevents duplicates
-- Safe to re-run without creating duplicate events
+- Change detection runs in the worker that wins finalization, because the placeholder summary moves out of `processing` only once. A version is finalized again if its summary is deleted and the same file is uploaded again
+- `UNIQUE(document_id, from_version, to_version, change_type, summary)` stops the same event being stored twice
 - Non-fatal: failures don't block version completion
 
 ### API Access
 
 - `GET /api/documents/[id]/timeline` - Returns chronological change events
-- Auth: Same ownership checks as document summaries
+- Auth: The document must belong to the signed-in user
 - Returns: Array of change events with version numbers, types, summaries, confidence
 
 ### When Change Detection Runs
 
-- **After**: Version completion (summary + pdf_store created)
-- **Before**: Version marked as fully complete
-- **Async**: Non-blocking, failures don't prevent completion
-- **Idempotent**: Safe to re-run via replay or recovery
+- **After**: Version completion (summary + pdf_stores row created)
+- **Before**: The `version_completed` processing event is logged
+- **Failures**: Awaited inside `checkVersionCompletion()`, but errors are caught and logged, so they don't undo completion
 
 ### What Is NOT Guaranteed
 
 - Change detection may fail silently (non-fatal, logged)
-- LLM classification may vary slightly between runs (though prompts are deterministic)
+- LLM classification may vary between runs
 - Confidence scores are estimates, not ground truth
 - Change events are not created for first version (no previous version to compare)
 
@@ -386,143 +346,57 @@ The system classifies changes into 10 semantic types:
 
 This section explicitly states what the system guarantees and what it does not.
 
-### Replay Guarantees
-
-**What Is Guaranteed:**
-
-- Any document version can be safely replayed after crashes, retries, or manual re-runs
-- Replay converges to the same final state regardless of failure point
-- No duplicate chunks created (UNIQUE constraint on `document_version_id, chunk_index`)
-- No duplicate summaries created (atomic `UPDATE ... WHERE summary IS NULL`)
-- Replay is idempotent: safe to run N times with same result
-
-**How It Works:**
-
-- Chunk processing checks `summary IS NULL AND reused_from_chunk_id IS NULL` before processing
-- All updates use atomic WHERE clauses that check current state
-- Replay endpoint (`/api/documents/[id]/versions/[versionId]/replay`) processes only incomplete chunks
-- Completed chunks are never reprocessed
-
-**What Is NOT Guaranteed:**
-
-- Replay does not fix corrupted data (if corruption occurs, manual intervention required)
-- Replay does not bypass AI provider rate limits
-- Replay does not guarantee processing order (chunks may process out of order)
-
 ### Crash Guarantees
 
 **What Is Guaranteed:**
 
-- Partial progress is preserved: completed chunks remain valid after crash
-- System can resume processing from crash point
-- No data corruption from partial writes (atomic operations)
-- Chunk state is always valid (either complete or incomplete, never corrupted)
+- Chunk summaries already written stay in the database after a crash
+- A chunk either has a summary or it doesn't; each summary is written in a single `UPDATE`
 
 **How It Works:**
 
 - Each chunk is processed independently (no cross-chunk dependencies)
 - Updates are atomic: `UPDATE ... WHERE summary IS NULL` only updates if condition met
-- Version completion check is idempotent: only creates final summary if `pdf_summary_id IS NULL`
-- Stuck job recovery automatically resets jobs stuck in processing >10 minutes
+- Finalization is idempotent: `checkVersionCompletion()` fills in the placeholder summary only while its status is `processing`. `POST /api/summaries/[id]/complete` (the summary page's "Show document text" button) runs that finalization first; if chunks are still unsummarized it writes an excerpt of the chunk text but leaves the status `processing`, so the version is still merged from its chunks when they finish
 
 **What Is NOT Guaranteed:**
 
-- Crash during initial version creation may leave version in inconsistent state (requires retry)
+- Crash during initial version creation may leave version in inconsistent state (version creation is several statements, not one transaction)
 - Crash during chunk creation may require manual cleanup (UNIQUE constraint prevents duplicates)
 - Crash does not preserve in-flight AI responses (must be regenerated)
-
-### Automatic Recovery Guarantees
-
-**What Is Guaranteed:**
-
-- Incomplete document versions automatically self-heal without operator intervention
-- Versions with incomplete chunks older than 10 minutes are automatically recovered
-- Recovery uses direct function calls (no HTTP self-calls) - works even if routing is down
-- Only incomplete chunks are processed (completed/reused chunks are skipped)
-- No duplicate summaries or pdf_stores created (idempotency preserved)
-- System converges to complete state automatically
-
-**How It Works:**
-
-- **Cron Job**: `/api/cron/recover-versions` runs every 5 minutes
-- **Detection**: Finds `document_versions` where:
-  - `pdf_summary_id IS NULL` (not yet complete)
-  - `created_at < NOW() - 10 minutes` (older than safety threshold)
-  - Has incomplete chunks (`summary IS NULL AND reused_from_chunk_id IS NULL`)
-- **Recovery**: For each stuck version:
-  - Calls `replayIncompleteChunks(versionId)` directly (no HTTP)
-  - Uses `processChunkInternal()` for each incomplete chunk
-  - Skips completed chunks automatically (idempotency checks)
-  - When all chunks complete → `checkVersionCompletion()` creates summary & pdf_store
-- **Alerting**: CRITICAL alert only if recovery attempt fails (no alert for successful recovery)
-
-**What Auto-Heals:**
-
-- Chunk processing failures (serverless timeouts, AI provider errors)
-- Network interruptions during chunk processing
-- Concurrent processing race conditions
-- Stuck versions from crashes or retries
-
-**What Requires Manual Intervention:**
-
-- Corrupted chunk data (invalid text, malformed summaries)
-- Database constraint violations (requires data fix)
-- Orphaned chunks with missing source summaries (requires data fix)
-- Versions stuck due to cost guardrails (user must wait or reduce document size)
-
-**Recovery Loop:**
-
-1. Cron detects incomplete version (age > 10 minutes)
-2. Calls `replayIncompleteChunks()` directly
-3. For each incomplete chunk: `processChunkInternal()` (idempotent)
-4. Completed chunks skipped automatically
-5. When all complete: `checkVersionCompletion()` creates summary & pdf_store
-6. Version marked complete (`pdf_summary_id` set)
-7. System converges to healthy state
-
-**Convergence Guarantee:**
-
-- Every incomplete version will eventually be recovered (within 5-15 minutes of becoming stuck)
-- No manual replay required for transient failures
-- System self-heals from crashes, timeouts, and network issues
-- Operator only needed for data corruption or invariant violations
 
 ### Idempotency Guarantees
 
 **What Is Guaranteed:**
 
-- Chunk processing is idempotent: same input → same output, safe to retry
-- Version creation is idempotent: same document hash → same version (or existing version returned)
+- Chunk processing is safe to retry: a chunk that already has a summary is skipped
+- Uploading text identical to the latest version's returns that version instead of creating a new one (`full_content_hash`)
 - Summary updates are idempotent: only update if `summary IS NULL`
-- Final summary creation is idempotent: only create if `pdf_summary_id IS NULL`
+- Final summary creation in `checkVersionCompletion()` is idempotent: the placeholder moves from `processing` to `completed` in one conditional `UPDATE`, and a newly inserted summary is kept only if `linkVersionToSummary()` finds `pdf_summary_id IS NULL`
 
 **How It Works:**
 
-- All database operations use WHERE clauses that check current state
+- Writes that can race use WHERE clauses that check current state
 - Early returns prevent duplicate processing
 - UNIQUE constraints prevent duplicate records
-- Deterministic processing: same inputs always produce same outputs
+- Chunking and hashing are deterministic: the same text always gives the same chunks and hashes
 
 **What Is NOT Guaranteed:**
 
-- AI provider responses may vary slightly (though deterministic prompts minimize this)
+- AI provider responses may vary between runs
 - Concurrent processing may result in duplicate AI calls (but only one summary is stored)
 
 ### Cost Guarantees
 
 **What Is Guaranteed:**
 
-- Unchanged chunks are never reprocessed (hash-based matching)
+- When a chunk's hash matches a chunk from an earlier version of the same document that was chunked with the same `CHUNKER_VERSION`, and the newest such match has a summary, the chunk is not summarized again
 - Cost metrics are tracked per version (`total_chunks`, `reused_chunks`, `new_chunks`, `estimated_tokens_saved`)
-- Cost grows sub-linearly with version count (due to chunk reuse)
-- Cost is observable: all metrics stored in database
 
 **How It Works:**
 
-- Chunk reuse: hash-based matching identifies unchanged chunks
+- Chunk reuse: hash-based matching identifies chunks whose normalized text is unchanged
 - Cost tracking: computed during version creation, immutable per version
-- Reuse rate: typically 50-80% for versioned documents
-- Cost envelope: documented in `/docs/SCALE_AND_COST.md`
 
 **What Is NOT Guaranteed:**
 
@@ -534,55 +408,55 @@ This section explicitly states what the system guarantees and what it does not.
 
 **What Is Guaranteed:**
 
-- Cost limits are enforced **before** version creation (prevents partial state)
-- Limits are checked atomically (no race conditions)
-- Exceeding limits blocks job creation and sends CRITICAL alerts
-- Daily token usage is tracked per user (resets at midnight UTC)
-- Per-version chunk limits prevent oversized documents
+- Cost limits are checked **before** the version is created, so a blocked upload writes no version, chunks or placeholder summary
+- Exceeding a limit blocks version creation and sends a CRITICAL alert (when `ALERT_WEBHOOK_URL` is set)
+- Daily usage is counted per user from versions created on the current database day (`DATE_TRUNC('day', NOW())`)
+- A per-version new-chunk limit can be switched on for oversized documents
 
 **How It Works:**
 
-- **Daily Token Limit**: `MAX_TOKENS_PER_USER_PER_DAY` (default: 500,000 tokens)
-  - Calculated as: `SUM(new_chunks × 1500)` for all versions created today
+- **Daily Token Limit**: `MAX_TOKENS_PER_USER_PER_DAY` (default: 2,000,000 estimated tokens)
+  - Calculated as: `SUM(new_chunks × 550)` for all versions created today, plus an estimate for the upload being checked ((average characters per chunk × new chunks) / 4, plus 300 per new chunk)
   - Checked before creating any new version
   - Blocks version creation if limit would be exceeded
-- **Per-Version Chunk Limit**: `MAX_NEW_CHUNKS_PER_VERSION` (default: 100 chunks)
-  - Prevents single documents from consuming excessive resources
+- **Per-Version Chunk Limit**: `MAX_NEW_CHUNKS_PER_VERSION` (default: 0, off)
   - Blocks version creation if new chunks exceed limit
+- **Daily Cost Limit**: `MAX_ESTIMATED_COST_PER_USER_PER_DAY` (default: 0, off)
+  - Converts the same token estimates to dollars at `ESTIMATED_COST_PER_1M_TOKENS` and blocks version creation above the limit
 - **Enforcement Point**: Guardrails checked in `createVersionedDocumentJob()` **before** `createDocumentVersion()`
   - Ensures no partial versions are created when limits are exceeded
   - Returns clear error message to caller
 - **Alerting**: CRITICAL alerts sent via `sendAlert()` when limits exceeded
-  - Includes: `userId`, `documentId`, `versionId`, `currentUsage`, `limit`, `limitType`
+  - Includes: `userId`, `documentId`, `limitType`, and the usage and limit that were compared
   - Alert type: `cost_limit_exceeded`
 
 **What Happens When Limits Are Hit:**
 
-1. Version creation is **blocked** (no database writes occur)
-2. CRITICAL alert sent to `ALERT_WEBHOOK_URL` with full context
+1. Version creation is **blocked**. The `documents` row is found or created before the check, but no version, chunk or summary row is written
+2. CRITICAL alert sent to `ALERT_WEBHOOK_URL`, if it is set
 3. Error returned to caller with clear message and usage details
 4. No partial jobs or chunks are created
-5. User must wait until next day (for daily limit) or reduce document size (for per-version limit)
+5. User must wait until next day (for daily limits) or reduce document size (for per-version limit)
 
 **Configuration:**
 
-- `MAX_TOKENS_PER_USER_PER_DAY`: Maximum estimated tokens per user per day (default: 500,000)
-- `MAX_NEW_CHUNKS_PER_VERSION`: Maximum new chunks per document version (default: 100)
+- `MAX_TOKENS_PER_USER_PER_DAY`: Maximum estimated tokens per user per day (default: 2,000,000)
+- `MAX_NEW_CHUNKS_PER_VERSION`: Maximum new chunks per document version (default: 0, off)
+- `MAX_ESTIMATED_COST_PER_USER_PER_DAY`: Maximum estimated dollars per user per day (default: 0, off)
 
 **What Is NOT Guaranteed:**
 
-- Limits are not enforced for replay operations (replay is recovery, not new work)
-- Limits do not account for actual token usage (uses estimates: 1500 tokens per new chunk)
-- Limits do not prevent concurrent requests from same user (last-write-wins for daily limit)
-- Limits are soft (can be adjusted via environment variables without code changes)
+- Limits do not account for actual token usage (uses estimates: 550 tokens per new chunk for versions already created today)
+- The check is not atomic: usage is read and then compared with no lock, so two uploads from the same user at the same time can both pass
+- Limits are set by environment variables and can be changed without a code change
 
 ### What the System Intentionally Does NOT Guarantee
 
-1. **Real-Time Processing**: Chunks may process out of order, completion is eventual
+1. **Real-Time Processing**: Chunks in a batch may finish out of order
 2. **Exact Token Counting**: Uses estimates, not actual token counts
 3. **Billing Integration**: Cost tracking is for observability, not billing
-4. **Cross-Version Consistency**: Each version is processed independently
-5. **AI Response Determinism**: AI responses may vary slightly (though prompts are deterministic)
+4. **Cross-Version Consistency**: New chunks in each version are summarized independently of earlier summaries
+5. **AI Response Determinism**: AI responses may vary between runs
 6. **Zero Downtime**: System may require maintenance or schema migrations
 7. **Infinite Scale**: Practical limits exist (documented in `/docs/SCALE_AND_COST.md`)
 
@@ -590,118 +464,77 @@ This section explicitly states what the system guarantees and what it does not.
 
 **Safe Operations:**
 
-- Replay any version (idempotent, no side effects)
 - Retry failed chunks (idempotent, no duplicates)
 - Query incomplete work (read-only, no side effects)
 - Monitor cost metrics (read-only, no side effects)
 
 **Unsafe Operations:**
 
-- Manually modifying chunk summaries (breaks idempotency)
-- Deleting chunks (breaks referential integrity)
+- Manually modifying chunk summaries (later versions that reuse the chunk copy the edited summary)
+- Deleting chunks (later chunks that reused them lose their `reused_from_chunk_id` link)
 - Modifying version numbers (breaks versioning logic)
 - Bypassing idempotency checks (risks duplicate processing)
 
 ---
 
-## Observability & Monitoring Architecture
-
-### Production-Ready Observability Stack
-
-Visura includes a comprehensive observability system designed for production operations:
-
-**Error Tracking (Sentry)**
-
-- Automatic error capture with context
-- Performance monitoring (transaction tracing)
-- Release tracking and source maps
-- Optional: Requires `NEXT_PUBLIC_SENTRY_DSN`
-
-**Distributed Tracing (OpenTelemetry)**
-
-- Request tracing across services
-- Performance bottleneck identification
-- Optional: Requires `OTEL_EXPORTER_OTLP_ENDPOINT`
-
-**Business Metrics**
-
-- User engagement tracking
-- Feature usage analytics
-- Conversion funnel metrics
-- Accessible via `/api/observability/metrics`
-
-**Performance Metrics**
-
-- P50, P95, P99 latencies for all operations
-- Operation counts and error rates
-- Accessible via `/api/metrics`
-
-**Database Monitoring**
-
-- Query performance tracking
-- Slow query detection (>1 second)
-- Connection pool metrics
-- Health checks via `/api/observability/database`
+## Logging
 
 **Structured Logging**
 
 - Pino-based structured logging (server-side)
 - Client-side logger for browser components
-- Context-aware logging with request IDs
-- Automatic log redaction for sensitive data
+- Request IDs on the cron, health, readiness and job routes
+- Pino removes fields named token, password, secret, apiKey and webhookUrl; email addresses, file URLs and document text are not redacted
 
-See [OBSERVABILITY_SETUP.md](OBSERVABILITY_SETUP.md) for setup instructions.
+See [OBSERVABILITY_SETUP.md](OBSERVABILITY_SETUP.md) for what runs and how to set it up.
 
 ---
 
-## 🚨 Production Alerting & On-Call Signals
+## Alerting
 
-The system includes webhook-based alerting for production incidents. Alerts are sent to `ALERT_WEBHOOK_URL` (Slack-compatible webhook).
+The system includes webhook-based alerting for production incidents. Alerts are POSTed as JSON to `ALERT_WEBHOOK_URL`.
 
 ### Alert Transport
 
 - **Webhook URL**: Configured via `ALERT_WEBHOOK_URL` environment variable
 - **Payload Format**: JSON with `alert_type`, `severity`, `message`, `timestamp`, `context`
 - **Deduplication**: Same alert type + entity ID suppressed for 10 minutes
-- **Failure Handling**: Alerts fail silently if webhook unavailable (never crash app)
+- **Failure Handling**: A failed webhook call is logged as a warning and never throws
 
-### What Triggers Alerts
+### Alerts from the upload pipeline and health checks
 
 **CRITICAL Alerts:**
 
 1. **System Not Ready** (`system_not_ready`)
-   - Triggered when `/api/ready` returns 503
+   - Sent when a request to `/api/ready` finds one of these conditions (it then returns 503)
    - Conditions:
-     - Stuck versions > 10 (older than 10 minutes)
+     - Stuck versions > 10 (summary still `processing` after 10 minutes)
      - Orphaned reused chunks detected
-   - Context: Counts of stuck versions / orphaned chunks
+   - Context: the stuck-version count and threshold, or the number of versions with orphaned reused chunks
 
-2. **Job Processing Failed** (`job_processing_failed`)
-   - Triggered when `/api/jobs/process` fails
-   - Context: `jobId`, `userId`, `errorMessage`
-
-3. **Job Retry Exhausted** (`job_retry_exhausted`)
-   - Triggered when job reaches `max_retries` (3)
-   - Context: `jobId`, `retryCount`, `maxRetries`
-
-4. **Health Check Failed** (`health_check_failed`)
-   - Triggered when `/api/health` returns 503
+2. **Health Check Failed** (`health_check_failed`)
+   - Sent when a request to `/api/health` returns 503
    - Conditions:
      - Database unreachable
-     - Missing required tables
-   - Context: `check` (database/schema), `errorMessage`
+     - Missing required tables (`document_versions`, `document_chunks`, `summary_jobs`)
+   - Context: `check` (database/schema), plus `errorMessage` or `missingTables`
+
+3. **Cost Limit Exceeded** (`cost_limit_exceeded`)
+   - Sent when a cost guardrail blocks an upload (see Cost Guardrails)
+
+`/api/jobs/process` and `/api/cron/retry-jobs` can also send `job_processing_failed` and `job_retry_exhausted`, but they act only on `summary_jobs` rows, and no upload creates one.
+
+`/api/cron/recover-versions` runs once a day at 04:00 UTC (`vercel.json`; Vercel's Hobby plan refuses to deploy a cron that runs more often) and re-runs the unsummarized chunks of up to 50 versions whose summary is still `processing` 10 minutes after the version was created. If that throws for a version, it sends `version_recovery_failed` (critical). `POST /api/documents/[id]/versions/[versionId]/replay` re-runs the unsummarized chunks of one version of a document the signed-in user owns, with no age check, and sends `replay_failed` (warning) if the request throws; no page calls it. Both alerts carry `versionId`, `documentId` and `errorMessage`. A chunk that fails during either run sends `chunk_processing_failed` and does not throw.
 
 **WARNING Alerts:**
 
-1. **Replay Failed** (`replay_failed`)
-   - Triggered when version replay throws error
-   - Context: `documentId`, `versionId`, `errorMessage`
+1. **Chunk Processing Failed** (`chunk_processing_failed`)
+   - Sent by `processChunkInternal()` when summarizing a chunk fails
+   - Context: `chunkId`, `versionId`, `language`, `errorMessage`, `errorStack`
 
 ### What DOES NOT Trigger Alerts
 
-- Individual chunk processing failures (handled by retry logic)
-- Temporary AI provider rate limits (handled by retry)
-- Normal retry attempts (only alerts on exhaustion)
+- A rate limit or error from the requested model when the `openai/gpt-4o-mini` fallback succeeds (`lib/openrouter.ts`)
 - User-initiated errors (validation failures, auth failures)
 - Expected failures (e.g., document too short, unsupported format)
 
@@ -710,25 +543,8 @@ The system includes webhook-based alerting for production incidents. Alerts are 
 **CRITICAL: System Not Ready**
 
 1. Check `/api/ready` endpoint for details
-2. Query stuck versions: `SELECT * FROM document_versions WHERE ...` (see OPERATOR_QUERIES.sql)
-3. Replay stuck versions: `POST /api/documents/{id}/versions/{versionId}/replay`
-4. Investigate root cause (database issues, AI provider down, etc.)
-
-**CRITICAL: Job Processing Failed**
-
-1. Check job status: Query `summary_jobs` table
-2. Review error message in alert context
-3. If transient: Wait for retry cron (runs every 5 minutes)
-4. If persistent: Investigate AI provider status, network issues
-
-**CRITICAL: Job Retry Exhausted**
-
-1. Job has failed 3 times and will not auto-retry
-2. Manual intervention required:
-   - Review error logs
-   - Check AI provider status
-   - Manually trigger replay if appropriate
-   - Consider increasing `max_retries` if issue is transient
+2. Query stuck versions: `SELECT * FROM document_versions WHERE ...` (see docs/OPERATOR_QUERIES.sql)
+3. Investigate root cause (database issues, AI provider down, etc.)
 
 **CRITICAL: Health Check Failed**
 
@@ -736,13 +552,6 @@ The system includes webhook-based alerting for production incidents. Alerts are 
 2. Check database connectivity
 3. Verify schema migrations applied
 4. Check Vercel deployment status
-
-**WARNING: Replay Failed**
-
-1. Review error message in alert context
-2. Check version/chunk state in database
-3. Verify document/version exists and is accessible
-4. May require manual data fix if corruption detected
 
 ### Alert Deduplication
 
@@ -769,35 +578,33 @@ Client:
 1. User selects file → Browser validates file
 2. Extract text client-side (pdf.js, mammoth, etc.)
 3. Upload file to Supabase Storage → Get public URL
-4. Call createVersionedDocumentJob(text, fileName, fileUrl)
-5. Redirect to /documents/[documentId]/versions/[versionId] (status page)
+4. Call createVersionedDocumentJob(text, fileName, fileUrl, "ENGLISH", pageStartOffsets, confidence)
+5. Poll /api/versions/[versionId]/status until the summary is ready, then link to /summaries/[pdfSummaryId]
 
 Server (createVersionedDocumentJob):
-1. Check cost guardrails (daily limit, per-version limit)
-2. Find or create Document record
-3. Check if document unchanged (hash match) → return existing version
-4. Chunk document deterministically
-5. Calculate chunk reuse vs new chunks
+1. Find or create Document record (same user, title from the file name)
+2. Check if document unchanged (hash match with the latest version) → return existing version
+3. Normalize and chunk the text deterministically
+4. Calculate chunk reuse vs new chunks
+5. Check cost guardrails (daily token limit, optional per-version and daily cost limits)
 6. Create DocumentVersion with file_url
-7. Create DocumentChunk records (reused or new)
-8. Fire-and-forget trigger /api/jobs/process-chunk for new chunks
-9. Return immediately with versionId and documentId
+7. Create placeholder pdf_summaries record (status 'processing') and link it to the version
+8. Create DocumentChunk records (reused chunks copy their summary)
+9. Summarize new chunks with processChunkInternal(), CHUNK_BATCH_SIZE at a time
+10. Run checkVersionCompletion(), then return versionId, documentId and chunk counts
 
-Background Processing (/api/jobs/process-chunk):
-1. Process each chunk asynchronously
-2. Generate AI summary for new chunks
-3. Reuse summaries for unchanged chunks
-4. When all chunks complete → checkVersionCompletion()
-5. Stitch chunk summaries into final summary
-6. Create pdf_summaries record
-7. Create pdf_stores record (for chat)
-8. Link version to pdf_summary_id
+Completion (checkVersionCompletion, run after each chunk finishes):
+1. Stop unless every chunk has a summary
+2. Merge chunk summaries into final summary (deduplicateAndMergeSections)
+3. Fill in the placeholder pdf_summaries record and mark it 'completed'
+4. Create pdf_stores record (for chat)
+5. Record change events against the previous version
+6. Start sections, insights, graph and chunk embeddings without waiting for them
 
 Result:
-- User sees processing status immediately
-- Background processing completes asynchronously
+- The upload page shows four steps: "Extracting text" and "Uploading" as they happen, "Summarizing new chunks" while the server action runs, and "Finalizing" while it polls /api/versions/[versionId]/status, with the count of chunks that have a summary
+- It does not track the sections, insights, graph or embeddings work. After the server action returns, it steps through four hidden, timed placeholders for them that report nothing from the server
 - Chat works automatically when processing completes
-- All idempotency, replay, and cost guardrails enforced
 ```
 
 ### 2. User Chats with Document
@@ -807,13 +614,13 @@ Client:
 1. Load chat sessions for document
 2. Select or create session
 3. Send message via POST /api/chatbot/messages
-4. Display streaming response (TODO)
+4. Display the reply (the API streams when sent `stream: true`; the chat UI does not send it)
 
 Server:
 1. Verify auth & rate limit
 2. Validate input (Zod)
-3. Save user message
-4. Retrieve full document context
+3. Check the session belongs to the user, then save user message
+4. Build context: the full text, or for text over 5,000 characters the 5 chunks closest to the question by embedding similarity
 5. Generate AI response with conversation history
 6. Save assistant message
 7. Return both messages
@@ -828,30 +635,28 @@ Server:
 **Authentication Flow:**
 
 ```
-User → Clerk (OAuth) → JWT Token → Middleware → Protected Route
-                                      │
-                                      ├─ Verify JWT
-                                      ├─ Check user exists in DB
-                                      └─ Attach userId to request
+User → Clerk → JWT Token → Middleware → Protected Route
+                              │
+                              ├─ Verify JWT
+                              └─ Attach userId to request
 ```
 
 **API Protection Layers:**
 
 ```
-Request → Rate Limit → Auth Check → Validation → Business Logic → Response
-           (Upstash)    (Clerk)      (Zod)        (TypeScript)
+Request → Auth Check → Rate Limit → Validation → Business Logic → Response
+           (Clerk)      (Upstash)    (Zod)        (TypeScript)
 ```
+
+This is the order in `/api/chatbot/messages`, the only rate-limited route. Zod validation is used by the chatbot routes.
 
 **Security Features:**
 
 - **JWT Authentication**: Clerk-managed sessions
-- **Distributed Rate Limiting**: Redis-backed, prevents abuse
-- **Input Sanitization**: XSS protection, SQL injection prevention
-- **HMAC Request Signing**: Internal API security
+- **Distributed Rate Limiting**: Upstash Redis sliding window (in-memory fallback without Redis), applied to `/api/chatbot/messages`
+- **Internal request auth**: `/api/jobs/process` and `/api/jobs/process-chunk` require an HMAC-signed request (`lib/internal-api-auth.ts`). The cron routes accept that or `Authorization: Bearer $CRON_SECRET`, which is what Vercel Cron sends
 - **Parameterized Queries**: All database queries use parameters
-- **CORS & Security Headers**: CSP, X-Frame-Options configured
-- **Environment Variable Validation**: Required vars checked at startup
-- **Role-Based Access Control**: Workspace-level permissions
+- **Security Headers**: HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy and Permissions-Policy (`next.config.ts`); no CSP
 
 ---
 
@@ -859,27 +664,23 @@ Request → Rate Limit → Auth Check → Validation → Business Logic → Resp
 
 ### 1. Client-Side PDF Processing
 
-- **Why**: Vercel serverless functions have 50MB body limit
+- **Why**: The file goes from the browser straight to Supabase Storage, and the server action receives the extracted text. If browser extraction fails or finds fewer than 50 characters, a server action fetches the file from storage and extracts it there
 - **How**: Process in browser with pdf.js before upload
-- **Result**: Handles PDFs up to 50MB
 
-### 2. Streaming Responses (TODO)
+### 2. Streaming Responses (API only)
 
-- **Why**: Better UX, feels instant
-- **How**: OpenRouter streaming API
-- **Result**: TTFB < 100ms vs 2-5s for full response
+- **Why**: Lets a client render the reply as it arrives
+- **How**: OpenRouter streaming API (`lib/openrouter-stream.ts`), used when a chat request sets `stream: true`. The chat UI does not set it
 
-### 3. Database Connection Pooling
+### 3. Database Access
 
 - **Why**: Serverless functions create new connections
-- **How**: Neon serverless driver with connection pooling
-- **Result**: Reduced connection overhead by 80%
+- **How**: Neon serverless driver's HTTP client (`neon()` in `lib/db.ts`), so no connection pool is held
 
 ### 4. Image Optimization
 
 - **Why**: Faster page loads, better Core Web Vitals
 - **How**: Next.js Image component + AVIF/WebP
-- **Result**: 60% smaller images
 
 ---
 
@@ -897,41 +698,20 @@ Vercel Edge Network (CDN)
   ├─▶ API Routes (serverless)
   └─▶ Dynamic Pages (SSR)
        │
-       ├─▶ Supabase (Database)
-       ├─▶ UploadThing (File Storage)
+       ├─▶ Neon (Database)
+       ├─▶ Supabase Storage (File Storage)
        ├─▶ Clerk (Auth)
-       ├─▶ Stripe (Payments)
+       ├─▶ Razorpay (Payments)
        └─▶ OpenRouter (AI)
 ```
 
 ### Scaling Considerations
 
 - **Horizontal**: Vercel auto-scales serverless functions
-- **Database**: Supabase connection pooler (up to 1000 connections)
-- **File Storage**: UploadThing handles CDN distribution
+- **Database**: Neon, queried over HTTP by the serverless driver
+- **File Storage**: Supabase Storage serves files by public URL
 - **Rate Limiting**: Redis for distributed rate limiting
-- **Caching**: Redis for AI response caching (TODO)
-
----
-
-## Performance Benchmarks
-
-### Current Metrics (Production)
-
-| Operation             | P50   | P95   | P99   |
-| --------------------- | ----- | ----- | ----- |
-| PDF Upload (10MB)     | 1.2s  | 2.1s  | 3.5s  |
-| Text Extraction       | 450ms | 800ms | 1.2s  |
-| Summary Generation    | 2.5s  | 4.2s  | 6.8s  |
-| Chat Response         | 1.1s  | 2.3s  | 4.1s  |
-| Page Load (Dashboard) | 320ms | 580ms | 920ms |
-
-### Core Web Vitals
-
-- **LCP (Largest Contentful Paint)**: 1.2s - Pass
-- **FID (First Input Delay)**: 45ms - Pass
-- **CLS (Cumulative Layout Shift)**: 0.02 - Pass
-- **TTFB (Time to First Byte)**: 180ms - Pass
+- **Caching**: Redis caches summaries, classifications and embeddings (`lib/cache.ts`)
 
 ---
 
@@ -940,8 +720,8 @@ Vercel Edge Network (CDN)
 ### Client State
 
 - **React useState**: Component-level state
-- **React useRef**: Non-re-rendering state (rate limit guards)
-- **URL State**: Search params for filters
+- **React useRef**: Non-re-rendering state (the chat's double-send guard)
+- **URL State**: The `view` search param opens the dashboard's analytics tab
 
 ### Server State
 
@@ -952,8 +732,7 @@ Vercel Edge Network (CDN)
 
 - **Next.js**: Static pages cached at edge
 - **Redis (Upstash)**: AI responses, classifications, embeddings
-- **Database**: Persistent embeddings storage (85%+ cache hit rate)
-- **Client**: React Query could be added for server state
+- **Database**: Persistent embeddings storage
 
 ---
 
@@ -962,7 +741,7 @@ Vercel Edge Network (CDN)
 ### Layered Error Handling
 
 ```
-1. Input Validation (Zod)
+1. Input Validation (Zod, chatbot routes)
    ├─ Catch malformed requests early
    └─ Return 400 with detailed errors
 
@@ -973,11 +752,6 @@ Vercel Edge Network (CDN)
 3. Error Boundaries (React)
    ├─ Catch unexpected client errors
    └─ Show fallback UI with recovery options
-
-4. Global Error Tracking (Sentry)
-   ├─ Log all errors
-   ├─ Alert on critical errors
-   └─ Track error trends
 ```
 
 ---
@@ -986,34 +760,22 @@ Vercel Edge Network (CDN)
 
 ### Critical (App won't work without these)
 
-- Supabase (Database)
+- Neon (Database)
 - Clerk (Authentication)
 - OpenRouter (AI processing)
-- UploadThing (File storage)
+- Supabase Storage (File storage)
 
 ### Important (Major features disabled)
 
-- Stripe (Payment processing)
+- Razorpay (Payment processing)
 
 ### Optional (Nice-to-have)
 
-- Sentry (Error tracking)
 - Upstash Redis (Rate limiting & caching)
-- PostHog (Analytics)
-- Resend (Email notifications)
 
 ### Fallback Strategy
 
-```typescript
-// Example: Graceful degradation
-try {
-  const summary = await generateWithOpenRouter(text);
-} catch (error) {
-  // Fallback to simpler model or queue for later
-  await queueForProcessing(text, userId);
-  return "Processing in background...";
-}
-```
+`openrouterChatCompletion()` in `lib/openrouter.ts` retries a failed or empty model call once with `openai/gpt-4o-mini`.
 
 ---
 
@@ -1039,50 +801,24 @@ npm run build          # Production build
 ### Deployment (Vercel)
 
 ```bash
-# Automatic on git push to main
-vercel --prod
+vercel deploy --prod   # Vercel CLI, installed separately
 
-# Manual deployment
-vercel deploy --prod
-
-# Environment variables set in Vercel dashboard
+# Environment variables are set in the Vercel dashboard
 ```
 
 ### Post-deployment Verification
 
-1. Check Sentry for new errors
-2. Verify Core Web Vitals in Vercel Analytics
-3. Test critical flows (upload, chat, payment)
-4. Monitor error rates for 24h
+1. Test critical flows (upload, chat, payment)
+2. Check the Vercel function logs for errors
 
 ---
 
-## Future Architecture Improvements
-
-### Completed
+## Completed improvements
 
 1. Distributed rate limiting with Redis
-2. Background job queue with automatic recovery
-3. Streaming AI responses
-4. Vector search with persistent embeddings
-5. Comprehensive observability stack
-6. Database performance monitoring
-7. Cost guardrails and optimization
-8. Automatic recovery and replay system
-
-### Medium Term
-
-1. Add CDN for static assets
-2. Implement multi-region deployment
-3. Add real-time collaboration features
-4. Build mobile app (React Native)
-
-### Long Term
-
-1. Microservices for heavy processing
-2. Custom AI model fine-tuned for documents
-3. On-premise deployment option
-4. Enterprise SSO integration
+2. Streaming chat responses in the API (the chat UI does not use them)
+3. Vector search with persistent embeddings
+4. Cost guardrails
 
 ---
 
@@ -1093,102 +829,62 @@ vercel deploy --prod
 - **App Router**: Better DX, faster page transitions
 - **Server Components**: Reduced client bundle, better SEO
 - **API Routes**: Co-located backend logic
-- **Edge Runtime**: Faster responses globally
 
-### Why Supabase?
+### Why Supabase Storage?
 
-- **PostgreSQL**: Robust, proven, SQL
-- **Real-time**: Potential for live features
 - **Storage**: Built-in file storage
-- **Cost**: $25/month vs $100+ for alternatives
 
 ### Why Clerk?
 
-- **DX**: Easiest setup, great docs
-- **Features**: Social login, MFA, user management
-- **Webhooks**: Reliable database sync
-- **Cost**: Free tier generous, scales predictably
+- **Features**: Prebuilt sign-in and sign-up components and user management
 
 ### Why OpenRouter vs Direct OpenAI?
 
 - **Flexibility**: Access to multiple models
-- **Cost**: Often cheaper than direct
 - **Fallback**: Can switch models if one is down
 - **Future**: Easy to try new models
 
 ---
 
-## Production-Ready Features
-
-### Implemented & Production-Ready
+## Implemented Features
 
 1. **Versioned Document Processing**
-   - Hash-based chunking with intelligent reuse
-   - 50-80% cost savings on document updates
-   - Automatic recovery and replay system
+   - Content-defined chunking with hash-based reuse
 
 2. **Distributed Rate Limiting**
    - Upstash Redis-backed rate limiting
-   - In-memory fallback for development
-   - Configurable per-endpoint limits
+   - In-memory fallback when Upstash is not configured
+   - Applied to `/api/chatbot/messages`
 
-3. **Comprehensive Observability**
-   - Sentry error tracking (optional)
-   - OpenTelemetry tracing (optional)
-   - Business metrics tracking (automatic)
-   - Database performance monitoring (automatic)
-   - Structured logging throughout
+3. **Structured Logging**
+   - Pino structured logging on the server
 
-4. **Vector Search Optimization**
+4. **Vector Search**
    - Persistent embeddings storage
-   - 85%+ cache hit rate
-   - Batch embedding operations
-   - 60% cost reduction on embeddings
+   - Batch lookup of stored embeddings
 
-5. **Automatic Recovery System**
-   - Self-healing stuck versions
-   - Idempotent replay guarantees
-   - Crash-safe processing
-   - Zero manual intervention required
-
-6. **Cost Guardrails**
+5. **Cost Guardrails**
    - Daily token limits per user
-   - Per-version chunk limits
-   - Atomic cost checks (no partial state)
+   - Optional per-version chunk and daily cost limits (off by default)
+   - Checked before the version is created, so a blocked upload writes no version, chunk or placeholder summary
    - CRITICAL alerts on limit exceeded
 
-7. **Security Hardening**
+6. **Security Hardening**
    - HMAC-based internal API signing
-   - Input sanitization (XSS protection)
-   - SQL injection prevention
-   - Role-based access control
+   - Parameterized queries (SQL injection prevention)
 
-8. **Performance Optimization**
-   - Connection pooling (Neon)
+7. **Performance Optimization**
    - Embeddings caching (database)
    - AI response caching (Redis)
    - Client-side text extraction
 
 ---
 
-This architecture is designed for:
-
-- **Scalability**: Serverless scales automatically, handles millions of documents
-- **Cost-efficiency**: Pay only for what you use, 50-80% savings on versioned docs
-- **Reliability**: Automatic recovery, crash-safe, idempotent operations
-- **Observability**: Full visibility into errors, performance, and business metrics
-- **Developer Experience**: Type-safe, well-documented, modular code
-- **User Experience**: Fast, reliable, beautiful interface
-- **Maintainability**: Clear separation of concerns, production-ready patterns
-- **Production-Grade**: Enterprise-level architecture suitable for $140k+ engineer roles
-
----
-
 ## Related Documentation
 
-- **[QUICK_START.md](QUICK_START.md)**: Get up and running in 10 minutes
-- **[OBSERVABILITY_SETUP.md](OBSERVABILITY_SETUP.md)**: Configure monitoring and observability
-- **[docs/SCALE_AND_COST.md](docs/SCALE_AND_COST.md)**: Scaling strategies and cost analysis
+- **[QUICK_START.md](QUICK_START.md)**: Get up and running
+- **[OBSERVABILITY_SETUP.md](OBSERVABILITY_SETUP.md)**: What logging and alerting run, and how to set them up
+- **[docs/SCALE_AND_COST.md](docs/SCALE_AND_COST.md)**: Processing limits, cost constants and guardrail defaults, with where each lives in the code
 - **[docs/OPERATOR_QUERIES.sql](docs/OPERATOR_QUERIES.sql)**: SQL queries for operators
 - **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution guidelines
 - **[README.md](README.md)**: Project overview and features

@@ -67,6 +67,7 @@ export function getSummaryFinalWordCap(estimatedPages: number, isChunk: boolean)
   if (isChunk) return 700;
   return getSummaryProcessingBudget(estimatedPages).maxTotalWords;
 }
+export const FULL_SUMMARY_TARGET_WORDS = { min: 2_000, max: 3_000 } as const;
 
 export const CHUNK_SUMMARY_BUDGET: SummaryProcessingBudget = {
   maxSections: 7,

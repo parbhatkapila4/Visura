@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { ChevronLeft, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { DocumentReference } from "@/lib/document-reference";
-import { DOCUMENT_VIEWER_GO_TO_EVENT } from "@/lib/document-reference";
 
 export interface SectionItem {
   id: string;
@@ -18,37 +16,17 @@ export interface DocumentSectionsPanelProps {
   sections: SectionItem[];
   summaryId: string;
   summaryTitle: string;
-  documentVersionId: string;
-  pdfSummaryId: string;
-  onSelectReference?: (ref: DocumentReference) => void;
-}
-
-function sectionToReference(
-  section: SectionItem,
-  documentVersionId: string,
-  pdfSummaryId: string
-): DocumentReference {
-  return {
-    document_version_id: documentVersionId,
-    pdf_summary_id: pdfSummaryId,
-    page: section.start_page,
-    snippet: "",
-    chunk_id: null,
-  };
 }
 
 function formatPageRange(start: number, end: number): string {
-  if (start === end) return `Page ${start}`;
-  return `Pages ${start}–${end}`;
+  if (start === end) return `Model's page estimate: ${start}`;
+  return `Model's page estimate: ${start}–${end}`;
 }
 
 export function DocumentSectionsPanel({
   sections,
   summaryId,
   summaryTitle,
-  documentVersionId,
-  pdfSummaryId,
-  onSelectReference,
 }: DocumentSectionsPanelProps) {
   const sorted = [...sections].sort((a, b) => {
     const orderA = a.sort_order ?? a.start_page;
@@ -84,7 +62,7 @@ export function DocumentSectionsPanel({
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         {!hasSections ? (
           <div className="min-h-[40vh] flex flex-col items-center justify-center px-4">
-            <p className="text-[#888] text-center mb-4">No sections detected for this document.</p>
+            <p className="text-[#888] text-center mb-4">No sections for this document.</p>
             <Button
               variant="outline"
               asChild
@@ -99,17 +77,6 @@ export function DocumentSectionsPanel({
         ) : (
           <div className="space-y-2">
             {sorted.map((section) => {
-              const ref = sectionToReference(section, documentVersionId, pdfSummaryId);
-              const handleGoTo = () => {
-                if (onSelectReference) {
-                  onSelectReference(ref);
-                } else {
-                  window.dispatchEvent(
-                    new CustomEvent(DOCUMENT_VIEWER_GO_TO_EVENT, { detail: ref })
-                  );
-                }
-              };
-
               return (
                 <div
                   key={section.id}
@@ -124,14 +91,6 @@ export function DocumentSectionsPanel({
                       {formatPageRange(section.start_page, section.end_page)}
                     </p>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-[#333] text-[#888] hover:bg-[#1a1a1a] hover:text-white text-xs shrink-0"
-                    onClick={handleGoTo}
-                  >
-                    Go to
-                  </Button>
                 </div>
               );
             })}

@@ -12,14 +12,15 @@ export default function AboutPage() {
             className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-8 text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Home
+            Back to home
           </Link>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
             About us
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-zinc-400 max-w-3xl">
-            Hyper-focused on details. We're dedicated to our craft and we hope it shows through in
-            our work.
+            Visura summarizes the documents you upload and answers questions about them. Upload a
+            changed file under the same name and it becomes a new version: passages that match an
+            earlier version keep their summaries, and the rest are summarized.
           </p>
         </div>
       </div>
@@ -34,23 +35,25 @@ export default function AboutPage() {
             <div className="space-y-8 sm:space-y-12">
               <div className="rounded-xl border border-white/10 bg-zinc-900/60 p-6 sm:p-8">
                 <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">
-                  Question the standards
+                  Reuse summaries for matching passages
                 </h3>
                 <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
-                  We believe in challenging conventional approaches to document analysis. Our
-                  AI-powered platform reimagines how teams process and understand complex
-                  information, making insights more accessible and actionable than ever before.
+                  When you upload a new version, Visura splits it into passages and compares each
+                  one with earlier versions of the same document. Passages that match keep their
+                  existing summaries. Matching sets aside line breaks, extra spaces, quote and dash
+                  styles, running headers and footers, short lines that repeat, and any line that
+                  reads like a page number, including a line of nothing but digits. The rest are
+                  summarized again.
                 </p>
               </div>
 
               <div className="rounded-xl border border-white/10 bg-zinc-900/60 p-6 sm:p-8">
                 <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">
-                  Hiring is for everyone
+                  Show where answers come from
                 </h3>
                 <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
-                  Document analysis shouldn't be limited to large enterprises. We've built Visura to
-                  be accessible to organizations of all sizes, from startups to Fortune 500
-                  companies, democratizing access to powerful AI-driven insights.
+                  For longer documents, chat answers from the passages most related to your question
+                  and lists them under the answer, with a page number when Visura knows it.
                 </p>
               </div>
             </div>
@@ -58,23 +61,22 @@ export default function AboutPage() {
             <div className="space-y-8 sm:space-y-12">
               <div className="rounded-xl border border-white/10 bg-zinc-900/60 p-6 sm:p-8">
                 <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">
-                  The details matter
+                  Flag a cut-off or OCR read
                 </h3>
                 <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
-                  Every pixel, every algorithm, every user interaction is crafted with precision. We
-                  obsess over the quality of our document analysis, ensuring that every summary,
-                  insight, and export meets the highest standards of accuracy and usefulness.
+                  If Visura reads only the first 50 pages of a PDF, or reads a scan with OCR, that
+                  version's processing page says so, and its overview leaves out the reuse counts.
                 </p>
               </div>
 
               <div className="rounded-xl border border-white/10 bg-zinc-900/60 p-6 sm:p-8">
                 <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">
-                  Start with simple
+                  State the limits plainly
                 </h3>
                 <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
-                  Complex problems deserve elegant solutions. We've designed Visura to be intuitive
-                  and powerful, where advanced AI capabilities are presented through a clean,
-                  user-friendly interface that anyone can master in minutes.
+                  The upload form accepts files up to 32 MB. In your browser, PDFs are read up to
+                  the first 50 pages, and fully scanned PDFs up to 10 pages with English OCR. Older
+                  .doc and .ppt files are not supported. Summaries are written in English.
                 </p>
               </div>
             </div>
@@ -84,30 +86,22 @@ export default function AboutPage() {
 
       <div className="py-12 sm:py-20">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
-            <div className="rounded-xl overflow-hidden border border-white/10 bg-zinc-900/60">
-              <img
-                src="/demo.png"
-                alt="Charlotte skyline"
-                className="w-full h-48 sm:h-64 lg:h-80 object-cover"
-              />
-            </div>
-
+          <div className="max-w-3xl">
             <div>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">
                 About Visura
               </h2>
               <div className="space-y-3 sm:space-y-4 text-base sm:text-lg text-zinc-400 leading-relaxed">
                 <p>
-                  Visura is an AI-powered document analysis platform that transforms complex
-                  documents into clear, actionable insights. We believe that every piece of
-                  information should be accessible and understandable, regardless of its complexity
-                  or format.
+                  Visura reads PDF, Word (.docx), PowerPoint (.pptx), Excel (.xlsx and .xls), text
+                  and Markdown files. Each upload gets a summary and a chat, plus pages for its
+                  sections, key insights and a graph of topics and entities, each drawn from the
+                  start of the document. You can share a read-only link to a summary or add the
+                  document to a workspace.
                 </p>
                 <p>
-                  Our platform uses advanced machine learning algorithms to analyze PDFs, Word
-                  documents, and other file formats, extracting key insights, generating summaries,
-                  and providing exportable results that help teams make better decisions faster.
+                  Summaries, chat, sections, insights and the graph are written by GPT-4o mini.
+                  Every model call goes through OpenRouter.
                 </p>
               </div>
             </div>

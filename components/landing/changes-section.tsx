@@ -95,9 +95,6 @@ function ChangeSlips() {
             <p className="vs-name" style={{ fontSize: 15, textWrap: "pretty" }}>
               {e.summary}
             </p>
-            <span className="vs-mono" style={{ color: "var(--ink-3)" }}>
-              chunks {e.chunks[0]}–{e.chunks[1]}
-            </span>
             <ConfidenceMeter value={e.confidence} />
           </PaperCard>
         </li>
@@ -117,9 +114,9 @@ export default function ChangesSection() {
     >
       <SectionWide>
         <SectionHead
-          roman="Every change,"
+          roman="What changed,"
           italic="on the record"
-          sub="When a version finishes, each change is recorded with a type, a summary, the sections it touched, and a confidence score; the app shows them on a document timeline and a delta view."
+          sub="When a version finishes, Visura compares it with the version before and, for the first 40 changed passages, records each change it can back with a quote found in the document: the section it touched, the passage before and after, and how much it matters. The app stores these records but does not show them on any page."
         />
       </SectionWide>
 

@@ -57,7 +57,6 @@ export const VERSIONS: VersionRecord[] = [
 
 export const CURRENT_VERSION = VERSIONS[0];
 export const DOCUMENT_NAME = "employment-agreement.pdf";
-export const EST_TOKENS_SAVED = CURRENT_VERSION.reusedChunks * 1000;
 
 export function chunkStatesFor(v: VersionRecord): ChunkState[] {
   const states: ChunkState[] = Array.from({ length: v.totalChunks }, () => "reused" as ChunkState);
@@ -107,45 +106,8 @@ export const MINI_STRIP = {
   states: chunkStatesFor(CURRENT_VERSION).slice(54, 74),
 };
 
-export const REPLAY_EXHIBIT: { startIndex: number; states: ChunkState[] } = {
-  startIndex: 35,
-  states: [
-    "reused",
-    "reused",
-    "reused",
-    "reused",
-    "reused",
-    "replayed",
-    "replayed",
-    "replayed",
-    "inflight",
-    "inflight",
-    "inflight",
-    "inflight",
-    "inflight",
-    "inflight",
-    "reused",
-    "reused",
-    "reused",
-    "reused",
-    "reused",
-    "reused",
-  ],
-};
-
 export const GUARDRAIL_MESSAGE =
-  "You've reached today's processing limit. Please try again tomorrow.";
-
-export const PIPELINE_STAGES = [
-  "Uploading",
-  "Extracting text",
-  "Chunking document",
-  "Generating embeddings",
-  "Detecting sections",
-  "Extracting insights",
-  "Building knowledge graph",
-  "Finalizing",
-] as const;
+  "This document would take you past today's processing limit. Try again tomorrow or upload a smaller file.";
 
 export const PROCESSING_EVENTS = [
   "upload_started",

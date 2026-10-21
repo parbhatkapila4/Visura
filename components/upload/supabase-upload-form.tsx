@@ -1,6 +1,7 @@
 "use client";
 
 import { createVersionedDocumentJob } from "@/actions/versioned-upload-actions";
+import { extractUploadedDocumentText } from "@/actions/storage-actions";
 import UploadFormInput from "@/components/upload/upload-form-input";
 import {
   ProcessingPipeline,
@@ -9,8 +10,9 @@ import {
   type PipelineStepStatus,
 } from "@/components/upload/processing-pipeline";
 import { uploadToSupabase } from "@/lib/supabase";
+import type { ExtractionConfidence } from "@/lib/versioned-documents";
 import {
-  extractTextFromDocument,
+  extractDocumentWithMeta,
   isFileTypeSupported,
   getFileTypeLabel,
 } from "@/lib/document-extractor";
@@ -23,10 +25,10 @@ import { clientLogger } from "@/lib/client-logger";
 const schema = z.object({
   file: z
     .instanceof(File, { message: "Invalid file" })
-    .refine((file) => file.size <= 32 * 1024 * 1024, "File size must be less than 32MB")
+    .refine((file) => file.size <= 32 * 1024 * 1024, "File must be 32MB or smaller")
     .refine(
       (file) => isFileTypeSupported(file),
-      "Unsupported file type. Supported: PDF, Word, Text, Markdown, Excel, PowerPoint"
+      "Unsupported file type. Use PDF, DOCX, TXT, MD, XLSX, XLS or PPTX"
     ),
 });
 
@@ -55,23 +57,23 @@ function toUserFriendlyProcessingError(message?: string | null): string {
   const msg = (message || "").trim();
   const lower = msg.toLowerCase();
 
-  if (!msg) return "Something went wrong while processing your document. Please try again.";
+  if (!msg) return "Processing stopped without an error message. Try again.";
 
   if (lower.includes("exceeds per-version limit") || lower.includes("new chunks")) {
-    return "This document is too large to process in one go. Please split it into smaller files and upload again.";
+    return "This document is too large to process in one go. Split it into smaller files and upload them separately.";
   }
   if (lower.includes("daily token limit") || lower.includes("processing limit")) {
-    return "You've reached today's processing limit. Please try again later.";
+    return "This document would take you past today's processing limit. Try again tomorrow or upload a smaller file.";
   }
   if (
     lower.includes("estimated cost") ||
     lower.includes("cost limit") ||
     lower.includes("budget")
   ) {
-    return "You've reached today's AI processing budget. Please try again later.";
+    return "This document would take you past today's processing budget. Try again tomorrow or upload a smaller file.";
   }
   if (/\b402\b|payment required|billing|credits|quota/i.test(msg)) {
-    return "AI processing could not start because billing or API credits are unavailable.";
+    return "Processing stopped because the AI provider rejected the request. Try again later, or email parbhat@parbhat.dev if it keeps happening.";
   }
 
   return msg;
@@ -150,7 +152,7 @@ async function pollForSummary(
     ok: false,
     kind: "timeout",
     message:
-      "Processing is taking longer than expected. You can try again or check the dashboard later.",
+      "This document didn't finish processing. It's on your dashboard without a summary, and its page can show the start of its text instead.",
   };
 }
 
@@ -257,12 +259,12 @@ export default function SupabaseUploadForm({
     clientLogger.info("Form submit triggered", { user: !!user, isClient, isLoading });
 
     if (!user) {
-      toast.error("Please sign in to upload files");
+      toast.error("Sign in to upload files");
       return;
     }
 
     if (!isClient) {
-      toast.error("Please wait for the page to load completely");
+      toast.error("Wait for the page to finish loading");
       return;
     }
 
@@ -275,15 +277,14 @@ export default function SupabaseUploadForm({
       supabaseUrl.length === 0 ||
       supabaseAnonKey.length === 0
     ) {
-      toast.error("Configuration Error", {
-        description:
-          "Missing or invalid Supabase configuration. Please check your environment variables.",
+      toast.error("Configuration error", {
+        description: "Missing or invalid Supabase configuration. Check the environment variables.",
       });
       return;
     }
 
     if (!supabaseUrl.startsWith("http://") && !supabaseUrl.startsWith("https://")) {
-      toast.error("Configuration Error", {
+      toast.error("Configuration error", {
         description: "Invalid Supabase URL format. Must be a valid HTTP/HTTPS URL.",
       });
       return;
@@ -301,16 +302,15 @@ export default function SupabaseUploadForm({
     }
 
     if (!file || file.size === 0) {
-      toast.error("Please select a file", {
-        description: "No file found in form. Please try selecting the file again.",
+      toast.error("Select a file", {
+        description: "No file was attached. Choose the file again.",
       });
       return;
     }
 
     if (!isFileTypeSupported(file)) {
       toast.error("Unsupported file type", {
-        description:
-          "Supported formats: PDF, Word (DOCX/DOC), Text (TXT), Markdown (MD), Excel (XLSX/XLS), PowerPoint (PPTX/PPT)",
+        description: "Use PDF, DOCX, TXT, MD, XLSX, XLS or PPTX.",
       });
       return;
     }
@@ -341,12 +341,22 @@ export default function SupabaseUploadForm({
 
     let extractedText = "";
     let storageUploadComplete = false;
+    let pageStartOffsets: number[] = [];
+    let confidence: ExtractionConfidence | undefined;
 
     try {
       const extractStartedAt = await activateStep(STEP_EXTRACT);
       clientLogger.info(`Step 1: Extracting text from ${fileTypeLabel}`);
       try {
-        extractedText = await extractTextFromDocument(file);
+        const extraction = await extractDocumentWithMeta(file);
+        extractedText = extraction.text;
+        pageStartOffsets = extraction.pageStartOffsets;
+        confidence = {
+          ocrUsed: extraction.ocrUsed,
+          truncated: extraction.truncated,
+          totalPages: extraction.totalPages,
+          pagesRead: extraction.pagesRead,
+        };
         clientLogger.info("Text extraction completed", { length: extractedText.length });
       } catch (extractError: unknown) {
         clientLogger.error("Extraction error", extractError);
@@ -357,13 +367,15 @@ export default function SupabaseUploadForm({
           extractionErrorMsg.includes("password-protected") ||
           extractionErrorMsg.includes("encrypted")
         ) {
-          toast.warning("Password-Protected Document", {
-            description: "Text extraction limited. Proceeding with file upload and basic summary.",
+          toast.warning("Password-protected document", {
+            description:
+              "Couldn't read it in the browser. Uploading it to try again on the server.",
           });
           extractedText = "";
         } else if (extractionErrorMsg.includes("corrupted")) {
           toast.warning("File may be corrupted", {
-            description: "Proceeding with upload. Some features may be limited.",
+            description:
+              "Couldn't read it in the browser. Uploading it to try again on the server.",
           });
           extractedText = "";
         } else if (
@@ -372,8 +384,8 @@ export default function SupabaseUploadForm({
           extractionErrorMsg.includes("OCR also failed")
         ) {
           clientLogger.info("Scanned/image-based document detected");
-          toast.info("Scanned document detected", {
-            description: "Running OCR to extract text from images...",
+          toast.info("No text found", {
+            description: "Uploading it to try again on the server.",
           });
           extractedText = "";
         } else {
@@ -407,20 +419,21 @@ export default function SupabaseUploadForm({
         });
         const retryExtractStartedAt = await activateStep(STEP_EXTRACT);
         try {
-          const { extractTextFromDocumentUrl } = await import("@/lib/document-text-extractor");
-          extractedText = await extractTextFromDocumentUrl(
-            supabaseResult.data.publicUrl,
+          extractedText = await extractUploadedDocumentText(
+            supabaseResult.data.path,
             supabaseResult.data.fileName
           );
           if (!extractedText || extractedText.trim().length < 50) {
             throw new Error("Text extraction from URL also failed");
           }
           clientLogger.info("Text extraction from URL succeeded", { length: extractedText.length });
+          pageStartOffsets = [];
+          confidence = { ocrUsed: false, truncated: false, totalPages: null, pagesRead: null };
         } catch (urlExtractError: unknown) {
           clientLogger.error("Text extraction from URL failed", urlExtractError);
           updateStep(STEP_EXTRACT, "error");
           setPipelineError(
-            "Unable to extract text from this document. It may be scanned, corrupted, or password-protected. Try a different file."
+            "Couldn't read enough text from this file. Password-protected, corrupted, .doc and .ppt files can't be read. Try a different file."
           );
           setIsLoading(false);
           return;
@@ -439,14 +452,16 @@ export default function SupabaseUploadForm({
           extractedText,
           supabaseResult.data.fileName,
           supabaseResult.data.publicUrl,
-          "ENGLISH"
+          "ENGLISH",
+          pageStartOffsets,
+          confidence
         );
         clientLogger.info("Version result received", { success: versionResult?.success });
       } catch (jobError: unknown) {
         clientLogger.error("createVersionedDocumentJob threw", jobError);
         updateStep(STEP_CHUNK, "error");
         const msg =
-          jobError instanceof Error ? jobError.message : "Failed to start document processing.";
+          jobError instanceof Error ? jobError.message : "Couldn't start processing. Try again.";
         setPipelineError(toUserFriendlyProcessingError(msg));
         setIsLoading(false);
         return;
@@ -461,7 +476,7 @@ export default function SupabaseUploadForm({
         } else {
           setPipelineError(
             toUserFriendlyProcessingError(
-              versionResult?.message || "Failed to create document version. Try again."
+              versionResult?.message || "Couldn't create a version of this document. Try again."
             )
           );
         }
@@ -541,7 +556,7 @@ export default function SupabaseUploadForm({
       const versionId = vData.versionId;
       if (!versionId) {
         updateStep(STEP_FINALIZE, "error");
-        setPipelineError("No version ID returned. Please try again.");
+        setPipelineError("Processing didn't return a version for this document. Try again.");
         setIsLoading(false);
         return;
       }
@@ -588,7 +603,7 @@ export default function SupabaseUploadForm({
   if (!isClient) {
     return (
       <div className="mx-auto w-full max-w-4xl p-8 text-center">
-        <div className="animate-pulse">Loading document processor...</div>
+        <div className="animate-pulse">Loading…</div>
       </div>
     );
   }
@@ -615,7 +630,6 @@ export default function SupabaseUploadForm({
           isLoading={isLoading}
           hasReachedLimit={hasReachedLimit}
           uploadLimit={uploadLimit}
-          hideInlineProcessing
         />
       )}
     </div>

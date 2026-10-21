@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import {
+  canAccessPdfStore,
   createQASession,
   getQASessionsByPdfStore,
   updateQASessionName,
@@ -18,6 +19,10 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { pdfStoreId, sessionName } = CreateSessionSchema.parse(body);
+
+    if (!(await canAccessPdfStore(pdfStoreId, userId))) {
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    }
 
     const session = await createQASession({
       pdfStoreId,

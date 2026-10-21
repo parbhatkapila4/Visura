@@ -1,14 +1,7 @@
 import { Section, SectionWide, SectionHead } from "./section";
 import { PaperCard, type PaperTone, type TapeSpec } from "./paper-card";
 import { PlateCaption } from "./plate";
-import { CellStrip } from "./primitives";
-import {
-  DOCUMENT_NAME,
-  GUARDRAIL_MESSAGE,
-  REPLAY_EXHIBIT,
-  VERSIONS,
-  type ChunkState,
-} from "./lineage-data";
+import { GUARDRAIL_MESSAGE, type ChunkState } from "./lineage-data";
 
 interface StateSpecimen {
   name: string;
@@ -31,28 +24,21 @@ const STATES: StateSpecimen[] = [
     state: "new",
     hex: "#A65808 / #F2A93B",
     means: "processed this version",
-    when: "only these chunks were sent to the model",
+    when: "no earlier summary matched its hash",
   },
   {
     name: "in flight",
     state: "inflight",
     hex: "#5B7690 / #7E9BBB",
     means: "queued or processing right now",
-    when: "drawn hollow, never a fake spinner",
-  },
-  {
-    name: "replayed",
-    state: "replayed",
-    hex: "#C13B72 / #F07CB8",
-    means: "any incomplete version can be replayed",
-    when: "finished chunks are never reprocessed",
+    when: "its summary has not been written yet",
   },
   {
     name: "blocked",
     state: "blocked",
     hex: "#BF3B2F",
-    means: "the daily processing budget was exceeded",
-    when: "the run stopped before anything was written",
+    means: "this upload would pass the daily processing limit",
+    when: "the run stopped before a version was created",
   },
 ];
 
@@ -64,45 +50,38 @@ const SWATCH_PINS: Array<{
   offset: string;
   tapes?: TapeSpec[];
 }> = [
-    {
-      tone: "white",
-      seed: 51,
-      tilt: -3,
-      torn: { bottom: true },
-      offset: "mt-2",
-      tapes: [{ kind: 1, width: 62, angle: -7, style: { left: -14, top: -11 } }],
-    },
-    {
-      tone: "cream",
-      seed: 52,
-      tilt: 2,
-      torn: { top: true, right: true },
-      offset: "-mt-1 md:-mt-2",
-    },
-    {
-      tone: "mist",
-      seed: 53,
-      tilt: -1.5,
-      torn: { left: true, bottom: true },
-      offset: "mt-3 md:mt-4",
-      tapes: [{ kind: 2, width: 62, angle: 9, style: { right: -14, top: -11 } }],
-    },
-    {
-      tone: "cream",
-      seed: 54,
-      tilt: 3,
-      torn: { top: true },
-      offset: "-mt-1 md:-mt-2",
-    },
-    {
-      tone: "white",
-      seed: 55,
-      tilt: -2,
-      torn: { right: true, bottom: true },
-      offset: "mt-2",
-      tapes: [{ kind: 1, width: 62, angle: 6, style: { left: -12, top: -10 } }],
-    },
-  ];
+  {
+    tone: "white",
+    seed: 51,
+    tilt: -3,
+    torn: { bottom: true },
+    offset: "mt-2",
+    tapes: [{ kind: 1, width: 62, angle: -7, style: { left: -14, top: -11 } }],
+  },
+  {
+    tone: "cream",
+    seed: 52,
+    tilt: 2,
+    torn: { top: true, right: true },
+    offset: "-mt-1 md:-mt-2",
+  },
+  {
+    tone: "mist",
+    seed: 53,
+    tilt: -1.5,
+    torn: { left: true, bottom: true },
+    offset: "mt-3 md:mt-4",
+    tapes: [{ kind: 2, width: 62, angle: 9, style: { right: -14, top: -11 } }],
+  },
+  {
+    tone: "white",
+    seed: 55,
+    tilt: -2,
+    torn: { right: true, bottom: true },
+    offset: "mt-2",
+    tapes: [{ kind: 1, width: 62, angle: 6, style: { left: -12, top: -10 } }],
+  },
+];
 
 function StateMark({ state }: { state: ChunkState | "blocked" }) {
   if (state === "blocked") {
@@ -120,7 +99,6 @@ function StateMark({ state }: { state: ChunkState | "blocked" }) {
 }
 
 export default function StatesSection() {
-  const v2 = VERSIONS[2];
   return (
     <Section
       id="states"
@@ -131,9 +109,9 @@ export default function StatesSection() {
     >
       <SectionWide>
         <SectionHead
-          roman="Five states,"
-          italic="nothing hidden"
-          sub="Each section says what happened to it: kept, processed, still running, recovered after a failure, or stopped by the daily limit."
+          roman="What happened"
+          italic="to each section"
+          sub="Every section is kept from an earlier version, summarized in this one, or still waiting for its summary. An upload that would pass the daily limit stops before any of that."
         />
       </SectionWide>
 
@@ -168,33 +146,7 @@ export default function StatesSection() {
           })}
         </div>
 
-        <div className="mt-14 grid grid-cols-1 gap-10 min-[900px]:grid-cols-2">
-          <PaperCard
-            seed={57}
-            tone="cream"
-            torn={{ left: true, right: true }}
-            tilt={1.2}
-            bodyClassName="px-8 pb-8 pt-7"
-          >
-            <p className="vs-name">A replay, mid-run</p>
-            <CellStrip
-              className="vs-states-replay mt-3"
-              states={REPLAY_EXHIBIT.states}
-              size={16}
-              gap={3}
-              surface="paper"
-              label="Chunks 35 to 54 of version 2 mid-replay: five reused, three replayed, six in flight, six reused"
-            />
-            <p className="vs-prose mt-4" style={{ fontSize: 14 }}>
-              A moment during version 2&rsquo;s replay. The failed run left nine sections
-              unsummarized; the replay recovered three, has six in flight, and never touched the
-              finished ones. Any incomplete version can be replayed.
-            </p>
-            <p className="vs-key mt-4" style={{ fontWeight: 400 }}>
-              {DOCUMENT_NAME} · {v2.id} · replay · sample
-            </p>
-          </PaperCard>
-
+        <div className="mx-auto mt-14 w-full max-w-[540px]">
           <PaperCard
             seed={58}
             tone="white"
@@ -208,14 +160,16 @@ export default function StatesSection() {
               <p className="vs-quote" style={{ fontSize: 19, lineHeight: 1.45 }}>
                 &ldquo;{GUARDRAIL_MESSAGE}&rdquo;
               </p>
-              <p className="vs-key mt-3.5">Checked before anything is written. No partial state.</p>
+              <p className="vs-key mt-3.5">
+                Checked before a version is created. Only new sections count toward the default
+                limit of 2,000,000 estimated tokens per account per day.
+              </p>
             </div>
           </PaperCard>
         </div>
 
         <PlateCaption>
-          The legend, and the two states the readout above never shows: a replay in progress, and a
-          run the daily limit stopped.
+          The legend, and a state the readout above never shows: a run the daily limit stopped.
         </PlateCaption>
       </SectionWide>
     </Section>

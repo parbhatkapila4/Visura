@@ -37,7 +37,7 @@ export default function DashboardError({
             Dashboard unavailable
           </h2>
           <p className="text-sm text-zinc-400 mb-8 leading-relaxed">
-            We couldn&apos;t load your dashboard. This is usually temporary — try refreshing.
+            Your dashboard failed to load. Try again, and reload the page if it fails a second time.
           </p>
 
           {process.env.NODE_ENV === "development" && error.message && (
@@ -51,7 +51,7 @@ export default function DashboardError({
             className="group flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 active:scale-[0.98]"
           >
             <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
-            Refresh Dashboard
+            Try again
           </button>
         </div>
       </motion.div>

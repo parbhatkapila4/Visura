@@ -4,12 +4,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { BrandMark, PrimaryCta } from "./primitives";
-
 const NAV_LINKS: Array<[label: string, href: string]> = [
+  ["Compare two versions", "/compare"],
   ["Features", "/features"],
   ["Pricing", "/pricing"],
   ["Docs", "/docs"],
-  ["Changelog", "/changelog"],
 ];
 
 export default function LandingHeader() {

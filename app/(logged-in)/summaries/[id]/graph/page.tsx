@@ -1,6 +1,7 @@
+import { auth } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getDbConnection } from "@/lib/db";
 import { findSummaryById } from "@/lib/summaries";
 import { SummaryPageWrapper } from "@/components/summaries/summary-page-wrapper";
@@ -10,10 +11,15 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 
 export default async function SummaryGraphPage(props: { params: Promise<{ id: string }> }) {
+  const { userId } = await auth();
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
   const params = await props.params;
   const summaryId = params.id;
 
-  const summary = await findSummaryById(summaryId);
+  const summary = await findSummaryById(summaryId, userId);
   if (!summary) {
     notFound();
   }
@@ -63,7 +69,9 @@ export default async function SummaryGraphPage(props: { params: Promise<{ id: st
       <SummaryPageWrapper>
         <div className="min-h-[60vh] flex flex-col items-center justify-center px-4">
           <p className="text-[#888] text-center mb-4">
-            {res.status === 404 ? "Version not found." : "Failed to load graph."}
+            {res.status === 404
+              ? "Only the person who uploaded this document can open this page."
+              : "Couldn't load the graph. Refresh the page to try again."}
           </p>
           <Button
             variant="outline"
@@ -88,7 +96,7 @@ export default async function SummaryGraphPage(props: { params: Promise<{ id: st
         nodes={data.nodes}
         edges={data.edges}
         summaryId={summaryId}
-        summaryTitle={summary.title || "Untitled Document"}
+        summaryTitle={summary.title || "Untitled document"}
       />
     </SummaryPageWrapper>
   );

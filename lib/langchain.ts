@@ -1,6 +1,23 @@
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+export interface ExtractedPdf {
+  text: string;
+  pageStartOffsets: number[];
+}
 
-export async function fetchAndExtractPdfText(fileUrl: string, maxRetries = 3) {
+function joinPages(pages: string[]): ExtractedPdf {
+  const pageStartOffsets: number[] = [];
+  let offset = 0;
+  for (const page of pages) {
+    pageStartOffsets.push(offset);
+    offset += page.length + 1;
+  }
+  return { text: pages.join("\n"), pageStartOffsets };
+}
+
+export async function fetchAndExtractPdfTextWithPages(
+  fileUrl: string,
+  maxRetries = 3
+): Promise<ExtractedPdf> {
   let lastError;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -41,14 +58,14 @@ export async function fetchAndExtractPdfText(fileUrl: string, maxRetries = 3) {
         throw new Error("No pages could be processed from PDF");
       }
 
-      const extractedText = docs.map((doc) => doc.pageContent).join("\n");
-      console.log("Extracted text length:", extractedText.length);
+      const extracted = joinPages(docs.map((doc) => doc.pageContent));
+      console.log("Extracted text length:", extracted.text.length, "pages:", docs.length);
 
-      if (extractedText.trim().length === 0) {
+      if (extracted.text.trim().length === 0) {
         throw new Error("No text content could be extracted from PDF");
       }
 
-      return extractedText;
+      return extracted;
     } catch (error) {
       lastError = error;
       console.error(`Attempt ${attempt} failed:`, error);
@@ -71,6 +88,10 @@ export async function fetchAndExtractPdfText(fileUrl: string, maxRetries = 3) {
 
   console.error("All retry attempts failed. Last error:", lastError);
   throw lastError;
+}
+export async function fetchAndExtractPdfText(fileUrl: string, maxRetries = 3): Promise<string> {
+  const { text } = await fetchAndExtractPdfTextWithPages(fileUrl, maxRetries);
+  return text;
 }
 
 export async function extractPdfTextFromBuffer(arrayBuffer: ArrayBuffer): Promise<string> {

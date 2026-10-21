@@ -1,82 +1,8 @@
 "use client";
 import Link from "next/link";
-import { ArrowLeft, Book, Code, Zap, Shield, Users, FileText } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export default function DocumentationPage() {
-  const sections = [
-    {
-      icon: <Zap className="w-6 h-6 text-primary" />,
-      title: "Getting Started",
-      description: "Learn the basics of document analysis with Visura",
-      guides: [
-        "Upload Your First Document",
-        "Understanding Analysis Results",
-        "Dashboard Overview",
-        "Basic Settings & Configuration",
-      ],
-    },
-    {
-      icon: <Code className="w-6 h-6 text-primary" />,
-      title: "API Reference",
-      description: "Complete API documentation for document analysis",
-      guides: [
-        "Authentication & API Keys",
-        "Document Upload API",
-        "Analysis Results Endpoints",
-        "Webhook Configuration",
-        "Rate Limits & Best Practices",
-      ],
-    },
-    {
-      icon: <FileText className="w-6 h-6 text-primary" />,
-      title: "Integration Guides",
-      description: "Step-by-step integration tutorials",
-      guides: [
-        "Python SDK Integration",
-        "JavaScript/Node.js Setup",
-        "REST API Integration",
-        "Webhook Implementation",
-        "Custom Analysis Workflows",
-      ],
-    },
-    {
-      icon: <Shield className="w-6 h-6 text-primary" />,
-      title: "Security & Privacy",
-      description: "Document security and privacy best practices",
-      guides: [
-        "Document Encryption",
-        "Data Privacy & GDPR",
-        "Secure File Handling",
-        "Access Control & Permissions",
-        "Audit Logging & Monitoring",
-      ],
-    },
-    {
-      icon: <Users className="w-6 h-6 text-primary" />,
-      title: "Team & Sharing",
-      description: "Collaborate and share analysis results",
-      guides: [
-        "Team Workspace Setup",
-        "Sharing Analysis Results",
-        "Export & Download Options",
-        "Team Analytics & Reports",
-        "User Management",
-      ],
-    },
-    {
-      icon: <Book className="w-6 h-6 text-primary" />,
-      title: "Advanced Features",
-      description: "Advanced document analysis capabilities",
-      guides: [
-        "Batch Document Processing",
-        "Custom Analysis Templates",
-        "Advanced Export Options",
-        "API Rate Limiting",
-        "Performance Optimization",
-      ],
-    },
-  ];
-
   return (
     <div className="min-h-screen w-full bg-black">
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 pt-6 pb-4">
@@ -86,81 +12,25 @@ export default function DocumentationPage() {
             className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-8 text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Home
+            Back to home
           </Link>
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">Documentation</h1>
           <p className="text-lg sm:text-xl text-zinc-400 max-w-3xl">
-            Learn how to use Visura's AI-powered document analysis platform. Get started with our
-            guides, API documentation, and integration tutorials.
+            How to upload documents to Visura, read their summaries, chat with them and share them.
           </p>
         </div>
       </div>
 
-      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Link
-            href="#getting-started"
-            className="rounded-xl border border-white/10 bg-zinc-900/80 p-6 hover:bg-zinc-900 transition-colors"
-          >
-            <Zap className="w-8 h-8 text-primary mb-3" />
-            <h3 className="text-lg font-semibold text-white mb-2">Getting Started</h3>
-            <p className="text-zinc-400 text-sm">Upload and analyze your first document</p>
-          </Link>
-          <Link
-            href="#api-reference"
-            className="rounded-xl border border-white/10 bg-zinc-900/80 p-6 hover:bg-zinc-900 transition-colors"
-          >
-            <Code className="w-8 h-8 text-primary mb-3" />
-            <h3 className="text-lg font-semibold text-white mb-2">API Reference</h3>
-            <p className="text-zinc-400 text-sm">Document analysis API endpoints</p>
-          </Link>
-          <Link
-            href="#integrations"
-            className="rounded-xl border border-white/10 bg-zinc-900/80 p-6 hover:bg-zinc-900 transition-colors"
-          >
-            <FileText className="w-8 h-8 text-primary mb-3" />
-            <h3 className="text-lg font-semibold text-white mb-2">Integrations</h3>
-            <p className="text-zinc-400 text-sm">SDK and workflow integration guides</p>
-          </Link>
-        </div>
-      </div>
-
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 pb-24 space-y-16 lg:space-y-20 pt-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {sections.map((section, index) => (
-            <div
-              key={index}
-              className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6 hover:bg-zinc-900 transition-colors"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                {section.icon}
-                <h3 className="text-xl font-semibold text-white">{section.title}</h3>
-              </div>
-              <p className="text-zinc-400 mb-4">{section.description}</p>
-              <ul className="space-y-2">
-                {section.guides.map((guide, guideIndex) => (
-                  <li
-                    key={guideIndex}
-                    className="flex items-center gap-2 text-sm text-zinc-300 hover:text-white transition-colors"
-                  >
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
-                    <span className="cursor-pointer">{guide}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
         <section className="space-y-8 lg:space-y-10">
           <div className="max-w-4xl">
             <h2 className="text-3xl lg:text-4xl font-bold text-white mb-3">What is Visura?</h2>
             <p className="text-zinc-400 text-base lg:text-lg leading-relaxed">
-              Visura is an AI-powered document analysis platform. You upload PDFs and other
-              long‑form documents, and Visura turns them into clear, structured insights you can
-              search, summarize, and chat with. Instead of manually scanning pages, you get instant
-              answers to specific questions, concise summaries, and a permanent knowledge base of
-              everything you&apos;ve uploaded.
+              Visura summarizes documents and answers questions about them. You upload PDFs and
+              other documents, and Visura turns them into summaries, section outlines and insights,
+              with a chat for each document. Instead of scanning pages yourself, you ask questions
+              and get answers based on the document&apos;s text, and every document you upload stays
+              in your account until you delete it.
             </p>
           </div>
 
@@ -179,15 +49,15 @@ export default function DocumentationPage() {
                 Most knowledge is trapped in static files. Manually reading and summarizing them is
                 slow, error‑prone, and doesn&apos;t scale. Visura exists to give you a single place
                 where documents become interactive: you can search, summarize, compare, and ask
-                questions like you would with a teammate who has read everything.
+                questions about them.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6">
               <h3 className="text-lg font-semibold text-white mb-2">How does it feel to use?</h3>
               <p className="text-zinc-400 text-sm lg:text-base leading-relaxed">
-                You drag‑and‑drop a file, wait a few seconds, and immediately get a clean summary
-                card, analytics, and a chatbot you can talk to about that document. From there you
-                can keep everything organized in your dashboard and workspaces.
+                You drag‑and‑drop a file, wait while it processes, and get a summary, insights and a
+                chat for that document. From there you can keep everything organized in your
+                dashboard and workspaces.
               </p>
             </div>
           </div>
@@ -202,9 +72,8 @@ export default function DocumentationPage() {
               </p>
               <h3 className="text-lg font-semibold text-white mb-2">Add your documents</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                Upload PDFs and other supported formats from your dashboard. Files are stored
-                securely and prepared for AI analysis, including text extraction and page‑level
-                processing.
+                Upload a PDF, DOCX, TXT, MD, XLSX, XLS or PPTX file of up to 32 MB from the Upload
+                page. Visura extracts the text and stores the original file with the document.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-5">
@@ -213,9 +82,9 @@ export default function DocumentationPage() {
               </p>
               <h3 className="text-lg font-semibold text-white mb-2">AI understanding</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                Visura&apos;s pipeline breaks your document into logical sections, extracts
-                entities, and runs summarization and insight generation so you get a concise
-                overview instead of a wall of text.
+                Visura splits the text into passages, summarizes them with a language model and
+                merges the results into one summary. It also builds a section outline, a list of
+                insights and a graph of topics and entities, each from the start of the document.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-5">
@@ -224,8 +93,8 @@ export default function DocumentationPage() {
               </p>
               <h3 className="text-lg font-semibold text-white mb-2">Dashboard & summaries</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                On the dashboard you can browse summaries, see key metrics per document, download
-                results, and organize everything into workspaces for different projects or teams.
+                On the dashboard you can browse and search your summaries, download a summary as a
+                PDF, and delete documents. Add a document to a workspace from its summary page.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-5">
@@ -236,8 +105,9 @@ export default function DocumentationPage() {
                 Ask questions in plain English
               </h3>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                Each document has its own AI chatbot. Ask follow‑up questions, compare sections, or
-                request custom summaries and explanations tailored to your role or use‑case.
+                Each document has its own chat. Ask questions and follow‑ups; answers are based on
+                the document&apos;s text, and for long documents on the passages most relevant to
+                your question.
               </p>
             </div>
           </div>
@@ -249,23 +119,26 @@ export default function DocumentationPage() {
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6">
               <h3 className="text-lg font-semibold text-white mb-2">Document handling</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                Uploaded files are processed only to generate summaries, analytics, and chat
-                context. We do not sell your data or use your documents for training generic models.
+                Visura sends your document&apos;s text to AI models through OpenRouter to produce
+                its summaries, insights and chat answers. We do not sell your data or use your
+                documents for training generic models.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6">
               <h3 className="text-lg font-semibold text-white mb-2">Security basics</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                All traffic is encrypted in transit via HTTPS. Storage is protected with
-                industry‑standard security practices, and access to documents is scoped to your
-                authenticated account or workspace.
+                All traffic is encrypted in transit via HTTPS. A summary opens only for you and for
+                anyone who has its share link. Chat with a document is open only to you.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6">
               <h3 className="text-lg font-semibold text-white mb-2">Ownership</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                You retain full ownership of your documents and generated summaries. You can export
-                your data and delete documents or summaries from your account at any time.
+                You retain full ownership of your documents and generated summaries. Deleting a
+                document from the dashboard removes its summary, its chat history and its share
+                link, and takes it out of any workspace. The uploaded file, its versions and
+                everything built from them (passages and their summaries, section outlines,
+                insights, graphs and search data) are kept.
               </p>
             </div>
           </div>
@@ -279,10 +152,9 @@ export default function DocumentationPage() {
                 How accurate are the summaries?
               </h3>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                Summaries are generated by modern large language models with document‑aware
-                prompting. For critical work (legal, medical, financial), you should still review
-                the original document, but Visura dramatically reduces the time needed to get an
-                initial understanding.
+                Passages are summarized by a large language model, and the passage summaries are
+                merged into one summary, written in English. For critical work (legal, medical,
+                financial), you should still review the original document.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6">
@@ -290,19 +162,19 @@ export default function DocumentationPage() {
                 What file types work best?
               </h3>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                Standard, text‑based PDFs give the best results. Scanned PDFs may require OCR and
-                can be more variable in quality, but the platform is designed to handle most common
-                document formats you encounter in everyday work.
+                Text‑based PDFs give the best results. Your browser reads the first 50 pages of a
+                PDF (if it can&apos;t read the file, the server reads the whole file), and a fully
+                scanned PDF is read with English OCR, up to 10 pages. Older .doc and .ppt files are
+                not supported; save them as .docx or .pptx first.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6">
               <h3 className="text-base lg:text-lg font-semibold text-white mb-2">
-                Can I collaborate with my team?
+                How do I share a summary?
               </h3>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                Yes. Workspaces let you share documents, summaries, and chat sessions with your
-                teammates so everyone can build on the same knowledge base instead of working in
-                silos.
+                Use Share on its summary page to create a link anyone can open without signing in.
+                Chat with a document stays private to you.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6">
@@ -310,14 +182,14 @@ export default function DocumentationPage() {
                 How do I get help or request features?
               </h3>
               <p className="text-zinc-400 text-sm leading-relaxed">
-                You can reach us anytime at{" "}
+                Email us at{" "}
                 <a
                   href="mailto:parbhat@parbhat.dev"
                   className="text-primary font-medium underline underline-offset-2 hover:text-primary/90"
                 >
                   parbhat@parbhat.dev
                 </a>
-                . We actively use this feedback to shape the roadmap.
+                .
               </p>
             </div>
           </div>
@@ -331,49 +203,52 @@ export default function DocumentationPage() {
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6">
               <h3 className="font-semibold text-white mb-2">Dashboard</h3>
               <p className="text-zinc-400 leading-relaxed">
-                The `/dashboard` route shows all documents you&apos;ve uploaded, quick stats, and
-                entry points into summaries and chat. It&apos;s the best place to get a high‑level
-                view of your activity in Visura.
+                The /dashboard page shows the documents you&apos;ve uploaded, quick stats, and entry
+                points into summaries and chat. It&apos;s the best place to get a high‑level view of
+                your activity in Visura.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6">
               <h3 className="font-semibold text-white mb-2">Summaries</h3>
               <p className="text-zinc-400 leading-relaxed">
-                Each processed document has a dedicated summary view under `/summaries/[id]`. Here
-                you&apos;ll see the main points, extracted sections, and actions like download or
-                share.
+                Each processed document has its own summary page. Here you&apos;ll see the main
+                points, links to its sections, insights, knowledge graph and chat, and actions to
+                share it or add it to a workspace.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6">
               <h3 className="font-semibold text-white mb-2">Chatbot</h3>
               <p className="text-zinc-400 leading-relaxed">
-                The document chatbot lives at `/chatbot/[pdfSummaryId]`. This is where you can ask
-                questions about a specific summary, start new chat sessions, and explore documents
-                conversationally.
+                Open Chat from a document&apos;s dashboard card or summary page to ask questions
+                about that document. It reopens your most recent conversation; on narrow screens,
+                New chat starts a fresh one.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6">
               <h3 className="font-semibold text-white mb-2">Uploads & processing</h3>
               <p className="text-zinc-400 leading-relaxed">
-                Upload flows are handled through the upload components and API routes in this
-                project. They take care of storing files, extracting text, and triggering summary
-                generation so that new documents automatically appear in your dashboard.
+                Upload at /upload; the document appears on your dashboard while it processes. Upload
+                a changed copy under the same file name and it becomes a new version: unchanged
+                passages keep their earlier summaries and only changed ones are summarized again.
+                Differences in spacing, quote style and short header or footer lines repeated across
+                pages don&apos;t mark a passage as changed, and neither does a line that holds only
+                a whole number or a page label, such as &quot;12&quot; or &quot;Page 4 of 90&quot;.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6">
               <h3 className="font-semibold text-white mb-2">Workspaces</h3>
               <p className="text-zinc-400 leading-relaxed">
-                Workspaces let you group documents and collaborate with others. The workspace logic
-                lives in the `workspaces` components and `lib/workspaces` helpers, which control how
-                documents are shared and organized.
+                Workspaces at /workspaces group documents you add from their summary pages. Inside
+                one you can search those documents and run Analyze workspace to compare them.
               </p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-zinc-900/80 p-6">
-              <h3 className="font-semibold text-white mb-2">Rate limiting & reliability</h3>
+              <h3 className="font-semibold text-white mb-2">Limits</h3>
               <p className="text-zinc-400 leading-relaxed">
-                To keep things fast and stable, Visura uses rate‑limiting utilities (in
-                `lib/rate-limit`) and monitoring helpers to protect the AI and upload endpoints. If
-                you hit those limits, try again after a short pause.
+                Free accounts keep up to 5 documents, Starter 10 and Pro 1,000, and each new version
+                counts as one. Every account can download 2 summaries; downloading one again
+                doesn&apos;t count. Document chat takes up to 10 messages a minute, and new
+                processing has a daily cap per account that reused passages don&apos;t count toward.
               </p>
             </div>
           </div>

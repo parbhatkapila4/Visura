@@ -6,38 +6,29 @@ import CheckoutButton, {
   useResolvedCurrency,
 } from "@/app/components/CheckoutButton";
 import BgGradient from "@/components/common/bg-gradient";
-import { ArrowLeft, Check, ShieldCheck, ScanSearch, Zap, Sparkles, Crown } from "lucide-react";
+import { ArrowLeft, Check, ScanSearch, Sparkles, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
 const sellingPoints = [
   {
     icon: ScanSearch,
-    title: "Smarter briefs",
-    copy: "AI-crafted summaries tuned for legal, research, and product teams.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Secure by design",
-    copy: "SOC2-ready controls with encrypted storage and audit trails.",
-  },
-  {
-    icon: Zap,
-    title: "Rapid execution",
-    copy: "Upload to actionable insight in under 45 seconds, every time.",
+    title: "Summaries and chat",
+    copy: "Every upload gets an AI summary, and you can chat with the document.",
   },
 ];
 
 const planFeatures = [
-  "Unlimited AI summaries & reusable templates",
-  "Cross-document search with highlight exports",
-  "5 collaborator seats with comment histories",
-  "Priority human support & onboarding",
+  "Keep up to 1,000 documents; each new version counts as one",
+  "AI summary and chat for every document",
+  "PDF, DOCX, PPTX, XLSX, XLS, TXT and MD files up to 32 MB",
+  "2 summary downloads, as PDF",
 ];
 
 export default function Page() {
   const { currency, loading } = useResolvedCurrency();
-  const displayAmount = AMOUNT_BY_CURRENCY[currency] ?? 20;
+  const displayAmount: number | undefined = AMOUNT_BY_CURRENCY[currency];
+  const priced = displayAmount !== undefined;
   const symbol = SYMBOL[currency] ?? "$";
 
   return (
@@ -78,7 +69,7 @@ export default function Page() {
             >
               <span className="inline-flex items-center gap-2 rounded-full border border-[#F97316]/30 bg-[#F97316]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-[#F97316] backdrop-blur-sm">
                 <Crown className="h-3 w-3" />
-                Visura Professional
+                Visura Pro
               </span>
             </motion.div>
 
@@ -89,7 +80,7 @@ export default function Page() {
                 transition={{ duration: 0.6, delay: 0.3 }}
                 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight bg-gradient-to-br from-white via-white to-white/80 bg-clip-text text-transparent"
               >
-                Elevate every deliverable with operational clarity.
+                Keep up to 1,000 documents.
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -97,9 +88,9 @@ export default function Page() {
                 transition={{ duration: 0.6, delay: 0.4 }}
                 className="text-lg text-white/70 leading-relaxed max-w-2xl"
               >
-                Visura Pro layers advanced summarisation, contextual search, and collaborative
-                review into a single polished workspace. Auto-detected currency keeps payments
-                frictionless wherever you operate.
+                That is up from 5 on the free plan and 10 on Starter, and each new version of a
+                document counts as one. Every other feature is the same on every plan. You pay once,
+                and nothing renews.
               </motion.p>
             </div>
 
@@ -107,7 +98,7 @@ export default function Page() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="grid gap-4 sm:grid-cols-3"
+              className="grid gap-4 sm:max-w-md"
             >
               {sellingPoints.map(({ icon: Icon, title, copy }, index) => (
                 <motion.div
@@ -143,20 +134,24 @@ export default function Page() {
               <div className="relative flex flex-col rounded-3xl border border-[#F97316]/40 bg-gradient-to-br from-[#0f0f0f] via-[#0a0a0a] to-[#0f0f0f] p-8 shadow-[0_25px_70px_-40px_rgba(249,115,22,0.6)] backdrop-blur-sm">
                 <div className="text-center mb-6">
                   <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#F97316]/80 mb-2">
-                    Professional Plan
+                    Pro plan
                   </p>
 
-                  <div className="flex items-end justify-center gap-2 mb-2">
-                    <span className="text-6xl font-bold text-white">
-                      {loading ? "—" : `${symbol}${displayAmount}`}
-                    </span>
-                    <span className="pb-2 text-sm uppercase tracking-[0.35em] text-white/55">
-                      / month
-                    </span>
-                  </div>
+                  {priced && (
+                    <div className="flex items-end justify-center gap-2 mb-2">
+                      <span className="text-6xl font-bold text-white">
+                        {loading ? "—" : `${symbol}${displayAmount}`}
+                      </span>
+                      <span className="pb-2 text-sm uppercase tracking-[0.35em] text-white/55">
+                        one-time
+                      </span>
+                    </div>
+                  )}
 
                   <p className="mt-3 text-xs text-white/50">
-                    Currency finalised automatically by your location.
+                    {priced
+                      ? "One-time payment. Currency is set from your location."
+                      : `Checkout can't take payment in ${currency}. Email parbhat@parbhat.dev.`}
                   </p>
                 </div>
 
@@ -188,8 +183,7 @@ export default function Page() {
                   </div>
 
                   <p className="text-[11px] text-center text-white/50 leading-relaxed">
-                    14-day satisfaction guarantee. Cancel any time from billing settings or email
-                    support for bespoke enterprise options.
+                    Paid through Razorpay. Nothing renews, so there is nothing to cancel.
                   </p>
                 </motion.div>
               </div>
@@ -206,14 +200,14 @@ export default function Page() {
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="space-y-3">
               <p className="text-sm uppercase tracking-[0.3em] text-white/55">
-                Looking for something simpler?
+                Need fewer documents?
               </p>
               <h3 className="text-2xl md:text-3xl font-semibold text-white">
-                Check out our Starter plan for smaller teams
+                Starter keeps up to 10 documents
               </h3>
               <p className="max-w-xl text-sm text-white/60 leading-relaxed">
-                Perfect for solo operators and early-stage teams. Start small and upgrade seamlessly
-                when you're ready to scale.
+                Same features as Pro, for a lower one-time price. You can buy Pro later at its full
+                price; your documents stay where they are.
               </p>
             </div>
             <Link

@@ -13,7 +13,7 @@ import { clearLogoutLoaderPending, dispatchLogoutLoaderStart } from "@/lib/logou
 
 const baseNavLinks = [
   { label: "About", href: "/about" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "Pricing", href: "/pricing" },
 ] as const;
 
 const SCROLL_THRESHOLD = 80;
@@ -252,7 +252,7 @@ export default function Header() {
                       fontSize: "0.875rem",
                     }}
                   >
-                    Sign In
+                    Sign in
                   </Link>
                   <Link
                     href="/sign-up"
@@ -268,7 +268,7 @@ export default function Header() {
                       fontWeight: 600,
                     }}
                   >
-                    Get Started
+                    Get started
                   </Link>
                 </>
               )}
@@ -348,7 +348,7 @@ export default function Header() {
                       onClick={() => setMobileOpen(false)}
                       className="rounded-md border border-zinc-500 bg-zinc-800/80 px-4 py-3 text-center text-sm font-medium text-white"
                     >
-                      Sign In
+                      Sign in
                     </Link>
                     <Link
                       href="/sign-up"
@@ -356,7 +356,7 @@ export default function Header() {
                       onClick={() => setMobileOpen(false)}
                       className="rounded-full bg-white px-5 py-3 text-center text-sm font-semibold text-black"
                     >
-                      Get Started
+                      Get started
                     </Link>
                   </>
                 )}

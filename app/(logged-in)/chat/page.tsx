@@ -3,7 +3,8 @@ import { getUserSummaries } from "@/lib/summaries";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { ensureUserExistsInDatabase } from "@/lib/auth-utils";
-import { getUserByEmail } from "@/lib/user";
+import { documentLimitFor, getPlanForEmail } from "@/lib/billing";
+export const dynamic = "force-dynamic";
 
 interface Summary {
   id: string;
@@ -25,10 +26,9 @@ export default async function ChatPage() {
   await ensureUserExistsInDatabase();
 
   const email = user.emailAddresses[0]?.emailAddress;
-  const userData = email ? await getUserByEmail(email) : null;
-  const userPlan = userData?.price_id ? "pro" : "basic";
+  const plan = await getPlanForEmail(email!);
 
-  const summaries = (await getUserSummaries(userId, userPlan)) as Summary[];
+  const summaries = (await getUserSummaries(userId, documentLimitFor(plan))) as Summary[];
 
   return (
     <main className="min-h-screen bg-[#0a0a0a] w-full">

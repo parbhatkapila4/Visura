@@ -4,8 +4,8 @@ import { PaperCard } from "./paper-card";
 import { PlateCaption, WashPlate } from "./plate";
 import { Barcode } from "./barcode";
 import { Ledger } from "./ledger";
-import { CellStrip, fmt } from "./primitives";
-import { CURRENT_VERSION, EST_TOKENS_SAVED, MINI_STRIP, VERSIONS } from "./lineage-data";
+import { CellStrip } from "./primitives";
+import { CURRENT_VERSION, MINI_STRIP, VERSIONS } from "./lineage-data";
 
 const v4 = CURRENT_VERSION;
 const v3 = VERSIONS[1];
@@ -42,19 +42,23 @@ export default function ReuseSection() {
           <div className="vs-split-prose">
             <SectionHead
               roman="Only what changed"
-              italic="gets read again"
-              sub="Every ~1,000-character section is hashed with SHA-256. A revision keeps the summaries whose hash still matches and sends only the new sections to the model. Upload an identical file and nothing is reprocessed at all."
+              italic="gets summarized again"
+              sub="The text is normalized, grouped into sections of sentences, and each section is hashed with SHA-256. Upload a revision under the same file name and sections whose hash matches an earlier version keep their summaries; only the new ones are summarized. Upload it again under the same name with text that matches the latest version exactly and no new version is made."
             />
             <Ledger
               className="mt-8"
               rows={[
                 {
                   k: "Section size",
-                  v: "~1,000 characters, split on word boundaries",
+                  v: "a run of sentences, ended by a sentence's own hash or once it reaches about 1,200 characters",
                   prose: true,
                 },
                 { k: "Hash", v: "SHA-256 · 64 hex" },
-                { k: "Tokens saved", v: "reused × 1,000 — an estimate", prose: true },
+                {
+                  k: "Carried forward",
+                  v: "sections whose text matches an earlier version after normalizing (spacing, quote marks, dashes, hyphenation) and dropping page numbers and repeated short lines such as headers",
+                  prose: true,
+                },
               ]}
             />
           </div>
@@ -123,9 +127,9 @@ export default function ReuseSection() {
                     <span className="vs-key">chunks</span>
                   </div>
                   <p className="vs-key mt-3">
-                    est. tokens saved{" "}
+                    carried forward{" "}
                     <span className="vs-mono-em" style={{ color: "var(--ink)" }}>
-                      {fmt.format(EST_TOKENS_SAVED)}
+                      {Math.round((v4.reusedChunks / v4.totalChunks) * 100)}%
                     </span>
                   </p>
                 </div>
@@ -136,10 +140,10 @@ export default function ReuseSection() {
                     size={12}
                     gap={2}
                     surface="paper"
-                    label="Chunks 54 to 73 of the sample document at exact size: seven new, thirteen reused"
+                    label="Chunks 54 to 73 of the sample document: seven new, thirteen reused"
                   />
                   <p className="vs-key mt-2" style={{ fontWeight: 400 }}>
-                    sections 54–73, at the size they appear in the app · sample
+                    sections 54–73 · sample
                   </p>
                 </div>
               </PaperCard>

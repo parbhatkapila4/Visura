@@ -1,119 +1,104 @@
-// Generate a descriptive phrase based on document type, title, or content
 const generateDocumentTypeDescription = (title: string, summaryText: string): string => {
   const titleLower = title.toLowerCase();
   const textLower = summaryText?.toLowerCase() || "";
 
-  // Check for invoice/billing documents
   if (
     titleLower.includes("invoice") ||
     titleLower.includes("bill") ||
     titleLower.includes("receipt")
   ) {
-    return "Financial invoice or billing document with transaction details";
+    return "No preview available";
   }
 
-  // Check for profile/resume documents
   if (
     titleLower.includes("profile") ||
     titleLower.includes("resume") ||
     titleLower.includes("cv")
   ) {
-    return "Personal or professional profile document";
+    return "No preview available";
   }
 
-  // Check for contract/agreement documents
   if (
     titleLower.includes("contract") ||
     titleLower.includes("agreement") ||
     titleLower.includes("terms")
   ) {
-    return "Legal contract or agreement document";
+    return "No preview available";
   }
 
-  // Check for report documents
   if (titleLower.includes("report") || titleLower.includes("analysis")) {
-    return "Analytical report or research document";
+    return "No preview available";
   }
 
-  // Check for statement documents
   if (titleLower.includes("statement") || titleLower.includes("account")) {
-    return "Financial statement or account summary";
+    return "No preview available";
   }
 
-  // Check for book/document titles
   if (
     titleLower.includes("book") ||
     textLower.includes("chapter") ||
     textLower.includes("author")
   ) {
-    return "Book or literary document";
+    return "No preview available";
   }
 
-  // Check for manual/guide documents
   if (
     titleLower.includes("manual") ||
     titleLower.includes("guide") ||
     titleLower.includes("instruction")
   ) {
-    return "Instructional manual or guide document";
+    return "No preview available";
   }
 
-  // Check for letter/email documents
   if (
     titleLower.includes("letter") ||
     titleLower.includes("email") ||
     titleLower.includes("mail")
   ) {
-    return "Correspondence letter or email document";
+    return "No preview available";
   }
 
-  // Check for presentation documents
   if (
     titleLower.includes("presentation") ||
     titleLower.includes("slides") ||
     titleLower.includes("ppt")
   ) {
-    return "Presentation or slideshow document";
+    return "No preview available";
   }
 
-  // Check for certificate documents
   if (
     titleLower.includes("certificate") ||
     titleLower.includes("diploma") ||
     titleLower.includes("degree")
   ) {
-    return "Certificate or academic document";
+    return "No preview available";
   }
 
-  // Check for medical documents
   if (
     titleLower.includes("medical") ||
     titleLower.includes("health") ||
     titleLower.includes("prescription")
   ) {
-    return "Medical or healthcare document";
+    return "No preview available";
   }
 
-  // Check for legal documents
   if (titleLower.includes("legal") || titleLower.includes("court") || titleLower.includes("case")) {
-    return "Legal or court document";
+    return "No preview available";
   }
 
-  // Check for business documents
   if (
     titleLower.includes("business") ||
     titleLower.includes("company") ||
     titleLower.includes("corporate")
   ) {
-    return "Business or corporate document";
+    return "No preview available";
   }
 
-  // Default based on title length or content
   if (title.length > 30) {
-    return "Comprehensive document with detailed content";
+    return "No preview available";
   }
 
-  return "Document ready for review and analysis";
+  return "No preview available";
 };
 
 export const parseSection = (section: string): { title: string; points: string[] } => {
@@ -199,9 +184,9 @@ export const extractSummaryPreview = (
   if (!summaryText || summaryText.trim() === "") {
     return {
       title: "Document Summary",
-      executiveSummary: "No summary available",
+      executiveSummary: "No summary yet",
       keyPoints: [],
-      documentType: "Unknown",
+      documentType: "Document",
     };
   }
 
@@ -267,7 +252,6 @@ export const extractSummaryPreview = (
     }
   }
 
-  // Generate document type description if summary is still not available
   if (executiveSummary === "Summary not available") {
     const searchText = `${docTitle} ${docFileName} ${summaryText}`;
     executiveSummary = generateDocumentTypeDescription(docTitle, searchText);

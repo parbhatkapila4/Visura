@@ -6,7 +6,6 @@ import {
   Brain,
   Download,
   Users,
-  Shield,
   BarChart3,
   FileText,
   Clock,
@@ -15,7 +14,6 @@ import {
   Star,
   Globe,
   Lock,
-  Settings,
   Activity,
   TrendingUp,
   Target,
@@ -28,97 +26,74 @@ export default function FeaturesPage() {
   const coreFeatures = [
     {
       icon: Brain,
-      title: "AI Document Summarization",
-      description: "Intelligent AI analyzes your PDFs and creates comprehensive summaries",
+      title: "Summaries",
+      description:
+        "Visura splits the document into passages, summarizes each one, and merges them into one summary.",
       features: [
-        "Extract key insights from any PDF document",
-        "Generate executive summaries automatically",
-        "Identify important points and main topics",
-        "Context-aware analysis of document content",
+        "Headings for an executive summary, key points, details, risks and action items",
+        "A sections page: an outline drafted from the start of the document",
+        "An insights page of key insights, risks, financial highlights and action items from the start of the document",
+        "A graph of the topics and entities from the start of the document",
       ],
-      stats: "AI Powered",
+      stats: "Every upload",
     },
     {
       icon: MessageCircle,
-      title: "Interactive Chat with Documents",
-      description: "Ask questions and get answers directly from your uploaded documents",
+      title: "Chat with a document",
+      description: "Ask questions in plain language and get answers from the document's text.",
       features: [
-        "Chat with your PDFs using natural language",
-        "Get specific answers from document content",
-        "Multiple chat sessions per document",
-        "Conversation history tracking",
+        "Your most recent chat is saved, so you can pick it up where you left off",
+        "For longer documents, answers list the passages they drew on",
+        "Passages from a PDF show a page number when Visura knows it",
       ],
-      stats: "Live Chat",
+      stats: "Saved chats",
     },
     {
       icon: FileText,
-      title: "PDF Text Extraction",
-      description: "Advanced PDF processing with client-side text extraction",
+      title: "File formats and limits",
+      description:
+        "Text is read in your browser. If that finds almost nothing, the server reads the uploaded file instead.",
       features: [
-        "Extract text from PDF documents",
-        "Handle multi-page documents",
-        "Fallback processing for complex PDFs",
-        "Secure file storage with Supabase",
+        "PDF, DOCX, PPTX, XLSX, XLS, TXT and MD files; the upload form accepts up to 32 MB",
+        "PDFs read in your browser: the first 50 pages",
+        "Scanned PDFs with no text layer: up to 10 pages, read with English OCR",
+        "Older .doc and .ppt files are not supported; save them as .docx or .pptx",
       ],
-      stats: "PDF Ready",
+      stats: "32 MB upload limit",
     },
     {
       icon: Download,
-      title: "Download & Share",
-      description: "Easy sharing and downloading of summaries and original files",
+      title: "Download and share",
+      description: "Download a summary as a PDF, or share a link to it.",
       features: [
-        "Download AI-generated summaries as text files",
-        "Share summary links with others",
-        "Download original PDF files",
-        "Copy links to clipboard for sharing",
+        "Download summaries as PDF files from your dashboard",
+        "Every account, on any plan, can download 2 summaries; downloading one again does not count",
+        "Create a share link from the summary page; it is copied to your clipboard",
+        "Anyone with the link can read the summary without signing in",
       ],
-      stats: "Export Ready",
+      stats: "PDF export",
     },
   ];
 
   const advancedFeatures = [
     {
-      icon: Shield,
-      title: "Enterprise Security",
-      description: "Bank-level security with compliance standards",
-      details: [
-        "SOC 2 Type II certified infrastructure",
-        "End-to-end encryption for all data",
-        "GDPR and HIPAA compliance ready",
-        "Advanced access controls and audit logging",
-      ],
-    },
-    {
       icon: BarChart3,
-      title: "Analytics & Insights",
-      description: "Comprehensive analytics and performance monitoring",
+      title: "Analytics",
+      description: "A dashboard of what you have uploaded",
       details: [
-        "Real-time processing analytics",
-        "Usage tracking and performance metrics",
-        "Customizable dashboards",
-        "Detailed reporting and visualization",
+        "How many documents you have, in total or across your 4 most recent weeks with uploads in the past 30 days",
+        "Word counts across your summaries",
+        "Your most recent uploads",
       ],
     },
     {
       icon: Users,
-      title: "Team Collaboration",
-      description: "Work together seamlessly on document analysis projects",
+      title: "Workspaces",
+      description: "A place to group your documents, search them and compare them",
       details: [
-        "Role-based access control",
-        "Shared workspaces and projects",
-        "Real-time collaboration features",
-        "Comment and annotation system",
-      ],
-    },
-    {
-      icon: Settings,
-      title: "API Integration",
-      description: "Developer-friendly integration options",
-      details: [
-        "RESTful API endpoints",
-        "Webhook notifications",
-        "SDK libraries for popular languages",
-        "Custom integration support",
+        "Add a document to a workspace from its summary page",
+        "Search the documents in a workspace",
+        "Ask Visura to compare them and flag conflicts",
       ],
     },
   ];
@@ -126,23 +101,27 @@ export default function FeaturesPage() {
   const benefits = [
     {
       icon: TrendingUp,
-      title: "Increase Productivity",
-      description: "Save 80% of time spent on manual document analysis",
+      title: "Matching passages keep their summaries",
+      description:
+        "Passages that match an earlier version reuse their earlier summaries, and the rest are summarized. Matching sets aside line breaks, extra spaces, quote and dash styles, running headers and footers, short label-like lines that appear three or more times, and any line that reads like a page number, including a line of nothing but digits.",
     },
     {
       icon: Target,
-      title: "Improve Accuracy",
-      description: "Reduce human errors with AI-powered analysis",
+      title: "See what was reused",
+      description:
+        "Each version's processing page shows how many passages were reused and how many were new.",
     },
     {
       icon: Award,
-      title: "Scale Operations",
-      description: "Process thousands of documents simultaneously",
+      title: "Cut-off and OCR reads are flagged",
+      description:
+        "If Visura read only the first 50 pages of a PDF, or read a scan with OCR, the processing page says so, and its overview leaves out the reuse counts.",
     },
     {
       icon: ScanSearch,
-      title: "Enhanced Insights",
-      description: "Discover patterns and insights you might miss",
+      title: "Compare two files without an account",
+      description:
+        "The compare page checks two versions of a PDF, DOCX, TXT or MD file in your browser. Neither file is uploaded.",
     },
   ];
 
@@ -155,15 +134,14 @@ export default function FeaturesPage() {
             className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-8 text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Home
+            Back to home
           </Link>
           <div className="text-center">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6">
               Features
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-zinc-400 max-w-4xl mx-auto leading-relaxed">
-              Discover the comprehensive suite of powerful capabilities that make Visura the
-              ultimate AI-powered document analysis platform for modern businesses.
+              What Visura does with a file after you upload it, and where its limits are.
             </p>
           </div>
         </div>
@@ -172,18 +150,19 @@ export default function FeaturesPage() {
       <div className="py-12 sm:py-16 lg:py-24">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 text-center">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6 sm:mb-8">
-            The Best Way to Analyze Documents with AI, Anywhere, Anytime
+            Summaries, chat and versions for your documents
           </h2>
           <p className="text-base sm:text-lg text-zinc-400 mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed">
-            Visura is a smart and versatile document analysis platform that helps you extract
-            insights, automate workflows, and stay productive. Experience the future of document
-            intelligence.
+            Upload a PDF, Word (.docx), PowerPoint (.pptx), Excel, text or Markdown file. Visura
+            summarizes it, answers questions about it, and when you upload a changed version under
+            the same name, reuses the summaries of passages that match an earlier version and
+            summarizes the rest.
           </p>
           <a
-            href="mailto:parbhat@parbhat.dev?subject=Interested in Visura Document Analysis Services&body=Hello,%0D%0A%0D%0AI am interested in learning more about Visura's document analysis services. Could you please provide me with more information about your pricing, features, and how to get started?%0D%0A%0D%0AThank you for your time.%0D%0A%0D%0ABest regards"
+            href="mailto:parbhat@parbhat.dev?subject=Question%20about%20Visura"
             className="inline-flex px-6 sm:px-8 py-3 sm:py-4 rounded-xl bg-primary text-primary-foreground font-semibold text-sm sm:text-base hover:opacity-90 transition-opacity"
           >
-            Contact Sales
+            Email us
           </a>
         </div>
       </div>
@@ -192,14 +171,14 @@ export default function FeaturesPage() {
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="text-center mb-8 sm:mb-12 lg:mb-16">
             <h3 className="text-xs sm:text-sm text-zinc-500 uppercase tracking-wide mb-3 sm:mb-4">
-              Core Features
+              Core features
             </h3>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">
-              Powerful AI-Driven Document Analysis
+              What each document gets
             </h2>
             <p className="text-base sm:text-lg text-zinc-400 max-w-3xl mx-auto">
-              Our core features provide the foundation for intelligent document processing and
-              analysis
+              A summary, a chat, a PDF download and a share link, plus the limits on what Visura can
+              read.
             </p>
           </div>
 
@@ -251,14 +230,14 @@ export default function FeaturesPage() {
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="text-center mb-8 sm:mb-12 lg:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">
-              Advanced Capabilities
+              Analytics and workspaces
             </h2>
             <p className="text-base sm:text-lg text-zinc-400 max-w-3xl mx-auto">
-              Enterprise-grade features designed for scalability, security, and seamless integration
+              Keep track of your uploads, and group documents into workspaces.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             {advancedFeatures.map((feature, index) => {
               const Icon = feature.icon;
               return (
@@ -297,10 +276,11 @@ export default function FeaturesPage() {
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="text-center mb-8 sm:mb-12 lg:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">
-              Why Choose Visura?
+              When a document changes
             </h2>
             <p className="text-base sm:text-lg text-zinc-400 max-w-3xl mx-auto">
-              Transform your document workflow with measurable benefits and proven results
+              Upload a changed file under the same name and Visura records it as a new version of
+              the same document.
             </p>
           </div>
 
@@ -321,79 +301,6 @@ export default function FeaturesPage() {
                 </div>
               );
             })}
-          </div>
-        </div>
-      </div>
-
-      <div className="py-12 sm:py-16 lg:py-24">
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">
-              Feature Comparison
-            </h2>
-            <p className="text-base sm:text-lg text-zinc-400 max-w-3xl mx-auto">
-              See how Visura compares to traditional document analysis methods
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-white/10 bg-zinc-900/80 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="px-4 lg:px-6 py-3 sm:py-4 text-left text-xs sm:text-sm font-semibold text-white">
-                      Feature
-                    </th>
-                    <th className="px-4 lg:px-6 py-3 sm:py-4 text-center text-xs sm:text-sm font-semibold text-white">
-                      Visura
-                    </th>
-                    <th className="px-4 lg:px-6 py-3 sm:py-4 text-center text-xs sm:text-sm font-semibold text-white">
-                      Manual
-                    </th>
-                    <th className="px-4 lg:px-6 py-3 sm:py-4 text-center text-xs sm:text-sm font-semibold text-white">
-                      Basic
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/10">
-                  {[
-                    {
-                      feature: "Processing Speed",
-                      visura: "15-30 sec",
-                      manual: "2-4 hrs",
-                      basic: "30-60 min",
-                    },
-                    {
-                      feature: "Accuracy Rate",
-                      visura: "99.9%",
-                      manual: "85-90%",
-                      basic: "70-80%",
-                    },
-                    { feature: "Multi-format", visura: "✓", manual: "✗", basic: "Limited" },
-                    { feature: "Batch Processing", visura: "✓", manual: "✗", basic: "✗" },
-                    { feature: "AI Insights", visura: "✓", manual: "✗", basic: "✗" },
-                    { feature: "Collaboration", visura: "✓", manual: "Limited", basic: "✗" },
-                    { feature: "API", visura: "✓", manual: "✗", basic: "✗" },
-                    { feature: "Cost/Doc", visura: "$0.10", manual: "$50+", basic: "$5-10" },
-                  ].map((row, index) => (
-                    <tr key={index} className="hover:bg-white/5 transition-colors">
-                      <td className="px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium text-white">
-                        {row.feature}
-                      </td>
-                      <td className="px-4 lg:px-6 py-3 sm:py-4 text-center text-xs sm:text-sm text-primary font-semibold">
-                        {row.visura}
-                      </td>
-                      <td className="px-4 lg:px-6 py-3 sm:py-4 text-center text-xs sm:text-sm text-zinc-500">
-                        {row.manual}
-                      </td>
-                      <td className="px-4 lg:px-6 py-3 sm:py-4 text-center text-xs sm:text-sm text-zinc-500">
-                        {row.basic}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           </div>
         </div>
       </div>

@@ -14,8 +14,8 @@ const LINK_GROUPS: Array<{
       { href: "/features", label: "Features" },
       { href: "/pricing", label: "Pricing" },
       { href: "/docs", label: "Docs" },
-      { href: "/tutorials", label: "Tutorials" },
       { href: "/changelog", label: "Changelog" },
+      { href: "/notes/the-tests-were-green", label: "Engineering note" },
     ],
   },
   {
@@ -24,7 +24,6 @@ const LINK_GROUPS: Array<{
       { href: "/about", label: "About" },
       { href: "/contact", label: "Contact" },
       { href: "/support", label: "Support" },
-      { href: "/partners", label: "Partners" },
     ],
   },
   {
@@ -48,19 +47,15 @@ const LINK_GROUPS: Array<{
 ];
 
 const READS: readonly string[] = [
-  "employment agreements",
-  "leases",
-  "NDAs",
-  "service agreements",
-  "scanned pages, OCR'd",
-  "English",
-  "Hindi",
-  "French",
-  "German",
-  "Russian",
+  "PDF",
+  "fully scanned PDFs (first 10 pages, English OCR)",
+  "Word .docx",
+  "Excel .xlsx and .xls",
+  "PowerPoint .pptx",
+  "plain text",
+  "Markdown",
 ];
-
-export default function FooterSection() {
+export default function FooterSection({ closing = true }: { closing?: boolean } = {}) {
   return (
     <footer
       className="vs-section vs-footer vs-footer-garden relative overflow-hidden"
@@ -79,54 +74,62 @@ export default function FooterSection() {
           { top: "calc(100% - 1180px)", scale: 0.5, tilt: -8, far: true, clock: 3 },
         ]}
       />
-
-      <Origami
-        kind="crane-fly-cream"
-        id="ft1"
-        width={86}
-        flip
-        className="vs-origami--xl vs-origami--c1"
-        style={{ right: "16%", top: 44 }}
-      />
-      <div className="vs-closing">
-        <div className="vs-closing-inner">
-          <div>
-            <p className="vs-closing-eyebrow">Visura Chat</p>
-            <h2 className="vs-closing-title">
-              Ask your
-              <br />
-              documents
-              <br />
-              anything
-            </h2>
-            <div className="vs-closing-cta">
-              <PrimaryCta />
-              <TextLink href="/pricing">See pricing</TextLink>
+      {closing && (
+        <Origami
+          kind="crane-fly-cream"
+          id="ft1"
+          width={86}
+          flip
+          className="vs-origami--xl vs-origami--c1"
+          style={{ right: "16%", top: 44 }}
+        />
+      )}
+      {closing && (
+        <div className="vs-closing">
+          <div className="vs-closing-inner">
+            <div>
+              <p className="vs-closing-eyebrow">Visura Chat</p>
+              <h2 className="vs-closing-title">
+                Ask a
+                <br />
+                document
+                <br />
+                what it says
+              </h2>
+              <div className="vs-closing-cta">
+                <PrimaryCta />
+                <TextLink href="/pricing">See pricing</TextLink>
+              </div>
             </div>
+            <AskCard />
           </div>
-          <AskCard />
         </div>
-      </div>
+      )}
 
       <div className="vs-container vs-ftr">
         <BrandMark className="vs-ftr-mark" size={26} />
 
         <div className="vs-ftr-top">
           <p className="vs-ftr-about">
-            <strong>Visura</strong> summarizes, indexes and lets you chat with your documents.
-            Upload a revision and unchanged sections keep their summaries — only what actually
-            changed gets processed. <TextLink href="/docs">Read more</TextLink>
+            <strong>Visura</strong> compares two versions of a document and shows what changed, word
+            by word, and, when both were read in full without OCR, how much stayed the same once
+            spacing, line wrapping, typographic styles, page numbers, running headers and footers,
+            and short repeated lines are set aside. Keep documents here and each new version is
+            split and hashed the same way, so unchanged sections keep their summaries.{" "}
+            <TextLink href="/docs">Read more</TextLink>
           </p>
           <p className="vs-ftr-contact">
             For questions, billing or anything else,{" "}
             <TextLink href="/contact">get in touch</TextLink>.
           </p>
-          <div className="vs-ftr-creature">
-            <Origami kind="crane-stand-teal" id="ft2" motion="perch" width={146} tilt={-3} />
-          </div>
         </div>
 
-        <p className="vs-ftr-label">Built to read</p>
+        <div className="vs-ftr-rule">
+          <p className="vs-ftr-label">Built to read</p>
+          <span className="vs-ftr-perch" aria-hidden="true">
+            <Origami kind="crane-perch-teal" id="ft2" motion="perch" width={138} />
+          </span>
+        </div>
       </div>
       <div className="vs-marquee">
         <div className="vs-marquee-track" aria-hidden="true">

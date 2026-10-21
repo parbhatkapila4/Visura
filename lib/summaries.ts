@@ -1,20 +1,48 @@
 import { getDbConnection } from "./db";
 import { randomBytes } from "crypto";
 
-export async function getUserSummaries(userId: string, userPlan: string = "basic") {
+export async function getUserSummaries(userId: string, limit: number | null = 5) {
   const sql = await getDbConnection();
 
-  const limit = userPlan === "pro" ? null : 5;
-
-  const summaries = limit
-    ? await sql`SELECT * FROM pdf_summaries WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT ${limit}`
-    : await sql`SELECT * FROM pdf_summaries WHERE user_id = ${userId} ORDER BY created_at DESC`;
+  const summaries =
+    limit === null
+      ? await sql`SELECT * FROM pdf_summaries WHERE user_id = ${userId} ORDER BY created_at DESC`
+      : await sql`SELECT * FROM pdf_summaries WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT ${limit}`;
 
   return summaries;
 }
+export async function canViewSummary(summaryId: string, viewerId: string): Promise<boolean> {
+  const sql = await getDbConnection();
 
-export async function findSummaryById(id: string) {
+  const [owned] = await sql`
+    SELECT id FROM pdf_summaries WHERE id = ${summaryId} AND user_id = ${viewerId}
+  `;
+  if (owned) {
+    return true;
+  }
+
   try {
+    const [shared] = await sql`
+      SELECT ds.id
+      FROM document_shares ds
+      INNER JOIN workspace_members wm ON wm.workspace_id = ds.workspace_id
+      WHERE ds.pdf_summary_id = ${summaryId}
+        AND wm.user_id = ${viewerId}
+        AND wm.status = 'active'
+      LIMIT 1
+    `;
+    return !!shared;
+  } catch (error) {
+    console.error("Error checking workspace access to summary", error);
+    return false;
+  }
+}
+export async function findSummaryById(id: string, viewerId: string) {
+  try {
+    if (!(await canViewSummary(id, viewerId))) {
+      return null;
+    }
+
     const sql = await getDbConnection();
 
     const [summary] = await sql`SELECT id,

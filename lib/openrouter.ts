@@ -1,4 +1,5 @@
 import { logger } from "./logger";
+export const SUMMARY_MODEL = "openai/gpt-4o-mini";
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY!;
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";

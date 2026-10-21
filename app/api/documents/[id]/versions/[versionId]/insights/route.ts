@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { getDbConnection } from "@/lib/db";
 import { computeVersionEfficiency, type VersionEfficiency } from "@/lib/processing-metrics";
 import { logger } from "@/lib/logger";
+import { coverageCaveats } from "@/lib/versioned-documents";
 
 export interface InsightsVersion {
   id: string;
@@ -11,6 +12,7 @@ export interface InsightsVersion {
   total_chunks: number;
   reused_chunks: number;
   new_chunks: number;
+  coverage_caveats: string[];
 }
 
 export interface InsightsEvent {
@@ -41,7 +43,8 @@ export async function GET(
     const sql = await getDbConnection();
 
     const [versionRow] = await sql`
-      SELECT dv.id, dv.version_number, dv.created_at, dv.total_chunks, dv.reused_chunks, dv.new_chunks
+      SELECT dv.id, dv.version_number, dv.created_at, dv.total_chunks, dv.reused_chunks, dv.new_chunks,
+             dv.ocr_used, dv.truncated, dv.total_pages, dv.pages_read
       FROM document_versions dv
       JOIN documents d ON dv.document_id = d.id
       WHERE dv.id = ${versionId}
@@ -95,6 +98,12 @@ export async function GET(
         total_chunks: Number(versionRow.total_chunks ?? 0),
         reused_chunks: Number(versionRow.reused_chunks ?? 0),
         new_chunks: Number(versionRow.new_chunks ?? 0),
+        coverage_caveats: coverageCaveats({
+          ocr_used: versionRow.ocr_used as boolean | null,
+          truncated: versionRow.truncated as boolean | null,
+          total_pages: versionRow.total_pages as number | null,
+          pages_read: versionRow.pages_read as number | null,
+        }),
       },
       events,
       metrics,

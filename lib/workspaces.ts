@@ -466,9 +466,7 @@ export async function getDocumentComments(pdfSummaryId: string, workspaceId?: st
     SELECT * FROM document_comments
     WHERE pdf_summary_id = ${pdfSummaryId}
       ${
-        workspaceId
-          ? sql`AND (workspace_id = ${workspaceId} OR workspace_id IS NULL)`
-          : sql`AND workspace_id IS NULL`
+        workspaceId ? sql`AND workspace_id = ${workspaceId}` : sql`AND workspace_id IS NULL`
       }
       AND resolved = false
     ORDER BY created_at ASC

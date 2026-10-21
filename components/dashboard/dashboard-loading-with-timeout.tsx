@@ -4,7 +4,7 @@ const sk = "skeleton-shimmer";
 
 function DashboardLoadingSkeleton() {
   return (
-    <div className="flex min-h-screen w-full bg-[#0a0a0a]">
+    <div className="flex min-h-screen w-full bg-[#0a0a0a]" data-route-loading-ready="true">
       <div className="flex shrink-0">
         <div className="w-16 min-h-screen bg-black border-r border-[#1f1f1f] flex flex-col items-center gap-2 p-4">
           <div className={`size-8 rounded-lg ${sk} mb-2`} />
@@ -52,7 +52,6 @@ function DashboardLoadingSkeleton() {
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className={`w-9 h-9 rounded-lg ${sk}`} />
-                    <div className={`h-4 w-12 rounded ${sk}`} />
                   </div>
                   <div className={`h-3 w-20 rounded ${sk} mb-1`} />
                   <div className={`h-8 w-14 rounded ${sk} mb-4`} />
@@ -91,7 +90,6 @@ function DashboardLoadingSkeleton() {
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   <div className={`h-5 w-16 rounded ${sk}`} />
                   <div className={`h-5 w-14 rounded ${sk}`} />
-                  <div className={`h-5 w-20 rounded ${sk}`} />
                 </div>
                 <div className="pt-3 border-t border-[#1f1f1f] flex items-center justify-between">
                   <div className="flex gap-1.5">

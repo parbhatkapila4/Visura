@@ -85,22 +85,23 @@ export default function HeroSection() {
       <div className="vs-container vs-hero-stack">
         <div className="vs-enter-pill flex justify-center">
           <span className="vs-pill">
-            <span className="vs-pill-k">Free for</span>
-            your first 5 documents
+            <span className="vs-pill-k">No account</span>
+            and neither file is uploaded
           </span>
         </div>
 
         <div className="mt-5 md:mt-6">
-          <HeroTitle roman="The summary" italic="keeps up" />
+          <HeroTitle roman="Nothing else" italic="was touched" />
         </div>
 
-        <p className="vs-enter-sub vs-hero-sub mx-auto mt-5 max-w-[29rem] text-balance text-center md:mt-6">
-          Visura summarizes, indexes, and lets you chat with your documents. Upload a revision and
-          unchanged sections keep their summaries — only what actually changed gets processed.
+        <p className="vs-enter-sub vs-hero-sub mx-auto mt-5 max-w-[31rem] text-balance text-center md:mt-6">
+          They send the agreement back and say they only changed the payment terms. Visura lines up
+          the two texts passage by passage and lists what else changed — in this browser, without
+          either file leaving your machine.
         </p>
 
         <div className="vs-enter-cta mt-7 flex justify-center">
-          <PrimaryCta variant="accent" size="lg" />
+          <PrimaryCta href="/compare" label="Compare two versions" variant="accent" size="lg" />
         </div>
 
         <div className="vs-sky mt-12 md:mt-14">
@@ -143,7 +144,7 @@ export default function HeroSection() {
               <span className="vs-window-dot" />
               <span className="vs-window-dot" />
               <span className="vs-window-dot" />
-              <span className="vs-window-url">visura.parbhat.dev</span>
+              <span className="vs-window-url">sample data</span>
             </div>
             <div className="vs-window-body">
               <LineagePlate />
@@ -152,16 +153,17 @@ export default function HeroSection() {
 
           <div className="vs-hero-rail">
             <div className="max-w-[26rem]">
-              <p className="vs-hero-rail-title">Want to see it on your own document?</p>
+              <p className="vs-hero-rail-title">Want to keep the versions too?</p>
               <p className="vs-hero-note mt-1">
-                Upload a PDF, then a revision of it. Visura hashes every section and reprocesses
-                only the ones whose text actually changed.
+                With an account, upload each revision under the same file name: a section whose
+                normalized text matches one Visura already summarized in an earlier version keeps
+                that summary, and only the rest are summarized.
               </p>
             </div>
             <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
               <PrimaryCta variant="accent" className="w-full sm:w-auto" />
-              <SecondaryBtn href="#reuse" tone="cream" className="w-full sm:w-auto">
-                Read how reuse works
+              <SecondaryBtn href="/compare" tone="cream" className="w-full sm:w-auto">
+                Compare without an account
               </SecondaryBtn>
             </div>
           </div>
@@ -169,8 +171,14 @@ export default function HeroSection() {
 
         <p className="vs-caption mx-auto mt-4 max-w-[44rem] text-balance text-center">
           <em>
-            Fig. 1 — Sample readout: a 94-section document going from version 3 to version 4.
-            Reprocessing skipped 68 of 94 sections; an estimated 68,000 tokens saved.
+            Fig. 1 — Illustration with sample data: a 94-section document going from version 3 to
+            version 4. 68 of the 94 sections still match once spacing, line breaks, character
+            variants such as curly quotes, dashes and ligatures, running headers and footers,
+            repeated short labels, page numbers and other lines of bare digits are set aside; the 26
+            that changed are the ones marked. Visura does not draw this map on any page; a
+            version&apos;s processing insights page lists how many sections were reused and how many
+            were new, and leaves them out of its overview when the file was a scan or was only
+            partly read.
           </em>
         </p>
       </div>

@@ -4,9 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import {
-  Paperclip,
   SendIcon,
-  XIcon,
   LoaderIcon,
   Sparkles,
   Command,
@@ -17,8 +15,6 @@ import {
   Target,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { DocumentReference } from "@/lib/document-reference";
-import { DOCUMENT_VIEWER_GO_TO_EVENT } from "@/lib/document-reference";
 import type { ChatMessageSource } from "./chatbot-client";
 
 interface Message {
@@ -48,20 +44,9 @@ interface ChatbotAnimatedViewProps {
   pdfSummaryId: string;
   pdfStoreId: string;
   pdfTitle: string;
-  onSelectReference?: (ref: DocumentReference) => void;
 }
 
 const SNIPPET_MAX_LEN = 250;
-
-function sourceToRef(s: ChatMessageSource): DocumentReference {
-  return {
-    document_version_id: s.document_version_id ?? "",
-    page: s.page ?? null,
-    snippet: s.snippet ?? "",
-    pdf_summary_id: s.pdf_summary_id ?? null,
-    chunk_id: s.chunk_id ?? null,
-  };
-}
 
 function truncateSnippet(text: string, max: number = SNIPPET_MAX_LEN): string {
   const t = (text ?? "").trim();
@@ -121,10 +106,8 @@ export function ChatbotAnimatedView({
   pdfSummaryId,
   pdfStoreId,
   pdfTitle,
-  onSelectReference,
 }: ChatbotAnimatedViewProps) {
   const [value, setValue] = useState("");
-  const [attachments, setAttachments] = useState<string[]>([]);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [activeSuggestion, setActiveSuggestion] = useState(-1);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -350,14 +333,6 @@ export function ChatbotAnimatedView({
     setShowCommandPalette(false);
   };
 
-  const handleAttachFile = () => {
-    setAttachments((prev) => [...prev, `file-${Date.now()}.pdf`]);
-  };
-
-  const removeAttachment = (index: number) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== index));
-  };
-
   const showWelcome = !currentSessionId || messages.length === 0;
 
   return (
@@ -475,16 +450,6 @@ export function ChatbotAnimatedView({
                                 </p>
                                 <ul className="space-y-2">
                                   {message.sources.map((source, idx) => {
-                                    const ref = sourceToRef(source);
-                                    const handleView = () => {
-                                      if (onSelectReference) onSelectReference(ref);
-                                      else
-                                        window.dispatchEvent(
-                                          new CustomEvent(DOCUMENT_VIEWER_GO_TO_EVENT, {
-                                            detail: ref,
-                                          })
-                                        );
-                                    };
                                     const pageLabel =
                                       source.page != null ? `Page ${source.page}` : null;
                                     const snippetText = truncateSnippet(source.snippet ?? "");
@@ -501,13 +466,6 @@ export function ChatbotAnimatedView({
                                         <p className="text-white/80 leading-relaxed mt-0.5">
                                           {snippetText}
                                         </p>
-                                        <button
-                                          type="button"
-                                          onClick={handleView}
-                                          className="mt-2 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
-                                        >
-                                          View in document
-                                        </button>
                                       </li>
                                     );
                                   })}
@@ -604,46 +562,8 @@ export function ChatbotAnimatedView({
                 />
               </div>
 
-              <AnimatePresence>
-                {attachments.length > 0 && (
-                  <motion.div
-                    className="px-4 pb-3 flex gap-2 flex-wrap"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                  >
-                    {attachments.map((file, index) => (
-                      <motion.div
-                        key={index}
-                        className="flex items-center gap-2 text-xs bg-slate-800 py-1.5 px-3 rounded-lg text-slate-300"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                      >
-                        <span>{file}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeAttachment(index)}
-                          className="text-white/40 hover:text-white transition-colors"
-                        >
-                          <XIcon className="w-3 h-3" />
-                        </button>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
               <div className="p-4 border-t border-slate-700 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <motion.button
-                    type="button"
-                    onClick={handleAttachFile}
-                    whileTap={{ scale: 0.94 }}
-                    className="p-2 text-slate-400 hover:text-slate-100 rounded-lg transition-colors"
-                  >
-                    <Paperclip className="w-4 h-4" />
-                  </motion.button>
                   <motion.button
                     type="button"
                     data-command-button

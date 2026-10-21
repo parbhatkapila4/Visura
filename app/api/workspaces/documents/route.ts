@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { shareDocumentWithWorkspace, getSharedDocuments } from "@/lib/workspaces";
+import { shareDocumentWithWorkspace, getSharedDocuments, getWorkspaceById } from "@/lib/workspaces";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,10 +16,13 @@ export async function GET(request: NextRequest) {
     if (pdfSummaryId && workspaceId === "all") {
       const { getDbConnection } = await import("@/lib/db");
       const sql = await getDbConnection();
-
       const sharedDocs = await sql`
-        SELECT workspace_id FROM document_shares
-        WHERE pdf_summary_id = ${pdfSummaryId}
+        SELECT ds.workspace_id
+        FROM document_shares ds
+        INNER JOIN workspace_members wm ON wm.workspace_id = ds.workspace_id
+        WHERE ds.pdf_summary_id = ${pdfSummaryId}
+          AND wm.user_id = ${userId}
+          AND wm.status = 'active'
       `;
 
       return NextResponse.json(sharedDocs);
@@ -27,6 +30,10 @@ export async function GET(request: NextRequest) {
 
     if (!workspaceId) {
       return NextResponse.json({ error: "workspaceId is required" }, { status: 400 });
+    }
+
+    if (!(await getWorkspaceById(workspaceId, userId))) {
+      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
     }
 
     const documents = await getSharedDocuments(workspaceId);

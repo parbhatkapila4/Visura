@@ -1,17 +1,17 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import {
   findOrCreateDocument,
   createDocumentVersion,
   createPlaceholderSummary,
   linkVersionToSummary,
-  chunkText,
   hashContent,
   getLatestVersion,
   getChunksByHash,
   createDocumentChunk,
   getIncompleteChunks,
+  type ExtractionConfidence,
 } from "@/lib/versioned-documents";
 import { formatFileNameAsTitle } from "@/utils/format-utils";
 import { checkCostGuardrails } from "@/lib/cost-guardrails";
@@ -20,12 +20,17 @@ import { processChunkInternal } from "@/lib/chunk-processor";
 import type { SupportedLanguage } from "@/lib/openai";
 import { getDbConnection } from "@/lib/db";
 import { logProcessingEvent } from "@/lib/processing-events";
+import { attachPages, normalizeForComparison, segmentText } from "@/lib/document-segmentation";
+import { isOwnStoredFile } from "@/lib/storage";
+import { hasReachedUploadLimit } from "@/lib/user";
 
 export async function createVersionedDocumentJob(
   pdfText: string,
   fileName: string,
   fileUrl: string,
-  language: SupportedLanguage = "ENGLISH"
+  language: SupportedLanguage = "ENGLISH",
+  pageStartOffsets?: number[],
+  confidence?: ExtractionConfidence
 ) {
   let userId: string | undefined = undefined;
   let versionIdForEvents: string | null = null;
@@ -42,6 +47,25 @@ export async function createVersionedDocumentJob(
       };
     }
     logger.info("User authenticated", { userId });
+    if (!isOwnStoredFile(fileUrl, userId)) {
+      logger.warn("createVersionedDocumentJob got a file outside the caller's uploads", {
+        userId,
+      });
+      return {
+        success: false,
+        message: "That file isn't in your uploads. Upload it again.",
+        data: null,
+      };
+    }
+    const email = (await currentUser())?.emailAddresses?.[0]?.emailAddress ?? "";
+    const { hasReachedLimit, uploadLimit } = await hasReachedUploadLimit(userId, email);
+    if (hasReachedLimit) {
+      return {
+        success: false,
+        message: `You've used all ${uploadLimit} documents your plan allows, and each new version of a document counts as one. Delete one from the dashboard to free a slot.`,
+        data: null,
+      };
+    }
 
     if (!pdfText || pdfText.trim().length < 10) {
       return {
@@ -236,8 +260,10 @@ export async function createVersionedDocumentJob(
         },
       };
     }
-
-    const chunks = chunkText(pdfText);
+    const normalized = normalizeForComparison(pdfText);
+    const chunks = pageStartOffsets?.length
+      ? attachPages(segmentText(normalized), pageStartOffsets, pdfText.length, normalized.length)
+      : segmentText(normalized);
     const totalChunks = chunks.length;
     let reusedChunks = 0;
     const chunksToProcess: string[] = [];
@@ -300,7 +326,8 @@ export async function createVersionedDocumentJob(
       totalChunks,
       reusedChunks,
       fileUrl,
-      language
+      language,
+      confidence
     );
     versionIdForEvents = version.id;
 
@@ -360,7 +387,9 @@ export async function createVersionedDocumentJob(
           chunk.index,
           chunk.hash,
           chunk.text,
-          existingChunk.id
+          existingChunk.id,
+          chunk.startPage ?? null,
+          chunk.endPage ?? null
         );
         const sql = await getDbConnection();
         await sql`
@@ -380,7 +409,9 @@ export async function createVersionedDocumentJob(
           chunk.index,
           chunk.hash,
           chunk.text,
-          null
+          null,
+          chunk.startPage ?? null,
+          chunk.endPage ?? null
         );
         chunksToProcess.push(newChunk.id);
       }
@@ -482,77 +513,8 @@ export async function createVersionedDocumentJob(
         totalProcessed: processedCount,
         totalChunks: chunksToProcess.length,
       });
-
-      const completionDelay = parseInt(process.env.COMPLETION_CHECK_DELAY_MS || "2000", 10);
-      await new Promise((resolve) => setTimeout(resolve, completionDelay));
-
       const { checkVersionCompletion } = await import("@/lib/chunk-processor");
-      const sql = await getDbConnection();
-
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-          logger.info(`Final completion check attempt ${attempt}/3`, {
-            versionId: version.id,
-          });
-
-          await checkVersionCompletion(version.id);
-
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          const [finalCheck] = await sql`
-            SELECT pdf_summary_id FROM document_versions WHERE id = ${version.id}
-          `;
-
-          if (finalCheck?.pdf_summary_id) {
-            logger.info("Summary created successfully", {
-              versionId: version.id,
-              pdfSummaryId: finalCheck.pdf_summary_id,
-              attempt,
-            });
-            break;
-          } else {
-            logger.warn(`Summary not created yet (attempt ${attempt}/3), checking chunks`, {
-              versionId: version.id,
-            });
-            const [chunkCheck] = await sql`
-              SELECT 
-                COUNT(*) as total,
-                COUNT(*) FILTER (WHERE summary IS NOT NULL) as with_summary,
-                COUNT(*) FILTER (WHERE summary IS NULL AND reused_from_chunk_id IS NULL) as incomplete_new,
-                COUNT(*) FILTER (WHERE summary IS NULL AND reused_from_chunk_id IS NOT NULL) as incomplete_reused
-              FROM document_chunks
-              WHERE document_version_id = ${version.id}
-            `;
-            logger.info("Chunk status after processing", {
-              versionId: version.id,
-              attempt,
-              total: Number(chunkCheck?.total || 0),
-              withSummary: Number(chunkCheck?.with_summary || 0),
-              incompleteNew: Number(chunkCheck?.incomplete_new || 0),
-              incompleteReused: Number(chunkCheck?.incomplete_reused || 0),
-            });
-
-            if (attempt === 3 && Number(chunkCheck?.with_summary || 0) > 0) {
-              logger.warn("Forcing summary creation with partial chunks", {
-                versionId: version.id,
-                chunksWithSummary: Number(chunkCheck?.with_summary || 0),
-                totalChunks: Number(chunkCheck?.total || 0),
-              });
-              await checkVersionCompletion(version.id);
-            }
-
-            if (attempt < 3) {
-              await new Promise((resolve) => setTimeout(resolve, 2000));
-            }
-          }
-        } catch (error) {
-          logger.error(`Final completion check failed (attempt ${attempt}/3)`, error, {
-            versionId: version.id,
-          });
-          if (attempt < 3) {
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-          }
-        }
-      }
+      await checkVersionCompletion(version.id);
     } else {
       logger.info("No chunks to process (all reused)", {
         versionId: version.id,

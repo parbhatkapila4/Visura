@@ -1,166 +1,89 @@
-# Scale & Cost Envelope
+# Scale and cost
 
-**Production Scaling Guide**
-
-This document defines the operational limits, cost characteristics, and scaling strategies for Visura. Essential reading for operators and founders planning growth.
+This document lists the limits that bound processing cost in Visura and where each one lives in the code. None of the numbers below is a measurement. Each one is a constant or a default read from the source.
 
 ## Constants
 
-- `ESTIMATED_TOKENS_PER_CHUNK = 1000` (defined in `lib/versioned-documents.ts`)
-- Default chunk size: ~1000 tokens (~4000 characters)
-- Default max retries: 3 (per job)
-- Processing timeout: 10 minutes (for stuck job detection)
+- `ESTIMATED_TOKENS_PER_CHUNK = 1000` (defined in `lib/versioned-documents.ts:73`). It fills `estimated_tokens_saved` (`lib/versioned-documents.ts:163`) and the token estimates in `lib/processing-metrics.ts:27-28`. It is a flat multiplier and does not depend on chunk length.
+- Chunk size: a chunk closes after a sentence whose 32-bit FNV-1a hash opens the boundary gate (`BOUNDARY_GATE = 5`), or once its length count reaches `MAX_CHUNK_CHARS = 1200` (`lib/document-segmentation.ts:42-44`, `51-58`, `290-311`). The FNV-1a hash only places boundaries and is not stored; the stored chunk hash is SHA-256.
+- New chunks in one upload are summarized `CHUNK_BATCH_SIZE` at a time, default 2 (`actions/versioned-upload-actions.tsx:449`)
 
-## Document Size Limits
+## Document size limits
 
-### Max Safe Document Size
+**Per file:**
 
-**Per Version:**
+- Max: 32 MB (`components/upload/supabase-upload-form.tsx:28`)
+- PDF: the browser extractor reads the first 50 pages (`lib/document-extractor.ts:178`)
+- Extracted text: the upload form sends the text to `createVersionedDocumentJob()` as a server action argument, and `next.config.ts` does not raise Next.js's 1 MB server action body limit, so an upload whose extracted text is over about 1 MB fails before a version is created (`components/upload/supabase-upload-form.tsx:457-464`)
 
-- Theoretical: Unlimited (chunked processing)
-- Practical: ~1000 chunks per version (1M tokens)
-- Reason: Processing time scales linearly with chunk count
+**Per chunk:**
 
-**Per Chunk:**
+- A chunk closes at the first sentence that brings its length count (characters plus 2 per sentence) to 1,200 or more, so it can run past 1,200 characters by up to one sentence. A sentence longer than 1,200 characters is cut into 1,200-character pieces (`lib/document-segmentation.ts:42`, `273-281`, `305-311`).
+- A chunk under 50 characters is not sent to the model; its own text is stored as its summary (`lib/chunk-processor.ts:123-136`, `MIN_SUMMARY_TEXT_LENGTH` in `lib/openai.ts:28`)
+- `generateSummaryFromText()` truncates its input at 200,000 characters (`lib/openai.ts:219-223`). Chunks never reach that length. It applies when no chunk in a version has a model-written summary and the full text is summarized instead (`lib/chunk-processor.ts:319-347`).
 
-- Max: ~200,000 characters (truncated in `generateSummaryFromText()`)
-- Typical: ~4000 characters (~1000 tokens)
-- Min: 50 characters (rejected as too short)
+**Per version:**
 
-**Total Document:**
+- No chunk limit by default: `MAX_NEW_CHUNKS_PER_VERSION` defaults to 0, which turns the check off (`lib/cost-guardrails.ts:42-44`)
 
-- Max safe: ~4M characters (~1M tokens) = ~1000 chunks
-- Typical: ~40,000 characters (~10K tokens) = ~10 chunks
-- Processing time: ~2-6 seconds per chunk × chunk count
+## Concurrent processing
 
-## Concurrent Processing Limits
+- Chunks are summarized inside the upload's server action, not in a queue. Each batch of `CHUNK_BATCH_SIZE` chunks runs concurrently, and batches run one after another (`actions/versioned-upload-actions.tsx:449-525`).
+- A failed chunk does not stop the rest of its batch: each batch uses `Promise.allSettled` (`actions/versioned-upload-actions.tsx:462-491`)
 
-### Assumptions
+**Database connections:**
 
-**Vercel Serverless:**
+- Every query goes through `neon()` from `@neondatabase/serverless` (`lib/db.ts`), which sends each query as its own HTTP request. The processing path opens no transactions.
 
-- Max function duration: 60 seconds (Pro plan)
-- Concurrent invocations: Auto-scales (no hard limit)
-- Rate limits: Per-endpoint (configured in `lib/rate-limit.ts`)
+## AI cost
 
-**Safe Concurrent Jobs:**
+### Per chunk
 
-- Assumption: 50-100 concurrent chunk processing jobs
-- Bottleneck: AI provider rate limits (OpenRouter)
-- Mitigation: Rate limiting + retry logic
+**Per chunk (new):**
 
-**Database Connections:**
+- One summary call to `openai/gpt-4o-mini` (`SUMMARY_MODEL`, `lib/openrouter.ts:10`) through OpenRouter (`lib/openai.ts:270-271`)
+- If that call fails or comes back empty, `openrouterChatCompletion()` tries `openai/gpt-4o-mini` once more (`lib/openrouter.ts:48-108`)
+- Summaries are cached by text hash and language for 7 days (`lib/openai.ts:453-457`). A chunk whose text is still in that cache does not call the model.
 
-- Neon serverless: Connection pooling (up to 1000 connections)
-- Assumption: Each serverless function = 1 connection
-- Safe limit: ~500 concurrent functions
+**Per chunk (reused):**
 
-## AI Cost Envelope
+- No summary call. The summary is copied from the newest chunk of the same document with the same hash and chunker version: one in an earlier version, or an earlier copy of the same text in this version (`lib/versioned-documents.ts:220-240`, `actions/versioned-upload-actions.tsx:397-416`).
 
-### Cost Calculation
+### Cost growth
 
-**Per Chunk (New):**
+- Summary calls grow with `new_chunks`, not with `total_chunks`
+- Sections, insights and graph extraction (`openai/gpt-4o-mini`) each make one call (two if the first fails or comes back empty and is retried) for every completed version with at least 100 characters of text, however many chunks it reused (`lib/chunk-processor.ts:576-610`, `lib/document-sections.ts:27`, `lib/document-insights.ts:65`, `lib/document-graph.ts:84`, `lib/openrouter.ts:48-108`)
+- Change detection (`google/gemini-2.5-flash`) makes one call (two if the first fails or comes back empty and is retried on `openai/gpt-4o-mini`) per changed, inserted or deleted passage compared with the previous version, up to `MAX_PAIRS_ANALYSED = 40` passages. It makes none for version 1, none when no passage differs, and none when the two versions were chunked by different chunker versions (`lib/chunk-processor.ts:547-549`, `lib/document-change-events.ts:105`, `144-151`, `167-168`, `248-249`, `322`, `lib/openrouter.ts:48-108`).
+- A version whose merged chunk summaries are longer than the word budget for its length (`getSummaryFinalWordCap`) is condensed: each section over its share is rewritten by `openai/gpt-4o-mini` in parts that each ask for at most about 300 words from at most about 6,000 words of notes, one call per part, up to 16 calls at a time. If any call fails or they take longer than 45 seconds, lines are selected from the chunk summaries instead, with no call (`lib/final-summary.ts:57-66`, `lib/final-summary.ts:89-139`).
+- Chunk embeddings (`text-embedding-3-small`) are generated only for chunk text with no stored embedding. Stored embeddings are keyed by text hash and model (`lib/embeddings-storage.ts:55-78`).
 
-- Input tokens: ~1000 (chunk text)
-- Output tokens: ~500 (summary)
-- Total: ~1500 tokens per new chunk
-- Cost: Varies by model (Gemini 2.5 Flash is cost-effective)
+## Cost tracking
 
-**Per Chunk (Reused):**
-
-- Input tokens: 0 (no AI call)
-- Output tokens: 0 (reused from previous version)
-- Total: 0 tokens
-- Cost: $0.00
-
-### Cost Scenarios
-
-**Scenario 1: First Version (No Reuse)**
-
-- Document: 10 chunks
-- New chunks: 10
-- Reused chunks: 0
-- Tokens: 10 × 1500 = 15,000 tokens
-- Estimated cost: ~$0.01-0.05 (depending on model)
-
-**Scenario 2: Second Version (50% Reuse)**
-
-- Document: 10 chunks
-- New chunks: 5 (changed)
-- Reused chunks: 5 (unchanged)
-- Tokens: 5 × 1500 = 7,500 tokens
-- Estimated cost: ~$0.005-0.025
-- Savings: 50% vs full reprocessing
-
-**Scenario 3: Third Version (80% Reuse)**
-
-- Document: 10 chunks
-- New chunks: 2 (changed)
-- Reused chunks: 8 (unchanged)
-- Tokens: 2 × 1500 = 3,000 tokens
-- Estimated cost: ~$0.002-0.01
-- Savings: 80% vs full reprocessing
-
-### Cost Growth Characteristics
-
-**Linear Growth (No Reuse):**
-
-- Cost = chunks × tokens_per_chunk × cost_per_token
-- Scales linearly with document size
-- No optimization
-
-**Sub-Linear Growth (With Reuse):**
-
-- Cost = new_chunks × tokens_per_chunk × cost_per_token
-- Reuse rate determines cost reduction
-- Typical reuse: 50-80% for versioned documents
-
-**Worst Case:**
-
-- Every version is completely new (0% reuse)
-- Cost = full reprocessing every time
-- Example: 10 versions × 10 chunks × 1500 tokens = 150,000 tokens
-
-**Best Case:**
-
-- Every version reuses all chunks (100% reuse)
-- Cost = 0 tokens (only first version)
-- Example: 10 versions, only first version processed
-
-**Realistic Case:**
-
-- Average reuse: 60-70% per version
-- Cost = 30-40% of worst case
-- Example: 10 versions, ~60,000 tokens total (vs 150,000 worst case)
-
-## Cost Tracking
-
-### Per-Version Metrics
+### Per-version metrics
 
 Each `document_versions` record tracks:
 
 - `total_chunks`: Total chunks in version
-- `reused_chunks`: Chunks reused from previous version
-- `new_chunks`: Chunks requiring AI processing
-- `estimated_tokens_saved`: `reused_chunks × 1000`
+- `reused_chunks`: Chunks whose hash matches a chunk in an earlier version of the same document, chunked by the same chunker version, where the newest such match already has a summary (`lib/versioned-documents.ts:220-240`, `actions/versioned-upload-actions.tsx:290-296`)
+- `new_chunks`: `total_chunks - reused_chunks`, the chunks that need a new summary
+- `estimated_tokens_saved`: `reused_chunks × 1000` (see Constants)
 
-### Cost Queries
+### Cost queries
 
-**Total Cost Per Document:**
+**Chunk totals per document:**
 
 ```sql
 SELECT
   d.id,
   d.title,
-  SUM(dv.new_chunks) * 1500 as estimated_tokens_used,
-  SUM(dv.estimated_tokens_saved) as estimated_tokens_saved,
-  SUM(dv.new_chunks) * 1500 - SUM(dv.estimated_tokens_saved) as net_tokens
+  SUM(dv.new_chunks) as new_chunks,
+  SUM(dv.reused_chunks) as reused_chunks
 FROM documents d
 JOIN document_versions dv ON d.id = dv.document_id
 GROUP BY d.id, d.title;
 ```
 
-**Reuse Rate Per Document:**
+**Reuse rate per document:**
 
 ```sql
 SELECT
@@ -172,270 +95,87 @@ JOIN document_versions dv ON d.id = dv.document_id
 GROUP BY d.id, d.title;
 ```
 
-## Scale Limits
+## Scale limits
 
-### Document Count
+### Document count
 
-**Per User:**
+**Per user:**
 
-- No hard limit (database-driven)
-- Practical: Thousands of documents per user
-- Bottleneck: Query performance (indexed on `user_id`)
+- The upload page stops accepting files once the account's count of `pdf_summaries` rows reaches its plan limit: Free 5, Starter 10, Pro 1000 (`lib/billing.ts:39-53`, `lib/user.ts:65-82`, `lib/summaries.ts:110-120`), and `createVersionedDocumentJob` refuses an upload past the limit too, so it holds without the page (`actions/versioned-upload-actions.tsx:71-81`)
 
-**System-Wide:**
+### Version count
 
-- No hard limit (PostgreSQL scales)
-- Practical: Millions of documents
-- Bottleneck: Database size/performance
+**Per document:**
 
-### Version Count
+- No version limit in code. Each version adds a placeholder row to `pdf_summaries` (`actions/versioned-upload-actions.tsx:378-384`), and that is the row the plan limit counts, so versions count toward it.
 
-**Per Document:**
+### Chunk count
 
-- No hard limit
-- Practical: Hundreds of versions per document
-- Bottleneck: Query performance (indexed on `document_id`)
+**Per version:**
 
-**System-Wide:**
+- No limit by default (`MAX_NEW_CHUNKS_PER_VERSION = 0`)
 
-- No hard limit
-- Practical: Millions of versions
-- Bottleneck: Database size/performance
+### Indexes
 
-### Chunk Count
+- `documents(user_id)`, `document_versions(document_id)`, `document_versions(full_content_hash)`, `document_chunks(document_version_id)`, `document_chunks(chunk_hash)` (`migrations/versioned_documents_migration.sql:31-35`)
 
-**Per Version:**
+## Cost optimization
 
-- No hard limit (chunked processing)
-- Practical: ~1000 chunks per version
-- Bottleneck: Processing time
+### Automatic optimizations
 
-**System-Wide:**
+1. **Chunk reuse**: A chunk whose newest match in an earlier version already has a summary skips the summary call
+2. **Hash-based matching**: Each chunk's SHA-256 is taken over normalized text: Unicode NFKC, one form of quotes, dashes and whitespace, line breaks collapsed, and running headers, footers, repeated short lines and page-number lines dropped (`lib/document-segmentation.ts:74-241`). Two chunks match when their normalized text is identical.
+3. **Incremental processing**: Only new chunks are summarized
 
-- No hard limit
-- Practical: Billions of chunks
-- Bottleneck: Database size/performance
+### Caching
 
-## Performance Characteristics
+- Embeddings: stored in `document_embeddings` (`lib/embeddings-storage.ts`) and cached for 30 days (`lib/embeddings.ts:15-58`)
+- Summaries: cached for 7 days by text hash and language (`lib/openai.ts:453-457`)
+- Classification: 24-hour TTL (`lib/document-classification.ts:12-23`). The classifier matches regular expressions and makes no model call.
+- The cache is Upstash Redis when `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set, and in-process memory otherwise (`lib/cache.ts:7-23`)
 
-### Processing Time
+## Monitoring cost metrics
 
-**Per Chunk:**
+### Key metrics
 
-- AI generation: 2-6 seconds (varies by model)
-- Database operations: <100ms
-- Total: ~2-6 seconds per chunk
-
-**Per Version:**
-
-- Sequential: chunks × 3 seconds (worst case)
-- Concurrent: ~3 seconds (all chunks in parallel)
-- Typical: 5-30 seconds for 10 chunks
-
-### Database Performance
-
-**Queries:**
-
-- Indexed on `user_id`, `document_id`, `version_id`, `chunk_hash`
-- Typical query: <10ms
-- Worst case: <100ms (with proper indexes)
-
-**Writes:**
-
-- Chunk insert: <10ms
-- Summary update: <10ms
-- Version creation: <10ms
-
-## Cost Optimization
-
-### Automatic Optimizations
-
-1. **Chunk Reuse**: Unchanged chunks skip AI processing
-2. **Hash-Based Matching**: O(1) lookup for reuse detection
-3. **Incremental Processing**: Only new chunks processed
-
-### Manual Optimizations
-
-1. **Batch Processing**: Process multiple chunks concurrently
-2. **Retry Logic**: Automatic retry for transient failures
-3. **Stuck Job Recovery**: Automatic recovery of stuck jobs
-
-## Cost Monitoring
-
-### Key Metrics
-
-- `estimated_tokens_saved`: Tracks reuse efficiency
 - `reused_chunks / total_chunks`: Reuse rate
-- `new_chunks`: Actual processing required
+- `new_chunks`: Chunks that need a new summary
 
-### Alerts (Recommended)
+### Key queries
 
-- High cost documents: `new_chunks > threshold`
-- Low reuse rate: `reused_chunks / total_chunks < 0.3`
-- Abnormal patterns: Sudden cost spikes
-
-## Economic Correctness
-
-The system is economically correct because:
-
-1. **Cost is Observable**: Every version tracks cost metrics
-2. **Cost is Minimized**: Reuse prevents redundant processing
-3. **Cost is Predictable**: Linear scaling with new chunks
-4. **Cost is Verifiable**: Metrics stored in database
-
-At scale, cost grows sub-linearly due to chunk reuse, making the system economically sustainable for versioned document processing.
-
----
-
-## Scaling Strategies
-
-### Horizontal Scaling
-
-**Serverless Functions (Vercel)**
-
-- Auto-scales to handle traffic spikes
-- No manual configuration required
-- Cost scales with usage
-
-**Database (Neon)**
-
-- Connection pooling (up to 1000 connections)
-- Read replicas available for read-heavy workloads
-- Automatic scaling based on load
-
-**Redis (Upstash)**
-
-- Global distribution for low latency
-- Auto-scaling based on usage
-- Free tier: 500K commands/month
-
-### Vertical Scaling
-
-**Database Optimization**
-
-- Index optimization (see OPERATOR_QUERIES.sql)
-- Query performance tuning
-- Connection pool sizing
-
-**Caching Strategy**
-
-- Embeddings cache: 85%+ hit rate
-- AI response cache: Reduces API calls
-- Classification cache: 24-hour TTL
-
-### Cost Scaling
-
-**Per User Cost**
-
-- Average: $0.10-0.50/month per active user
-- Depends on document volume and reuse rate
-- Versioned documents: 50-80% cost reduction
-
-**System-Wide Cost**
-
-- Infrastructure: ~$50-200/month (Vercel, Neon, Redis)
-- AI Costs: Scales with usage (typically $0.01-0.05 per document)
-- Storage: ~$0.10/GB/month
-
----
-
-## Production Capacity
-
-### Document Processing
-
-**Throughput**
-
-- Concurrent processing: 50-100 documents
-- Processing rate: ~10-30 seconds per document (10 chunks)
-- Daily capacity: 10,000+ documents (with proper infrastructure)
-
-**Bottlenecks**
-
-- AI provider rate limits (OpenRouter)
-- Database write capacity
-- Serverless function concurrency
-
-### User Capacity
-
-**Per User**
-
-- Documents: Unlimited (practical: thousands)
-- Versions: Unlimited (practical: hundreds per document)
-- Chat sessions: Unlimited
-
-**System-Wide**
-
-- Users: Millions (database-driven)
-- Documents: Billions (PostgreSQL scales)
-- Daily active users: 100K+ (with proper infrastructure)
-
----
-
-## Cost Optimization Tips
-
-1. **Enable Chunk Reuse**: 50-80% cost savings on versioned documents
-2. **Use Embeddings Cache**: 60% reduction in embedding costs
-3. **Monitor Reuse Rates**: Low reuse (<30%) indicates optimization opportunity
-4. **Batch Processing**: Process multiple chunks concurrently
-5. **Cost Guardrails**: Set daily limits to prevent runaway costs
-
----
-
-## Monitoring Cost Metrics
-
-### Key Queries
-
-See [OPERATOR_QUERIES.sql](OPERATOR_QUERIES.sql) for detailed cost analysis queries.
-
-**Daily Cost Tracking:**
+**Daily new chunks:**
 
 ```sql
 SELECT
   DATE_TRUNC('day', dv.created_at) as date,
-  SUM(dv.new_chunks) * 1500 as estimated_tokens,
-  SUM(dv.estimated_tokens_saved) as tokens_saved
+  SUM(dv.new_chunks) as new_chunks,
+  SUM(dv.reused_chunks) as reused_chunks
 FROM document_versions dv
 WHERE dv.created_at >= NOW() - INTERVAL '30 days'
 GROUP BY DATE_TRUNC('day', dv.created_at)
 ORDER BY date DESC;
 ```
 
-**Top Cost Documents:**
+**Documents with the most new chunks:**
 
 ```sql
 SELECT
   d.id, d.title, d.user_id,
-  SUM(dv.new_chunks) * 1500 as total_tokens
+  SUM(dv.new_chunks) as total_new_chunks
 FROM documents d
 JOIN document_versions dv ON d.id = dv.document_id
 GROUP BY d.id, d.title, d.user_id
-ORDER BY total_tokens DESC
+ORDER BY total_new_chunks DESC
 LIMIT 20;
 ```
 
 ---
 
-## Scaling Limits
+## Cost guardrails
 
-### Hard Limits
+All three live in `lib/cost-guardrails.ts` and are checked before a version is created (`actions/versioned-upload-actions.tsx:304-329`).
 
-- Document size: 200,000 characters per chunk (truncated)
-- Chunks per version: 1000 (cost guardrail)
-- Daily tokens per user: 500,000 (cost guardrail, configurable)
-
-### Soft Limits
-
-- Concurrent processing: 50-100 documents
-- Database connections: 1000 (Neon)
-- Redis commands: 500K/month (free tier)
-
-### When to Scale
-
-- **Database**: >80% connection pool usage
-- **Redis**: >80% of free tier
-- **AI Costs**: >$1000/month (consider optimization)
-- **Processing Time**: P95 > 10 seconds
-
----
-
-**Pro Tip**: Monitor reuse rates. Documents with <30% reuse may need optimization or indicate frequently changing content.
+- `MAX_TOKENS_PER_USER_PER_DAY`: default 2,000,000 estimated tokens per user per day (`lib/cost-guardrails.ts:41`). Today's usage is estimated as `new_chunks × 550` summed over the user's versions created today (`lib/cost-guardrails.ts:5`, `20-32`). The upload being checked is estimated as `(average characters per chunk × new chunks) / 4 + 300 × new chunks` (`actions/versioned-upload-actions.tsx:300-302`).
+- `MAX_NEW_CHUNKS_PER_VERSION`: default 0, off (`lib/cost-guardrails.ts:42`)
+- `MAX_ESTIMATED_COST_PER_USER_PER_DAY`: default 0, off (`lib/cost-guardrails.ts:88`). When set, tokens convert to cost at the fixed `ESTIMATED_COST_PER_1M_TOKENS = 2.0` (`lib/cost-guardrails.ts:7`).
+- The check reads today's usage and the version row is inserted afterwards, with no lock between them (`lib/cost-guardrails.ts:82`, `actions/versioned-upload-actions.tsx:339`). Two uploads started together can both pass.

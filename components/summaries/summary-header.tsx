@@ -172,11 +172,11 @@ export default function SummaryHeader({
         setWorkspaceDialogOpen(false);
       } else {
         const error = await response.json();
-        toast.error(error.error || "Not uploaded. Please try again.");
+        toast.error(error.error || "Couldn't add the document to the workspace. Try again.");
       }
     } catch (error) {
       console.error("Error adding document to workspace:", error);
-      toast.error("Not uploaded. Please try again.");
+      toast.error("Couldn't add the document to the workspace. Try again.");
     } finally {
       setIsAddingToWorkspace(false);
     }

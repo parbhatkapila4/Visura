@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getDbConnection } from "@/lib/db";
 import { extractTextFromDocumentUrl } from "@/lib/document-text-extractor";
+import { signedFileUrl } from "@/lib/storage";
 import { savePdfStore, getPdfStoreBySummaryId } from "@/lib/chatbot";
 
 export async function POST(request: NextRequest) {
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
     console.log("File Name:", summary.file_name);
 
     const fullTextContent = await extractTextFromDocumentUrl(
-      summary.original_file_url,
+      await signedFileUrl(summary.original_file_url, { ownerId: userId }),
       summary.file_name || undefined
     );
 

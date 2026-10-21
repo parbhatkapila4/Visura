@@ -293,7 +293,10 @@ export default function DownloadSummaryButtonDashboard({
       const recordData = await recordResponse.json();
 
       if (!recordResponse.ok || !recordData.success) {
-        const errorMessage = recordData.message || recordData.error || "Download limit reached";
+        const errorMessage =
+          recordResponse.status === 403
+            ? `You've used all ${recordData.downloadLimit} of your summary downloads. Summaries you've already downloaded can be downloaded again.`
+            : recordData.message || recordData.error || "Couldn't record the download. Try again.";
         toast.error(errorMessage);
         setIsDownloading(false);
         return;
@@ -306,10 +309,10 @@ export default function DownloadSummaryButtonDashboard({
       }.pdf`;
       doc.save(fileName);
 
-      toast.success("Summary downloaded successfully!");
+      toast.success("Summary downloaded");
     } catch (error) {
       console.error("Error downloading summary:", error);
-      toast.error("Failed to download summary. Please try again.");
+      toast.error("Couldn't download the summary. Try again.");
     } finally {
       setIsDownloading(false);
     }
@@ -328,7 +331,11 @@ export default function DownloadSummaryButtonDashboard({
       } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
       onClick={handleDownload}
       disabled={isDisabled}
-      title={isDownloading ? "Downloading..." : "Download PDF"}
+      title={
+        isDownloading
+          ? "Downloading..."
+          : "Download the summary as a PDF. Each account can download 2 summaries, and downloading one again doesn't count."
+      }
     >
       <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
       {isDownloading ? (

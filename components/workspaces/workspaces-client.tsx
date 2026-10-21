@@ -23,7 +23,6 @@ import {
   AlertTriangle,
   Settings,
   ChevronRight,
-  Mail,
   Bell,
   LayoutGrid,
   List,
@@ -259,7 +258,7 @@ export default function WorkspacesClient() {
         toast.success(
           count > 0
             ? `Analysis complete. ${count} insight${count === 1 ? "" : "s"} found.`
-            : "Analysis complete."
+            : "Analysis found no comparisons or conflicts. It needs at least two documents in the workspace."
         );
         await fetchWorkspaceInsights(selectedWorkspace.id);
       } else {
@@ -293,7 +292,7 @@ export default function WorkspacesClient() {
 
       if (response.ok) {
         const newWorkspace = await response.json();
-        toast.success("Workspace created successfully!");
+        toast.success("Workspace created");
         setCreateDialogOpen(false);
         setWorkspaceName("");
         setWorkspaceDescription("");
@@ -329,17 +328,17 @@ export default function WorkspacesClient() {
       });
 
       if (response.ok) {
-        toast.success("Member invited successfully!");
+        toast.success("Member added");
         setInviteDialogOpen(false);
         setInviteEmail("");
         fetchWorkspaceDetails(selectedWorkspace.id);
       } else {
         const error = await response.json();
-        toast.error(error.error || "Failed to invite member");
+        toast.error(error.error || "Could not add member");
       }
     } catch (error) {
       console.error("Error inviting member:", error);
-      toast.error("Failed to invite member");
+      toast.error("Could not add member");
     }
   };
 
@@ -353,7 +352,7 @@ export default function WorkspacesClient() {
       });
 
       if (response.ok) {
-        toast.success("Workspace deleted successfully!");
+        toast.success("Workspace deleted");
         setDeleteDialogOpen(false);
 
         const updatedWorkspaces = workspaces.filter((w) => w.id !== selectedWorkspace.id);
@@ -389,7 +388,7 @@ export default function WorkspacesClient() {
       );
 
       if (response.ok) {
-        toast.success("Member removed successfully!");
+        toast.success("Member removed");
         setRemoveMemberDialogOpen(false);
         setMemberToRemove(null);
         fetchWorkspaceDetails(selectedWorkspace.id);
@@ -489,7 +488,7 @@ export default function WorkspacesClient() {
             <DialogTrigger asChild>
               <button className="w-full flex items-center justify-center gap-2 h-10 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 transition-colors mb-4">
                 <Plus className="w-4 h-4" />
-                New Workspace
+                New workspace
               </button>
             </DialogTrigger>
             <DialogContent className="bg-[#0a0a0a] border border-white/10 max-w-md p-0 overflow-hidden">
@@ -499,8 +498,10 @@ export default function WorkspacesClient() {
                     <Building2 className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">Create Workspace</h2>
-                    <p className="text-sm text-white/40">Set up a new team space</p>
+                    <h2 className="text-xl font-bold text-white">Create workspace</h2>
+                    <p className="text-sm text-white/40">
+                      Group documents to search and compare them
+                    </p>
                   </div>
                 </div>
               </div>
@@ -510,7 +511,7 @@ export default function WorkspacesClient() {
                   <Input
                     value={workspaceName}
                     onChange={(e) => setWorkspaceName(e.target.value)}
-                    placeholder="e.g. Marketing Team"
+                    placeholder="e.g. Vendor contracts"
                     onKeyDown={(e) => e.key === "Enter" && !isCreating && handleCreateWorkspace()}
                     className="h-11 bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl"
                   />
@@ -549,7 +550,7 @@ export default function WorkspacesClient() {
 
           <div className="flex-1 overflow-y-auto space-y-1 scrollbar-hide">
             <p className="text-[10px] font-semibold text-white/30 uppercase tracking-wider px-2 mb-2">
-              Your Workspaces
+              Your workspaces
             </p>
             {filteredWorkspaces.length === 0 ? (
               <p className="text-sm text-white/30 px-2">No workspaces found</p>
@@ -593,7 +594,7 @@ export default function WorkspacesClient() {
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all"
             >
               <Home className="w-4 h-4" />
-              <span className="text-sm font-medium">Back to Home</span>
+              <span className="text-sm font-medium">Back to home</span>
             </Link>
           </div>
         </div>
@@ -627,7 +628,7 @@ export default function WorkspacesClient() {
                     <DialogTrigger asChild>
                       <button className="flex items-center gap-2 h-9 px-4 rounded-lg bg-white/5 hover:bg-white/10 border border-white/[0.06] text-white text-sm font-medium transition-all">
                         <UserPlus className="w-4 h-4" />
-                        Invite
+                        Add member
                       </button>
                     </DialogTrigger>
                     <DialogContent className="bg-[#0a0a0a] border border-white/10 max-w-md p-0 overflow-hidden">
@@ -637,9 +638,12 @@ export default function WorkspacesClient() {
                             <UserPlus className="w-6 h-6 text-white" />
                           </div>
                           <div>
-                            <h2 className="text-xl font-bold text-white">Invite Member</h2>
+                            <h2 className="text-xl font-bold text-white">Add member</h2>
                             <p className="text-sm text-white/40">
-                              Add someone to {selectedWorkspace.name}
+                              Adds someone to the member list. It works only if they have signed in
+                              to Visura and opened the dashboard, chat or workspaces page at least
+                              once. It does not let them open {selectedWorkspace.name} or its
+                              documents.
                             </p>
                           </div>
                         </div>
@@ -647,7 +651,7 @@ export default function WorkspacesClient() {
                       <div className="p-6 space-y-4">
                         <div>
                           <Label className="text-sm font-medium text-white/60 mb-2 block">
-                            Email Address *
+                            Email address *
                           </Label>
                           <Input
                             type="email"
@@ -662,8 +666,7 @@ export default function WorkspacesClient() {
                           onClick={handleInviteMember}
                           className="w-full h-11 bg-white text-black hover:bg-white/90 font-semibold rounded-xl"
                         >
-                          <Mail className="w-4 h-4 mr-2" />
-                          Send Invitation
+                          Add member
                         </Button>
                       </div>
                     </DialogContent>
@@ -680,10 +683,11 @@ export default function WorkspacesClient() {
                         <DialogHeader>
                           <DialogTitle className="flex items-center gap-3 text-red-400 text-xl font-bold">
                             <AlertTriangle className="w-6 h-6" />
-                            Delete Workspace
+                            Delete workspace
                           </DialogTitle>
                           <DialogDescription className="text-white/50 mt-2">
-                            This action cannot be undone. All data will be permanently deleted.
+                            This deletes the workspace with its members, document shares and
+                            insights. The documents stay with their owners. This cannot be undone.
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 mt-4">
@@ -706,7 +710,7 @@ export default function WorkspacesClient() {
                               disabled={isDeleting}
                               className="flex-1 h-11 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl"
                             >
-                              {isDeleting ? "Deleting..." : "Delete Forever"}
+                              {isDeleting ? "Deleting..." : "Delete forever"}
                             </Button>
                           </div>
                         </div>
@@ -736,13 +740,13 @@ export default function WorkspacesClient() {
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-2">No workspaces yet</h2>
                 <p className="text-white/40 mb-6">
-                  Create your first workspace to start collaborating with your team.
+                  Create a workspace to group documents, search across them and compare them.
                 </p>
                 <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
                   <DialogTrigger asChild>
                     <button className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-black font-semibold hover:bg-white/90 transition-colors">
                       <Plus className="w-5 h-5" />
-                      Create Workspace
+                      Create workspace
                     </button>
                   </DialogTrigger>
                 </Dialog>
@@ -810,7 +814,7 @@ export default function WorkspacesClient() {
                       <Users className="w-5 h-5 text-white" />
                     </div>
                     <p className="text-xs text-white/40 font-medium uppercase tracking-wide mb-1">
-                      Team Members
+                      Members
                     </p>
                     <p className="text-3xl font-bold text-white">{totalMembers}</p>
                   </div>
@@ -914,10 +918,6 @@ export default function WorkspacesClient() {
                               </p>
                               <p className="text-xs text-white/40 mt-0.5">
                                 {hit.page != null && <>Page {hit.page}</>}
-                                {hit.page != null && " · "}
-                                Relevance:{" "}
-                                {typeof hit.score === "number" ? (hit.score * 100).toFixed(0) : "—"}
-                                %
                               </p>
                               <p className="text-sm text-white/70 mt-1.5 leading-snug">
                                 {truncateSnippet(hit.snippet)}
@@ -929,7 +929,7 @@ export default function WorkspacesClient() {
                               onClick={handleView}
                               className="flex-shrink-0 h-8 px-3 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded-lg text-xs"
                             >
-                              View in document
+                              Open summary
                             </Button>
                           </div>
                         </div>
@@ -971,7 +971,8 @@ export default function WorkspacesClient() {
                   </div>
                 ) : workspaceInsights.length === 0 ? (
                   <p className="text-sm text-white/50 py-6">
-                    No insights yet. Run analysis to compare documents and detect conflicts.
+                    No insights yet. Analyze the workspace to compare its documents and look for
+                    conflicts. It needs at least two shared documents.
                   </p>
                 ) : (
                   <div className="space-y-3 max-h-[360px] overflow-y-auto scrollbar-hide">
@@ -1033,7 +1034,7 @@ export default function WorkspacesClient() {
                           <Users className="w-4 h-4 text-blue-400" />
                         </div>
                         <div>
-                          <h3 className="text-base font-semibold text-white">Team Members</h3>
+                          <h3 className="text-base font-semibold text-white">Members</h3>
                           <p className="text-xs text-white/40">{totalMembers} people</p>
                         </div>
                       </div>
@@ -1052,7 +1053,6 @@ export default function WorkspacesClient() {
                           <Users className="w-6 h-6 text-white/20" />
                         </div>
                         <p className="text-sm text-white/40">No members yet</p>
-                        <p className="text-xs text-white/20">Invite your team to get started</p>
                       </div>
                     ) : (
                       <div className="space-y-2">
@@ -1126,7 +1126,7 @@ export default function WorkspacesClient() {
                         </div>
                         <p className="text-sm text-white/40">No documents in this workspace</p>
                         <p className="text-xs text-white/20">
-                          Add documents by sharing them to this workspace from your dashboard
+                          Add a document you own from its summary page
                         </p>
                       </div>
                     ) : (
@@ -1174,10 +1174,10 @@ export default function WorkspacesClient() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3 text-red-400 text-xl font-bold">
               <AlertTriangle className="w-6 h-6" />
-              Remove Member
+              Remove member
             </DialogTitle>
             <DialogDescription className="text-white/50 mt-2">
-              This action cannot be undone.
+              This removes them from the workspace. You can add them again later.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-4">

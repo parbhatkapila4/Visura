@@ -1,159 +1,11 @@
 import { getDbConnection } from "./db";
-import {
-  getChunksForVersion,
-  updateChunkSummary,
-  linkVersionToSummary,
-  isVersionComplete,
-} from "./versioned-documents";
-import { generateSummaryFromText, type SupportedLanguage } from "./openai";
+import { updateChunkSummary, linkVersionToSummary, isVersionComplete } from "./versioned-documents";
+import { generateSummaryFromText, MIN_SUMMARY_TEXT_LENGTH, type SupportedLanguage } from "./openai";
 import { sendAlert } from "./alerting";
 import { logger } from "./logger";
 import { measurePerformance } from "./performance-monitor";
 import { logProcessingEvent } from "./processing-events";
-import { estimatePagesFromTextLength, getSummaryProcessingBudget } from "./summary-length-config";
-
-const MERGE_SECTION_ORDER: string[] = [
-  "executive summary",
-  "overview",
-  "tldr",
-  "key points",
-  "findings",
-  "important details",
-  "specifications",
-  "key numbers",
-  "financial",
-  "rights & obligations",
-  "risks",
-  "concerns",
-  "liabilit",
-  "action items",
-  "recommendations",
-  "key takeaways",
-  "insights",
-  "additional information",
-  "evidence",
-  "signals",
-  "gaps",
-  "recommendation",
-  "bottom line",
-  "conclusion",
-];
-
-function mergeSectionSortKey(title: string): number {
-  const t = title.toLowerCase().trim();
-  const idx = MERGE_SECTION_ORDER.findIndex((k) => t.includes(k));
-  return idx === -1 ? 800 : idx;
-}
-
-function deduplicateAndMergeSections(chunkSummaries: string[], fullTextCharLength: number): string {
-  if (chunkSummaries.length === 0) return "";
-
-  const allSections: Array<{ title: string; content: string; normalizedTitle: string }> = [];
-
-  for (const summary of chunkSummaries) {
-    const lines = summary.split("\n");
-    let currentSection: { title: string; content: string[] } | null = null;
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const headerMatch = line.match(/^###\s+(.+)$/);
-
-      if (headerMatch) {
-        if (currentSection) {
-          const normalizedTitle = currentSection.title.toLowerCase().trim();
-          allSections.push({
-            title: currentSection.title,
-            content: currentSection.content.join("\n").trim(),
-            normalizedTitle,
-          });
-        }
-
-        currentSection = {
-          title: headerMatch[1].trim(),
-          content: [],
-        };
-      } else if (currentSection) {
-        currentSection.content.push(line);
-      }
-    }
-
-    if (currentSection) {
-      const normalizedTitle = currentSection.title.toLowerCase().trim();
-      allSections.push({
-        title: currentSection.title,
-        content: currentSection.content.join("\n").trim(),
-        normalizedTitle,
-      });
-    }
-  }
-
-  const sectionGroups = new Map<string, Array<{ title: string; content: string }>>();
-
-  for (const section of allSections) {
-    const normalized = section.normalizedTitle
-      .replace(/^executive\s+summary$/i, "executive summary")
-      .replace(/^key\s+insights?$/i, "key insights")
-      .replace(/^evidence\s+(&|and)\s+signals?$/i, "evidence & signals")
-      .replace(/^risks?\s+(&|and)\s+gaps?$/i, "risks & gaps")
-      .replace(/^action(s)?$/i, "action")
-      .replace(/^should\s+i\s+care\??$/i, "should i care")
-      .replace(/^core\s+mental\s+models?$/i, "core mental models")
-      .replace(/^high[-\s]signal\s+sections?$/i, "high-signal sections")
-      .replace(/^actionable\s+takeaways?$/i, "actionable takeaways")
-      .replace(/^risks?\s+(&|and)\s+limits?$/i, "risks & limits");
-
-    if (!sectionGroups.has(normalized)) {
-      sectionGroups.set(normalized, []);
-    }
-    sectionGroups.get(normalized)!.push({
-      title: section.title,
-      content: section.content,
-    });
-  }
-
-  const mergedSections: Array<{ title: string; content: string }> = [];
-
-  for (const [normalizedTitle, sections] of sectionGroups.entries()) {
-    const titleCounts = new Map<string, number>();
-    for (const s of sections) {
-      titleCounts.set(s.title, (titleCounts.get(s.title) || 0) + 1);
-    }
-    const mostCommonTitle = Array.from(titleCounts.entries()).sort((a, b) => b[1] - a[1])[0][0];
-
-    const contentSet = new Set<string>();
-    for (const s of sections) {
-      const paragraphs = s.content.split("\n\n").filter((p) => p.trim().length > 0);
-      for (const para of paragraphs) {
-        const trimmed = para.trim();
-        if (trimmed.length > 20) {
-          contentSet.add(trimmed);
-        }
-      }
-    }
-
-    const mergedContent = Array.from(contentSet).join("\n\n");
-    if (mergedContent.trim().length > 0) {
-      mergedSections.push({
-        title: mostCommonTitle,
-        content: mergedContent,
-      });
-    }
-  }
-
-  const estimatedPages = estimatePagesFromTextLength(Math.max(fullTextCharLength, 1));
-  const { maxSections } = getSummaryProcessingBudget(estimatedPages);
-
-  const sorted = [...mergedSections].sort((a, b) => {
-    const d = mergeSectionSortKey(a.title) - mergeSectionSortKey(b.title);
-    if (d !== 0) return d;
-    return a.title.localeCompare(b.title);
-  });
-
-  return sorted
-    .slice(0, maxSections)
-    .map((s) => `### ${s.title}\n\n${s.content}`)
-    .join("\n\n");
-}
+import { buildFinalSummary } from "./final-summary";
 
 export interface ProcessChunkResult {
   success: boolean;
@@ -266,6 +118,18 @@ export async function processChunkInternal(
           reusedFromChunkId: chunk.reused_from_chunk_id,
         });
       }
+    }
+    if (chunk.text.trim().length < MIN_SUMMARY_TEXT_LENGTH) {
+      const updated = await updateChunkSummary(chunkId, chunk.text.trim(), null);
+      if (updated) {
+        await checkVersionCompletion(versionId);
+      }
+      logger.info("Chunk too short to summarize - kept as written", { chunkId, versionId });
+      return {
+        success: true,
+        skipped: !updated,
+        message: "Chunk too short to summarize",
+      };
     }
 
     try {
@@ -392,63 +256,15 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
         });
       }
     }
-
-    const complete = await isVersionComplete(versionId);
-
-    const [status] = await sql`
-      SELECT 
-        COUNT(*) as total,
-        COUNT(*) FILTER (WHERE summary IS NOT NULL AND summary != '') as with_summary,
-        COUNT(*) FILTER (WHERE summary IS NULL AND reused_from_chunk_id IS NULL) as incomplete_new,
-        COUNT(*) FILTER (WHERE summary IS NULL AND reused_from_chunk_id IS NOT NULL) as incomplete_reused
-      FROM document_chunks
-      WHERE document_version_id = ${versionId}
-    `;
-
-    const totalChunks = Number(status?.total || 0);
-    const chunksWithSummary = Number(status?.with_summary || 0);
-    const incompleteNew = Number(status?.incomplete_new || 0);
-    const incompleteReused = Number(status?.incomplete_reused || 0);
-
-    logger.info("Version completion check", {
-      versionId,
-      totalChunks,
-      chunksWithSummary,
-      incompleteNew,
-      incompleteReused,
-      isComplete: complete,
-      completionRatio:
-        totalChunks > 0 ? `${Math.round((chunksWithSummary / totalChunks) * 100)}%` : "0%",
-    });
-
-    const hasEnoughChunks =
-      totalChunks > 0 && chunksWithSummary >= Math.max(1, Math.ceil(totalChunks * 0.5));
-    const canProceed = complete || hasEnoughChunks || existingPlaceholderId !== null;
-
-    if (!canProceed) {
-      logger.info("Version not complete yet - waiting for more chunks", {
-        versionId,
-        chunksWithSummary,
-        totalChunks,
-        needed: Math.ceil(totalChunks * 0.5),
-      });
+    if (!(await isVersionComplete(versionId))) {
+      logger.info("Version not complete yet - waiting for remaining chunks", { versionId });
       return;
     }
 
-    if (!complete && hasEnoughChunks) {
-      logger.warn("Creating summary with partial completion", {
-        versionId,
-        chunksWithSummary,
-        totalChunks,
-        incompleteNew,
-        incompleteReused,
-      });
-    }
-
-    logger.info("Proceeding to create summary", { versionId, chunksWithSummary, totalChunks });
+    logger.info("Proceeding to create summary", { versionId });
 
     const [version] = await sql`
-      SELECT document_id, pdf_summary_id, file_url, created_at FROM document_versions WHERE id = ${versionId}
+      SELECT document_id, pdf_summary_id, file_url, created_at, output_language FROM document_versions WHERE id = ${versionId}
     `;
 
     if (!version) {
@@ -460,8 +276,13 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
       versionId,
       isPlaceholderUpdate: !!existingPlaceholderId,
     });
-
-    const allChunks = await getChunksForVersion(versionId);
+    const allChunks = (await sql`
+      SELECT dc.chunk_index, dc.text, COALESCE(dc.summary, source.summary) AS summary
+      FROM document_chunks dc
+      LEFT JOIN document_chunks source ON source.id = dc.reused_from_chunk_id
+      WHERE dc.document_version_id = ${versionId}
+      ORDER BY dc.chunk_index ASC
+    `) as Array<{ chunk_index: number; text: string; summary: string | null }>;
     logger.info("Chunk status for version", {
       versionId,
       total: allChunks.length,
@@ -469,11 +290,10 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
       withoutSummary: allChunks.filter((c) => !c.summary).length,
     });
 
-    const sortedChunks = allChunks.sort((a, b) => a.chunk_index - b.chunk_index);
-    const fullText = sortedChunks.map((chunk) => chunk.text).join("\n\n");
-    const chunkSummaries = sortedChunks
-      .map((chunk) => chunk.summary)
-      .filter((s): s is string => s !== null && s !== undefined && s.trim().length > 0);
+    const fullText = allChunks.map((chunk) => chunk.text).join("\n\n");
+    const chunkSummaries = allChunks
+      .filter((chunk) => chunk.summary?.trim() && chunk.summary !== chunk.text.trim())
+      .map((chunk) => chunk.summary as string);
 
     logger.info("Chunk summaries extracted for final merge", {
       versionId,
@@ -488,7 +308,19 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
 
     let finalSummary: string;
     if (chunkSummaries.length > 0) {
-      finalSummary = deduplicateAndMergeSections(chunkSummaries, fullText.length);
+      const built = await buildFinalSummary({
+        chunkSummaries,
+        fullTextCharLength: fullText.length,
+        language: (version.output_language || "ENGLISH") as SupportedLanguage,
+      });
+      finalSummary = built.summary;
+      logger.info("Final summary built from chunk summaries", {
+        versionId,
+        method: built.method,
+        wordCap: built.wordCap,
+        mergedWords: built.mergedWords,
+        summaryLength: finalSummary.length,
+      });
     } else {
       logger.warn("No chunk summaries - generating summary from full document text", {
         versionId,
@@ -566,7 +398,7 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
           summaryLength: finalSummary.length,
         });
         try {
-          await sql`
+          const [claimed] = await sql`
             UPDATE pdf_summaries
             SET summary_text = ${finalSummary},
                 original_file_url = ${version.file_url || ""},
@@ -574,7 +406,16 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
                 file_name = ${fileName},
                 status = 'completed'
             WHERE id = ${existingPlaceholderId}
+              AND status = 'processing'
+            RETURNING id
           `;
+          if (!claimed) {
+            logger.info("Version already finalized by another worker - skipping", {
+              versionId,
+              pdfSummaryId: existingPlaceholderId,
+            });
+            return;
+          }
           pdfSummary = { id: existingPlaceholderId };
         } catch (updateError) {
           logger.error("CRITICAL: Failed to update placeholder summary", updateError, {
@@ -641,21 +482,14 @@ export async function checkVersionCompletion(versionId: string): Promise<void> {
           userId: documentInfo.user_id,
           summaryLength: finalSummary.length,
         });
-
         const linked = await linkVersionToSummary(versionId, pdfSummary.id);
         if (!linked) {
-          logger.error("CRITICAL: Failed to link summary to version", undefined, {
+          await sql`DELETE FROM pdf_summaries WHERE id = ${pdfSummary.id}`;
+          logger.info("Version already linked to a summary by another worker - skipping", {
             versionId,
-            pdfSummaryId: pdfSummary.id,
+            discardedPdfSummaryId: pdfSummary.id,
           });
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          const retryLinked = await linkVersionToSummary(versionId, pdfSummary.id);
-          if (retryLinked) {
-            logger.info("Successfully linked summary on retry", {
-              versionId,
-              pdfSummaryId: pdfSummary.id,
-            });
-          }
+          return;
         } else {
           logger.info("Summary created and linked successfully", {
             versionId,

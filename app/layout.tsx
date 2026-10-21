@@ -53,9 +53,9 @@ const fontVsDisplay = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Visura - Smart PDF Analysis Platform",
+  title: "Visura - Summarize and chat with your documents",
   description:
-    "Visura transforms complex PDF documents into clear, actionable insights that help you make better decisions faster",
+    "Upload a PDF, Word, PowerPoint, Excel, text or Markdown file and get a summary you can ask questions about. Upload a changed version and matching passages keep their summaries.",
   icons: {
     icon: [
       { url: "/Visura-favicon-New.png", sizes: "32x32", type: "image/png" },

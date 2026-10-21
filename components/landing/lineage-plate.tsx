@@ -12,15 +12,12 @@ import {
   type VersionRecord,
 } from "./lineage-data";
 
-const nf = new Intl.NumberFormat("en-US");
-
 type Anim = { reusedOn: boolean; newLanded: number } | null;
 
 const LEGEND: Array<{ state: ChunkState | "blocked"; label: string }> = [
   { state: "reused", label: "Reused" },
   { state: "new", label: "New" },
   { state: "inflight", label: "In flight" },
-  { state: "replayed", label: "Replayed" },
   { state: "blocked", label: "Blocked" },
 ];
 
@@ -229,7 +226,7 @@ export default function LineagePlate() {
     <>
       {version.totalChunks} sections
       <span className="vs-lineage-sep">·</span>
-      ~1,000 characters each
+      normalized text
       <span className="vs-lineage-sep">·</span>
       SHA-256
     </>
@@ -237,7 +234,9 @@ export default function LineagePlate() {
 
   const reusedShown = anim ? (anim.reusedOn ? version.reusedChunks : 0) : version.reusedChunks;
   const newShown = anim ? anim.newLanded : version.newChunks;
-  const savedShown = reusedShown * 1000;
+  const coverageShown = version.totalChunks
+    ? Math.round((reusedShown / version.totalChunks) * 100)
+    : 0;
 
   const rows = Math.ceil(version.totalChunks / colCount);
   const legendCount = (s: ChunkState | "blocked") =>
@@ -382,7 +381,7 @@ export default function LineagePlate() {
           <div className="vs-lineage-scale">
             <span className="vs-scalebar-line" aria-hidden="true" />
             <span className="vs-key mt-1 block" style={{ fontWeight: 400 }}>
-              10 sections ≈ 10,000 characters
+              10 sections
             </span>
           </div>
         </div>
@@ -394,8 +393,8 @@ export default function LineagePlate() {
             <div className="vs-lineage-rule vs-sum-top--paper" />
             <AccountRow value={String(version.totalChunks)} caption="sections" color="var(--ink)" />
             <div className="vs-lineage-saved">
-              <span className="vs-numeral vs-lineage-saved-n">{nf.format(savedShown)}</span>
-              <span className="vs-key">est. tokens saved</span>
+              <span className="vs-numeral vs-lineage-saved-n">{coverageShown}%</span>
+              <span className="vs-key">carried forward</span>
             </div>
             <div className="vs-lineage-rule vs-sum-close--paper" />
           </div>

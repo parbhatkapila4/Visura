@@ -15,7 +15,9 @@
     "test:coverage": "vitest --coverage",
     "test:run": "vitest run",
     "prepare": "node -e \"try { require('husky').install() } catch(e) { console.log('Husky not available, skipping') }\" || exit 0",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "prebuild": "node scripts/copy-pdf-worker.mjs && node scripts/make-sample-contracts.mjs",
+    "predev": "node scripts/copy-pdf-worker.mjs && node scripts/make-sample-contracts.mjs"
   },
   "dependencies": {
     "@carbon/icons-react": "^11.76.0",

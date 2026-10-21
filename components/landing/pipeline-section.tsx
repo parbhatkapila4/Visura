@@ -3,17 +3,28 @@ import { PaperCard } from "./paper-card";
 import { PlateCaption } from "./plate";
 import { SecondaryBtn } from "./primitives";
 import Origami from "./origami";
-import { DOCUMENT_NAME, PIPELINE_STAGES, PROCESSING_EVENTS, VERSIONS } from "./lineage-data";
+import { DOCUMENT_NAME, PROCESSING_EVENTS, VERSIONS } from "./lineage-data";
+
+const PIPELINE_STAGES: readonly string[] = [
+  "Reading text",
+  "Uploading",
+  "Checking for a repeat",
+  "Splitting into sections",
+  "Matching earlier sections",
+  "Checking the daily limit",
+  "Summarizing new sections",
+  "Merging the summary",
+];
 
 const STAGE_NOTES: readonly string[] = [
-  "The file is stored; the full text is hashed — an identical file returns the existing summary.",
   "In your browser, before the file uploads.",
-  "~1,000 characters per chunk, split on word boundaries, each hashed with SHA-256.",
-  "Embeddings are cached by content hash.",
-  "Section count scales with document length.",
-  "AI insights for the finished summary.",
-  "One of the finished summary's five views.",
-  "Chunk summaries merge into the final summary; the version records its totals.",
+  "The original file is stored.",
+  "Same file name and the same text as the latest version: its summary comes back.",
+  "Normalized, split mostly at sentence ends, each section hashed with SHA-256.",
+  "A section that matches a summarized one from an earlier version keeps its summary.",
+  "Only new sections count. Over the limit, the run stops before a version exists.",
+  "Sections with no earlier summary are summarized in small batches.",
+  "Once every section has one, they merge into the summary; the full text is kept for chat.",
 ];
 
 export default function PipelineSection() {
@@ -31,13 +42,13 @@ export default function PipelineSection() {
           <div className="vs-split-prose">
             <SectionHead
               roman="Upload it,"
-              italic="then watch it work"
-              sub="Your summary page opens before the run finishes and reports its progress while sections are summarized in small batches."
+              italic="and see what ran"
+              sub="Upload a new version under the same file name and only sections without an earlier summary are summarized. Each run's events are recorded on its version."
             />
             <p className="vs-prose mt-8">
               Text is read in your browser first — up to 50 pages of text per PDF; fully scanned
-              PDFs are OCR&#39;d (up to 10 pages). Word, Excel, and PowerPoint files are read
-              directly.
+              PDFs are OCR&#39;d in English (up to 10 pages). Word (.docx), Excel, and PowerPoint
+              (.pptx) files are read directly.
             </p>
             <div className="mt-6">
               <SecondaryBtn href="#formats">See formats and limits</SecondaryBtn>
@@ -128,8 +139,8 @@ export default function PipelineSection() {
         </div>
 
         <PlateCaption>
-          The eight stages of a finished run, and the events the version records along the way.
-          Durations aren&rsquo;t shown.
+          The steps of a finished run, and the events the version records along the way. Sections,
+          insights, the graph and search embeddings are generated afterwards, in the background.
         </PlateCaption>
       </SectionCol>
     </Section>

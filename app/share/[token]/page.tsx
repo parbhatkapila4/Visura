@@ -12,12 +12,12 @@ export async function generateMetadata(props: {
 
   if (!summary) {
     return {
-      title: "Summary Not Found - Visura",
+      title: "Summary not found - Visura",
     };
   }
 
   return {
-    title: `${summary.title || "Shared Summary"} - Visura`,
+    title: `${summary.title || "Shared summary"} - Visura`,
     description: summary.summary_text.substring(0, 160) + "...",
   };
 }
@@ -54,14 +54,13 @@ export default async function SharePage(props: { params: Promise<{ token: string
                     </svg>
                   </div>
                   <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
-                    Share Link Revoked
+                    Share link not found
                   </h1>
                   <p className="text-lg sm:text-xl text-gray-400 mb-2">
-                    This share link is no longer accessible.
+                    No summary is shared at this link.
                   </p>
                   <p className="text-sm sm:text-base text-gray-500">
-                    The administrator has revoked access to this shared summary. The link will no
-                    longer work.
+                    The owner may have deleted the summary, or the link may be incomplete.
                   </p>
                 </div>
                 <div className="mt-8">
@@ -80,7 +79,7 @@ export default async function SharePage(props: { params: Promise<{ token: string
                       />
                     </svg>
                     <span className="text-sm text-gray-400">
-                      If you need access, please contact the document owner.
+                      Ask the person who shared it for a new link.
                     </span>
                   </div>
                 </div>
@@ -92,15 +91,7 @@ export default async function SharePage(props: { params: Promise<{ token: string
     );
   }
 
-  const { title, summary_text, word_count } = summary;
-
-  const isErrorSummary =
-    summary_text.toLowerCase().includes("extraction error") ||
-    summary_text.toLowerCase().includes("object.defineproperty") ||
-    summary_text.toLowerCase().includes("was unable to access") ||
-    summary_text.toLowerCase().includes("i apologize");
-
-  const reading_time = isErrorSummary ? 1 : Math.ceil((word_count || 0) / 200);
+  const { title, summary_text } = summary;
 
   return (
     <div className="relative isolate min-h-screen bg-background">
@@ -111,16 +102,12 @@ export default async function SharePage(props: { params: Promise<{ token: string
           <div className="flex flex-col">
             <div className="mb-6">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-2">
-                {title || "Shared Summary"}
+                {title || "Shared summary"}
               </h1>
               <div className="flex items-center gap-4 text-sm text-gray-400">
                 <span>Created: {new Date(summary.created_at).toLocaleDateString()}</span>
-                <span>•</span>
-                <span>{reading_time} min read</span>
               </div>
-              <div className="mt-4 text-sm text-gray-500">
-                This is a shared summary from Visura AI
-              </div>
+              <div className="mt-4 text-sm text-gray-500">Shared from Visura</div>
             </div>
           </div>
 

@@ -1,4 +1,5 @@
 import { getDbConnection } from "./db";
+import { canViewSummary } from "./summaries";
 import { getVersionIdByPdfSummaryId } from "./versioned-documents";
 
 export async function savePdfStore({
@@ -51,6 +52,16 @@ export async function getPdfStoreById(pdfStoreId: string, userId: string) {
     return null;
   }
 }
+export async function canAccessPdfStore(pdfStoreId: string, userId: string): Promise<boolean> {
+  const sql = await getDbConnection();
+  const [store] = await sql`
+    SELECT pdf_summary_id FROM pdf_stores WHERE id = ${pdfStoreId}
+  `;
+  if (!store?.pdf_summary_id) {
+    return false;
+  }
+  return canViewSummary(store.pdf_summary_id as string, userId);
+}
 
 export async function createQASession({
   pdfStoreId,
@@ -100,6 +111,9 @@ export async function getQASessionById(sessionId: string, userId: string) {
       JOIN pdf_summaries pss ON ps.pdf_summary_id = pss.id
       WHERE qas.id = ${sessionId} AND qas.user_id = ${userId}
     `;
+    if (!session || !(await canViewSummary(session.pdf_summary_id as string, userId))) {
+      return null;
+    }
     return session;
   } catch (error) {
     console.error("Error fetching QA session:", error);

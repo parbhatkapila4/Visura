@@ -12,7 +12,6 @@ import {
   MessageSquare,
   Search,
   ArrowUpRight,
-  ArrowDownRight,
   Zap,
   Clock,
   Eye,
@@ -22,7 +21,6 @@ import {
   BarChart3,
   Grid3X3,
   List,
-  TrendingUp,
   Activity,
   X,
   LucideIcon,
@@ -90,8 +88,6 @@ const PremiumSummaryCard = ({
     return "bg-emerald-500";
   };
 
-  const wordCount = summary.summary_text?.split(/\s+/).length || 0;
-
   return (
     <div
       className={`group relative bg-[#111111] rounded-xl border border-[#1f1f1f] hover:border-[#333] transition-all duration-200 cursor-pointer ${
@@ -132,7 +128,7 @@ const PremiumSummaryCard = ({
         <h3
           className={`font-medium text-white mb-2 line-clamp-2 ${isLarge ? "text-lg" : "text-sm"}`}
         >
-          {summary.title || preview.title || "Untitled Document"}
+          {summary.title || preview.title || "Untitled document"}
         </h3>
 
         <p
@@ -146,14 +142,6 @@ const PremiumSummaryCard = ({
         <div className="flex flex-wrap gap-1.5 mb-3">
           <span className="px-2 py-0.5 rounded bg-[#1a1a1a] text-[#666] text-xs">
             {preview.documentType || "Document"}
-          </span>
-          {preview.keyPoints.length > 0 && (
-            <span className="px-2 py-0.5 rounded bg-[#1a1a1a] text-[#666] text-xs">
-              {preview.keyPoints.length} insights
-            </span>
-          )}
-          <span className="px-2 py-0.5 rounded bg-[#1a1a1a] text-[#666] text-xs">
-            {wordCount.toLocaleString()} words
           </span>
         </div>
 
@@ -216,26 +204,21 @@ const PremiumStatsGrid = ({
   userPlan: string;
   uploadLimit: number;
 }) => {
-  const isUnlimited = userPlan === "pro";
-  const usagePercent = isUnlimited ? 35 : Math.min((totalDocs / uploadLimit) * 100, 100);
-  const successRate = totalDocs > 0 ? Math.round((completed / totalDocs) * 100) : 100;
+  const isPro = userPlan === "pro";
+  const usagePercent = Math.min((totalDocs / uploadLimit) * 100, 100);
   const availableNum = typeof available === "number" ? available : 0;
 
   const StatCard = ({
     label,
     value,
     suffix,
-    sublabel,
     icon: Icon,
-    trend,
     children,
   }: {
     label: string;
     value: number | string;
     suffix?: string;
-    sublabel?: string;
     icon: LucideIcon;
-    trend?: { value: number; positive: boolean };
     children?: React.ReactNode;
   }) => (
     <div className="relative bg-[#111111] rounded-xl border border-[#1f1f1f] hover:border-[#2a2a2a] transition-colors duration-200">
@@ -244,21 +227,6 @@ const PremiumStatsGrid = ({
           <div className="w-9 h-9 rounded-lg bg-[#1a1a1a] border border-[#252525] flex items-center justify-center">
             <Icon className="w-4 h-4 text-[#888]" />
           </div>
-          {trend && (
-            <div
-              className={`flex items-center gap-1 text-xs font-medium ${
-                trend.positive ? "text-emerald-500" : "text-red-500"
-              }`}
-            >
-              {trend.positive ? (
-                <TrendingUp className="w-3 h-3" />
-              ) : (
-                <ArrowDownRight className="w-3 h-3" />
-              )}
-              {trend.positive ? "+" : ""}
-              {trend.value}%
-            </div>
-          )}
         </div>
 
         <p className="text-[11px] text-[#666] font-medium uppercase tracking-wider mb-1">{label}</p>
@@ -270,8 +238,6 @@ const PremiumStatsGrid = ({
           {suffix && <span className="text-sm text-[#555]">{suffix}</span>}
         </div>
 
-        {sublabel && <p className="text-xs text-[#555] mt-1">{sublabel}</p>}
-
         {children && <div className="mt-4">{children}</div>}
       </div>
     </div>
@@ -279,85 +245,32 @@ const PremiumStatsGrid = ({
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard
-        label="Total Documents"
-        value={totalDocs}
-        suffix="files"
-        icon={FileText}
-        trend={totalDocs > 0 ? { value: 12, positive: true } : undefined}
-      >
+      <StatCard label="Documents shown" value={totalDocs} suffix="files" icon={FileText}>
         <div className="space-y-2">
           <div className="flex justify-between text-xs">
-            <span className="text-[#555]">Storage</span>
-            <span className="text-[#888] tabular-nums">
-              {isUnlimited ? "∞" : `${totalDocs}/${uploadLimit}`}
-            </span>
+            <span className="text-[#555]">Plan limit</span>
+            <span className="text-[#888] tabular-nums">{uploadLimit}</span>
           </div>
-          <div className="h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-[#666] to-[#888] rounded-full transition-all duration-500"
-              style={{ width: `${usagePercent}%` }}
-            />
-          </div>
-        </div>
-      </StatCard>
-
-      <StatCard
-        label="This Week"
-        value={thisWeek}
-        suffix="new"
-        icon={Clock}
-        trend={thisWeek > 0 ? { value: thisWeek * 10, positive: true } : undefined}
-      >
-        <div className="flex items-end gap-1 h-8">
-          {[20, 35, 25, 50, 40, 65, thisWeek > 0 ? 100 : 30].map((h, i) => (
-            <div
-              key={i}
-              className="flex-1 rounded-sm transition-all duration-300"
-              style={{
-                height: `${h}%`,
-                backgroundColor: i === 6 ? "#888" : "#1f1f1f",
-              }}
-            />
-          ))}
-        </div>
-      </StatCard>
-
-      <StatCard label="Completed" value={completed} suffix={`/ ${totalDocs}`} icon={Activity}>
-        <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 40 40">
-              <circle cx="20" cy="20" r="16" fill="none" stroke="#1f1f1f" strokeWidth="3" />
-              <circle
-                cx="20"
-                cy="20"
-                r="16"
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeDasharray={`${(successRate / 100) * 100.5} 100.5`}
+          {!isPro && (
+            <div className="h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-[#666] to-[#888] rounded-full transition-all duration-500"
+                style={{ width: `${usagePercent}%` }}
               />
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs text-[#555]">Success rate</p>
-            <p className="text-sm font-semibold text-emerald-500 tabular-nums">{successRate}%</p>
-          </div>
+            </div>
+          )}
         </div>
       </StatCard>
 
-      <StatCard
-        label="Available"
-        value={isUnlimited ? "∞" : availableNum}
-        suffix={isUnlimited ? "" : "left"}
-        sublabel={isUnlimited ? "Unlimited uploads" : undefined}
-        icon={Zap}
-      >
-        {isUnlimited ? (
+      <StatCard label="Last 7 days" value={thisWeek} suffix="new" icon={Clock} />
+
+      <StatCard label="Completed" value={completed} suffix={`/ ${totalDocs}`} icon={Activity} />
+
+      <StatCard label="Available" value={availableNum} suffix="left" icon={Zap}>
+        {isPro ? (
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#1a1a1a] border border-[#252525]">
             <Crown className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-xs font-medium text-[#888]">Pro Plan</span>
+            <span className="text-xs font-medium text-[#888]">Pro plan</span>
           </div>
         ) : (
           <div className="flex gap-1">
@@ -385,7 +298,7 @@ const EmptyState = () => (
 
       <h3 className="text-lg font-medium text-white mb-2">No documents yet</h3>
       <p className="text-[#666] text-sm mb-6 max-w-sm mx-auto">
-        Upload your first document to get started with AI-powered summaries.
+        Upload a document to get a summary you can read and chat with.
       </p>
 
       <Link
@@ -393,7 +306,7 @@ const EmptyState = () => (
         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black text-sm font-medium hover:bg-[#e5e5e5] transition-colors"
       >
         <Plus className="w-4 h-4" />
-        Upload Document
+        Upload document
       </Link>
     </div>
   </div>
@@ -463,7 +376,7 @@ export default function DashboardClient({
                   <Search className="w-4 h-4 text-[#555]" />
                   <input
                     type="text"
-                    placeholder="Search documents..."
+                    placeholder="Search titles and summaries..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="flex-1 bg-transparent text-white placeholder-[#555] outline-none text-sm"
@@ -524,9 +437,7 @@ export default function DashboardClient({
               totalDocs={summaries.length}
               thisWeek={thisWeekCount}
               completed={completedCount}
-              available={
-                userPlan === "pro" ? "unlimited" : Math.max(0, uploadLimit - summaries.length)
-              }
+              available={Math.max(0, uploadLimit - summaries.length)}
               userPlan={userPlan}
               uploadLimit={uploadLimit}
             />
@@ -544,7 +455,10 @@ export default function DashboardClient({
                       <p className="text-sm font-medium text-white">
                         {summaries.length}/{uploadLimit} documents used
                       </p>
-                      <p className="text-xs text-[#666]">Upgrade to Pro for unlimited access</p>
+                      <p className="text-xs text-[#666]">
+                        Starter keeps 10, Pro keeps 1,000. Each new version of a document counts as
+                        one.
+                      </p>
                     </div>
                   </div>
 

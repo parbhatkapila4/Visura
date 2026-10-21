@@ -2,16 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { isFileTypeSupported } from "@/lib/document-extractor";
-import {
-  Upload,
-  FileText,
-  Loader2,
-  Check,
-  Shield,
-  Zap,
-  MessageSquare,
-  AlertCircle,
-} from "lucide-react";
+import { Upload, FileText, Loader2, Zap, MessageSquare, AlertCircle } from "lucide-react";
 import { forwardRef, useEffect, useRef, useState } from "react";
 
 interface UploadFormInputProps {
@@ -19,23 +10,13 @@ interface UploadFormInputProps {
   isLoading: boolean;
   hasReachedLimit: boolean;
   uploadLimit: number;
-  hideInlineProcessing?: boolean;
 }
 
 export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>(
-  ({ onSubmit, isLoading, hasReachedLimit, uploadLimit, hideInlineProcessing }, ref) => {
+  ({ onSubmit, isLoading, hasReachedLimit, uploadLimit }, ref) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isDragging, setIsDragging] = useState(false);
-    const processingRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-      if (isLoading && processingRef.current) {
-        try {
-          processingRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-        } catch {}
-      }
-    }, [isLoading]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -181,7 +162,7 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
                       </span>
                     </p>
                     <p className="text-[#555] text-sm mt-1">
-                      PDF, Word, Text, Markdown, Excel, PowerPoint • Max 32MB
+                      PDF, DOCX, TXT, MD, XLSX, XLS, PPTX • Max 32MB
                     </p>
                   </div>
                 </div>
@@ -218,7 +199,7 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
             ) : selectedFile ? (
               <>
                 <Upload className="w-4 h-4" />
-                Upload and Analyze
+                Upload and summarize
               </>
             ) : (
               "Select a document to continue"
@@ -227,19 +208,20 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
 
           {hasReachedLimit && (
             <p className="text-center text-[#666] text-sm mt-3">
-              You've reached your limit of {uploadLimit} uploads.{" "}
+              You've used all {uploadLimit} documents your plan allows, and each new version of a
+              document counts as one. Delete one from the dashboard to free a slot, or{" "}
               <a href="/checkout" className="text-white underline underline-offset-2">
-                Upgrade to Pro
+                see plans
               </a>
+              .
             </p>
           )}
         </form>
 
-        <div className="mt-8 grid grid-cols-3 gap-3">
+        <div className="mt-8 grid grid-cols-2 gap-3">
           {[
-            { icon: Zap, label: "AI Summary", desc: "Instant analysis" },
+            { icon: Zap, label: "AI summary", desc: "Written in English" },
             { icon: MessageSquare, label: "Chat", desc: "Ask questions" },
-            { icon: Shield, label: "Secure", desc: "Private & encrypted" },
           ].map(({ icon: Icon, label, desc }) => (
             <div
               key={label}
@@ -261,58 +243,12 @@ export const UploadFormInput = forwardRef<HTMLFormElement, UploadFormInputProps>
             </div>
             <div className="text-sm">
               <p className="text-[#888]">
-                <span className="text-white">Text-based documents</span> work best for AI chat.
-                Scanned documents will be summarized but chat may be limited.
+                <span className="text-white">PDFs</span> over 50 pages can be cut off at page 50. A
+                fully scanned PDF is read with English OCR, first 10 pages only.
               </p>
             </div>
           </div>
         </div>
-
-        {isLoading && !hideInlineProcessing && (
-          <div ref={processingRef} className="mt-8">
-            <div className="p-6 rounded-xl bg-transparent backdrop-blur-sm border border-[#1f1f1f]">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                  <span className="text-white font-medium">Processing your document</span>
-                </div>
-                <span className="text-[#555] text-sm">Please wait...</span>
-              </div>
-
-              <div className="h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden mb-6">
-                <div
-                  className="h-full bg-white rounded-full transition-all duration-700 animate-pulse"
-                  style={{ width: "40%" }}
-                />
-              </div>
-
-              <div className="space-y-3">
-                {[
-                  { label: "Uploading to secure storage", done: true },
-                  { label: "Extracting text content", done: true },
-                  { label: "Analyzing with AI", done: false },
-                  { label: "Generating summary", done: false },
-                ].map((step, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        "w-5 h-5 rounded-full flex items-center justify-center text-xs",
-                        step.done
-                          ? "bg-emerald-500/20 text-emerald-500"
-                          : "bg-[#1a1a1a] text-[#555]"
-                      )}
-                    >
-                      {step.done ? <Check className="w-3 h-3" /> : i + 1}
-                    </div>
-                    <span className={cn("text-sm", step.done ? "text-[#888]" : "text-[#555]")}>
-                      {step.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     );
   }

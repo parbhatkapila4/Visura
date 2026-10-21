@@ -1,4 +1,4 @@
-"use server";
+import "server-only";
 
 import { fetchAndExtractPdfText } from "./langchain";
 export async function extractTextFromDocumentUrl(

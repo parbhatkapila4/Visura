@@ -1,50 +1,53 @@
 # Contributing to Visura
 
-Thank you for your interest in contributing to Visura! This document provides guidelines and best practices.
+Thank you for your interest in contributing to Visura.
 
 ---
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
-- Node.js 20+
-- npm or yarn
+- Node.js 20.19+ on 20.x, 22.12+ on 22.x, or 24+ (the test tooling requires it)
+- npm
 - Git
+- Neon Postgres database
 - Supabase account
 - Clerk account
 - OpenRouter API key
 
 ### Setup
 
-1. **Fork and Clone**
+1. **Fork and clone**
+
+Fork the repo on GitHub, then clone your fork:
 
 ```bash
-git clone https://github.com/parbhatkapila4/Visura.git
-cd visura
+git clone https://github.com/<your-username>/Visura.git
+cd Visura
 ```
 
-2. **Install Dependencies**
+2. **Install dependencies**
 
 ```bash
 npm install
 ```
 
-3. **Setup Environment**
+3. **Set up the environment**
 
 ```bash
 # Create .env.local file
-# Add required environment variables (see README.md for full list)
-# Required: DATABASE_URL, CLERK keys, OPENROUTER_API_KEY, etc.
+# Add required environment variables, create the Supabase bucket and set up the database (see Steps 2-4 of QUICK_START.md)
+# Required: DATABASE_URL, Clerk keys, OPENROUTER_API_KEY, etc.
 ```
 
-4. **Run Development Server**
+4. **Run the development server**
 
 ```bash
 npm run dev
 ```
 
-5. **Run Tests**
+5. **Run tests**
 
 ```bash
 npm test
@@ -52,9 +55,9 @@ npm test
 
 ---
 
-## Development Workflow
+## Development workflow
 
-### 1. Create a Branch
+### 1. Create a branch
 
 ```bash
 git checkout -b feature/your-feature-name
@@ -62,14 +65,14 @@ git checkout -b feature/your-feature-name
 git checkout -b fix/bug-description
 ```
 
-### 2. Make Changes
+### 2. Make changes
 
 - Write clean, readable code
 - Follow existing patterns
 - Add tests for new features
 - Update documentation
 
-### 3. Test Your Changes
+### 3. Test your changes
 
 ```bash
 npm run test:run      # All tests pass
@@ -82,10 +85,10 @@ npm run build         # Builds successfully
 
 ```bash
 git add .
-git commit -m "feat: add amazing feature"
+git commit -m "feat: add markdown export"
 ```
 
-**Commit Message Format:**
+**Commit message format:**
 
 - `feat:` New feature
 - `fix:` Bug fix
@@ -95,23 +98,22 @@ git commit -m "feat: add amazing feature"
 - `test:` Adding tests
 - `chore:` Maintenance
 
-### 5. Push and Create PR
+### 5. Push and open a pull request
 
 ```bash
 git push origin feature/your-feature-name
 ```
 
-Then create a Pull Request on GitHub.
+Then open a pull request from your fork on GitHub.
 
 ---
 
-## Code Style
+## Code style
 
 ### TypeScript
 
 - Use TypeScript for all new files
 - Prefer `const` over `let`
-- Use arrow functions for components
 - Export types alongside functions
 
 ```typescript
@@ -131,7 +133,7 @@ export function getUser(id) {
 }
 ```
 
-### React Components
+### React components
 
 - Use functional components
 - Keep components small (<300 lines)
@@ -156,25 +158,25 @@ export function Button(props: any) {
 }
 ```
 
-### File Naming
+### File naming
 
-- Components: `PascalCase.tsx`
+- Components: `kebab-case.tsx`
 - Utilities: `kebab-case.ts`
 - Pages: `page.tsx` (Next.js convention)
 - Tests: `*.test.ts` or `*.test.tsx`
 
 ---
 
-## Testing Guidelines
+## Testing guidelines
 
-### What to Test
+### What to test
 
-1. **Business Logic**: All utility functions
-2. **API Routes**: Request validation, responses
+1. **Business logic**: All utility functions
+2. **API routes**: Request validation, responses
 3. **Components**: User interactions, rendering
-4. **Edge Cases**: Empty states, errors, loading
+4. **Edge cases**: Empty states, errors, loading
 
-### Test Structure
+### Test structure
 
 ```typescript
 describe("Feature Name", () => {
@@ -193,17 +195,15 @@ describe("Feature Name", () => {
 });
 ```
 
-### Coverage Goals
+### What not to test
 
-- Aim for >75% overall coverage
-- 100% coverage for critical paths (payment, auth)
 - Don't test external libraries
 
 ---
 
-## Debugging Tips
+## Debugging tips
 
-### Common Issues
+### Common issues
 
 **Issue**: "Module not found"
 
@@ -217,8 +217,7 @@ npm run dev
 
 ```bash
 # Check DATABASE_URL in .env.local
-# Verify Supabase credentials
-# Check Supabase dashboard for errors
+# Check Neon dashboard for errors
 ```
 
 **Issue**: Tests failing
@@ -230,17 +229,11 @@ npx vitest run --clearCache
 
 **Issue**: Build errors
 
-```bash
-# Check TypeScript errors
-npm run type-check
-
-# Check for ESLint errors
-npm run lint
-```
+`next build` skips TypeScript and ESLint errors (`next.config.ts`), so they are not what failed. Check that `RAZORPAY_KEY_ID` is set (Step 3 of QUICK_START.md) and read the first error the build prints. Run `npm run type-check` and `npm run lint` on their own before you push.
 
 ---
 
-## Project Structure
+## Project structure
 
 ```
 visura/
@@ -252,17 +245,16 @@ visura/
 ├── components/            # React components
 │   ├── ui/               # UI primitives
 │   ├── common/           # Shared components
-│   ├── home/             # Landing page sections
+│   ├── landing/          # Landing page sections
 │   ├── dashboard/        # Dashboard components
 │   ├── chatbot/          # Chat interface
 │   └── summaries/        # Summary display
-├── lib/                   # Backend logic
+├── lib/                   # App logic, mostly server-side (some files, such as document-extractor.ts, run in the browser)
 │   ├── db.ts             # Database connection
 │   ├── validators.ts     # Zod schemas
 │   ├── chatbot.ts        # Chat functions
 │   ├── versioned-documents.ts  # Versioned processing
 │   ├── embeddings.ts     # Vector search
-│   ├── observability.ts  # Monitoring & metrics
 │   └── [service].ts      # Service integrations
 ├── actions/               # Server actions
 ├── utils/                 # Shared utilities
@@ -273,38 +265,32 @@ visura/
 
 ---
 
-## Contribution Ideas
+## Contribution ideas
 
-### Good First Issues
+### Good first issues
 
 - Add more keyboard shortcuts
 - Improve error messages and user feedback
 - Add loading states and skeleton screens
 - Write more unit and integration tests
 - Improve accessibility (ARIA labels, keyboard navigation)
-- Add more document type classifications
 - Enhance mobile responsiveness
 
-### Medium Complexity
+### Medium complexity
 
 - Add export to Word/Markdown feature
-- Implement document search functionality
-- Add document comparison
 - Build batch document upload
 - Add email notifications
-- Improve observability dashboards
 
 ### Advanced
 
-- Add OCR for scanned PDFs
-- Document comparison feature
 - Custom AI model fine-tuning
 - Public API for third-party integrations
 - Multi-region deployment
 
 ---
 
-## Pull Request Checklist
+## Pull request checklist
 
 Before submitting:
 
@@ -321,20 +307,18 @@ Before submitting:
 
 ---
 
-## Code Review Process
+## Code review process
 
-1. **Automated Checks**: Tests, lint, type-check must pass
-2. **Manual Review**: Maintainer reviews code quality
+1. **Checks**: Tests, lint and type-check must pass. No CI runs them and `next build` skips lint and type errors (`next.config.ts`), so run them locally before you push.
+2. **Manual review**: Maintainer reviews code quality
 3. **Testing**: Feature tested manually
-4. **Approval**: At least 1 approval required
-5. **Merge**: Squash and merge to main
+4. **Merge**: Squash and merge to main
 
 ---
 
-## Getting Help
+## Getting help
 
 - **Issues**: [GitHub Issues](https://github.com/parbhatkapila4/Visura/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/parbhatkapila4/Visura/discussions)
 - **Email**: parbhat@parbhat.dev
 
 ---
@@ -343,10 +327,8 @@ Before submitting:
 
 Contributors will be:
 
-- Listed in README.md
-- Mentioned in release notes
 - Given credit in commit history
 
 ---
 
-Thank you for making Visura better!
+Thank you for making Visura better.

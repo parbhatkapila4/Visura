@@ -1,9 +1,23 @@
 "use client";
 
+import { PAGE_BREAK } from "./document-segmentation";
+
 declare global {
   interface Window {
     pdfjsLib: any;
   }
+}
+
+export interface ExtractionMeta {
+  ocrUsed: boolean;
+  truncated: boolean;
+  totalPages: number | null;
+  pagesRead: number | null;
+  pageStartOffsets: number[];
+}
+
+export interface ExtractionResult extends ExtractionMeta {
+  text: string;
 }
 
 export type SupportedFileType =
@@ -83,31 +97,41 @@ async function extractTextFromPDFWithOCR(file: File, pdf: any, pageNum: number):
   }
 }
 
-async function extractTextFromPDF(file: File): Promise<string> {
+type PdfJs = typeof import("pdfjs-dist");
+
+let pdfjsPromise: Promise<PdfJs> | null = null;
+
+function loadPdfJs(): Promise<PdfJs> {
+  pdfjsPromise ??= (async () => {
+    const url = "/pdf.min.mjs";
+    const pdfjs = (await import(/* webpackIgnore: true */ url)) as PdfJs;
+    pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+    return pdfjs;
+  })();
+  return pdfjsPromise;
+}
+function withTimeout<T>(work: Promise<T>, ms: number, what: string): Promise<T> {
+  return Promise.race([
+    work,
+    new Promise<T>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`${what} did not finish within ${Math.round(ms / 1000)} seconds.`)),
+        ms
+      )
+    ),
+  ]);
+}
+
+async function extractPdfWithMeta(file: File): Promise<ExtractionResult> {
   if (typeof window === "undefined") {
     throw new Error("PDF processing only available on client-side");
   }
 
-  if (!window.pdfjsLib) {
-    await new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-      script.onload = resolve;
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
-
-    if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
-      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-    }
-  }
-
-  const pdfjsLib = window.pdfjsLib;
+  const pdfjsLib = await loadPdfJs();
   const arrayBuffer = await file.arrayBuffer();
 
   const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-  const pdf = await loadingTask.promise;
+  const pdf = await withTimeout(loadingTask.promise, 45000, "Reading the PDF");
   const totalPages = pdf.numPages;
 
   const MAX_PAGES_TO_PROCESS = 50;
@@ -119,7 +143,14 @@ async function extractTextFromPDF(file: File): Promise<string> {
 
   let fullText = "";
   let pagesWithText = 0;
+  let ocrUsed = false;
   const pagesNeedingOCR: number[] = [];
+  const pageStartOffsets: number[] = [];
+  const appendPage = (pageText: string) => {
+    if (fullText) fullText += PAGE_BREAK;
+    pageStartOffsets.push(fullText.length);
+    fullText += pageText;
+  };
 
   for (let batchStart = 1; batchStart <= pagesToProcess; batchStart += BATCH_SIZE) {
     const batchEnd = Math.min(batchStart + BATCH_SIZE - 1, pagesToProcess);
@@ -132,15 +163,16 @@ async function extractTextFromPDF(file: File): Promise<string> {
         const pageText = textContent.items
           .filter((item: any) => item && typeof item === "object" && "str" in item)
           .map((item: any) => {
-            const str = item.str;
-            return typeof str === "string" ? str : String(str);
+            const str = typeof item.str === "string" ? item.str : String(item.str);
+            return item.hasEOL ? `${str}\n` : str;
           })
           .join(" ")
+          .replace(/[ \t]*\n[ \t]*/g, "\n")
           .trim();
 
         if (pageText.length > 0) {
           pagesWithText++;
-          fullText += pageText + " ";
+          appendPage(pageText);
         } else {
           pagesNeedingOCR.push(pageNum);
         }
@@ -166,7 +198,8 @@ async function extractTextFromPDF(file: File): Promise<string> {
         try {
           const ocrText = await extractTextFromPDFWithOCR(file, pdf, pageNum);
           if (ocrText.length > 0) {
-            fullText += ocrText + " ";
+            ocrUsed = true;
+            appendPage(ocrText);
             pagesWithText++;
             console.log(`✅ OCR extracted ${ocrText.length} characters from page ${pageNum}`);
           }
@@ -194,7 +227,18 @@ async function extractTextFromPDF(file: File): Promise<string> {
     throw new Error("No text found in PDF - OCR also failed to extract text");
   }
 
-  return fullText.trim();
+  return {
+    text: fullText.trim(),
+    ocrUsed,
+    truncated: willTruncate,
+    totalPages,
+    pagesRead: pagesToProcess,
+    pageStartOffsets,
+  };
+}
+
+async function extractTextFromPDF(file: File): Promise<string> {
+  return (await extractPdfWithMeta(file)).text;
 }
 
 async function extractTextFromDOCX(file: File): Promise<string> {
@@ -318,6 +362,10 @@ async function extractTextFromPowerPoint(file: File): Promise<string> {
 }
 
 export async function extractTextFromDocument(file: File): Promise<string> {
+  return (await extractDocumentWithMeta(file)).text;
+}
+
+export async function extractDocumentWithMeta(file: File): Promise<ExtractionResult> {
   const fileType = file.type;
   const fileName = file.name.toLowerCase();
 
@@ -338,38 +386,47 @@ export async function extractTextFromDocument(file: File): Promise<string> {
     else if (fileName.endsWith(".ppt")) detectedType = "application/vnd.ms-powerpoint";
   }
 
+  const plain = (text: string): ExtractionResult => ({
+    text,
+    ocrUsed: false,
+    truncated: false,
+    totalPages: null,
+    pagesRead: null,
+    pageStartOffsets: [],
+  });
+
   try {
     if (detectedType === "application/pdf" || fileName.endsWith(".pdf")) {
-      return await extractTextFromPDF(file);
+      return await extractPdfWithMeta(file);
     } else if (
       detectedType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
       detectedType === "application/msword" ||
       fileName.endsWith(".docx") ||
       fileName.endsWith(".doc")
     ) {
-      return await extractTextFromDOCX(file);
+      return plain(await extractTextFromDOCX(file));
     } else if (
       detectedType === "text/plain" ||
       detectedType === "text/markdown" ||
       fileName.endsWith(".txt") ||
       fileName.endsWith(".md")
     ) {
-      return await extractTextFromPlainText(file);
+      return plain(await extractTextFromPlainText(file));
     } else if (
       detectedType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
       detectedType === "application/vnd.ms-excel" ||
       fileName.endsWith(".xlsx") ||
       fileName.endsWith(".xls")
     ) {
-      return await extractTextFromExcel(file);
+      return plain(await extractTextFromExcel(file));
     } else if (
       detectedType ===
         "application/vnd.openxmlformats-officedocument.presentationml.presentation" ||
       fileName.endsWith(".pptx")
     ) {
-      return await extractTextFromPowerPoint(file);
+      return plain(await extractTextFromPowerPoint(file));
     } else if (detectedType === "application/vnd.ms-powerpoint" || fileName.endsWith(".ppt")) {
-      return await extractTextFromPowerPoint(file);
+      return plain(await extractTextFromPowerPoint(file));
     } else {
       throw new Error(`Unsupported file type: ${detectedType || "unknown"}`);
     }

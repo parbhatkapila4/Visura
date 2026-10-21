@@ -153,12 +153,14 @@
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(90deg,
-      rgb(26 26 26) 0%,
-      rgb(38 38 38) 45%,
-      rgb(45 45 45) 50%,
-      rgb(38 38 38) 55%,
-      rgb(26 26 26) 100%);
+  background: linear-gradient(
+    90deg,
+    rgb(26 26 26) 0%,
+    rgb(38 38 38) 45%,
+    rgb(45 45 45) 50%,
+    rgb(38 38 38) 55%,
+    rgb(26 26 26) 100%
+  );
   background-size: 200% 100%;
   animation: skeleton-shimmer 1.8s ease-in-out infinite;
 }
@@ -251,7 +253,6 @@
   }
 
   @media (max-width: 768px) {
-
     html,
     body {
       overflow-x: hidden;
@@ -283,6 +284,13 @@
     margin: 0;
     padding: 0;
   }
+  html:has([data-vs-landing]),
+  body:has([data-vs-landing]),
+  html:has([data-vs-paper]),
+  body:has([data-vs-paper]) {
+    background: var(--paper) !important;
+    background-color: var(--paper) !important;
+  }
 
   h1 {
     @apply text-3xl sm:text-4xl md:text-6xl xl:text-7xl font-bold;
@@ -299,9 +307,17 @@
   a {
     @apply hover:cursor-pointer;
   }
-
   button {
     @apply hover:cursor-pointer bg-black hover:bg-gray-800;
+  }
+
+  [data-vs-landing] button,
+  [data-vs-paper] button {
+    background-color: transparent;
+  }
+  [data-vs-landing] button:hover,
+  [data-vs-paper] button:hover {
+    background-color: transparent;
   }
 
   .container {
@@ -330,9 +346,11 @@
   }
 
   .btn-primary {
-    background: linear-gradient(135deg,
-        var(--primary),
-        oklch(from var(--primary) calc(l + 0.1) c h));
+    background: linear-gradient(
+      135deg,
+      var(--primary),
+      oklch(from var(--primary) calc(l + 0.1) c h)
+    );
     border: none;
     box-shadow: 0 4px 14px 0 rgba(var(--primary) / 0.39);
     transition: all 0.3s ease;
@@ -378,7 +396,6 @@
 }
 
 @keyframes gradient-x {
-
   0%,
   100% {
     background-size: 200% 100%;
@@ -598,17 +615,16 @@
     justify-content: center;
   }
 
-  .mobile-space-y-4>*+* {
+  .mobile-space-y-4 > * + * {
     margin-top: 1rem;
   }
 
-  .mobile-space-y-2>*+* {
+  .mobile-space-y-2 > * + * {
     margin-top: 0.5rem;
   }
 }
 
 @media (max-width: 768px) {
-
   button,
   .btn,
   [role="button"] {
@@ -678,7 +694,6 @@ div[class*="development"] {
   }
 }
 
-
 :root {
   --paper: #f3f1e9;
   --paper-2: #ebe8dd;
@@ -688,10 +703,8 @@ div[class*="development"] {
   --hairline: #dedacf;
   --hairline-strong: #c6c1b3;
 
-
   --accent: #62654e;
   --accent-ink: #ffffff;
-
 
   --reused: #0d786c;
   --reused-soft: #ddf0ea;
@@ -700,7 +713,6 @@ div[class*="development"] {
   --inflight: #5b7690;
   --replayed: #c13b72;
   --blocked: #bf3b2f;
-
 
   --ink-surface: #0c1420;
   --ink-surface-2: #16202c;
@@ -735,7 +747,8 @@ body:has([data-vs-landing]) {
   background-color: var(--paper) !important;
 }
 
-body:has([data-vs-landing]) .bg-black {
+body:has([data-vs-landing]) .bg-black,
+body:has([data-vs-paper]) .bg-black {
   background-color: var(--paper) !important;
 }
 
@@ -1054,7 +1067,6 @@ body:has([data-vs-landing]) .bg-black {
 }
 
 @media (prefers-reduced-motion: reduce) {
-
   [data-vs-landing] *,
   [data-vs-landing] *::before,
   [data-vs-landing] *::after {

@@ -7,77 +7,222 @@ export default function ChangelogPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const updates = [
     {
-      version: "v2.5.0",
-      date: "March 2026",
-      type: "feature",
-      title: "Workspace Collaboration & Performance",
+      date: "Sep 6, 2026",
+      title: "Rebuilt home page",
       description:
-        "Major release focused on real-time collaboration, performance, and reliability.",
+        "The home page now walks through what happens when you upload a new version of a document.",
       changes: [
-        "Introduced shared workspaces so teams can collaborate on document analysis in real time",
-        "Added per-workspace permissions for safer sharing with teammates and external collaborators",
-        "Optimized PDF ingestion pipeline for large files, reducing processing time by up to 40%",
-        "Rolled out autosave for chat sessions so conversation context is never lost between refreshes",
-        "Improved dashboard analytics with richer usage graphs and per-user activity insights",
-        "Enhanced error handling and retry behavior for flaky uploads and third‑party API calls",
+        "Shows which chunks carry over from the previous version and which are processed again",
+        "Shows how the changes between two versions are recorded",
       ],
     },
     {
-      version: "v2.1.0",
-      date: "March 2026",
-      type: "feature",
-      title: "Current Platform Features",
-      description: "All the features currently available in Visura",
+      date: "Mar 29, 2026",
+      title: "New summary views and workspace search",
+      description:
+        "Every summary links to four new pages, and workspaces can search and compare their documents.",
       changes: [
-        "AI-powered document analysis and summarization",
-        "Support for PDF and Word document uploads",
-        "Smart key point extraction from documents",
-        "User authentication and account management",
-        "Document processing dashboard",
-        "Export results in multiple formats",
-        "Real-time processing status updates",
+        "Sections outlines the start of the document as titled sections",
+        "AI insights pulls out key insights, risks, financial highlights, action points and important facts from the start of the document",
+        "Knowledge graph maps the topics, entities and concepts at the start of the document and how they relate",
+        "Processing insights shows how many of the version's chunks were reused and how many were new, with a timeline of processing events",
+        "Search a workspace's documents by meaning and see the matching passages",
+        "Run a workspace analysis that looks for comparisons and conflicts between its documents",
       ],
     },
     {
-      version: "v1.5.0",
-      date: "March 2026",
-      type: "feature",
-      title: "Initial Release & Core Features",
-      description: "First major release with core document analysis capabilities",
+      date: "Mar 14, 2026",
+      title: "Chat home and account page",
+      description: "Chat has its own starting page, and account settings have their own page.",
       changes: [
-        "Launched AI-powered document analysis platform",
-        "Added support for PDF and Word document processing",
-        "Implemented basic summarization and key point extraction",
-        "Created user dashboard and document management system",
+        "The chat page lists your documents so you can pick one to chat with",
+        "Added an account page for managing your profile",
+        "Workspaces now require you to sign in",
+      ],
+    },
+    {
+      date: "Jan 24, 2026",
+      title: "Chat answers from the relevant passages",
+      description:
+        "On long documents, chat answers from the passages closest to your question instead of the whole text.",
+      changes: [
+        "Passages are ranked by embedding similarity to your question, and the closest ones go to the model",
+        "Embeddings are stored under a SHA-256 hash of their text, so a passage already embedded is reused instead of embedded again",
+      ],
+    },
+    {
+      date: "Jan 23, 2026",
+      title: "Changes between versions",
+      description:
+        "When a new version of a document finishes processing, Visura records what changed since the previous version. The app does not show these records.",
+      changes: [
+        "Gemini 2.5 Flash, through OpenRouter, describes changes in the first 40 changed passages, keeps each one it can back with a quote from the document, and labels it with a type such as added, removed or modified",
+        "The upload page shows how many chunks have finished while a version is processed",
+      ],
+    },
+    {
+      date: "Jan 22, 2026",
+      title: "Document versions and chunk reuse",
+      description:
+        "Uploading a changed file with the same name adds a new version of that document instead of starting over.",
+      changes: [
+        "Each version's text is split into chunks, and each chunk is hashed with SHA-256",
+        "A chunk whose hash matches a chunk in an earlier version of the document reuses that chunk's summary instead of going back to the model",
+        "Each version records how many chunks were reused and how many were new",
+        "Before a version is created, Visura estimates its token use and does not process it if your daily limit would be exceeded",
+      ],
+    },
+    {
+      date: "Jan 14–15, 2026",
+      title: "Sign-in pages and mobile chat",
+      description: "Layout changes to the sign-in pages and the chat page on phones.",
+      changes: [
+        "Sign-in and sign-up pages show an illustrated side panel on large screens",
+        "Added a New chat button to the document chat page on phones",
+      ],
+    },
+    {
+      date: "Dec 25, 2025",
+      title: "Scanned PDFs",
+      description: "PDFs with no selectable text are now read with OCR.",
+      changes: [
+        "When a PDF has no extractable text, its pages go through English OCR in your browser, up to the first 10 pages",
+        "Your browser reads up to the first 50 pages of a PDF",
+      ],
+    },
+    {
+      date: "Dec 24, 2025",
+      title: "More file types",
+      description: "Uploads accept Word, text, Markdown, Excel and PowerPoint files alongside PDF.",
+      changes: [
+        "Added text extraction for Word (DOCX), plain text (TXT), Markdown (MD), Excel (XLSX, XLS) and PowerPoint (PPTX) files",
+      ],
+    },
+    {
+      date: "Dec 12, 2025",
+      title: "Workspace chat and sharing from a summary",
+      description:
+        "Workspaces got a chat, and a summary can be added to a workspace from its page.",
+      changes: [
+        "Each workspace has a chat",
+        "Add a summary to a workspace from the summary page",
+        "Only the owner of a document can share it to a workspace",
+      ],
+    },
+    {
+      date: "Dec 12, 2025",
+      title: "New summary page and dashboard",
+      description: "The summary page and the dashboard were rebuilt.",
+      changes: [
+        "Summaries open in a new reading view",
+        "The summary prompt now asks for a longer, more detailed breakdown of the document",
+      ],
+    },
+    {
+      date: "Dec 5–11, 2025",
+      title: "Workspaces",
+      description: "Create a workspace to keep documents together.",
+      changes: ["Share your documents into a workspace", "Delete a workspace you created"],
+    },
+    {
+      date: "Nov 21–24, 2025",
+      title: "Analytics tab",
+      description: "The dashboard has an Analytics tab next to your summaries.",
+      changes: [
+        "Counts your documents, in total or across your 4 most recent weeks with uploads in the past 30 days",
+        "Lists your most recent uploads",
+      ],
+    },
+    {
+      date: "Nov 21, 2025",
+      title: "Share links",
+      description: "Share a summary with anyone by link.",
+      changes: ["Anyone with the link can read the summary without signing in"],
+    },
+    {
+      date: "Nov 20, 2025",
+      title: "PDF downloads",
+      description: "Download a summary as a PDF from the dashboard.",
+      changes: [
+        "Markdown symbols are stripped from the PDF, and bold text stays bold",
+        "Downloads are counted per account, and downloading the same summary again does not count twice",
+      ],
+    },
+    {
+      date: "Nov 7, 2025",
+      title: "Razorpay checkout",
+      description: "Payments moved from Stripe to Razorpay.",
+      changes: [
+        "Checkout creates a one-time Razorpay order",
+        "Added checkout pages for the Pro and Starter plans",
+        "Checkout picks the currency from the country you are browsing from",
+        "Added Shipping and Cancellation & refund pages",
+      ],
+    },
+    {
+      date: "Nov 2, 2025",
+      title: "Loading and error screens",
+      description:
+        "Pages show a loading state while they fetch data and an error screen when they fail.",
+      changes: [
+        "Added loading screens for the dashboard, summary and chat pages",
+        "Added error screens with a retry button for the dashboard, the upload page and the rest of the site",
+        "Chat messages are rate-limited per user, and chat requests are validated before they run",
+      ],
+    },
+    {
+      date: "Oct 30 – Nov 2, 2025",
+      title: "Rebuilt chat and phone layouts",
+      description: "The document chat page was rebuilt, and core pages were reworked for phones.",
+      changes: ["Reworked the header, dashboard and summary cards for small screens"],
+    },
+    {
+      date: "Oct 28, 2025",
+      title: "Site pages",
+      description: "Added standalone pages for the rest of the site.",
+      changes: [
+        "Added About, Features, Pricing, Docs, Support and Contact pages",
+        "Added Privacy, Terms and Cookies pages",
+        "Added this changelog",
+      ],
+    },
+    {
+      date: "Sep 17, 2025",
+      title: "Chat with a document",
+      description: "Ask questions about an uploaded PDF and get answers based on its full text.",
+      changes: [
+        "Each summary has a chat page",
+        "Conversations are saved, and a document's chat reopens your most recent one",
+      ],
+    },
+    {
+      date: "Sep 17, 2025",
+      title: "Plans and upload limits",
+      description: "Added paid plans with Stripe checkout.",
+      changes: ["On the free plan, the dashboard shows how many summaries you can create"],
+    },
+    {
+      date: "Sep 15–16, 2025",
+      title: "Dashboard and summary pages",
+      description: "Your summaries got a dashboard and a page each.",
+      changes: [
+        "The dashboard lists your summaries as cards",
+        "Each summary opens on its own page",
+        "Delete a summary from the dashboard",
+      ],
+    },
+    {
+      date: "Sep 14–15, 2025",
+      title: "Accounts, upload and summaries",
+      description: "Sign in, upload a PDF and get a summary.",
+      changes: [
+        "Sign up and sign in with Clerk",
+        "Upload a PDF; its text is extracted and summarized by a model through OpenRouter",
+        "Moved file storage from UploadThing to Supabase Storage",
+        "Summaries are saved in a Postgres database on Neon",
       ],
     },
   ];
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "feature":
-        return "bg-black text-white border-black";
-      case "improvement":
-        return "bg-gray-100 text-black border-gray-300";
-      case "fix":
-        return "bg-gray-100 text-black border-gray-300";
-      default:
-        return "bg-gray-100 text-black border-gray-300";
-    }
-  };
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case "feature":
-        return "New Feature";
-      case "improvement":
-        return "Improvement";
-      case "fix":
-        return "Bug Fix";
-      default:
-        return "Update";
-    }
-  };
 
   return (
     <div className="min-h-screen w-full bg-white">
@@ -88,14 +233,14 @@ export default function ChangelogPage() {
             className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition-colors mb-6 sm:mb-8"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-sm sm:text-base">Back to Home</span>
+            <span className="text-sm sm:text-base">Back to home</span>
           </Link>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-4 sm:mb-6">
             Changelog
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl">
-            Stay up-to-date with our latest updates, new features, and improvements. We're
-            constantly working to make Visura better for you.
+            What changed in Visura and when, taken from the project&apos;s commit history. Newest
+            first.
           </p>
         </div>
       </div>
@@ -115,18 +260,6 @@ export default function ChangelogPage() {
 
                 <div className="flex-1 bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:shadow-md transition-shadow">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
-                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                      <span className="text-lg sm:text-2xl font-bold text-black">
-                        {update.version}
-                      </span>
-                      <span
-                        className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium border ${getTypeColor(
-                          update.type
-                        )}`}
-                      >
-                        {getTypeLabel(update.type)}
-                      </span>
-                    </div>
                     <span className="text-xs sm:text-sm text-gray-500">{update.date}</span>
                   </div>
 

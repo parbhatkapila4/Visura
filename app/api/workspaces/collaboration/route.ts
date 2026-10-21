@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { canViewSummary } from "@/lib/summaries";
 import {
   updateCollaborationSession,
   getActiveCollaborators,
@@ -19,9 +20,21 @@ export async function GET(request: NextRequest) {
     if (!pdfSummaryId) {
       return NextResponse.json({ error: "pdfSummaryId is required" }, { status: 400 });
     }
+    if (!(await canViewSummary(pdfSummaryId, userId))) {
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    }
 
     const collaborators = await getActiveCollaborators(pdfSummaryId, userId);
-    return NextResponse.json(collaborators);
+    return NextResponse.json(
+      collaborators.map((c) => ({
+        id: c.id,
+        pdf_summary_id: c.pdf_summary_id,
+        user_email: c.user_email,
+        user_name: c.user_name,
+        cursor_position: c.cursor_position,
+        last_seen: c.last_seen,
+      }))
+    );
   } catch (error) {
     console.error("Error fetching collaborators:", error);
     return NextResponse.json({ error: "Failed to fetch collaborators" }, { status: 500 });
@@ -45,6 +58,10 @@ export async function POST(request: NextRequest) {
 
     if (!pdfSummaryId) {
       return NextResponse.json({ error: "pdfSummaryId is required" }, { status: 400 });
+    }
+
+    if (!(await canViewSummary(pdfSummaryId, userId))) {
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
     const session = await updateCollaborationSession({

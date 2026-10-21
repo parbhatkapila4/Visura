@@ -1,13 +1,19 @@
+import { auth } from "@clerk/nextjs/server";
 import { findSummaryById } from "@/lib/summaries";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import PremiumSummaryView from "@/components/summaries/premium-summary-view";
 import { SummaryPageWrapper } from "@/components/summaries/summary-page-wrapper";
 
 export default async function SummaryPage(props: { params: Promise<{ id: string }> }) {
+  const { userId } = await auth();
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
   const params = await props.params;
   const id = params.id;
 
-  const summary = await findSummaryById(id);
+  const summary = await findSummaryById(id, userId);
 
   if (!summary) {
     notFound();
@@ -18,7 +24,7 @@ export default async function SummaryPage(props: { params: Promise<{ id: string 
       <PremiumSummaryView
         summary={{
           id: summary.id,
-          title: summary.title || "Untitled Document",
+          title: summary.title || "Untitled document",
           summary_text: summary.summary_text ?? "",
           created_at: summary.created_at,
           word_count: summary.word_count,

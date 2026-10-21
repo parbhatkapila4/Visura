@@ -27,16 +27,14 @@ export default function InitializeChatbotButton({ pdfSummaryId }: InitializeChat
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to initialize chatbot");
+        throw new Error(data.error || "Couldn't set up chat");
       }
 
-      toast.success("Chatbot initialized successfully!");
+      toast.success("Chat is set up");
       router.refresh();
     } catch (error) {
       console.error("Error initializing chatbot:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to initialize chatbot. Please try again."
-      );
+      toast.error(error instanceof Error ? error.message : "Couldn't set up chat. Try again.");
     } finally {
       setIsInitializing(false);
     }
@@ -51,12 +49,12 @@ export default function InitializeChatbotButton({ pdfSummaryId }: InitializeChat
       {isInitializing ? (
         <>
           <RefreshCw className="w-4 h-4 animate-spin" />
-          Initializing...
+          Setting up...
         </>
       ) : (
         <>
           <RefreshCw className="w-4 h-4" />
-          Initialize Chatbot
+          Set up chat
         </>
       )}
     </button>

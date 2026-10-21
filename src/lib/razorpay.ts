@@ -15,5 +15,7 @@ export function verifyCheckoutSignature(params: {
     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
     .update(`${params.orderId}|${params.paymentId}`)
     .digest("hex");
-  return digest === params.signature;
+  const expected = Buffer.from(digest);
+  const given = Buffer.from(String(params.signature));
+  return expected.length === given.length && crypto.timingSafeEqual(expected, given);
 }

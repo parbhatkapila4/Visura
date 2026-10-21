@@ -1,0 +1,513 @@
+.vs-cmp {
+  max-width: calc(var(--vs-page-max) + 32px);
+  margin-inline: auto;
+  padding: 40px 16px 120px;
+  color: var(--ink);
+}
+@media (min-width: 768px) {
+  .vs-cmp {
+    max-width: calc(var(--vs-page-max) + 48px);
+    padding: 56px 24px 140px;
+  }
+}
+@media (min-width: 1024px) {
+  .vs-cmp {
+    max-width: calc(var(--vs-page-max) + 80px);
+    padding: 72px 40px 160px;
+  }
+}
+
+.vs-cmp-title {
+  font-family: var(--font-vs-display), "Iowan Old Style", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(38px, 6.2vw, 68px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  max-width: 18ch;
+}
+.vs-cmp-title em {
+  font-style: italic;
+}
+.vs-cmp-sub {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 46ch;
+  margin-top: 18px;
+  text-wrap: pretty;
+}
+@media (min-width: 768px) {
+  .vs-cmp-sub {
+    font-size: 18px;
+  }
+}
+
+.vs-cmp-drops {
+  display: grid;
+  gap: 14px;
+  margin-top: 40px;
+}
+@media (min-width: 768px) {
+  .vs-cmp-drops {
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 52px;
+  }
+}
+
+.vs-cmp-drop {
+  border: 1px dashed var(--hairline-strong);
+  border-radius: var(--vs-radius-plate);
+  background-color: rgba(255, 255, 255, 0.42);
+  padding: 28px 22px;
+  transition:
+    border-color var(--t-base) var(--vs-ease),
+    background-color var(--t-base) var(--vs-ease);
+}
+.vs-cmp-drop--over {
+  border-color: var(--accent);
+  background-color: rgba(255, 255, 255, 0.72);
+}
+.vs-cmp-drop-label {
+  font-family: var(--font-vs-mono), ui-monospace, monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.vs-cmp-drop-file {
+  font-family: var(--font-vs-mono), ui-monospace, monospace;
+  font-size: 14px;
+  color: var(--ink);
+  margin-top: 14px;
+  word-break: break-all;
+}
+.vs-cmp-drop-empty {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  color: var(--ink-2);
+  margin-top: 14px;
+}
+.vs-cmp-drop-btn {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+.vs-cmp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 20px;
+  margin-top: 32px;
+}
+.vs-cmp-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  padding-inline: 30px;
+  border-radius: var(--vs-radius-btn);
+  background-color: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: opacity var(--t-base) var(--vs-ease);
+}
+.vs-cmp-cta:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.vs-cmp-hint {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--ink-3);
+}
+.vs-cmp-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.vs-cmp-error {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  color: var(--blocked);
+  margin-top: 20px;
+  padding-left: 12px;
+  border-left: 2px solid var(--blocked);
+}
+.vs-cmp-eyebrow {
+  font-family: var(--font-vs-mono), ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--ink-3);
+  word-break: break-all;
+}
+.vs-cmp-headline {
+  font-family: var(--font-vs-display), "Iowan Old Style", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(30px, 4.6vw, 54px);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  margin-top: 16px;
+  max-width: 24ch;
+  text-wrap: balance;
+}
+.vs-cmp-note {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  color: var(--ink-2);
+  margin-top: 20px;
+}
+
+.vs-cmp-changes {
+  margin-top: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+}
+.vs-cmp-grouphead {
+  border-top: 1px solid var(--hairline);
+  padding-top: 14px;
+}
+.vs-cmp-grouptitle {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.vs-cmp-count {
+  font-family: var(--font-vs-mono), ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-3);
+  margin-left: 6px;
+}
+.vs-cmp-groupcaption {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--ink-3);
+  margin-top: 4px;
+}
+.vs-cmp-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.vs-cmp-card {
+  border: 1px solid var(--hairline);
+  border-left-width: 3px;
+  border-radius: var(--vs-radius-plate);
+  background-color: rgba(255, 255, 255, 0.6);
+  padding: 18px 20px;
+}
+.vs-cmp-card--material {
+  border-left-color: var(--new);
+}
+.vs-cmp-card--substantive {
+  border-left-color: var(--inflight);
+}
+.vs-cmp-card--cosmetic {
+  border-left-color: var(--hairline-strong);
+}
+.vs-cmp-cardmeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-family: var(--font-vs-mono), ui-monospace, monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.vs-cmp-kind {
+  color: var(--ink-2);
+}
+.vs-cmp-diff {
+  font-family: var(--font-vs-serif), Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+.vs-cmp-del {
+  background-color: #f6dcd6;
+  color: #7c2d1e;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+.vs-cmp-ins {
+  background-color: var(--reused-soft);
+  color: #0a4f47;
+  text-decoration: none;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+.vs-cmp-collapse {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--ink-2);
+  text-align: left;
+  border-top: 1px solid var(--hairline);
+  padding-top: 14px;
+  width: 100%;
+  cursor: pointer;
+}
+.vs-cmp-collapse:hover {
+  color: var(--ink);
+}
+
+.vs-cmp-empty {
+  margin-top: 48px;
+  border-left: 3px solid var(--reused);
+  padding: 4px 0 4px 18px;
+}
+.vs-cmp-empty-title {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+}
+.vs-cmp-empty-sub {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  margin-top: 8px;
+  max-width: 56ch;
+}
+.vs-cmp-caveat {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-3);
+  margin-top: 64px;
+  padding-top: 18px;
+  border-top: 1px solid var(--hairline);
+  max-width: 68ch;
+}
+.vs-cmp-warning {
+  margin-top: 36px;
+  border: 1px solid var(--new);
+  border-left-width: 3px;
+  border-radius: var(--vs-radius-plate);
+  background-color: var(--new-soft);
+  padding: 18px 22px;
+}
+.vs-cmp-warning-title {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.vs-cmp-warning-list {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  list-style: disc;
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.vs-cmp-warning-list li + li {
+  margin-top: 6px;
+}
+.vs-cmp-warning-foot {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--ink-2);
+  margin-top: 10px;
+}
+.vs-cmp-share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-top: 22px;
+}
+.vs-cmp-share-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding-inline: 18px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--vs-radius-btn);
+  background-color: rgba(255, 255, 255, 0.6);
+  color: var(--ink);
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color var(--t-base) var(--vs-ease),
+    background-color var(--t-base) var(--vs-ease);
+}
+.vs-cmp-share-btn:hover {
+  border-color: var(--ink-2);
+  background-color: #fff;
+}
+.vs-cmp-share-hint {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 13.5px;
+  color: var(--ink-3);
+}
+.vs-cmp-promise {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 52ch;
+  margin-top: 16px;
+  padding-left: 14px;
+  border-left: 2px solid var(--reused);
+  text-wrap: pretty;
+}
+.vs-cmp-promise strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+.vs-cmp-sample {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--hairline);
+}
+.vs-cmp-sample-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding-inline: 20px;
+  border: 1px solid var(--ink);
+  border-radius: var(--vs-radius-btn);
+  background-color: transparent;
+  color: var(--ink);
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--t-base) var(--vs-ease),
+    color var(--t-base) var(--vs-ease);
+}
+.vs-cmp-sample-btn:hover:not(:disabled) {
+  background-color: var(--ink);
+  color: var(--paper);
+}
+.vs-cmp-sample-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.vs-cmp-sample-note {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-3);
+  max-width: 60ch;
+  margin-top: 12px;
+  text-wrap: pretty;
+}
+.vs-cmp-sample-note em {
+  font-style: italic;
+  color: var(--ink-2);
+}
+.vs-cmp-claim {
+  margin-top: 34px;
+  padding: 22px 24px 24px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--vs-radius-plate);
+  background-color: rgba(255, 255, 255, 0.45);
+}
+.vs-cmp-claim-q {
+  font-family: var(--font-vs-display), Georgia, serif;
+  font-size: 21px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.vs-cmp-claim-sub {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--ink-3);
+  margin-top: 6px;
+}
+.vs-cmp-claim-list {
+  margin-top: 16px;
+  display: grid;
+  gap: 2px;
+}
+.vs-cmp-claim-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 8px;
+  margin-inline: -8px;
+  border-radius: var(--vs-radius);
+  cursor: pointer;
+}
+.vs-cmp-claim-item:hover {
+  background-color: rgba(0, 0, 0, 0.035);
+}
+.vs-cmp-claim-box {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  accent-color: var(--reused);
+  cursor: pointer;
+  transform: translateY(1px);
+}
+.vs-cmp-claim-label {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.vs-cmp-claim-page {
+  font-family: var(--font-vs-mono), ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-left: auto;
+  padding-left: 12px;
+  flex: none;
+}
+.vs-cmp-verdict {
+  margin-top: 20px;
+  padding: 16px 18px;
+  border: 1px solid var(--reused);
+  border-left-width: 3px;
+  border-radius: var(--vs-radius);
+  background-color: var(--reused-soft);
+}
+.vs-cmp-verdict--flag {
+  border-color: var(--new);
+  background-color: var(--new-soft);
+}
+.vs-cmp-verdict-line {
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.vs-cmp-verdict-list {
+  margin-top: 10px;
+  padding-left: 18px;
+  list-style: disc;
+  font-family: var(--font-vs-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}

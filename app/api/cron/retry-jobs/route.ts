@@ -8,6 +8,7 @@ import {
 } from "@/lib/jobs";
 import { sendAlert } from "@/lib/alerting";
 import { logger, generateRequestId } from "@/lib/logger";
+import { hasCronSecret } from "@/lib/cron-auth";
 import { requireInternalAuth, createInternalRequestOptions } from "@/lib/internal-api-auth";
 
 export const maxDuration = 60;
@@ -17,8 +18,7 @@ const PROCESSING_TIMEOUT_MINUTES = 10;
 export async function GET(request: NextRequest) {
   const requestId = generateRequestId();
 
-  const authHeader = request.headers.get("authorization");
-  const hasBearerAuth = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+  const hasBearerAuth = hasCronSecret(request);
   const hasInternalAuth = await requireInternalAuth(request);
 
   if (!hasBearerAuth && !hasInternalAuth) {

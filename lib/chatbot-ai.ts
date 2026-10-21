@@ -180,7 +180,7 @@ export async function generateChatbotResponse(
 
 **What you can do:**
 • Upload a different version of the document
-• If it's a scanned document, OCR support is coming soon
+• Scanned pages are read with OCR, up to 10 pages — beyond that, upload a text PDF
 • For password-protected files, unlock them first and re-upload
 • Make sure the document contains actual text content
 

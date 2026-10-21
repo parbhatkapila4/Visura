@@ -1,59 +1,53 @@
 "use client";
 import Link from "next/link";
-import { ArrowLeft, Check, Star, Zap, Shield, Users } from "lucide-react";
+import { ArrowLeft, Check, Zap, Shield, Users } from "lucide-react";
 
 export default function PricingPage() {
   const plans = [
     {
       name: "Starter",
-      price: "$10",
-      period: "month",
-      description: "Perfect for individuals and small teams getting started with document analysis",
+      price: "10",
+      period: "one-time payment",
+      description: "Every feature, with room for a few more documents.",
       features: [
-        "Up to 50 documents/month",
-        "Basic AI summarization",
-        "PDF & Word support",
-        "Email support",
-        "Standard processing speed",
+        "Keep up to 10 documents",
+        "AI summary and chat for every document",
+        "PDF, DOCX, PPTX, XLSX, XLS, TXT and MD files up to 32 MB",
+        "2 summary downloads, as PDF",
       ],
       popular: false,
-      cta: "Get Started",
+      cta: "Buy Starter",
+      href: "/checkout/starter",
     },
     {
-      name: "Professional",
-      price: "$20",
-      period: "month",
-      description:
-        "Ideal for growing businesses and power users who need advanced document analysis",
+      name: "Pro",
+      price: "20",
+      period: "one-time payment",
+      description: "Every feature, with room for a large library.",
       features: [
-        "Unlimited documents",
-        "Advanced AI summarization",
-        "All file formats (PDF, Word, PowerPoint)",
-        "Priority support",
-        "Fast processing (30s)",
-        "Export in multiple formats",
-        "Team collaboration",
+        "Keep up to 1,000 documents",
+        "AI summary and chat for every document",
+        "PDF, DOCX, PPTX, XLSX, XLS, TXT and MD files up to 32 MB",
+        "2 summary downloads, as PDF",
       ],
       popular: true,
-      cta: "Start Free Trial",
+      cta: "Buy Pro",
+      href: "/checkout",
     },
     {
-      name: "Enterprise",
-      price: "Custom",
-      period: "contact",
-      description:
-        "Tailored solutions for large organizations with high-volume document processing needs",
+      name: "Free",
+      price: "Free",
+      period: "",
+      description: "Try every feature with no payment.",
       features: [
-        "Everything in Professional",
-        "Custom AI models for specific document types",
-        "API access and webhooks",
-        "Dedicated support",
-        "On-premise deployment options",
-        "Custom integrations",
-        "SLA guarantee",
+        "Keep up to 5 documents",
+        "AI summary and chat for every document",
+        "PDF, DOCX, PPTX, XLSX, XLS, TXT and MD files up to 32 MB",
+        "2 summary downloads, as PDF",
       ],
       popular: false,
-      cta: "Contact Sales",
+      cta: "Sign up free",
+      href: "/sign-up",
     },
   ];
 
@@ -66,12 +60,15 @@ export default function PricingPage() {
             className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-8"
           >
             <ArrowLeft className="w-5 h-5" />
-            Back to Home
+            Back to home
           </Link>
           <h1 className="text-5xl font-bold mb-6">Pricing</h1>
           <p className="text-xl text-white/90 max-w-3xl">
-            Choose the perfect plan that fits your document analysis needs. All plans include our
-            core AI-powered summarization features with no hidden fees.
+            Every plan has the same features. Plans differ only in how many documents your account
+            can keep, and each new version of a document counts as one. Paid plans are a one-time
+            payment, and nothing renews. Prices are in US dollars. Checkout charges in rupees, US
+            dollars or euros, depending on where you are. It cannot take payment from the UK,
+            Canada, Australia or Singapore.
           </p>
         </div>
       </div>
@@ -80,15 +77,6 @@ export default function PricingPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map((plan, index) => (
             <div key={index} className={`relative group ${plan.popular ? "md:-mt-8" : ""}`}>
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-semibold rounded-full flex items-center gap-1">
-                    <Star className="w-4 h-4" />
-                    Most Popular
-                  </div>
-                </div>
-              )}
-
               <div
                 className={`relative h-full p-8 rounded-3xl border transition-all duration-300 ${
                   plan.popular
@@ -107,10 +95,10 @@ export default function PricingPage() {
 
                     <div className="flex items-baseline gap-2">
                       <span className="text-5xl font-bold text-gray-900">
-                        {plan.price === "Custom" ? "Custom" : `$${plan.price}`}
+                        {plan.price === "Free" ? "Free" : `$${plan.price}`}
                       </span>
-                      {plan.price !== "Custom" && (
-                        <span className="text-gray-600">/{plan.period}</span>
+                      {plan.price !== "Free" && (
+                        <span className="text-gray-600">{plan.period}</span>
                       )}
                     </div>
                   </div>
@@ -124,17 +112,18 @@ export default function PricingPage() {
                     ))}
                   </div>
 
-                  <button
-                    className={`w-full py-4 px-6 font-semibold rounded-xl transition-all duration-300 ${
+                  <Link
+                    href={plan.href}
+                    className={`block w-full py-4 px-6 text-center font-semibold rounded-xl transition-all duration-300 ${
                       plan.popular
                         ? "bg-blue-600 hover:bg-blue-700 text-white"
-                        : plan.price === "Custom"
+                        : plan.price === "Free"
                           ? "bg-gray-600 hover:bg-gray-700 text-white"
                           : "bg-gray-900 hover:bg-gray-800 text-white"
                     }`}
                   >
                     {plan.cta}
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -145,23 +134,23 @@ export default function PricingPage() {
       <div className="bg-gray-50 py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            Frequently Asked Questions
+            Frequently asked questions
           </h2>
           <div className="space-y-8">
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Can I change my plan anytime?
+                Can I move from Starter to Pro?
               </h3>
               <p className="text-gray-600">
-                Yes, you can upgrade or downgrade your plan at any time. Changes take effect
-                immediately, and we'll prorate any billing differences.
+                Yes. Buy Pro at its full price and your plan changes once the payment is confirmed.
+                Your documents stay where they are. Payments are not prorated.
               </p>
             </div>
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Is there a free trial?</h3>
               <p className="text-gray-600">
-                Yes! We offer a 14-day free trial for all plans. No credit card required to get
-                started.
+                No. The free plan has every feature, keeps up to 5 documents and does not expire.
+                You can sign up without payment details.
               </p>
             </div>
             <div className="bg-white rounded-2xl p-6 shadow-sm">
@@ -169,15 +158,11 @@ export default function PricingPage() {
                 What file formats do you support?
               </h3>
               <p className="text-gray-600">
-                We support PDF, Word, PowerPoint, Excel, plain text, and image files. Our AI can
-                extract and analyze text from any of these formats.
-              </p>
-            </div>
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Do you offer refunds?</h3>
-              <p className="text-gray-600">
-                Yes, we offer a 30-day money-back guarantee. If you're not satisfied, contact us for
-                a full refund.
+                PDF, Word (.docx), PowerPoint (.pptx), Excel (.xlsx and .xls), plain text and
+                Markdown, up to 32 MB per file. Your browser reads the first 50 pages of a PDF. If
+                it cannot read the file, the server reads the whole file instead. If a PDF has no
+                text layer, such as a scan, only its first 10 pages are read, with English OCR.
+                Older .doc and .ppt files and images are not supported.
               </p>
             </div>
           </div>
@@ -186,22 +171,19 @@ export default function PricingPage() {
 
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
-          <p className="text-xl text-white/90 mb-8">
-            Join thousands of professionals who trust Visura for their document analysis needs.
-          </p>
+          <h2 className="text-3xl font-bold mb-4">Start on the free plan</h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/sign-up"
               className="px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
             >
-              Start Free Trial
+              Sign up free
             </Link>
             <Link
               href="/contact"
               className="px-8 py-3 border border-white/30 text-white font-semibold rounded-lg hover:bg-white/10 transition-colors"
             >
-              Contact Sales
+              Contact us
             </Link>
           </div>
         </div>

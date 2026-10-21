@@ -13,8 +13,8 @@ import {
   ChevronLeft,
   Clock,
   Layers,
-  Zap,
   Timer,
+  AlertTriangle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,11 +36,20 @@ const EVENT_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   version_failed: XCircle,
 };
 
+const EVENT_LABELS: Record<string, string> = {
+  upload_started: "Version created",
+  chunking_started: "Text split into chunks",
+  hash_diff_started: "Chunks hashed",
+  llm_processing_started: "Summarizing new chunks",
+  embeddings_started: "Chat context started",
+  indexing_started: "Chat text stored",
+};
+const STALE_MESSAGE_TYPES = new Set(["chunking_started", "hash_diff_started"]);
+
 function eventLabel(eventType: string): string {
-  return eventType
-    .split("_")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
+  if (EVENT_LABELS[eventType]) return EVENT_LABELS[eventType];
+  const words = eventType.split("_").join(" ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 function formatDuration(ms: number | null): string {
@@ -80,7 +89,9 @@ export function ProcessingInsightsView({
     ? "Completed"
     : events.some((e) => e.event_type === "version_failed")
       ? "Failed"
-      : "Processing";
+      : "No finish recorded";
+  const caveats = version.coverage_caveats ?? [];
+  const reuseIsCoverage = caveats.length === 0;
 
   const statusColor =
     status === "Completed"
@@ -127,9 +138,13 @@ export function ProcessingInsightsView({
               </div>
               <p className="text-[11px] text-[#555] uppercase tracking-wider mb-1">Chunks</p>
               <p className="text-sm font-medium text-white">{version.total_chunks} total</p>
-              <p className="text-xs text-[#666] mt-0.5">
-                {version.reused_chunks} reused · {version.new_chunks} new
-              </p>
+              {reuseIsCoverage ? (
+                <p className="text-xs text-[#666] mt-0.5">
+                  {version.reused_chunks} reused · {version.new_chunks} new
+                </p>
+              ) : (
+                <p className="text-xs text-[#666] mt-0.5">of the text we could read</p>
+              )}
             </div>
             <div className="p-5 rounded-xl bg-[#111] border border-[#1f1f1f]">
               <div className="flex items-center gap-2 mb-3">
@@ -137,12 +152,35 @@ export function ProcessingInsightsView({
                   <Timer className="w-4 h-4 text-orange-400" />
                 </div>
               </div>
-              <p className="text-[11px] text-[#555] uppercase tracking-wider mb-1">Duration</p>
+              <p className="text-[11px] text-[#555] uppercase tracking-wider mb-1">
+                Created to last event
+              </p>
               <p className="text-sm font-medium text-white">
                 {formatDuration(metrics.processingDurationMs)}
               </p>
             </div>
           </div>
+
+          {caveats.length > 0 && (
+            <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.06] p-5">
+              <div className="flex gap-3">
+                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-amber-300 leading-tight">
+                    Reuse figures are left out of the overview and Efficiency sections for this
+                    version
+                  </p>
+                  <ul className="mt-2 space-y-1">
+                    {caveats.map((caveat) => (
+                      <li key={caveat} className="text-sm text-[#999] leading-relaxed">
+                        {caveat}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         <section>
@@ -166,20 +204,14 @@ export function ProcessingInsightsView({
           <h2 className="text-sm font-semibold text-[#888] uppercase tracking-wider mb-5">
             Efficiency
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <StatBlock
               icon={<RefreshCw className="w-4 h-4 text-emerald-400" />}
               iconBg="bg-emerald-500/10"
               label="Reuse"
-              value={metrics.totalChunks > 0 ? `${metrics.reusePercent.toFixed(0)}%` : "—"}
-            />
-            <StatBlock
-              icon={<Zap className="w-4 h-4 text-amber-400" />}
-              iconBg="bg-amber-500/10"
-              label="Tokens saved"
               value={
-                metrics.estimatedTokensSaved != null
-                  ? metrics.estimatedTokensSaved.toLocaleString()
+                reuseIsCoverage && metrics.totalChunks > 0
+                  ? `${metrics.reusePercent.toFixed(0)}%`
                   : "—"
               }
             />
@@ -192,7 +224,7 @@ export function ProcessingInsightsView({
             <StatBlock
               icon={<Timer className="w-4 h-4 text-blue-400" />}
               iconBg="bg-blue-500/10"
-              label="Duration"
+              label="Created to last event"
               value={formatDuration(metrics.processingDurationMs)}
             />
           </div>
@@ -257,7 +289,7 @@ function TimelineItem({ event, isLast }: { event: InsightsEvent; isLast: boolean
         <p className="text-sm font-medium text-white leading-tight">
           {eventLabel(event.event_type)}
         </p>
-        {event.message && (
+        {event.message && !STALE_MESSAGE_TYPES.has(event.event_type) && (
           <p className="text-sm text-[#888] mt-1 leading-relaxed">{event.message}</p>
         )}
         <p className="text-xs text-[#555] mt-1.5">{formatDate(event.created_at)}</p>

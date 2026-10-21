@@ -2469,22 +2469,22 @@
   font-weight: 600;
   color: var(--ink);
 }
-
-.vs-ftr-creature {
-  display: none;
+.vs-ftr-rule {
+  position: relative;
+  margin-top: 36px;
+  padding-top: 84px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hairline-strong);
 }
 
 @media (min-width: 768px) {
-  .vs-ftr-creature {
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-start;
-    margin-top: -18px;
+  .vs-ftr-rule {
+    margin-top: 4px;
+    padding-top: 118px;
   }
 }
 
 .vs-ftr-label {
-  margin-top: 56px;
   font-family: var(--font-vs-mono), ui-monospace, "Courier New", monospace;
   font-size: 11.5px;
   font-weight: 500;
@@ -2492,11 +2492,31 @@
   text-transform: uppercase;
   color: var(--ink-3);
 }
+.vs-ftr-perch {
+  --vs-perch-w: 84px;
+  --vs-perch-keel: 0.1092;
+  position: absolute;
+  right: 4px;
+  bottom: calc(var(--vs-perch-w) * var(--vs-perch-keel) * -1 - 0.5px);
+  width: var(--vs-perch-w);
+  line-height: 0;
+  pointer-events: none;
+}
 
 @media (min-width: 768px) {
-  .vs-ftr-label {
-    margin-top: 72px;
+  .vs-ftr-perch {
+    --vs-perch-w: 138px;
+    right: 28px;
   }
+}
+
+.vs-ftr-perch .vs-origami {
+  position: static;
+  display: block;
+  width: 100% !important;
+}
+.vs-ftr-perch .vs-origami-inner {
+  transform-origin: 45.8% 85.8%;
 }
 
 .vs-ftr-foot {

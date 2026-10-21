@@ -6,11 +6,13 @@ import { cn } from "@/lib/utils";
 
 export function PrimaryCta({
   label = "Upload a document",
+  href,
   className,
   variant = "ink",
   size = "md",
 }: {
   label?: string;
+  href?: string;
   className?: string;
   variant?: "ink" | "accent";
   size?: "md" | "lg";
@@ -18,7 +20,7 @@ export function PrimaryCta({
   const { isSignedIn } = useAuth();
   return (
     <Link
-      href={isSignedIn ? "/upload" : "/sign-up"}
+      href={href ?? (isSignedIn ? "/upload" : "/sign-up")}
       prefetch={false}
       className={cn(
         "vs-btn vs-btn-label vs-t",

@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { addDocumentComment, getDocumentComments } from "@/lib/workspaces";
+import { getDbConnection } from "@/lib/db";
+import { addDocumentComment, getDocumentComments, getWorkspaceById } from "@/lib/workspaces";
+async function canUseWorkspaceComments(
+  pdfSummaryId: string,
+  workspaceId: string,
+  userId: string
+): Promise<boolean> {
+  if (!(await getWorkspaceById(workspaceId, userId))) {
+    return false;
+  }
+  const sql = await getDbConnection();
+  const [share] = await sql`
+    SELECT id FROM document_shares
+    WHERE pdf_summary_id = ${pdfSummaryId} AND workspace_id = ${workspaceId}
+  `;
+  return !!share;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,11 +29,18 @@ export async function GET(request: NextRequest) {
     const pdfSummaryId = searchParams.get("pdfSummaryId");
     const workspaceId = searchParams.get("workspaceId");
 
-    if (!pdfSummaryId) {
-      return NextResponse.json({ error: "pdfSummaryId is required" }, { status: 400 });
+    if (!pdfSummaryId || !workspaceId) {
+      return NextResponse.json(
+        { error: "pdfSummaryId and workspaceId are required" },
+        { status: 400 }
+      );
     }
 
-    const comments = await getDocumentComments(pdfSummaryId, workspaceId || undefined);
+    if (!(await canUseWorkspaceComments(pdfSummaryId, workspaceId, userId))) {
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    }
+
+    const comments = await getDocumentComments(pdfSummaryId, workspaceId);
     return NextResponse.json(comments);
   } catch (error) {
     console.error("Error fetching comments:", error);
@@ -40,8 +63,15 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { pdfSummaryId, workspaceId, content, position, parentCommentId } = body;
 
-    if (!pdfSummaryId || !content) {
-      return NextResponse.json({ error: "pdfSummaryId and content are required" }, { status: 400 });
+    if (!pdfSummaryId || !workspaceId || !content) {
+      return NextResponse.json(
+        { error: "pdfSummaryId, workspaceId and content are required" },
+        { status: 400 }
+      );
+    }
+
+    if (!(await canUseWorkspaceComments(pdfSummaryId, workspaceId, userId))) {
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
     const comment = await addDocumentComment({

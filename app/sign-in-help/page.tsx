@@ -11,9 +11,9 @@ export default function SignInHelpPage() {
       <div className="max-w-lg w-full rounded-xl border border-white/10 bg-white/5 p-8">
         <h1 className="text-xl font-semibold text-white mb-2">Sign-in not working?</h1>
         <p className="text-white/70 text-sm mb-6">
-          If you see a <strong className="text-white/90">Cloudflare Error 1016</strong> or a blank
-          page after clicking Sign In, the authentication service (Clerk) dev domain is having DNS
-          issues. This is not a bug in your app.
+          Visura signs you in through Clerk. If clicking Sign in leads to an error page such as{" "}
+          <strong className="text-white/90">Cloudflare Error 1016</strong>, or the sign-in page
+          never gets past Loading…, try these in order.
         </p>
         <ul className="space-y-3 text-sm text-white/80 mb-8">
           <li>
@@ -21,24 +21,16 @@ export default function SignInHelpPage() {
             <Link href="/" className="text-white underline hover:no-underline">
               home page
             </Link>{" "}
-            and try Sign In again in a few minutes.
+            and click Sign in again in a few minutes.
           </li>
           <li>
             <strong className="text-white">2.</strong> Try a different browser (e.g. Edge or
             Firefox) or an incognito/private window.
           </li>
           <li>
-            <strong className="text-white">3.</strong> Create a new application at{" "}
-            <a
-              href="https://dashboard.clerk.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white underline hover:no-underline"
-            >
-              dashboard.clerk.com
-            </a>{" "}
-            and use the new dev instance URL in your{" "}
-            <code className="bg-white/10 px-1 rounded">.env.local</code>.
+            <strong className="text-white">3.</strong> If the sign-in page keeps loading, click
+            Clear session and sign in again under the spinner, and check that your device&apos;s
+            clock is set to the right time.
           </li>
         </ul>
         <Link

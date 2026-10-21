@@ -43,7 +43,7 @@ export default function DeleteButton({ summaryId, onDelete }: DeleteButtonProps)
         );
       }
 
-      toast.success("Summary deleted successfully");
+      toast.success("Summary deleted");
       setIsOpen(false);
 
       if (onDelete) {
@@ -51,9 +51,9 @@ export default function DeleteButton({ summaryId, onDelete }: DeleteButtonProps)
       }
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
-        toast.error("Delete request timed out. Please try again.");
+        toast.error("Delete timed out. Refresh the page to see whether it went through.");
       } else {
-        toast.error(error instanceof Error ? error.message : "Failed to delete summary");
+        toast.error(error instanceof Error ? error.message : "Couldn't delete the summary");
       }
     } finally {
       setIsDeleting(false);
@@ -78,10 +78,10 @@ export default function DeleteButton({ summaryId, onDelete }: DeleteButtonProps)
         }}
       >
         <DialogHeader>
-          <DialogTitle className="text-black">Are you absolutely sure?</DialogTitle>
+          <DialogTitle className="text-black">Delete this summary?</DialogTitle>
           <DialogDescription className="text-gray-700">
-            This action cannot be undone. This will permanently delete your summary and remove it
-            from our servers.
+            This can't be undone. It deletes the summary, its chat history, its share link and its
+            workspace shares. The uploaded file and the document's chunks and versions stay stored.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

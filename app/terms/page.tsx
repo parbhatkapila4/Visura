@@ -12,12 +12,11 @@ export default function TermsOfServicePage() {
             className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-8 text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Home
+            Back to home
           </Link>
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">Terms of Service</h1>
           <p className="text-lg sm:text-xl text-zinc-400 max-w-3xl">
-            Please read these terms carefully before using our AI-powered document analysis
-            platform.
+            Read these terms before you use Visura.
           </p>
         </div>
       </div>
@@ -26,7 +25,7 @@ export default function TermsOfServicePage() {
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="space-y-14">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Agreement to Terms</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Agreement to terms</h2>
               <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
                 By accessing and using Visura, you accept and agree to be bound by the terms and
                 provision of this agreement. If you do not agree to abide by the above, please do
@@ -36,16 +35,15 @@ export default function TermsOfServicePage() {
 
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
-                Service Description
+                Service description
               </h2>
               <div className="flex items-start gap-4 rounded-xl border border-white/10 bg-zinc-900/60 p-4 sm:p-5">
                 <FileText className="w-6 h-6 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
-                    Visura is an AI-powered document analysis platform that helps users process,
-                    analyze, and extract insights from various document formats. Our service
-                    includes document upload, AI-powered analysis, summarization, and export
-                    capabilities.
+                    Visura summarizes the documents you upload and lets you ask questions about them
+                    in chat. Summaries and answers are written by third-party language models and
+                    can contain mistakes, so check anything you rely on.
                   </p>
                 </div>
               </div>
@@ -53,14 +51,14 @@ export default function TermsOfServicePage() {
 
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
-                User Responsibilities
+                User responsibilities
               </h2>
               <div className="space-y-6">
                 <div className="flex items-start gap-4 rounded-xl border border-white/10 bg-zinc-900/60 p-4 sm:p-5">
                   <Users className="w-6 h-6 text-primary mt-0.5 flex-shrink-0" />
                   <div>
                     <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
-                      Account Security
+                      Account security
                     </h3>
                     <p className="text-zinc-400">
                       You are responsible for maintaining the confidentiality of your account
@@ -73,7 +71,7 @@ export default function TermsOfServicePage() {
                   <Shield className="w-6 h-6 text-primary mt-0.5 flex-shrink-0" />
                   <div>
                     <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
-                      Content Compliance
+                      Content compliance
                     </h3>
                     <p className="text-zinc-400">
                       You agree not to upload, process, or share any content that is illegal,
@@ -86,7 +84,7 @@ export default function TermsOfServicePage() {
 
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
-                Service Availability
+                Service availability
               </h2>
               <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
                 We strive to provide continuous service availability, but we do not guarantee
@@ -97,7 +95,7 @@ export default function TermsOfServicePage() {
 
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
-                Intellectual Property
+                Intellectual property
               </h2>
               <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
                 The Visura platform, including its design, functionality, and underlying technology,
@@ -108,7 +106,7 @@ export default function TermsOfServicePage() {
 
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
-                Limitation of Liability
+                Limitation of liability
               </h2>
               <div className="flex items-start gap-4 rounded-xl border border-white/10 bg-zinc-900/60 p-4 sm:p-5">
                 <AlertTriangle className="w-6 h-6 text-primary mt-0.5 flex-shrink-0" />
@@ -132,20 +130,19 @@ export default function TermsOfServicePage() {
             </div>
 
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Changes to Terms</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Changes to terms</h2>
               <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
                 We reserve the right to modify these terms at any time. We will notify users of any
-                material changes by posting the new terms on this page and updating the "Last
-                Updated" date.
+                material changes by posting the new terms on this page.
               </p>
             </div>
 
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
-                Contact Information
+                Contact information
               </h2>
               <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
-                If you have any questions about these Terms of Service, please contact us at:
+                Send questions about these Terms of Service to:
               </p>
               <div className="mt-4 p-4 sm:p-5 rounded-xl border border-white/10 bg-zinc-900/60">
                 <p className="text-white font-semibold">Email: parbhat@parbhat.dev</p>

@@ -51,7 +51,7 @@ export default function Error({
               Something went wrong
             </h2>
             <p className="text-sm text-zinc-400 leading-relaxed">
-              We hit an unexpected issue. Your data is safe — try refreshing or head back.
+              This page hit an unexpected error. Try again, or head back.
             </p>
           </div>
 

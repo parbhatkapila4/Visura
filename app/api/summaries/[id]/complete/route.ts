@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getDbConnection } from "@/lib/db";
 import { getChunksForVersion } from "@/lib/versioned-documents";
+import { checkVersionCompletion } from "@/lib/chunk-processor";
 import { logger } from "@/lib/logger";
 
 function buildReadableOverview(fullText: string): string {
@@ -60,6 +61,14 @@ export async function POST(request: NextRequest, props: { params: Promise<{ id: 
       WHERE pdf_summary_id = ${summaryId}
       LIMIT 1
     `;
+    const stillProcessing = summary.status === "processing" && Boolean(versionRow);
+    if (stillProcessing) {
+      await checkVersionCompletion(versionRow.id);
+      const [after] = await sql`SELECT status FROM pdf_summaries WHERE id = ${summaryId}`;
+      if (after?.status === "completed") {
+        return NextResponse.json({ ok: true, completed: true });
+      }
+    }
 
     let finalSummary: string;
     if (!versionRow) {
@@ -80,12 +89,11 @@ export async function POST(request: NextRequest, props: { params: Promise<{ id: 
           "### Document summary\n\nThis document has no extractable text. You can still use chat if content is added later.";
       }
     }
-
     await sql`
       UPDATE pdf_summaries
       SET summary_text = ${finalSummary},
-          status = 'completed'
-      WHERE id = ${summaryId} AND user_id = ${userId}
+          status = ${stillProcessing ? "processing" : "completed"}
+      WHERE id = ${summaryId} AND user_id = ${userId} AND status = ${summary.status}
     `;
 
     logger.info("Summary completed via /complete API", { summaryId, length: finalSummary.length });

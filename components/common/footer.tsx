@@ -58,10 +58,6 @@ export default function Footer() {
                   <span className="text-white font-bold text-lg">Visura</span>
                 </Link>
               </motion.div>
-              <p className="text-white mb-6 max-w-sm text-sm leading-relaxed">
-                Visura empowers teams to transform complex documents into clear, actionable insights
-                - making data easier to understand, analyze, and act on.
-              </p>
 
               <motion.div
                 className="flex gap-4"
@@ -171,7 +167,7 @@ export default function Footer() {
                 {[
                   { name: "Privacy Policy", href: "/privacy" },
                   { name: "Terms of Service", href: "/terms" },
-                  { name: "Cookies Settings", href: "/cookies" },
+                  { name: "Cookies", href: "/cookies" },
                 ].map((link, index) => (
                   <motion.div
                     key={link.name}

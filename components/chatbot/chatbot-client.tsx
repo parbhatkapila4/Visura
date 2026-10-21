@@ -20,8 +20,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { DocumentReference } from "@/lib/document-reference";
-import { DOCUMENT_VIEWER_GO_TO_EVENT } from "@/lib/document-reference";
 export interface ChatMessageSource {
   page?: number | null;
   snippet?: string;
@@ -51,7 +49,6 @@ interface ChatbotClientProps {
   pdfSummaryId: string;
   pdfStoreId: string;
   pdfTitle: string;
-  onSelectReference?: (ref: DocumentReference) => void;
 }
 
 const SNIPPET_MAX_LENGTH = 250;
@@ -131,28 +128,13 @@ const CHATBOT_QUICK_PROMPT_SETS = [
   ],
 ] as const;
 
-function sourceToReference(source: ChatMessageSource): DocumentReference {
-  return {
-    document_version_id: source.document_version_id ?? "",
-    page: source.page ?? null,
-    snippet: source.snippet ?? "",
-    pdf_summary_id: source.pdf_summary_id ?? null,
-    chunk_id: source.chunk_id ?? null,
-  };
-}
-
 function truncateSnippet(text: string, maxLen: number = SNIPPET_MAX_LENGTH): string {
   const t = (text ?? "").trim();
   if (t.length <= maxLen) return t;
   return t.slice(0, maxLen).trim() + "…";
 }
 
-export default function ChatbotClient({
-  pdfSummaryId,
-  pdfStoreId,
-  pdfTitle,
-  onSelectReference,
-}: ChatbotClientProps) {
+export default function ChatbotClient({ pdfSummaryId, pdfStoreId, pdfTitle }: ChatbotClientProps) {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -613,16 +595,6 @@ export default function ChatbotClient({
                                   </p>
                                   <ul className="space-y-2">
                                     {message.sources.map((source, idx) => {
-                                      const ref = sourceToReference(source);
-                                      const handleView = () => {
-                                        if (onSelectReference) onSelectReference(ref);
-                                        else
-                                          window.dispatchEvent(
-                                            new CustomEvent(DOCUMENT_VIEWER_GO_TO_EVENT, {
-                                              detail: ref,
-                                            })
-                                          );
-                                      };
                                       const pageLabel =
                                         source.page != null ? `Page ${source.page}` : null;
                                       const snippetText = truncateSnippet(source.snippet ?? "");
@@ -639,13 +611,6 @@ export default function ChatbotClient({
                                           <p className="text-[#999] leading-relaxed mt-0.5">
                                             {snippetText}
                                           </p>
-                                          <button
-                                            type="button"
-                                            onClick={handleView}
-                                            className="mt-2 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
-                                          >
-                                            View in document
-                                          </button>
                                         </li>
                                       );
                                     })}

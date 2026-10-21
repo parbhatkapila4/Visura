@@ -25,14 +25,9 @@ export async function GET() {
     const [stuckVersions] = await sql`
       SELECT COUNT(*) as count
       FROM document_versions dv
-      WHERE dv.pdf_summary_id IS NULL
+      INNER JOIN pdf_summaries ps ON ps.id = dv.pdf_summary_id
+      WHERE ps.status = 'processing'
         AND dv.created_at < NOW() - make_interval(mins => ${STUCK_VERSION_THRESHOLD_MINUTES})
-        AND EXISTS (
-          SELECT 1 FROM document_chunks dc
-          WHERE dc.document_version_id = dv.id
-            AND dc.summary IS NULL
-            AND dc.reused_from_chunk_id IS NULL
-        )
     `;
 
     const stuckCount = Number(stuckVersions?.count || 0);

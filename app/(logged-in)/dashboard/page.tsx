@@ -3,7 +3,7 @@ import { getUserSummaries } from "@/lib/summaries";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { ensureUserExistsInDatabase } from "@/lib/auth-utils";
-import { getUserByEmail, hasReachedUploadLimit } from "@/lib/user";
+import { hasReachedUploadLimit } from "@/lib/user";
 
 export const dynamic = "force-dynamic";
 
@@ -27,12 +27,10 @@ export default async function DashboardPage() {
   await ensureUserExistsInDatabase();
 
   const email = user.emailAddresses[0]?.emailAddress;
-  const userData = email ? await getUserByEmail(email) : null;
+  const { hasReachedLimit, uploadLimit, plan } = await hasReachedUploadLimit(userId, email!);
+  const userPlan = plan === "free" ? "basic" : plan;
 
-  const userPlan = userData?.price_id ? "pro" : "basic";
-
-  const { hasReachedLimit, uploadLimit } = await hasReachedUploadLimit(userId, email!);
-  const summaries = (await getUserSummaries(userId, userPlan)) as Summary[];
+  const summaries = (await getUserSummaries(userId, uploadLimit)) as Summary[];
 
   return (
     <main className="min-h-screen bg-[#0a0a0a] w-full flex flex-col items-center">

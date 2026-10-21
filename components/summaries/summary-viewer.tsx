@@ -1,16 +1,7 @@
 "use client";
 
 import { parseSection } from "@/utils/summary-helpers";
-import {
-  BookOpen,
-  Clock,
-  ArrowRight,
-  ScanSearch,
-  Zap,
-  FileText,
-  AlertTriangle,
-  RefreshCw,
-} from "lucide-react";
+import { BookOpen, ArrowRight, Zap, FileText, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
@@ -227,7 +218,7 @@ export default function SummaryViewer({ summary }: { summary: string }) {
   if (isErrorSummary) {
     const errorMessage = summary.includes("Extraction Error:")
       ? summary.split("Extraction Error:")[1]?.split("\n")[0]?.trim() || "Unknown error"
-      : "Text extraction failed";
+      : "none recorded";
 
     const isScanned = errorMessage.includes("scanned") || errorMessage.includes("no text layer");
     const isEncrypted = errorMessage.includes("password") || errorMessage.includes("encrypted");
@@ -244,7 +235,9 @@ export default function SummaryViewer({ summary }: { summary: string }) {
             </div>
 
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-white mb-3">Processing Failed</h2>
+              <h2 className="text-2xl font-bold text-white mb-3">
+                This summary looks like an error message
+              </h2>
 
               <div className="space-y-4">
                 <p className="text-gray-300 leading-relaxed">
@@ -254,17 +247,17 @@ export default function SummaryViewer({ summary }: { summary: string }) {
                   {!isScanned &&
                     !isEncrypted &&
                     !isCorrupted &&
-                    "We couldn't extract text from this document."}
+                    "Its text contains a phrase like “I apologize” or “extraction error”, so it isn’t shown."}
                 </p>
 
                 {isScanned && (
                   <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
                     <p className="text-sm text-orange-300 mb-2 font-semibold">
-                      💡 Scanned Document Detected
+                      💡 Scanned document detected
                     </p>
                     <p className="text-sm text-gray-400">
-                      This PDF contains images rather than text. OCR (Optical Character Recognition)
-                      support is coming soon to handle scanned documents.
+                      This PDF contains images rather than text. Visura reads a fully scanned PDF
+                      with English OCR, first 10 pages only.
                     </p>
                   </div>
                 )}
@@ -272,32 +265,17 @@ export default function SummaryViewer({ summary }: { summary: string }) {
                 {isEncrypted && (
                   <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                     <p className="text-sm text-blue-300 mb-2 font-semibold">
-                      🔒 Password Protection Detected
+                      🔒 Password-protected PDF
                     </p>
                     <p className="text-sm text-gray-400">
-                      Please unlock the PDF and upload it again.
+                      Ask the person who shared this link to remove the password and upload the PDF
+                      again.
                     </p>
                   </div>
                 )}
 
                 <div className="pt-4 border-t border-gray-800">
                   <p className="text-xs text-gray-500">Error details: {errorMessage}</p>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={() => (window.location.href = "/upload")}
-                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    Try Another File
-                  </button>
-                  <button
-                    onClick={() => (window.location.href = "/dashboard")}
-                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors"
-                  >
-                    Back to Dashboard
-                  </button>
                 </div>
               </div>
             </div>
@@ -314,7 +292,6 @@ export default function SummaryViewer({ summary }: { summary: string }) {
     .map(parseSection);
 
   const totalInsights = sections.reduce((total, section) => total + section.points.length, 0);
-  const estimatedReadTime = Math.ceil(totalInsights * 0.5);
 
   return (
     <motion.div
@@ -353,17 +330,8 @@ export default function SummaryViewer({ summary }: { summary: string }) {
                   animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
                 >
-                  Document Analysis
+                  Summary
                 </motion.h1>
-                <motion.p
-                  className="text-gray-400 text-sm sm:text-base flex items-center gap-2"
-                  initial={{ opacity: 0 }}
-                  animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                >
-                  <ScanSearch className="w-4 h-4 text-orange-400 animate-pulse" />
-                  AI-Powered Document Intelligence
-                </motion.p>
               </div>
             </div>
           </div>
@@ -402,28 +370,10 @@ export default function SummaryViewer({ summary }: { summary: string }) {
                   <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500/20 to-amber-500/10 border border-orange-500/20">
                     <Zap className="w-5 h-5 text-orange-400" />
                   </div>
-                  <span className="text-gray-400 text-sm font-medium">Insights</span>
+                  <span className="text-gray-400 text-sm font-medium">Points</span>
                 </div>
                 <div className="text-3xl font-bold text-white text-center sm:text-left w-full">
                   {totalInsights}
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="group relative bg-gradient-to-br from-gray-800/60 to-gray-900/60 backdrop-blur-md rounded-xl p-4 border border-gray-700/50 hover:border-orange-500/40 transition-all duration-300 overflow-hidden"
-              whileHover={{ scale: 1.02, y: -2 }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500/20 to-amber-500/10 border border-orange-500/20">
-                    <Clock className="w-5 h-5 text-orange-400" />
-                  </div>
-                  <span className="text-gray-400 text-sm font-medium">Read Time</span>
-                </div>
-                <div className="text-3xl font-bold text-white text-center sm:text-left w-full">
-                  {estimatedReadTime} min
                 </div>
               </div>
             </motion.div>

@@ -1,5 +1,5 @@
 import { getVersionById, getIncompleteChunks } from "./versioned-documents";
-import { processChunkInternal } from "./chunk-processor";
+import { checkVersionCompletion, processChunkInternal } from "./chunk-processor";
 import type { SupportedLanguage } from "./openai";
 
 export async function replayVersion(versionId: string): Promise<{
@@ -18,6 +18,7 @@ export async function replayVersion(versionId: string): Promise<{
   const language = (version.output_language || "ENGLISH") as SupportedLanguage;
 
   if (incomplete.length === 0) {
+    await checkVersionCompletion(versionId);
     return {
       versionId,
       totalChunks,
@@ -34,6 +35,7 @@ export async function replayVersion(versionId: string): Promise<{
   );
 
   const triggered = results.filter((r) => r.status === "fulfilled" && r.value.success).length;
+  await checkVersionCompletion(versionId);
 
   return {
     versionId,
@@ -57,6 +59,7 @@ export async function replayIncompleteChunks(versionId: string): Promise<{
   const incomplete = await getIncompleteChunks(versionId);
 
   if (incomplete.length === 0) {
+    await checkVersionCompletion(versionId);
     return {
       versionId,
       incompleteChunks: 0,
@@ -72,6 +75,7 @@ export async function replayIncompleteChunks(versionId: string): Promise<{
   );
 
   const triggered = results.filter((r) => r.status === "fulfilled" && r.value.success).length;
+  await checkVersionCompletion(versionId);
 
   return {
     versionId,

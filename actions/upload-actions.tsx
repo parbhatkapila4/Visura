@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { savePdfStore } from "@/lib/chatbot";
 import { extractTextFromDocumentUrl } from "@/lib/document-text-extractor";
+import { signedFileUrl } from "@/lib/storage";
 
 interface PdfSummaryType {
   userId?: string;
@@ -47,12 +48,6 @@ async function savePdfSummary({
     throw error;
   }
 }
-
-/**
- * @deprecated This synchronous path is deprecated. The versioned pipeline (createVersionedDocumentJob)
- * automatically creates pdf_summaries and pdf_stores on completion. This function is kept for backward
- * compatibility only.
- */
 export async function storePdfSummaryAction({
   fileUrl,
   summary,
@@ -98,7 +93,10 @@ export async function storePdfSummaryAction({
         fullTextContent = extractedText;
       } else {
         console.log("Extracting text from document URL...");
-        fullTextContent = await extractTextFromDocumentUrl(fileUrl, fileName);
+        fullTextContent = await extractTextFromDocumentUrl(
+          await signedFileUrl(fileUrl, { ownerId: userId }),
+          fileName
+        );
       }
 
       console.log("Extracted text length:", fullTextContent?.length || 0);

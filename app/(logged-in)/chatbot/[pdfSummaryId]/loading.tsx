@@ -1,6 +1,6 @@
 export default function ChatbotLoading() {
   return (
-    <div className="fixed inset-0 flex flex-col bg-[#0a0a0a]">
+    <div className="fixed inset-0 flex flex-col bg-[#0a0a0a]" data-route-loading-ready="true">
       <header className="h-14 flex-shrink-0 border-b border-[#1a1a1a] bg-[#0a0a0a]/80 backdrop-blur-xl z-50">
         <div className="h-full px-4 flex items-center justify-between">
           <div className="h-4 w-16 bg-[#1a1a1a] rounded animate-pulse" />

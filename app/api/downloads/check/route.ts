@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { currentUser } from "@clerk/nextjs/server";
 import {
   getUserDownloadCount,
   hasSummaryBeenDownloaded,
   recordSummaryDownload,
 } from "@/lib/summaries";
-import { getUserByEmail } from "@/lib/user";
+
+const DOWNLOAD_LIMIT = 2;
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,31 +19,14 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const summaryId = searchParams.get("summaryId");
 
-    const user = await currentUser();
-    const email = user?.emailAddresses[0]?.emailAddress;
-
-    if (!email) {
-      return NextResponse.json({ error: "User email not found" }, { status: 400 });
-    }
-
-    const userData = await getUserByEmail(email);
-    const userPlan = userData?.price_id ? "pro" : "basic";
-
     const downloadCount = await getUserDownloadCount(userId);
     const hasDownloaded = summaryId ? await hasSummaryBeenDownloaded(userId, summaryId) : false;
 
-    const downloadLimit = userPlan === "pro" ? null : 2;
-    const canDownload =
-      userPlan === "pro" ||
-      (downloadLimit !== null && downloadCount < downloadLimit) ||
-      hasDownloaded;
-
     return NextResponse.json({
       downloadCount,
-      downloadLimit,
-      canDownload,
+      downloadLimit: DOWNLOAD_LIMIT,
+      canDownload: hasDownloaded || downloadCount < DOWNLOAD_LIMIT,
       hasDownloaded,
-      userPlan,
     });
   } catch (error) {
     console.error("Error checking download status:", error);
@@ -66,16 +49,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Summary ID is required" }, { status: 400 });
     }
 
-    const user = await currentUser();
-    const email = user?.emailAddresses[0]?.emailAddress;
-
-    if (!email) {
-      return NextResponse.json({ error: "User email not found" }, { status: 400 });
-    }
-
-    const userData = await getUserByEmail(email);
-    const userPlan = userData?.price_id ? "pro" : "basic";
-
     const hasDownloaded = await hasSummaryBeenDownloaded(userId, summaryId);
 
     if (hasDownloaded) {
@@ -86,33 +59,27 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    if (userPlan === "basic") {
-      const downloadCount = await getUserDownloadCount(userId);
-      const downloadLimit = 2;
-
-      if (downloadCount >= downloadLimit) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Download limit reached",
-            message: `You have reached the download limit of ${downloadLimit} summaries. Upgrade to Pro for unlimited downloads.`,
-            downloadCount,
-            downloadLimit,
-          },
-          { status: 403 }
-        );
-      }
+    const downloadCount = await getUserDownloadCount(userId);
+    if (downloadCount >= DOWNLOAD_LIMIT) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Download limit reached",
+          message: `You've used all ${DOWNLOAD_LIMIT} of your summary downloads. Summaries you've already downloaded can be downloaded again.`,
+          downloadCount,
+          downloadLimit: DOWNLOAD_LIMIT,
+        },
+        { status: 403 }
+      );
     }
 
     await recordSummaryDownload(userId, summaryId);
 
-    const downloadCount = await getUserDownloadCount(userId);
-
     return NextResponse.json({
       success: true,
       message: "Download recorded successfully",
-      downloadCount,
-      downloadLimit: userPlan === "pro" ? null : 2,
+      downloadCount: await getUserDownloadCount(userId),
+      downloadLimit: DOWNLOAD_LIMIT,
     });
   } catch (error) {
     console.error("Error recording download:", error);

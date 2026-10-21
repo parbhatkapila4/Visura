@@ -1,4 +1,4 @@
-import { openrouterChatCompletion } from "@/lib/openrouter";
+import { openrouterChatCompletion, SUMMARY_MODEL } from "@/lib/openrouter";
 import { logger } from "@/lib/logger";
 import { cached, getSummaryCacheKey } from "@/lib/cache";
 import { hashContent } from "@/lib/versioned-documents";
@@ -23,6 +23,7 @@ import {
 
 export type { DocumentClassification, SupportedLanguage };
 export { classifyDocument, detectDocumentLanguage, LANGUAGE_NAMES };
+export const MIN_SUMMARY_TEXT_LENGTH = 50;
 
 async function _classifyDocumentInternal(text: string): Promise<DocumentClassification> {
   const sampleText = text.substring(0, 15000).toLowerCase();
@@ -200,7 +201,7 @@ export async function generateSummaryFromText(
       }
     }
 
-    if (!pdfText || pdfText.trim().length < 50) {
+    if (!pdfText || pdfText.trim().length < MIN_SUMMARY_TEXT_LENGTH) {
       throw new Error("Text content too short to generate summary");
     }
 
@@ -241,7 +242,7 @@ export async function generateSummaryFromText(
     });
 
     logger.info("Generating type-specific summary", {
-      model: "anthropic/claude-3.5-haiku",
+      model: SUMMARY_MODEL,
       type: classification.type,
       requestedLanguage: language,
       requestedLanguageName: LANGUAGE_NAMES[language],
@@ -265,7 +266,7 @@ export async function generateSummaryFromText(
           const maxTokens = getSummaryMaxOutputTokens(estimatedPages, isChunk);
 
           return await openrouterChatCompletion({
-            model: "anthropic/claude-3.5-haiku",
+            model: SUMMARY_MODEL,
             messages: [
               {
                 role: "system",
@@ -273,9 +274,7 @@ export async function generateSummaryFromText(
 
 CRITICAL LANGUAGE REQUIREMENT - READ THIS CAREFULLY:
 YOU MUST WRITE THE ENTIRE SUMMARY IN ${LANGUAGE_NAMES[language].toUpperCase()}.
-DO NOT WRITE IN ENGLISH.
-DO NOT USE ENGLISH WORDS.
-DO NOT MIX LANGUAGES.
+${language === "ENGLISH" ? "" : "DO NOT WRITE IN ENGLISH.\nDO NOT USE ENGLISH WORDS.\n"}DO NOT MIX LANGUAGES.
 
 ${
   language === "RUSSIAN"
@@ -355,11 +354,11 @@ ${
 `
 }
 
-IF YOU WRITE IN ENGLISH WHEN ${LANGUAGE_NAMES[language].toUpperCase()} IS REQUESTED, THIS IS A COMPLETE FAILURE.`,
+${language === "ENGLISH" ? "" : `IF YOU WRITE IN ENGLISH WHEN ${LANGUAGE_NAMES[language].toUpperCase()} IS REQUESTED, THIS IS A COMPLETE FAILURE.`}`,
               },
               {
                 role: "user",
-                content: `LANGUAGE REQUIREMENT: Write the ENTIRE summary in ${LANGUAGE_NAMES[language]}. DO NOT use English.
+                content: `LANGUAGE REQUIREMENT: Write the ENTIRE summary in ${LANGUAGE_NAMES[language]}.${language === "ENGLISH" ? "" : " DO NOT use English."}
 
 Document Type: ${classification.type}
 
@@ -371,7 +370,7 @@ ${textToSummarize}
 INSTRUCTIONS:
 1. Read the ENTIRE document carefully and thoroughly (it's in ${LANGUAGE_NAMES[detectedLanguage]})
 2. Extract ALL information, facts, numbers, dates, quotes, examples, names, and details from the document
-3. Write the summary COMPLETELY in ${LANGUAGE_NAMES[language]} - DO NOT use English
+3. Write the summary COMPLETELY in ${LANGUAGE_NAMES[language]}${language === "ENGLISH" ? "" : " - DO NOT use English"}
 4. Follow the section structure provided in the prompt
 5. Be EXTREMELY thorough and detailed - provide comprehensive, informative content (aim for 2,000-3,000 words total)
 6. Include extensive specific details: names, dates, amounts, percentages, deadlines, quotes, examples, case studies, statistics

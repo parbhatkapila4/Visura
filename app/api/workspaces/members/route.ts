@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import {
+  getWorkspaceById,
   getWorkspaceMembers,
   inviteWorkspaceMember,
   removeWorkspaceMember,
 } from "@/lib/workspaces";
+
+const INVITABLE_ROLES = ["admin", "member", "viewer"] as const;
+type InvitableRole = (typeof INVITABLE_ROLES)[number];
+const GRANTABLE_ROLES: Record<string, readonly InvitableRole[]> = {
+  owner: ["admin", "member", "viewer"],
+  admin: ["member", "viewer"],
+};
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,6 +26,10 @@ export async function GET(request: NextRequest) {
 
     if (!workspaceId) {
       return NextResponse.json({ error: "workspaceId is required" }, { status: 400 });
+    }
+
+    if (!(await getWorkspaceById(workspaceId, userId))) {
+      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
     }
 
     const members = await getWorkspaceMembers(workspaceId);
@@ -50,11 +62,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const requestedRole = role || "member";
+    if (!INVITABLE_ROLES.includes(requestedRole)) {
+      return NextResponse.json({ error: "role must be admin, member or viewer" }, { status: 400 });
+    }
+
+    const workspace = await getWorkspaceById(workspaceId, userId);
+    if (!workspace) {
+      return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+    }
+
+    const grantable = GRANTABLE_ROLES[workspace.role] ?? [];
+    if (!grantable.includes(requestedRole)) {
+      return NextResponse.json(
+        {
+          error:
+            grantable.length > 0
+              ? "Only the workspace owner can invite admins"
+              : "Only the workspace owner or an admin can invite members",
+        },
+        { status: 403 }
+      );
+    }
+
     const member = await inviteWorkspaceMember({
       workspaceId,
       userEmail: userEmail.trim().toLowerCase(),
       userName,
-      role: role || "member",
+      role: requestedRole,
       invitedBy: userId,
       invitedByName: user.fullName || undefined,
     });

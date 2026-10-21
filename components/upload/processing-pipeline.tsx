@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Check, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 
 export type PipelineStepStatus = "pending" | "active" | "completed" | "error";
 
@@ -12,11 +12,10 @@ export type PipelineStep = {
   label: string;
   status: PipelineStepStatus;
 };
-
 export const PIPELINE_STEP_DEFINITIONS: Omit<PipelineStep, "status">[] = [
   { id: "upload", label: "Uploading" },
   { id: "extract", label: "Extracting text" },
-  { id: "chunk", label: "Chunking document" },
+  { id: "chunk", label: "Summarizing new chunks" },
   { id: "embed", label: "Generating embeddings" },
   { id: "sections", label: "Detecting sections" },
   { id: "insights", label: "Extracting insights" },
@@ -24,20 +23,10 @@ export const PIPELINE_STEP_DEFINITIONS: Omit<PipelineStep, "status">[] = [
   { id: "finalize", label: "Finalizing" },
 ];
 
+const VISIBLE_STEP_ORDER = ["extract", "upload", "chunk", "finalize"];
+
 export function createInitialPipelineSteps(): PipelineStep[] {
   return PIPELINE_STEP_DEFINITIONS.map((d) => ({ ...d, status: "pending" as const }));
-}
-
-function clampEstimateMs(ms: number): number {
-  return Math.max(45_000, Math.min(60 * 60_000, ms));
-}
-
-function formatRemaining(ms: number | null): string {
-  if (ms == null) return "—";
-  const totalSeconds = Math.max(0, Math.round(ms / 1000));
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
 export type ProcessingPipelineProps = {
@@ -57,67 +46,19 @@ export function ProcessingPipeline({
   onRetry,
   isComplete,
   summaryHref,
-  startedAtMs,
-  initialEstimateMs,
   chunkProgress,
 }: ProcessingPipelineProps) {
   const hasError = steps.some((s) => s.status === "error") || Boolean(errorMessage);
-  const [nowMs, setNowMs] = useState(() => Date.now());
-  const [lockedEstimateMs, setLockedEstimateMs] = useState<number | null>(() => {
-    if (!initialEstimateMs) return null;
-    return clampEstimateMs(initialEstimateMs);
-  });
-  const runStartedAtRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    if (isComplete || hasError) return;
-    const id = window.setInterval(() => setNowMs(Date.now()), 500);
-    return () => window.clearInterval(id);
-  }, [hasError, isComplete]);
-
-  useEffect(() => {
-    if (!startedAtMs) {
-      setLockedEstimateMs(null);
-      runStartedAtRef.current = null;
-      return;
-    }
-
-    const isNewRun = runStartedAtRef.current !== startedAtMs;
-    runStartedAtRef.current = startedAtMs;
-
-    const base = initialEstimateMs ?? 120_000;
-    const clamped = clampEstimateMs(base);
-
-    if (isNewRun) {
-      setLockedEstimateMs(clamped);
-    } else {
-      setLockedEstimateMs((prev) => Math.max(prev ?? 0, clamped));
-    }
-  }, [startedAtMs, initialEstimateMs]);
+  const visibleSteps = useMemo(
+    () =>
+      VISIBLE_STEP_ORDER.map((id) => steps.find((s) => s.id === id)).filter(
+        (s): s is PipelineStep => s != null
+      ),
+    [steps]
+  );
 
   const finalizeIndex = useMemo(() => steps.findIndex((s) => s.id === "finalize"), [steps]);
-
-  const progress = useMemo(() => {
-    const n = steps.length || 8;
-    const finalizeActive = finalizeIndex >= 0 && steps[finalizeIndex]?.status === "active";
-    const chunks = chunkProgress?.total
-      ? Math.min(1, Math.max(0, chunkProgress.completed / chunkProgress.total))
-      : null;
-
-    if (finalizeActive && chunks != null) {
-      const doneBeforeFinalize = Math.max(0, finalizeIndex);
-      return (doneBeforeFinalize + chunks) / n;
-    }
-
-    const per: number[] = steps.map((s) => {
-      if (s.status === "completed") return 1;
-      if (s.status === "active") return 0.55;
-      if (s.status === "error") return 0.55;
-      return 0;
-    });
-    const sum = per.reduce((a, b) => a + b, 0);
-    return steps.length ? sum / steps.length : 0;
-  }, [chunkProgress, finalizeIndex, steps]);
 
   const showChunkDetail =
     Boolean(chunkProgress && chunkProgress.total > 0) &&
@@ -126,39 +67,10 @@ export function ProcessingPipeline({
     !isComplete &&
     !hasError;
 
-  const eta = useMemo(() => {
-    const started = startedAtMs ?? null;
-    const total = lockedEstimateMs;
-    if (!started) {
-      return {
-        remainingMs: null as number | null,
-        totalMs: total,
-        elapsedMs: null as number | null,
-      };
-    }
-
-    const elapsedMs = Math.max(0, nowMs - started);
-    if (isComplete) {
-      return { remainingMs: 0, totalMs: elapsedMs, elapsedMs };
-    }
-    if (hasError) {
-      return { remainingMs: null, totalMs: null, elapsedMs };
-    }
-
-    const totalMs = total ?? 120_000;
-    let remainingMs = Math.max(0, totalMs - elapsedMs);
-    if (remainingMs < 15_000 && !isComplete && progress > 0.04 && progress < 0.995) {
-      const implied = Math.round((elapsedMs * (1 - progress)) / Math.max(progress, 0.08));
-      remainingMs = Math.max(remainingMs, Math.min(implied, 50 * 60_000));
-    }
-    return { remainingMs, totalMs, elapsedMs };
-  }, [hasError, isComplete, lockedEstimateMs, nowMs, progress, startedAtMs]);
-
   const activeLabel = useMemo(
-    () => steps.find((s) => s.status === "active")?.label ?? null,
-    [steps]
+    () => visibleSteps.find((s) => s.status === "active")?.label ?? null,
+    [visibleSteps]
   );
-  const percent = Math.round(progress * 100);
 
   return (
     <div className="w-full max-w-xl mx-auto">
@@ -169,12 +81,12 @@ export function ProcessingPipeline({
 
         <div className="grid gap-6 sm:grid-cols-[1fr_220px]">
           <ol className="space-y-0">
-            {steps.map((step, index) => (
+            {visibleSteps.map((step, index) => (
               <li
                 key={step.id}
                 className={cn(
                   "flex gap-4 pb-6 last:pb-0 relative",
-                  index < steps.length - 1 &&
+                  index < visibleSteps.length - 1 &&
                     "before:absolute before:left-[18px] before:top-9 before:bottom-0 before:w-px before:-translate-x-1/2 before:bg-[#252525]"
                 )}
               >
@@ -200,25 +112,20 @@ export function ProcessingPipeline({
 
           <aside className="sm:pl-6 sm:border-l sm:border-[#1f1f1f]">
             <div className="rounded-xl border border-[#1f1f1f] bg-[#0b0b0b] p-4">
-              <p className="text-[11px] font-medium uppercase tracking-wider text-[#666]">
-                Estimated time
-              </p>
+              <p className="text-[11px] font-medium uppercase tracking-wider text-[#666]">Status</p>
 
               <div className="mt-3 flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-2xl font-semibold text-white tabular-nums">
-                    {formatRemaining(eta.remainingMs)}
-                  </p>
                   <p className="mt-1 text-xs text-[#888]">
                     {hasError
-                      ? "Paused due to an error"
+                      ? "Ran into an error"
                       : isComplete
                         ? "Completed"
                         : showChunkDetail && chunkProgress
-                          ? `${chunkProgress.completed} of ${chunkProgress.total} AI chunks done`
+                          ? `${chunkProgress.completed} of ${chunkProgress.total} chunks have a summary`
                           : activeLabel
                             ? `Working on: ${activeLabel}`
-                            : "Calibrating…"}
+                            : "Working…"}
                   </p>
                 </div>
 
@@ -230,25 +137,6 @@ export function ProcessingPipeline({
                     )}
                   />
                 </div>
-              </div>
-
-              <div className="mt-4">
-                <div className="flex items-center justify-between text-[11px] text-[#666]">
-                  <span>Progress</span>
-                  <span className="tabular-nums">{hasError ? "—" : `${percent}%`}</span>
-                </div>
-                <div className="mt-2 h-1.5 w-full rounded-full bg-[#151515] overflow-hidden">
-                  <div
-                    className={cn(
-                      "h-full rounded-full transition-[width] duration-500",
-                      hasError ? "bg-red-500/50" : "bg-white/70"
-                    )}
-                    style={{ width: `${hasError ? 100 : Math.max(2, Math.min(100, percent))}%` }}
-                  />
-                </div>
-                <p className="mt-2 text-[11px] text-[#666]">
-                  Estimate may increase once when chunk count is known; then it only counts down.
-                </p>
               </div>
             </div>
           </aside>
@@ -263,7 +151,7 @@ export function ProcessingPipeline({
                 onClick={onRetry}
                 className="mt-3 h-9 px-4 rounded-lg bg-white text-black text-sm font-medium hover:bg-[#e5e5e5] transition-colors"
               >
-                Try again
+                Start over
               </button>
             )}
           </div>

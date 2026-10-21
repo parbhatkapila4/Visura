@@ -1,50 +1,8 @@
 "use client";
 import Link from "next/link";
 import { ArrowLeft, Mail, ArrowRight, Twitter, Linkedin, Github } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState({
-    name: "",
-    company: "",
-    subject: "",
-    email: "",
-    message: "",
-  });
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const isValid =
-      formData.email.trim() &&
-      formData.subject.trim() &&
-      formData.company.trim() &&
-      formData.message.trim();
-
-    if (!isValid) {
-      toast.error("Please fill in email, subject, company, and message before submitting.");
-      return;
-    }
-
-    toast.success("Your message has been successfully delivered.");
-  };
-
-  const isFormValid =
-    formData.email.trim() &&
-    formData.subject.trim() &&
-    formData.company.trim() &&
-    formData.message.trim();
-
   return (
     <div className="min-h-screen w-full bg-black">
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 pt-6 pb-4">
@@ -54,11 +12,11 @@ export default function ContactPage() {
             className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-8 text-sm font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Home
+            Back to home
           </Link>
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">Contact Us</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6">Contact</h1>
           <p className="text-lg sm:text-xl text-zinc-400 max-w-3xl">
-            Get in touch with our team for support, questions, or collaboration opportunities.
+            Send questions, bug reports and billing problems by email.
           </p>
         </div>
       </div>
@@ -69,9 +27,7 @@ export default function ContactPage() {
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(260px,340px)_minmax(0,1fr)] gap-10 lg:gap-14 xl:gap-20">
               <div className="space-y-8 lg:space-y-10">
                 <div>
-                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-                    Let's collaborate
-                  </h2>
+                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">Get in touch</h2>
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
                       <Mail className="w-5 h-5 text-primary" />
@@ -126,107 +82,23 @@ export default function ContactPage() {
               <div>
                 <div className="mb-6 lg:mb-8">
                   <p className="text-xs font-semibold text-zinc-500 tracking-[0.18em] uppercase mb-2">
-                    Contact form
+                    Email
                   </p>
-                  <h3 className="text-2xl lg:text-3xl font-bold text-white">Say hello</h3>
+                  <h3 className="text-2xl lg:text-3xl font-bold text-white">Before you write</h3>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-                    <div className="space-y-6 lg:space-y-7">
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wide mb-2">
-                          NAME
-                        </label>
-                        <input
-                          type="text"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          placeholder="Your name"
-                          className="w-full px-0 py-2 border-0 border-b border-white/20 bg-transparent focus:border-primary focus:outline-none text-lg text-white placeholder-zinc-500"
-                        />
-                      </div>
+                <p className="text-lg text-zinc-400 mb-6">
+                  Send it from the address you sign in with, so it can be matched to your account.
+                  If it is about a document, include the document&apos;s name.
+                </p>
 
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wide mb-2">
-                          COMPANY
-                        </label>
-                        <input
-                          type="text"
-                          name="company"
-                          value={formData.company}
-                          onChange={handleInputChange}
-                          placeholder="Your company"
-                          className="w-full px-0 py-2 border-0 border-b border-white/20 bg-transparent focus:border-primary focus:outline-none text-lg text-white placeholder-zinc-500"
-                        />
-                      </div>
-
-                      <div className="md:col-span-2">
-                        <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wide mb-2">
-                          MESSAGE
-                        </label>
-                        <textarea
-                          name="message"
-                          value={formData.message}
-                          onChange={handleInputChange}
-                          placeholder="Start typing here"
-                          rows={4}
-                          className="w-full px-0 py-2 border-0 border-b border-white/20 bg-transparent focus:border-primary focus:outline-none text-lg text-white placeholder-zinc-500 resize-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-6">
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wide mb-2">
-                          SUBJECT
-                        </label>
-                        <select
-                          name="subject"
-                          value={formData.subject}
-                          onChange={handleInputChange}
-                          className="w-full px-0 py-2 border-0 border-b border-white/20 bg-transparent focus:border-primary focus:outline-none text-lg text-white [&_option]:bg-zinc-900 [&_option]:text-white"
-                        >
-                          <option value="">Choose subject</option>
-                          <option value="general">General Inquiry</option>
-                          <option value="support">Technical Support</option>
-                          <option value="partnership">Partnership</option>
-                          <option value="feedback">Feedback</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wide mb-2">
-                          EMAIL
-                        </label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          placeholder="Email address"
-                          className="w-full px-0 py-2 border-0 border-b border-white/20 bg-transparent focus:border-primary focus:outline-none text-lg text-white placeholder-zinc-500"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-6">
-                    <button
-                      type="submit"
-                      disabled={!isFormValid}
-                      className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all group ${
-                        isFormValid
-                          ? "bg-primary text-primary-foreground hover:opacity-90"
-                          : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
-                      }`}
-                    >
-                      Submit
-                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  </div>
-                </form>
+                <a
+                  href="mailto:parbhat@parbhat.dev"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all group bg-primary text-primary-foreground hover:opacity-90"
+                >
+                  Email parbhat@parbhat.dev
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </a>
               </div>
             </div>
           </div>

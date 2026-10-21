@@ -85,7 +85,7 @@ export function DocumentGraphPanel({
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         {!hasData ? (
           <div className="min-h-[40vh] flex flex-col items-center justify-center px-4">
-            <p className="text-[#888] text-center mb-4">No graph data for this document yet.</p>
+            <p className="text-[#888] text-center mb-4">No graph data for this document.</p>
             <Button
               variant="outline"
               asChild

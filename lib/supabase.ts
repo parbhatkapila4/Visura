@@ -52,7 +52,6 @@ export async function uploadToSupabase(file: File, userId: string) {
     if (!data) {
       throw new Error("Upload succeeded but no data returned");
     }
-
     const { data: urlData } = supabase.storage.from("pdf").getPublicUrl(fileName);
 
     if (!urlData?.publicUrl) {

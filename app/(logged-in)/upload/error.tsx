@@ -34,10 +34,11 @@ export default function UploadError({
             </div>
           </div>
 
-          <h2 className="text-xl font-bold text-white mb-2 tracking-tight">Upload failed</h2>
+          <h2 className="text-xl font-bold text-white mb-2 tracking-tight">
+            The upload page hit an error
+          </h2>
           <p className="text-sm text-zinc-400 mb-8 leading-relaxed">
-            Something went wrong with the upload. The file might be too large or in an unsupported
-            format.
+            Try again, or go back to the dashboard.
           </p>
 
           {process.env.NODE_ENV === "development" && error.message && (
@@ -60,7 +61,7 @@ export default function UploadError({
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-5 py-3 text-sm font-medium text-white transition-all hover:bg-white/[0.06] hover:border-white/[0.12] active:scale-[0.98]"
             >
               <ArrowLeft className="w-4 h-4 text-zinc-400" />
-              Back to Dashboard
+              Back to dashboard
             </Link>
           </div>
         </div>

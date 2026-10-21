@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { getDbConnection } from "@/lib/db";
 import { hasActiveShareToken, getShareUrl } from "@/lib/summaries";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -15,6 +16,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!summaryId) {
       return NextResponse.json({ error: "Summary ID is required" }, { status: 400 });
+    }
+
+    const sql = await getDbConnection();
+    const [owned] = await sql`
+      SELECT id FROM pdf_summaries WHERE id = ${summaryId} AND user_id = ${userId}
+    `;
+    if (!owned) {
+      return NextResponse.json({ error: "Summary not found" }, { status: 404 });
     }
 
     const hasActiveShare = await hasActiveShareToken(summaryId);

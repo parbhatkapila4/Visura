@@ -19,10 +19,8 @@ export default function ChatPageClient({ summaries }: { summaries: Summary[] }) 
     <SidebarWithContent>
       <div className="min-h-screen w-full flex flex-col">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 w-full">
-          <h1 className="text-2xl font-semibold text-white mb-2">Chat with Doc.</h1>
-          <p className="text-[#666] text-sm mb-8">
-            Select a document to open the AI chat and ask questions.
-          </p>
+          <h1 className="text-2xl font-semibold text-white mb-2">Chat with a document</h1>
+          <p className="text-[#666] text-sm mb-8">Pick a document to ask it questions.</p>
 
           {summaries.length === 0 ? (
             <div className="bg-[#111] rounded-xl border border-[#1f1f1f] p-12 text-center">
@@ -37,7 +35,7 @@ export default function ChatPageClient({ summaries }: { summaries: Summary[] }) 
                 href="/dashboard"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black text-sm font-medium hover:bg-[#e5e5e5] transition-colors"
               >
-                Go to Dashboard
+                Go to dashboard
               </Link>
             </div>
           ) : (
@@ -53,7 +51,7 @@ export default function ChatPageClient({ summaries }: { summaries: Summary[] }) 
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-white truncate group-hover:text-white">
-                      {summary.title || "Untitled Document"}
+                      {summary.title || "Untitled document"}
                     </p>
                     <p className="text-xs text-[#555]">
                       {formatDistanceToNow(new Date(summary.created_at), { addSuffix: true })}

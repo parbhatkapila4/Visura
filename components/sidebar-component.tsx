@@ -6,21 +6,16 @@ import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useUser, useClerk } from "@clerk/nextjs";
 import Image from "next/image";
 import {
-  Search as SearchIcon,
   Dashboard,
   DocumentAdd,
-  Settings as SettingsIcon,
   User as UserIcon,
   ChevronDown as ChevronDownIcon,
   AddLarge,
   View,
   Report,
-  Folder,
   FolderOpen,
   CloudUpload,
   Security,
-  Notification,
-  Integration,
   Chat,
   Analytics,
 } from "@carbon/icons-react";
@@ -94,39 +89,6 @@ function AvatarCircle() {
   );
 }
 
-function SearchContainer() {
-  const [searchValue, setSearchValue] = useState("");
-
-  return (
-    <div className="relative shrink-0 w-full">
-      <div className="bg-black h-10 relative rounded-lg flex items-center w-full">
-        <div className="flex items-center justify-center shrink-0 px-1">
-          <div className="size-8 flex items-center justify-center">
-            <SearchIcon size={16} className="text-neutral-50" />
-          </div>
-        </div>
-        <div className="flex-1 relative overflow-hidden">
-          <div className="flex flex-col justify-center size-full">
-            <div className="flex flex-col gap-2 items-start justify-center pr-2 py-1 w-full">
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                className="w-full bg-transparent border-none outline-none font-['Lexend:Regular',_sans-serif] text-[14px] text-neutral-50 placeholder:text-neutral-400 leading-[20px]"
-              />
-            </div>
-          </div>
-        </div>
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 rounded-lg border border-neutral-800 pointer-events-none"
-        />
-      </div>
-    </div>
-  );
-}
-
 interface MenuItemT {
   icon?: React.ReactNode;
   label: string;
@@ -157,14 +119,10 @@ function getSidebarContent(
   const view = <View size={16} className="text-neutral-50" />;
   const report = <Report size={16} className="text-neutral-50" />;
   const docAdd = <DocumentAdd size={16} className="text-neutral-50" />;
-  const folder = <Folder size={16} className="text-neutral-50" />;
   const folderOpen = <FolderOpen size={16} className="text-neutral-50" />;
   const cloudUpload = <CloudUpload size={16} className="text-neutral-50" />;
   const userIcon = <UserIcon size={16} className="text-neutral-50" />;
-  const settingsIcon = <SettingsIcon size={16} className="text-neutral-50" />;
-  const integration = <Integration size={16} className="text-neutral-50" />;
   const security = <Security size={16} className="text-neutral-50" />;
-  const notification = <Notification size={16} className="text-neutral-50" />;
   const chatIcon = <Chat size={16} className="text-neutral-50" />;
   const analyticsIcon = <Analytics size={16} className="text-neutral-50" />;
 
@@ -184,13 +142,13 @@ function getSidebarContent(
             { icon: docAdd, label: "Upload document", href: "/upload" },
             {
               icon: chatIcon,
-              label: "Chat with Doc.",
+              label: "Chat with a document",
               href: "/chat",
               isActive: pathname.startsWith("/chat"),
             },
             {
               icon: analyticsIcon,
-              label: "Analytics Dashboard",
+              label: "Analytics",
               href: "/dashboard?view=analytics",
               isActive: isAnalyticsView,
             },
@@ -201,7 +159,7 @@ function getSidebarContent(
           items: [
             {
               icon: report,
-              label: "All summaries",
+              label: "Summaries",
               href: "/dashboard",
               isActive: isActive("/dashboard") && !isAnalyticsView,
             },
@@ -238,7 +196,6 @@ function getSidebarContent(
               href: "/workspaces",
               isActive: isActive("/workspaces"),
             },
-            { icon: folder, label: "Shared with me", href: "/workspaces" },
           ],
         },
       ],
@@ -249,16 +206,8 @@ function getSidebarContent(
         {
           title: "Account",
           items: [
-            { icon: userIcon, label: "Profile", href: "/dashboard" },
-            { icon: security, label: "Security", href: "/dashboard" },
-            { icon: notification, label: "Notifications", href: "/dashboard" },
-          ],
-        },
-        {
-          title: "App",
-          items: [
-            { icon: settingsIcon, label: "Preferences", href: "/dashboard" },
-            { icon: integration, label: "Integrations", href: "/dashboard" },
+            { icon: userIcon, label: "Profile", href: "/account" },
+            { icon: security, label: "Security", href: "/account/security" },
           ],
         },
       ],
@@ -289,7 +238,7 @@ function IconNavigation({ activeSection }: { activeSection: string }) {
         {userImageUrl ? (
           <Image
             src={userImageUrl}
-            alt={user?.firstName ? `${user.firstName}'s profile` : "Profile"}
+            alt="Home"
             width={40}
             height={40}
             className="size-full object-cover"
@@ -376,7 +325,6 @@ function DetailSidebar({
     <aside className="bg-black flex flex-col gap-4 items-start p-4 rounded-r-2xl h-full w-80 shrink-0 overflow-hidden">
       <BrandBadge />
       <SectionTitle title={content.title} />
-      <SearchContainer />
 
       <div className="flex flex-col w-full flex-1 min-h-0 overflow-hidden gap-4 items-start">
         {content.sections.map((section, index) => (

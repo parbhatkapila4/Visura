@@ -62,10 +62,6 @@ export default function FooterSection() {
               </div>
               <span className="text-2xl font-bold text-white">Visura</span>
             </Link>
-            <p className="text-white/40 text-sm leading-relaxed mb-6 max-w-xs">
-              Transform how you understand documents with AI-powered intelligence. Built for the
-              future of work.
-            </p>
 
             <div className="flex items-center gap-3">
               {socialLinks.map((social, i) => (
@@ -166,7 +162,7 @@ export default function FooterSection() {
             </Link>
             <span className="text-white/20">•</span>
             <Link href="/cookies" className="hover:text-white transition-colors">
-              Cookies setting
+              Cookies
             </Link>
           </div>
         </motion.div>

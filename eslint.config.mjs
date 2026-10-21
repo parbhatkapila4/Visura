@@ -12,7 +12,16 @@ const compat = new FlatCompat({
 /** @type {import("eslint").Linter.Config[]} */
 export default [
   {
-    ignores: ["next-env.d.ts", ".next/**", "node_modules/**", "out/**", "dist/**"],
+    ignores: [
+      "next-env.d.ts",
+      ".next/**",
+      "node_modules/**",
+      "out/**",
+      "dist/**",
+      // copied from pdfjs-dist on every build; not ours to lint
+      "public/pdf.min.mjs",
+      "public/pdf.worker.min.mjs",
+    ],
   },
   ...compat.config({
     extends: ["next/core-web-vitals", "next/typescript", "prettier"],

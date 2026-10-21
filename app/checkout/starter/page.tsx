@@ -1,26 +1,16 @@
 "use client";
 
-import { SYMBOL, useResolvedCurrency } from "@/app/components/CheckoutButton";
+import CheckoutButton, { SYMBOL, useResolvedCurrency } from "@/app/components/CheckoutButton";
 import BgGradient from "@/components/common/bg-gradient";
-import { ArrowLeft, Layers, ShieldCheck, Timer, Sparkles, Check, Clock, Zap } from "lucide-react";
+import { ArrowLeft, Layers, Sparkles, Check } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
 const starterHighlights = [
   {
     icon: Layers,
-    title: "Core feature set",
-    description: "Summaries, highlights, and exports for up to 10 documents a month.",
-  },
-  {
-    icon: Timer,
-    title: "Quick turnaround",
-    description: "90-second processing designed for solo operators and lean teams.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Security included",
-    description: "Clerk auth, encrypted storage, and dependable audit history out of the box.",
+    title: "Every feature",
+    description: "The same summaries and chat as Pro, for up to 10 documents.",
   },
 ];
 
@@ -31,15 +21,16 @@ const STARTER_AMOUNT_BY_CURRENCY: Record<string, number> = {
 };
 
 const starterFeatures = [
-  "Up to 10 documents analysed monthly",
-  "AI summaries with smart highlight extraction",
-  "PDF & DOCX uploads plus shareable exports",
-  "Email support and standard processing speeds",
+  "Keep up to 10 documents; each new version counts as one",
+  "AI summary and chat for every document",
+  "PDF, DOCX, PPTX, XLSX, XLS, TXT and MD files up to 32 MB",
+  "2 summary downloads, as PDF",
 ];
 
 export default function StarterCheckoutPage() {
   const { currency, loading } = useResolvedCurrency();
-  const displayAmount = STARTER_AMOUNT_BY_CURRENCY[currency] ?? 10;
+  const displayAmount: number | undefined = STARTER_AMOUNT_BY_CURRENCY[currency];
+  const priced = displayAmount !== undefined;
   const symbol = SYMBOL[currency] ?? "$";
 
   return (
@@ -91,7 +82,7 @@ export default function StarterCheckoutPage() {
                 transition={{ duration: 0.6, delay: 0.3 }}
                 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight bg-gradient-to-br from-white via-white to-white/80 bg-clip-text text-transparent"
               >
-                Launch your document workflow in under an hour.
+                Keep up to 10 documents.
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -99,9 +90,8 @@ export default function StarterCheckoutPage() {
                 transition={{ duration: 0.6, delay: 0.4 }}
                 className="text-lg text-white/70 leading-relaxed max-w-2xl"
               >
-                Starter keeps founders and early hires organised with instant summaries, searchable
-                insights, and export-ready briefs. Scale without spreadsheets, or the enterprise
-                price tag.
+                That is up from 5 on the free plan. Each new version of a document counts as one.
+                Every other feature is the same on every plan. You pay once, and nothing renews.
               </motion.p>
             </div>
 
@@ -109,7 +99,7 @@ export default function StarterCheckoutPage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="grid gap-4 sm:grid-cols-3"
+              className="grid gap-4 sm:max-w-md"
             >
               {starterHighlights.map(({ icon: Icon, title, description }, index) => (
                 <motion.div
@@ -143,43 +133,26 @@ export default function StarterCheckoutPage() {
               <div className="absolute -inset-1 bg-gradient-to-r from-[#38bdf8] via-[#22d3ee] to-[#38bdf8] rounded-3xl opacity-20 blur-xl animate-pulse" />
 
               <div className="relative flex flex-col rounded-3xl border border-[#38bdf8]/40 bg-gradient-to-br from-[#0f1720] via-[#0a0f16] to-[#0f1720] p-8 shadow-[0_25px_70px_-40px_rgba(56,189,248,0.6)] backdrop-blur-sm">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                  className="mb-6 flex justify-center"
-                >
-                  <span className="inline-flex items-center gap-2 rounded-full border border-[#38bdf8]/40 bg-[#38bdf8]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.3em] text-[#38bdf8] backdrop-blur-sm">
-                    <Clock className="h-3 w-3" />
-                    Coming Soon
-                  </span>
-                </motion.div>
-
                 <div className="text-center mb-6">
                   <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#38bdf8]/80 mb-2">
-                    Starter Plan
+                    Starter plan
                   </p>
 
-                  <div className="flex items-end justify-center gap-2 mb-2">
-                    <span className="text-6xl font-bold text-white">
-                      {loading ? "—" : `${symbol}${displayAmount}`}
-                    </span>
-                    <span className="pb-2 text-sm uppercase tracking-[0.35em] text-white/55">
-                      / month
-                    </span>
-                  </div>
-
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.6 }}
-                    className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full bg-white/5 border border-white/10"
-                  >
-                    <span className="text-xs text-white/50 italic">demo price</span>
-                  </motion.div>
+                  {priced && (
+                    <div className="flex items-end justify-center gap-2 mb-2">
+                      <span className="text-6xl font-bold text-white">
+                        {loading ? "—" : `${symbol}${displayAmount}`}
+                      </span>
+                      <span className="pb-2 text-sm uppercase tracking-[0.35em] text-white/55">
+                        one-time
+                      </span>
+                    </div>
+                  )}
 
                   <p className="mt-3 text-xs text-white/50">
-                    Currency finalised automatically by your location.
+                    {priced
+                      ? "One-time payment. Currency is set from your location."
+                      : `Checkout can't take payment in ${currency}. Email parbhat@parbhat.dev.`}
                   </p>
                 </div>
 
@@ -206,23 +179,14 @@ export default function StarterCheckoutPage() {
                   transition={{ duration: 0.5, delay: 0.7 }}
                   className="space-y-3"
                 >
-                  <button
-                    disabled
-                    className="group relative flex w-full items-center justify-center overflow-hidden rounded-2xl border border-[#38bdf8]/40 bg-gradient-to-r from-[#38bdf8]/10 via-[#22d3ee]/10 to-[#38bdf8]/10 px-6 py-4 text-sm font-semibold text-[#38bdf8] shadow-[0_8px_32px_rgba(56,189,248,0.3)] transition-all duration-300 cursor-not-allowed"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#38bdf8]/20 via-[#22d3ee]/20 to-[#38bdf8]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-                    <span className="relative flex items-center gap-2">
-                      <Zap className="h-4 w-4" />
-                      Coming Soon
-                    </span>
-                  </button>
+                  <CheckoutButton
+                    plan="starter"
+                    className="group relative flex w-full items-center justify-center overflow-hidden rounded-2xl border border-[#38bdf8]/40 bg-gradient-to-r from-[#38bdf8]/10 via-[#22d3ee]/10 to-[#38bdf8]/10 px-6 py-4 text-sm font-semibold text-[#38bdf8] shadow-[0_8px_32px_rgba(56,189,248,0.3)] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
+                  />
 
                   <p className="text-[11px] text-center text-white/50 leading-relaxed">
-                    14-day satisfaction guarantee. Upgrade to Professional whenever you need more
-                    power - your data stays in place.
+                    Paid through Razorpay. Nothing renews, so there is nothing to cancel. You can
+                    buy Pro later; your documents stay where they are.
                   </p>
                 </motion.div>
               </div>
@@ -238,22 +202,20 @@ export default function StarterCheckoutPage() {
         >
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="space-y-3">
-              <p className="text-sm uppercase tracking-[0.3em] text-white/55">
-                Need advanced workflows?
-              </p>
+              <p className="text-sm uppercase tracking-[0.3em] text-white/55">Need more room?</p>
               <h3 className="text-2xl md:text-3xl font-semibold text-white">
-                Hop into Visura Professional when you&apos;re ready
+                Pro keeps up to 1,000 documents
               </h3>
               <p className="max-w-xl text-sm text-white/60 leading-relaxed">
-                Unlock unlimited documents, collaboration spaces, API access, and priority
-                onboarding. Upgrades are instant, no migration required.
+                Same features as Starter. Buy Pro at its full price and your plan changes once the
+                payment is confirmed; your documents stay where they are.
               </p>
             </div>
             <Link
               href="/checkout"
               className="group inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-white transition-all duration-300 hover:border-[#F97316]/60 hover:bg-[#F97316]/20 hover:shadow-[0_8px_24px_rgba(249,115,22,0.3)] hover:scale-105"
             >
-              Explore Professional
+              Explore Pro
             </Link>
           </div>
         </motion.div>

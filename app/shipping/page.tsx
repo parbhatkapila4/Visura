@@ -13,12 +13,12 @@ export default function ShippingPolicyPage() {
             className="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors mb-8"
           >
             <ArrowLeft className="w-5 h-5" />
-            Back to Home
+            Back to home
           </Link>
-          <h1 className="text-5xl font-bold mb-6">Shipping Policy</h1>
+          <h1 className="text-5xl font-bold mb-6">Shipping policy</h1>
           <p className="text-xl text-gray-300 max-w-3xl">
-            Learn how Visura delivers digital products, handles provisioning timelines, and supports
-            customer access around the globe.
+            Visura is software you use in the browser. Nothing is shipped: your plan changes once
+            the payment is confirmed.
           </p>
         </div>
       </div>
@@ -27,70 +27,68 @@ export default function ShippingPolicyPage() {
         <div className="w-full px-6 lg:px-12 xl:px-20">
           <div className="space-y-12">
             <div>
-              <h2 className="text-3xl font-bold text-black mb-6">Digital Delivery</h2>
+              <h2 className="text-3xl font-bold text-black mb-6">Digital delivery</h2>
               <div className="flex items-start gap-4">
                 <Package className="w-6 h-6 text-black mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-lg text-gray-700 leading-relaxed">
-                    Visura is a fully digital platform. Once your payment is confirmed, account
-                    upgrades and feature access are delivered instantly to the email address
-                    associated with your account. No physical shipping is required.
+                    Nothing physical is shipped. Once the payment is confirmed, the plan changes on
+                    the Visura account you paid from, and that account can keep as many documents as
+                    the plan allows.
                   </p>
                 </div>
               </div>
             </div>
 
             <div>
-              <h2 className="text-3xl font-bold text-black mb-6">Global Availability</h2>
+              <h2 className="text-3xl font-bold text-black mb-6">Availability</h2>
               <div className="flex items-start gap-4">
                 <Globe2 className="w-6 h-6 text-black mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-lg text-gray-700 leading-relaxed">
-                    Our services are available worldwide wherever internet access is permitted by
-                    local regulations. Certain payment methods may vary by region, but access to the
-                    Visura platform remains consistent.
+                    Visura runs in the browser, so there is no delivery address or region. Nothing
+                    in Visura blocks sign-in by country, but checkout cannot take payment from the
+                    UK, Canada, Australia or Singapore.
                   </p>
                 </div>
               </div>
             </div>
 
             <div>
-              <h2 className="text-3xl font-bold text-black mb-6">Provisioning Timeline</h2>
+              <h2 className="text-3xl font-bold text-black mb-6">When your plan changes</h2>
               <div className="flex items-start gap-4">
                 <Clock4 className="w-6 h-6 text-black mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-lg text-gray-700 leading-relaxed">
-                    Under normal circumstances, premium features become available within minutes
-                    after payment confirmation. If you do not see the changes reflected, please log
-                    out and back in, or contact support with your order details.
+                    Your plan changes once the payment is confirmed. If your new limit does not
+                    show, refresh the page. If it still does not show, email us with the date you
+                    paid.
                   </p>
                 </div>
               </div>
             </div>
 
             <div>
-              <h2 className="text-3xl font-bold text-black mb-6">Secure Access</h2>
+              <h2 className="text-3xl font-bold text-black mb-6">Payments and sign-in</h2>
               <div className="flex items-start gap-4">
                 <ShieldCheck className="w-6 h-6 text-black mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-lg text-gray-700 leading-relaxed">
-                    All digital deliveries are processed through secure, encrypted systems. You are
-                    responsible for safeguarding your login credentials and ensuring that only
-                    authorized team members access your subscription.
+                    Razorpay takes the payment, and your card or bank details go to Razorpay, not to
+                    Visura. The plan belongs to the account that paid for it, so keep your sign-in
+                    details to yourself.
                   </p>
                 </div>
               </div>
             </div>
 
             <div>
-              <h2 className="text-3xl font-bold text-black mb-6">Need Assistance?</h2>
+              <h2 className="text-3xl font-bold text-black mb-6">Need help?</h2>
               <div className="flex items-start gap-4">
                 <Headset className="w-6 h-6 text-black mt-1 flex-shrink-0" />
                 <div>
                   <p className="text-lg text-gray-700 leading-relaxed">
-                    Our support team is available to help with any access issues, billing questions,
-                    or account provisioning concerns. Reach out and we will respond within one
-                    business day.
+                    Email the address below with questions about access or billing.
                   </p>
                 </div>
               </div>
